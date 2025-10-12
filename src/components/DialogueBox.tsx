@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Dialogue, DialogueLine, DialogueChoice } from "../data/dialogues";
+import { useState, useEffect, useCallback } from "react";
+import { Dialogue, DialogueChoice } from "../data/dialogues";
 
 interface Props {
   dialogue: Dialogue;
@@ -35,6 +35,25 @@ export default function DialogueBox({
   const currentLine = dialogue.lines[currentLineIndex];
   const isLastLine = currentLineIndex === dialogue.lines.length - 1;
 
+  const handleNext = useCallback(() => {
+    if (isTyping) {
+      setDisplayedText(currentLine.text);
+      setIsTyping(false);
+      setShowContinue(!currentLine.choices);
+    } else if (isLastLine) {
+      onComplete(accumulatedStatChanges);
+    } else {
+      setCurrentLineIndex(currentLineIndex + 1);
+    }
+  }, [
+    isTyping,
+    isLastLine,
+    currentLineIndex,
+    currentLine,
+    onComplete,
+    accumulatedStatChanges,
+  ]);
+
   // Typewriter effect
   useEffect(() => {
     if (!currentLine) return;
@@ -61,18 +80,6 @@ export default function DialogueBox({
     return () => clearInterval(interval);
   }, [currentLineIndex, currentLine]);
 
-  const handleNext = () => {
-    if (isTyping) {
-      setDisplayedText(currentLine.text);
-      setIsTyping(false);
-      setShowContinue(!currentLine.choices);
-    } else if (isLastLine) {
-      onComplete(accumulatedStatChanges);
-    } else {
-      setCurrentLineIndex(currentLineIndex + 1);
-    }
-  };
-
   const handleChoice = (choice: DialogueChoice) => {
     // Accumulate stat changes
     const newChanges = { ...accumulatedStatChanges };
@@ -96,6 +103,7 @@ export default function DialogueBox({
     }
   };
 
+  // Click or Space/Enter to continue
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (currentLine?.choices) return; // Don't allow space to continue if choices are present
@@ -108,7 +116,7 @@ export default function DialogueBox({
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [isTyping, isLastLine, currentLineIndex, currentLine]);
+  }, [handleNext, currentLine]);
 
   if (!currentLine) return null;
 

@@ -7,9 +7,9 @@ import LocationActivities from "../components/LocationActivities";
 import MainMenu from "../components/MainMenu";
 import PauseMenu from "../components/PauseMenu";
 import DialogueBox from "../components/DialogueBox";
-import { locationGraph, Location } from "../data/locations";
+import { locationGraph } from "../data/locations";
 import { PlayerStats, defaultPlayerStats } from "../data/characters";
-import { girls, Girl } from "../data/characters";
+import { girls, Girl, GirlStats } from "../data/characters";
 import {
   introDialogue,
   Dialogue,
@@ -29,12 +29,9 @@ export default function GamePage() {
   const [currentDialogue, setCurrentDialogue] = useState<Dialogue | null>(null);
   const [dialogueCharacterImage, setDialogueCharacterImage] =
     useState<string>("");
-  const [dialogueGirlEffects, setDialogueGirlEffects] = useState<any>(null);
+  const [dialogueGirlEffects, setDialogueGirlEffects] =
+    useState<Partial<GirlStats> | null>(null);
   const [dialogueGirlName, setDialogueGirlName] = useState<string>("");
-  const [hasSeenIntro, setHasSeenIntro] = useState<boolean>(false);
-  const [dailyInteractions, setDailyInteractions] = useState<
-    Record<string, Set<string>>
-  >({});
   const [metCharacters, setMetCharacters] = useState<Set<string>>(new Set());
 
   // Check for save data and dark mode preference on mount
@@ -46,9 +43,6 @@ export default function GamePage() {
     if (savedDarkMode !== null) {
       setDarkMode(savedDarkMode === "true");
     }
-
-    const seenIntro = localStorage.getItem("hasSeenIntro");
-    setHasSeenIntro(seenIntro === "true");
   }, []);
 
   // Apply dark mode to document
@@ -121,9 +115,7 @@ export default function GamePage() {
     localStorage.removeItem("datingSimSave");
     setHasSaveData(false);
 
-    // Always show intro on New Game (remove the hasSeenIntro flag)
-    localStorage.removeItem("hasSeenIntro");
-    setHasSeenIntro(false);
+    // Always show intro on New Game
     setGameState("intro");
     setCurrentDialogue(introDialogue);
   };
@@ -131,7 +123,7 @@ export default function GamePage() {
   const startDialogue = (
     dialogue: Dialogue,
     characterImage: string = "",
-    girlEffects: any = null
+    girlEffects: Partial<GirlStats> | null = null
   ) => {
     setCurrentDialogue(dialogue);
     setDialogueCharacterImage(characterImage);
@@ -177,10 +169,8 @@ export default function GamePage() {
     setDialogueGirlEffects(null);
     setDialogueGirlName("");
 
-    // After intro, mark as seen and start playing
+    // After intro, start playing
     if (gameState === "intro") {
-      localStorage.setItem("hasSeenIntro", "true");
-      setHasSeenIntro(true);
       setGameState("playing");
     } else {
       setGameState("playing");
@@ -259,8 +249,6 @@ export default function GamePage() {
           onSkip={
             gameState === "intro"
               ? () => {
-                  localStorage.setItem("hasSeenIntro", "true");
-                  setHasSeenIntro(true);
                   setGameState("playing");
                   setCurrentDialogue(null);
                 }

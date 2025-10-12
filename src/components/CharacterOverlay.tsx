@@ -1,4 +1,4 @@
-import { Girl } from "../data/characters";
+import { Girl, GirlStats } from "../data/characters";
 import { PlayerStats } from "../data/characters";
 import { Interaction, interactionMenu } from "../data/interactions";
 import { Dispatch, SetStateAction } from "react";
@@ -18,7 +18,7 @@ interface Props {
   onStartDialogue: (
     dialogue: Dialogue,
     characterImage: string,
-    girlEffects?: any
+    girlEffects?: Partial<GirlStats>
   ) => void;
 }
 
@@ -184,7 +184,7 @@ export default function CharacterOverlay({
 
         <h3 className="text-2xl font-bold text-purple-800 mb-1">{girl.name}</h3>
         <p className="text-gray-600 italic mb-2 text-sm">
-          "{girl.personality}"
+          &quot;{girl.personality}&quot;
         </p>
 
         <div className="px-4 py-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full text-white font-semibold text-xs shadow-lg">
@@ -273,7 +273,7 @@ export default function CharacterOverlay({
       <div className="mt-4 bg-white rounded-lg p-3 border-2 border-purple-200 shadow">
         <p className="text-xs text-gray-600 text-center">
           <span className="font-semibold text-purple-600">💡</span> Different
-          actions affect {girl.name}'s feelings toward you!
+          actions affect {girl.name}&apos;s feelings toward you!
         </p>
       </div>
     </div>
