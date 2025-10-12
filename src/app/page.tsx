@@ -6,11 +6,17 @@ import CharacterOverlay from "../components/CharacterOverlay";
 import LocationActivities from "../components/LocationActivities";
 import MainMenu from "../components/MainMenu";
 import PauseMenu from "../components/PauseMenu";
+import DialogueBox from "../components/DialogueBox";
 import { locationGraph, Location } from "../data/locations";
 import { PlayerStats, defaultPlayerStats } from "../data/characters";
 import { girls, Girl } from "../data/characters";
+import {
+  introDialogue,
+  Dialogue,
+  firstMeetingDialogues,
+} from "../data/dialogues";
 
-type GameState = "mainMenu" | "playing" | "paused";
+type GameState = "mainMenu" | "intro" | "playing" | "paused" | "dialogue";
 
 export default function GamePage() {
   const [gameState, setGameState] = useState<GameState>("mainMenu");
@@ -20,6 +26,16 @@ export default function GamePage() {
   const [selectedGirl, setSelectedGirl] = useState<Girl | null>(null);
   const [hasSaveData, setHasSaveData] = useState<boolean>(false);
   const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [currentDialogue, setCurrentDialogue] = useState<Dialogue | null>(null);
+  const [dialogueCharacterImage, setDialogueCharacterImage] =
+    useState<string>("");
+  const [dialogueGirlEffects, setDialogueGirlEffects] = useState<any>(null);
+  const [dialogueGirlName, setDialogueGirlName] = useState<string>("");
+  const [hasSeenIntro, setHasSeenIntro] = useState<boolean>(false);
+  const [dailyInteractions, setDailyInteractions] = useState<
+    Record<string, Set<string>>
+  >({});
+  const [metCharacters, setMetCharacters] = useState<Set<string>>(new Set());
 
   // Check for save data and dark mode preference on mount
   useEffect(() => {
@@ -30,6 +46,9 @@ export default function GamePage() {
     if (savedDarkMode !== null) {
       setDarkMode(savedDarkMode === "true");
     }
+
+    const seenIntro = localStorage.getItem("hasSeenIntro");
+    setHasSeenIntro(seenIntro === "true");
   }, []);
 
   // Apply dark mode to document
@@ -101,7 +120,71 @@ export default function GamePage() {
     setSelectedGirl(null);
     localStorage.removeItem("datingSimSave");
     setHasSaveData(false);
-    setGameState("playing");
+
+    // Always show intro on New Game (remove the hasSeenIntro flag)
+    localStorage.removeItem("hasSeenIntro");
+    setHasSeenIntro(false);
+    setGameState("intro");
+    setCurrentDialogue(introDialogue);
+  };
+
+  const startDialogue = (
+    dialogue: Dialogue,
+    characterImage: string = "",
+    girlEffects: any = null
+  ) => {
+    setCurrentDialogue(dialogue);
+    setDialogueCharacterImage(characterImage);
+    setDialogueGirlEffects(girlEffects);
+
+    // Extract girl name from character image path
+    if (characterImage) {
+      const match = characterImage.match(/\/([^/]+)\//);
+      if (match) {
+        setDialogueGirlName(
+          match[1].charAt(0).toUpperCase() + match[1].slice(1)
+        );
+      }
+    }
+
+    setGameState("dialogue");
+  };
+
+  const endDialogue = (statChanges?: {
+    affection?: number;
+    mood?: number;
+    trust?: number;
+  }) => {
+    // Apply stat changes from dialogue choices to the girl
+    if (statChanges && dialogueGirlName) {
+      const girlIndex = girls.findIndex(
+        (g) => g.name.toLowerCase() === dialogueGirlName.toLowerCase()
+      );
+      if (girlIndex !== -1) {
+        // Note: In a real implementation, you'd need to maintain girl state separately
+        // For now, we'll just log the changes
+        console.log(`Stat changes for ${dialogueGirlName}:`, statChanges);
+      }
+    }
+
+    // Apply base girl effects from the interaction
+    if (dialogueGirlEffects && dialogueGirlName) {
+      console.log(`Base effects for ${dialogueGirlName}:`, dialogueGirlEffects);
+    }
+
+    setCurrentDialogue(null);
+    setDialogueCharacterImage("");
+    setDialogueGirlEffects(null);
+    setDialogueGirlName("");
+
+    // After intro, mark as seen and start playing
+    if (gameState === "intro") {
+      localStorage.setItem("hasSeenIntro", "true");
+      setHasSeenIntro(true);
+      setGameState("playing");
+    } else {
+      setGameState("playing");
+    }
   };
 
   const returnToMainMenu = () => {
@@ -114,6 +197,21 @@ export default function GamePage() {
   const moveTo = (location: string) => {
     setCurrentLocation(location);
     setSelectedGirl(null);
+
+    // Check if there are any unmet characters at this location
+    const charactersHere = girls.filter((g) => g.location === location);
+    for (const girl of charactersHere) {
+      if (!metCharacters.has(girl.name)) {
+        // Show first meeting dialogue
+        const firstMeeting = firstMeetingDialogues[girl.name];
+        if (firstMeeting) {
+          const characterImage = `/images/faces/${girl.name.toLowerCase()}/neutral.png`;
+          setMetCharacters(new Set([...metCharacters, girl.name]));
+          startDialogue(firstMeeting, characterImage, null);
+          break; // Only show one first meeting at a time
+        }
+      }
+    }
   };
 
   const spendTime = (amount: number) => {
@@ -140,6 +238,36 @@ export default function GamePage() {
         darkMode={darkMode}
         onToggleDarkMode={() => setDarkMode(!darkMode)}
       />
+    );
+  }
+
+  // Render intro dialogue or any dialogue
+  if ((gameState === "intro" || gameState === "dialogue") && currentDialogue) {
+    return (
+      <div
+        className={`min-h-screen transition-colors duration-300 ${
+          darkMode
+            ? "bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900"
+            : "bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50"
+        }`}
+      >
+        <DialogueBox
+          dialogue={currentDialogue}
+          onComplete={endDialogue}
+          darkMode={darkMode}
+          characterImage={dialogueCharacterImage}
+          onSkip={
+            gameState === "intro"
+              ? () => {
+                  localStorage.setItem("hasSeenIntro", "true");
+                  setHasSeenIntro(true);
+                  setGameState("playing");
+                  setCurrentDialogue(null);
+                }
+              : undefined
+          }
+        />
+      </div>
     );
   }
 
@@ -357,6 +485,7 @@ export default function GamePage() {
                 setPlayer={setPlayer}
                 spendTime={spendTime}
                 onClose={() => setSelectedGirl(null)}
+                onStartDialogue={startDialogue}
               />
             </div>
           ) : (
@@ -382,6 +511,16 @@ export default function GamePage() {
             setGameState("playing");
           }}
           onMainMenu={returnToMainMenu}
+        />
+      )}
+
+      {/* Dialogue Overlay during gameplay */}
+      {currentDialogue && gameState === "dialogue" && (
+        <DialogueBox
+          dialogue={currentDialogue}
+          onComplete={endDialogue}
+          darkMode={darkMode}
+          characterImage={dialogueCharacterImage}
         />
       )}
     </div>

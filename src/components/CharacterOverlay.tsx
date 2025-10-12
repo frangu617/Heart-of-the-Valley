@@ -2,6 +2,11 @@ import { Girl } from "../data/characters";
 import { PlayerStats } from "../data/characters";
 import { Interaction, interactionMenu } from "../data/interactions";
 import { Dispatch, SetStateAction } from "react";
+import {
+  characterDialogues,
+  getDefaultDialogue,
+  Dialogue,
+} from "../data/dialogues";
 
 interface Props {
   girl: Girl;
@@ -10,6 +15,11 @@ interface Props {
   setPlayer: Dispatch<SetStateAction<PlayerStats>>;
   spendTime: (amount: number) => void;
   onClose: () => void;
+  onStartDialogue: (
+    dialogue: Dialogue,
+    characterImage: string,
+    girlEffects?: any
+  ) => void;
 }
 
 export default function CharacterOverlay({
@@ -19,6 +29,7 @@ export default function CharacterOverlay({
   setPlayer,
   spendTime,
   onClose,
+  onStartDialogue,
 }: Props) {
   const interact = (action: Interaction) => {
     // Check requirements
@@ -35,6 +46,38 @@ export default function CharacterOverlay({
       return;
     }
 
+    // Check affection requirements for intimate actions
+    if (action.label === "Hug") {
+      if (girl.stats.affection < 20) {
+        alert(`${girl.name} doesn't seem comfortable with that right now...`);
+        // Apply negative effect
+        const updatedStats = { ...player };
+        updatedStats.mood = Math.max(0, updatedStats.mood - 10);
+        setPlayer(updatedStats);
+        return;
+      }
+    }
+
+    if (action.label === "Kiss") {
+      if (girl.stats.affection < 40 || girl.stats.mood < 50) {
+        alert(`${girl.name} pulls away. The timing doesn't seem right...`);
+        const updatedStats = { ...player };
+        updatedStats.mood = Math.max(0, updatedStats.mood - 15);
+        setPlayer(updatedStats);
+        return;
+      }
+    }
+
+    // Check mood requirements for positive interactions
+    if (
+      girl.stats.mood < 30 &&
+      (action.label === "Hug" || action.label === "Kiss")
+    ) {
+      alert(`${girl.name} doesn't seem in the mood for that right now...`);
+      return;
+    }
+
+    // Apply stat effects
     const updatedStats = { ...player };
     Object.entries(action.statEffects || {}).forEach(([key, value]) => {
       const statKey = key as keyof PlayerStats;
@@ -45,24 +88,13 @@ export default function CharacterOverlay({
     setPlayer(updatedStats);
     spendTime(action.timeCost);
 
-    // Show effects
-    const effects: string[] = [];
-    if (action.statEffects) {
-      Object.entries(action.statEffects).forEach(([key, value]) => {
-        if (key !== "inventory" && typeof value === "number" && value !== 0) {
-          effects.push(`${key} ${value > 0 ? "+" : ""}${value}`);
-        }
-      });
-    }
-    if (action.girlEffects) {
-      Object.entries(action.girlEffects).forEach(([key, value]) => {
-        if (typeof value === "number" && value !== 0) {
-          effects.push(`${girl.name}'s ${key} ${value > 0 ? "+" : ""}${value}`);
-        }
-      });
-    }
+    // Get dialogue for this interaction
+    const dialogue =
+      characterDialogues[girl.name]?.[action.label] ||
+      getDefaultDialogue(girl.name, action.label);
+    const characterImage = `/images/faces/${girl.name.toLowerCase()}/${getFacialExpression()}.png`;
 
-    alert(`${action.label} with ${girl.name}! ❤️\n\n${effects.join("\n")}`);
+    onStartDialogue(dialogue, characterImage, action.girlEffects);
   };
 
   const getActionIcon = (type: string) => {

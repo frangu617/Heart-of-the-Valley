@@ -204,4 +204,73 @@ export const locationActivities: Record<string, LocationActivity[]> = {
       statEffects: { mood: 10, energy: -15 },
     },
   ],
+  // University locations
+  University: [
+    {
+      name: "Check Schedule",
+      icon: "📅",
+      description: "Review your teaching schedule",
+      timeCost: 0,
+      statEffects: { mood: 5 },
+    },
+  ],
+  Classroom: [
+    {
+      name: "Teach Class",
+      icon: "👨‍🏫",
+      description: "Teach your programming class",
+      timeCost: 2,
+      statEffects: { intelligence: 2, energy: -20, money: 50 },
+      requirements: { minEnergy: 25 },
+    },
+    {
+      name: "Prepare Lesson",
+      icon: "📝",
+      description: "Prepare materials for your next lecture",
+      timeCost: 1,
+      statEffects: { intelligence: 1, energy: -10 },
+    },
+  ],
+  Office: [
+    {
+      name: "Grade Papers",
+      icon: "📄",
+      description: "Grade student assignments",
+      timeCost: 2,
+      statEffects: { intelligence: 1, energy: -15, mood: -5 },
+    },
+    {
+      name: "Office Hours",
+      icon: "🕐",
+      description: "Hold office hours for students",
+      timeCost: 2,
+      statEffects: { mood: 5, energy: -10 },
+    },
+    {
+      name: "Research",
+      icon: "🔬",
+      description: "Work on your research projects",
+      timeCost: 3,
+      statEffects: { intelligence: 3, energy: -25, mood: 10 },
+      requirements: { minEnergy: 30 },
+    },
+  ],
+  "University Hallway": [
+    {
+      name: "Chat with Colleagues",
+      icon: "💬",
+      description: "Network with other professors",
+      timeCost: 1,
+      statEffects: { mood: 10, energy: -5 },
+    },
+  ],
+  "Parking Lot": [
+    {
+      name: "Sit in Car",
+      icon: "🚗",
+      description: "Take a breather in your car",
+      timeCost: 1,
+      statEffects: { mood: 5, energy: 10 },
+    },
+  ],
 };
