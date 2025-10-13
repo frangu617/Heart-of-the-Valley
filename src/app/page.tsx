@@ -1,6 +1,6 @@
 // src/app/page.tsx
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import StatsPanel from "../components/StatsPanel";
 import LocationCard from "../components/LocationCard";
 import CharacterOverlay from "../components/CharacterOverlay";
@@ -10,6 +10,8 @@ import PauseMenu from "../components/PauseMenu";
 import DialogueBox from "../components/DialogueBox";
 import { locationGraph } from "../data/locations";
 import PhoneMenu from "@/components/PhoneMenu";
+import { getScheduledLocation } from "@/lib/schedule";
+import { characterSchedules } from "@/data/characterSchedules";
 import {
   PlayerStats,
   defaultPlayerStats,
