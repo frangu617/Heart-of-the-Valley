@@ -6,7 +6,7 @@ import {
   characterDialogues,
   getDefaultDialogue,
   Dialogue,
-} from "../data/dialogues";
+} from "../data/dialogues/index";
 
 interface Props {
   girl: Girl;

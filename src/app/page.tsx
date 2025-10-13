@@ -8,13 +8,25 @@ import MainMenu from "../components/MainMenu";
 import PauseMenu from "../components/PauseMenu";
 import DialogueBox from "../components/DialogueBox";
 import { locationGraph } from "../data/locations";
-import { PlayerStats, defaultPlayerStats } from "../data/characters";
-import { girls, Girl, GirlStats } from "../data/characters";
+import {
+  PlayerStats,
+  defaultPlayerStats,
+  Girl,
+  girls,
+  GirlStats,
+} from "../data/characters";
 import {
   introDialogue,
   Dialogue,
   firstMeetingDialogues,
 } from "../data/dialogues";
+import {
+  DayOfWeek,
+  START_DAY,
+  START_HOUR,
+  MAX_HOUR,
+  getNextDay,
+} from "../data/gameConstants";
 
 type GameState = "mainMenu" | "intro" | "playing" | "paused" | "dialogue";
 
@@ -22,7 +34,8 @@ export default function GamePage() {
   const [gameState, setGameState] = useState<GameState>("mainMenu");
   const [player, setPlayer] = useState<PlayerStats>(defaultPlayerStats);
   const [currentLocation, setCurrentLocation] = useState<string>("Bedroom");
-  const [hour, setHour] = useState<number>(8);
+  const [hour, setHour] = useState<number>(START_HOUR);
+  const [dayOfWeek, setDayOfWeek] = useState<DayOfWeek>(START_DAY);
   const [selectedGirl, setSelectedGirl] = useState<Girl | null>(null);
   const [hasSaveData, setHasSaveData] = useState<boolean>(false);
   const [darkMode, setDarkMode] = useState<boolean>(false);
@@ -74,6 +87,7 @@ export default function GamePage() {
       player,
       currentLocation,
       hour,
+      dayOfWeek,
       timestamp: new Date().toISOString(),
     };
     localStorage.setItem("datingSimSave", JSON.stringify(saveData));
@@ -88,6 +102,7 @@ export default function GamePage() {
       setPlayer(saveData.player);
       setCurrentLocation(saveData.currentLocation);
       setHour(saveData.hour);
+      setDayOfWeek(saveData.dayOfWeek || START_DAY);
       setSelectedGirl(null);
       setGameState("playing");
     }
@@ -110,7 +125,8 @@ export default function GamePage() {
   const resetGame = () => {
     setPlayer(defaultPlayerStats);
     setCurrentLocation("Bedroom");
-    setHour(8);
+    setHour(START_HOUR);
+    setDayOfWeek(START_DAY);
     setSelectedGirl(null);
     localStorage.removeItem("datingSimSave");
     setHasSaveData(false);
@@ -150,7 +166,7 @@ export default function GamePage() {
     // Apply stat changes from dialogue choices to the girl
     if (statChanges && dialogueGirlName) {
       const girlIndex = girls.findIndex(
-        (g) => g.name.toLowerCase() === dialogueGirlName.toLowerCase()
+        (g: Girl) => g.name.toLowerCase() === dialogueGirlName.toLowerCase()
       );
       if (girlIndex !== -1) {
         // Note: In a real implementation, you'd need to maintain girl state separately
@@ -189,7 +205,7 @@ export default function GamePage() {
     setSelectedGirl(null);
 
     // Check if there are any unmet characters at this location
-    const charactersHere = girls.filter((g) => g.location === location);
+    const charactersHere = girls.filter((g: Girl) => g.location === location);
     for (const girl of charactersHere) {
       if (!metCharacters.has(girl.name)) {
         // Show first meeting dialogue
@@ -205,7 +221,26 @@ export default function GamePage() {
   };
 
   const spendTime = (amount: number) => {
-    setHour((prev) => Math.min(prev + amount, 24));
+    const newHour = hour + amount;
+
+    if (newHour >= MAX_HOUR) {
+      // Move to next day
+      setHour(START_HOUR);
+      const nextDay = getNextDay(dayOfWeek);
+      setDayOfWeek(nextDay);
+
+      // Reset player stats for new day
+      setPlayer((prev) => ({
+        ...prev,
+        energy: Math.min(100, prev.energy + 30), // Restore some energy
+        hunger: Math.min(100, prev.hunger + 20), // Get hungry overnight
+      }));
+
+      // Show "New Day" message
+      alert(`A new day begins! It's ${nextDay} morning.`);
+    } else {
+      setHour(newHour);
+    }
   };
 
   const getCurrentLocationImage = () => {
@@ -216,7 +251,9 @@ export default function GamePage() {
     return "bedroom.png";
   };
 
-  const presentGirls = girls.filter((g) => g.location === currentLocation);
+  const presentGirls = girls.filter(
+    (g: Girl) => g.location === currentLocation
+  );
 
   // Render main menu
   if (gameState === "mainMenu") {
@@ -305,6 +342,7 @@ export default function GamePage() {
             <StatsPanel
               stats={player}
               hour={hour}
+              dayOfWeek={dayOfWeek}
               darkMode={darkMode}
               onSave={saveGame}
             />
@@ -344,7 +382,7 @@ export default function GamePage() {
 
                 {/* Character Portraits on Scene */}
                 <div className="absolute inset-0 flex items-end justify-around px-8 pb-12">
-                  {presentGirls.map((girl, index) => {
+                  {presentGirls.map((girl: Girl, index: number) => {
                     return (
                       <button
                         key={girl.name}

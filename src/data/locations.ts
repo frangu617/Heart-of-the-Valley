@@ -34,11 +34,13 @@ export const locationGraph: Record<string, Location[]> = {
     { name: "Cafe", cost: 0, time: 0, image: "cafe.png" },
     { name: "Gym", cost: 0, time: 0, image: "gym.png" },
     { name: "Mall", cost: 0, time: 0, image: "mall.png" },
+    { name: "Strip Club", cost: 0, time: 0, image: "stripclub.png" },
     { name: "Street", cost: 0, time: 0, image: "street.png" },
   ],
   Cafe: [{ name: "City", cost: 0, time: 0, image: "city.png" }],
   Gym: [{ name: "City", cost: 0, time: 0, image: "city.png" }],
   Mall: [{ name: "City", cost: 0, time: 0, image: "city.png" }],
+  "Strip Club": [{ name: "City", cost: 0, time: 0, image: "city.png" }],
   // University locations
   University: [
     {

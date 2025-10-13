@@ -1,8 +1,10 @@
 import { PlayerStats } from "../data/characters";
+import { DayOfWeek } from "../data/gameConstants";
 
 interface Props {
   stats: PlayerStats;
   hour: number;
+  dayOfWeek: DayOfWeek;
   darkMode?: boolean;
   onSave?: () => void;
 }
@@ -10,6 +12,7 @@ interface Props {
 export default function StatsPanel({
   stats,
   hour,
+  dayOfWeek,
   darkMode = false,
   onSave,
 }: Props) {
@@ -81,6 +84,7 @@ export default function StatsPanel({
     >
       {/* Time Display */}
       <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-4 text-white text-center">
+        <div className="text-sm font-semibold mb-1">{dayOfWeek}</div>
         <div className="text-3xl font-bold">{hour}:00</div>
         <div className="text-sm opacity-90">{getTimeOfDay()}</div>
       </div>
