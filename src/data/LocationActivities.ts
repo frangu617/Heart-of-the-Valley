@@ -1,4 +1,4 @@
-import { PlayerStats } from "./characters";
+import { PlayerStats } from "../data/characters";
 
 export type LocationActivity = {
   name: string;
@@ -204,7 +204,6 @@ export const locationActivities: Record<string, LocationActivity[]> = {
       statEffects: { mood: 10, energy: -15 },
     },
   ],
-  // University locations
   University: [
     {
       name: "Check Schedule",
@@ -271,6 +270,24 @@ export const locationActivities: Record<string, LocationActivity[]> = {
       description: "Take a breather in your car",
       timeCost: 1,
       statEffects: { mood: 5, energy: 10 },
+    },
+  ],
+  "Strip Club": [
+    {
+      name: "Watch Show",
+      icon: "💃",
+      description: "Watch the performers",
+      timeCost: 2,
+      statEffects: { mood: 10, energy: -10, money: -50 },
+      requirements: { minMoney: 50 },
+    },
+    {
+      name: "Have a Drink",
+      icon: "🍸",
+      description: "Relax with a drink at the bar",
+      timeCost: 1,
+      statEffects: { mood: 5, energy: -5, money: -20 },
+      requirements: { minMoney: 20 },
     },
   ],
 };

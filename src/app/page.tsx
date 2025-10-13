@@ -522,6 +522,7 @@ export default function GamePage() {
                 setPlayer={setPlayer}
                 spendTime={spendTime}
                 darkMode={darkMode}
+                dayOfWeek={dayOfWeek}
               />
             </div>
           )}

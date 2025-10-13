@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { PlayerStats } from "../data/characters";
 import { Girl } from "../data/characters";
-
+import { DayOfWeek } from "../data/gameConstants";
 
 interface Props {
   player: PlayerStats;
@@ -11,6 +11,7 @@ interface Props {
   onClose: () => void;
   onSave?: () => void;
   isMobile?: boolean;
+  dayOfWeek?: DayOfWeek;
 }
 
 type PhoneTab = "stats" | "contacts" | "gallery" | "messages";
@@ -23,6 +24,7 @@ export default function PhoneMenu({
   onClose,
   onSave,
   isMobile = false,
+  dayOfWeek,
 }: Props) {
   const [activeTab, setActiveTab] = useState<PhoneTab>("stats");
 
