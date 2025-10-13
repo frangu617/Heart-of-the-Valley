@@ -30,7 +30,6 @@ import {
 } from "../data/gameConstants";
 import {
   locationDescriptions,
-  locationHotspots,
   getTimeOfDay,
   getQuickActions,
 } from "../data/locationDescriptions";
@@ -483,7 +482,7 @@ export default function GamePage() {
                   )}
                 </div>
 
-                {/* Interactive Hotspots */}
+                Interactive Hotspots
                 {locationHotspots[currentLocation]?.map((hotspot) => (
                   <button
                     key={hotspot.id}

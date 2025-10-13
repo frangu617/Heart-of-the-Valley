@@ -2,6 +2,7 @@ import { useState } from "react";
 import { PlayerStats } from "../data/characters";
 import { Girl } from "../data/characters";
 import { DayOfWeek } from "../data/gameConstants";
+import { getQuickActions } from "../data/locationDescriptions";
 
 interface Props {
   player: PlayerStats;
@@ -12,9 +13,11 @@ interface Props {
   onSave?: () => void;
   isMobile?: boolean;
   dayOfWeek?: DayOfWeek;
+  currentLocation?: string;
+  onNavigate?: (location: string) => void;
 }
 
-type PhoneTab = "stats" | "contacts" | "gallery" | "messages";
+type PhoneTab = "stats" | "contacts" | "gallery" | "messages" | "suggestions";
 
 export default function PhoneMenu({
   player,
@@ -25,6 +28,8 @@ export default function PhoneMenu({
   onSave,
   isMobile = false,
   dayOfWeek,
+  currentLocation = "Bedroom",
+  onNavigate,
 }: Props) {
   const [activeTab, setActiveTab] = useState<PhoneTab>("stats");
 
@@ -184,6 +189,92 @@ export default function PhoneMenu({
                 >
                   💾 Quick Save
                 </button>
+              )}
+            </div>
+          )}
+
+          {/* Suggestions Tab */}
+          {activeTab === "suggestions" && (
+            <div className="space-y-4 animate-slideUp">
+              <h3
+                className={`text-lg font-bold ${
+                  darkMode ? "text-gray-200" : "text-gray-800"
+                }`}
+              >
+                💡 Suggestions
+              </h3>
+
+              <p
+                className={`text-sm ${
+                  darkMode ? "text-gray-400" : "text-gray-600"
+                }`}
+              >
+                Based on your current situation, here's what you might want to
+                do:
+              </p>
+
+              {getQuickActions(currentLocation, hour, player).length > 0 ? (
+                <div className="space-y-3">
+                  {getQuickActions(currentLocation, hour, player).map(
+                    (action, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          if (
+                            onNavigate &&
+                            action.location !== currentLocation
+                          ) {
+                            onNavigate(action.location);
+                            onClose();
+                          }
+                        }}
+                        className={`
+                          w-full text-left p-4 rounded-xl transition-all duration-200 border-2
+                          ${
+                            darkMode
+                              ? "bg-gray-800 border-purple-700 hover:border-purple-500"
+                              : "bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200 hover:border-purple-400"
+                          }
+                          transform hover:scale-102 shadow-md hover:shadow-lg
+                        `}
+                      >
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="text-3xl">{action.icon}</div>
+                          <div className="flex-1">
+                            <div
+                              className={`font-bold ${
+                                darkMode ? "text-gray-200" : "text-gray-800"
+                              }`}
+                            >
+                              {action.label}
+                            </div>
+                            <div
+                              className={`text-xs ${
+                                darkMode ? "text-gray-400" : "text-gray-600"
+                              }`}
+                            >
+                              📍 {action.location}
+                            </div>
+                          </div>
+                          <div className="text-purple-500">→</div>
+                        </div>
+                      </button>
+                    )
+                  )}
+                </div>
+              ) : (
+                <div
+                  className={`
+                    text-center py-12
+                    ${darkMode ? "text-gray-500" : "text-gray-400"}
+                  `}
+                >
+                  <div className="text-6xl mb-4">✨</div>
+                  <p>You're doing great!</p>
+                  <p className="text-sm mt-2">
+                    No urgent suggestions right now
+                  </p>
+                </div>
               )}
             </div>
           )}
@@ -406,7 +497,7 @@ export default function PhoneMenu({
           <button
             onClick={() => setActiveTab("stats")}
             className={`
-              flex-1 py-3 px-2 rounded-lg transition-all
+              flex-1 py-3 px-1 rounded-lg transition-all
               ${
                 activeTab === "stats"
                   ? darkMode
@@ -418,14 +509,33 @@ export default function PhoneMenu({
               }
             `}
           >
-            <div className="text-2xl">📊</div>
-            <div className="text-xs">Stats</div>
+            <div className="text-xl">📊</div>
+            <div className="text-[10px]">Stats</div>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("suggestions")}
+            className={`
+              flex-1 py-3 px-1 rounded-lg transition-all
+              ${
+                activeTab === "suggestions"
+                  ? darkMode
+                    ? "bg-purple-700 text-white"
+                    : "bg-purple-500 text-white"
+                  : darkMode
+                  ? "text-gray-400 hover:bg-gray-700"
+                  : "text-gray-600 hover:bg-gray-200"
+              }
+            `}
+          >
+            <div className="text-xl">💡</div>
+            <div className="text-[10px]">Tips</div>
           </button>
 
           <button
             onClick={() => setActiveTab("contacts")}
             className={`
-              flex-1 py-3 px-2 rounded-lg transition-all
+              flex-1 py-3 px-1 rounded-lg transition-all
               ${
                 activeTab === "contacts"
                   ? darkMode
@@ -437,14 +547,14 @@ export default function PhoneMenu({
               }
             `}
           >
-            <div className="text-2xl">👥</div>
-            <div className="text-xs">Contacts</div>
+            <div className="text-xl">👥</div>
+            <div className="text-[10px]">Contacts</div>
           </button>
 
           <button
             onClick={() => setActiveTab("gallery")}
             className={`
-              flex-1 py-3 px-2 rounded-lg transition-all
+              flex-1 py-3 px-1 rounded-lg transition-all
               ${
                 activeTab === "gallery"
                   ? darkMode
@@ -456,14 +566,14 @@ export default function PhoneMenu({
               }
             `}
           >
-            <div className="text-2xl">📷</div>
-            <div className="text-xs">Gallery</div>
+            <div className="text-xl">📷</div>
+            <div className="text-[10px]">Gallery</div>
           </button>
 
           <button
             onClick={() => setActiveTab("messages")}
             className={`
-              flex-1 py-3 px-2 rounded-lg transition-all
+              flex-1 py-3 px-1 rounded-lg transition-all
               ${
                 activeTab === "messages"
                   ? darkMode
@@ -475,8 +585,8 @@ export default function PhoneMenu({
               }
             `}
           >
-            <div className="text-2xl">💬</div>
-            <div className="text-xs">Messages</div>
+            <div className="text-xl">💬</div>
+            <div className="text-[10px]">Messages</div>
           </button>
         </div>
       </div>
