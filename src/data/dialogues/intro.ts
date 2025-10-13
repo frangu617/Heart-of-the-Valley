@@ -11,7 +11,7 @@ export const introDialogue: Dialogue = {
     {
       speaker: null,
       text: "You are Frank, 32 years old. Programming professor at the local university.",
-      imageSlide: "/images/intro/frank_mirror.png",
+      // imageSlide: "/images/intro/frank_mirror.png",
     },
     {
       speaker: null,
@@ -21,7 +21,7 @@ export const introDialogue: Dialogue = {
     {
       speaker: null,
       text: "Romance? You've decided it's simply... inefficient.",
-      imageSlide: "/images/intro/frank_alone.png",
+      // imageSlide: "/images/intro/frank_alone.png",
     },
     {
       speaker: null,

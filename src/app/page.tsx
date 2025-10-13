@@ -8,6 +8,7 @@ import MainMenu from "../components/MainMenu";
 import PauseMenu from "../components/PauseMenu";
 import DialogueBox from "../components/DialogueBox";
 import { locationGraph } from "../data/locations";
+import PhoneMenu from "@/components/PhoneMenu";
 import {
   PlayerStats,
   defaultPlayerStats,
