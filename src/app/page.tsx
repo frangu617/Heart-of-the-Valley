@@ -322,31 +322,35 @@ export default function GamePage() {
           darkMode
             ? "bg-gradient-to-r from-purple-900 to-pink-900"
             : "bg-gradient-to-r from-pink-500 to-purple-600"
-        } text-white py-6 shadow-lg transition-colors duration-300`}
+        } text-white py-4 md:py-6 shadow-lg transition-colors duration-300`}
       >
         <div className="container mx-auto px-4 flex justify-between items-center">
-          <h1 className="text-4xl font-bold">💖 Dating Sim Adventure</h1>
+          <h1 className="text-2xl md:text-4xl font-bold">
+            {isMobile ? "💖 Dating Sim" : "💖 Dating Sim Adventure"}
+          </h1>
           <div className="flex gap-2 items-center">
-            {/* Phone Button */}
+            {/* Phone Button - More prominent on mobile */}
             <button
               onClick={() => setShowPhone(true)}
-              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2"
+              className={`bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${
+                isMobile ? "animate-pulse" : ""
+              }`}
               title="Open phone"
             >
               <span className="text-xl">📱</span>
-              <span className="hidden md:inline">Phone</span>
+              <span className="hidden sm:inline">Phone</span>
             </button>
             {/* Dark Mode Toggle */}
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2"
+              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2"
               title="Toggle dark mode"
             >
               <span className="text-xl">{darkMode ? "☀️" : "🌙"}</span>
             </button>
             <button
               onClick={() => setGameState("paused")}
-              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2"
+              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2"
             >
               <span>⏸️</span>
               <span className="hidden md:inline">Menu</span>
@@ -355,23 +359,29 @@ export default function GamePage() {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-2 md:px-4 py-4 md:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Sidebar - Stats */}
-          <div className="lg:col-span-2">
-            <StatsPanel
-              stats={player}
-              hour={hour}
-              dayOfWeek={dayOfWeek}
-              darkMode={darkMode}
-              onSave={saveGame}
-            />
-          </div>
+          {/* Left Sidebar - Stats (Hidden on Mobile) */}
+          {!isMobile && (
+            <div className="lg:col-span-2">
+              <StatsPanel
+                stats={player}
+                hour={hour}
+                dayOfWeek={dayOfWeek}
+                darkMode={darkMode}
+                onSave={saveGame}
+              />
+            </div>
+          )}
 
           {/* Main Content - Center */}
           <div
             className={`${
-              selectedGirl !== null ? "lg:col-span-7" : "lg:col-span-7"
+              isMobile
+                ? "col-span-1"
+                : selectedGirl !== null
+                ? "lg:col-span-7"
+                : "lg:col-span-7"
             } space-y-6`}
           >
             {/* Current Location Scene with Characters */}
@@ -382,7 +392,7 @@ export default function GamePage() {
                   : "bg-white border-purple-200"
               } transition-colors duration-300`}
             >
-              <div className="relative h-[500px] md:h-[600px] bg-gradient-to-b from-purple-100 to-white">
+              <div className="relative h-[400px] md:h-[500px] lg:h-[600px] bg-gradient-to-b from-purple-100 to-white">
                 {/* Location Background Image */}
                 <img
                   src={`/images/${getCurrentLocationImage()}`}
@@ -394,14 +404,14 @@ export default function GamePage() {
                 <div className="absolute inset-0 bg-black/20"></div>
 
                 {/* Location Name */}
-                <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-lg">
-                  <h2 className="text-2xl font-bold text-white drop-shadow-lg">
+                <div className="absolute top-2 md:top-4 left-2 md:left-4 bg-black/60 backdrop-blur-sm px-3 md:px-4 py-1 md:py-2 rounded-lg">
+                  <h2 className="text-lg md:text-2xl font-bold text-white drop-shadow-lg">
                     📍 {currentLocation}
                   </h2>
                 </div>
 
                 {/* Character Portraits on Scene */}
-                <div className="absolute inset-0 flex items-end justify-around px-8 pb-12">
+                <div className="absolute inset-0 flex items-end justify-around px-4 md:px-8 pb-8 md:pb-12">
                   {presentGirls.map((girl: Girl, index: number) => {
                     return (
                       <button
@@ -421,11 +431,11 @@ export default function GamePage() {
                         }}
                       >
                         {/* Shadow underneath character */}
-                        <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-4 bg-black/30 rounded-full blur-md"></div>
+                        <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-24 sm:w-32 h-3 sm:h-4 bg-black/30 rounded-full blur-md"></div>
 
                         {/* Glow effect when selected */}
                         {selectedGirl?.name === girl.name && (
-                          <div className="absolute inset-0 bg-gradient-to-t from-pink-500 to-purple-500 rounded-3xl blur-2xl opacity-60 animate-pulse"></div>
+                          <div className="absolute inset-0 bg-gradient-to-t from-pink-500 to-purple-500 rounded-3xl blur-xl sm:blur-2xl opacity-60 animate-pulse"></div>
                         )}
 
                         {/* Character Image - Full body style */}
@@ -438,7 +448,7 @@ export default function GamePage() {
                                 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="%23e879f9" width="200" height="300"/><text x="50%" y="50%" font-size="60" text-anchor="middle" dy=".3em" fill="white">?</text></svg>';
                             }}
                             className={`
-                              w-40 h-60 md:w-48 md:h-72 object-cover object-top rounded-3xl
+                              w-32 h-48 sm:w-40 sm:h-60 md:w-48 md:h-72 object-cover object-top rounded-3xl
                               ${
                                 selectedGirl?.name === girl.name
                                   ? "border-4 border-pink-400 shadow-2xl shadow-pink-500/50"
@@ -454,22 +464,24 @@ export default function GamePage() {
                           />
 
                           {/* Name Tag - positioned at bottom */}
-                          <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-pink-500 to-purple-500 px-5 py-2 rounded-full shadow-xl border-2 border-white">
-                            <span className="text-white font-bold text-sm whitespace-nowrap drop-shadow-lg">
+                          <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-pink-500 to-purple-500 px-3 sm:px-5 py-1 sm:py-2 rounded-full shadow-xl border-2 border-white">
+                            <span className="text-white font-bold text-xs sm:text-sm whitespace-nowrap drop-shadow-lg">
                               {girl.name}
                             </span>
                           </div>
 
                           {/* Selection indicator */}
                           {selectedGirl?.name === girl.name && (
-                            <div className="absolute -top-3 -right-3 bg-gradient-to-br from-pink-400 to-pink-600 rounded-full p-2 shadow-xl animate-bounce border-2 border-white">
-                              <span className="text-white text-2xl">💝</span>
+                            <div className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 bg-gradient-to-br from-pink-400 to-pink-600 rounded-full p-1 sm:p-2 shadow-xl animate-bounce border-2 border-white">
+                              <span className="text-white text-lg sm:text-2xl">
+                                💝
+                              </span>
                             </div>
                           )}
 
                           {/* Hover prompt */}
-                          <div className="absolute top-2 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full">
-                            <span className="text-white text-xs font-semibold">
+                          <div className="absolute top-1 sm:top-2 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/70 backdrop-blur-sm px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
+                            <span className="text-white text-[10px] sm:text-xs font-semibold">
                               Click to talk
                             </span>
                           </div>
@@ -482,8 +494,8 @@ export default function GamePage() {
                 {/* Empty state message */}
                 {presentGirls.length === 0 && (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-black/60 backdrop-blur-sm px-8 py-4 rounded-2xl">
-                      <p className="text-white text-xl text-center">
+                    <div className="bg-black/60 backdrop-blur-sm px-4 md:px-8 py-3 md:py-4 rounded-2xl">
+                      <p className="text-white text-lg md:text-xl text-center">
                         🏜️ Nobody is here right now...
                       </p>
                     </div>
@@ -494,20 +506,20 @@ export default function GamePage() {
 
             {/* Available Locations */}
             <div
-              className={`rounded-2xl shadow-xl p-6 border-2 ${
+              className={`rounded-2xl shadow-xl p-4 md:p-6 border-2 ${
                 darkMode
                   ? "bg-gray-800 border-purple-700"
                   : "bg-white border-purple-100"
               } transition-colors duration-300`}
             >
               <h3
-                className={`text-2xl font-bold mb-4 ${
+                className={`text-xl md:text-2xl font-bold mb-3 md:mb-4 ${
                   darkMode ? "text-purple-300" : "text-purple-800"
                 }`}
               >
                 🗺️ Where to go?
               </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                 {locationGraph[currentLocation]?.map((loc) => (
                   <LocationCard
                     key={loc.name}
@@ -523,7 +535,7 @@ export default function GamePage() {
 
           {/* Right Sidebar - Character Interaction or Location Activities */}
           {selectedGirl !== null ? (
-            <div className="lg:col-span-3">
+            <div className={`${isMobile ? "col-span-1" : "lg:col-span-3"}`}>
               <CharacterOverlay
                 girl={selectedGirl}
                 location={currentLocation}
@@ -535,7 +547,7 @@ export default function GamePage() {
               />
             </div>
           ) : (
-            <div className="lg:col-span-3">
+            <div className={`${isMobile ? "col-span-1" : "lg:col-span-3"}`}>
               <LocationActivities
                 location={currentLocation}
                 player={player}
