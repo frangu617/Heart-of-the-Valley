@@ -47,6 +47,8 @@ export default function GamePage() {
     useState<Partial<GirlStats> | null>(null);
   const [dialogueGirlName, setDialogueGirlName] = useState<string>("");
   const [metCharacters, setMetCharacters] = useState<Set<string>>(new Set());
+  const [showPhone, setShowPhone] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
 
   // Check for save data and dark mode preference on mount
   useEffect(() => {
@@ -57,6 +59,14 @@ export default function GamePage() {
     if (savedDarkMode !== null) {
       setDarkMode(savedDarkMode === "true");
     }
+
+    // Check if device is mobile
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   // Apply dark mode to document
@@ -317,6 +327,15 @@ export default function GamePage() {
         <div className="container mx-auto px-4 flex justify-between items-center">
           <h1 className="text-4xl font-bold">💖 Dating Sim Adventure</h1>
           <div className="flex gap-2 items-center">
+            {/* Phone Button */}
+            <button
+              onClick={() => setShowPhone(true)}
+              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2"
+              title="Open phone"
+            >
+              <span className="text-xl">📱</span>
+              <span className="hidden md:inline">Phone</span>
+            </button>
             {/* Dark Mode Toggle */}
             <button
               onClick={() => setDarkMode(!darkMode)}
@@ -549,6 +568,20 @@ export default function GamePage() {
           onComplete={endDialogue}
           darkMode={darkMode}
           characterImage={dialogueCharacterImage}
+        />
+      )}
+
+      {/* Phone Menu Overlay */}
+      {showPhone && (
+        <PhoneMenu
+          player={player}
+          hour={hour}
+          girls={girls}
+          darkMode={darkMode}
+          onClose={() => setShowPhone(false)}
+          onSave={saveGame}
+          isMobile={isMobile}
+          dayOfWeek={dayOfWeek}
         />
       )}
     </div>
