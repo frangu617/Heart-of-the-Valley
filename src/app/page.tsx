@@ -28,6 +28,13 @@ import {
   MAX_HOUR,
   getNextDay,
 } from "../data/gameConstants";
+import {
+  locationDescriptions,
+  locationHotspots,
+  getTimeOfDay,
+  getQuickActions,
+} from "../data/locationDescriptions";
+import { locationActivities } from "../data/LocationActivities";
 
 type GameState = "mainMenu" | "intro" | "playing" | "paused" | "dialogue";
 
@@ -49,6 +56,8 @@ export default function GamePage() {
   const [metCharacters, setMetCharacters] = useState<Set<string>>(new Set());
   const [showPhone, setShowPhone] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [showMobileLocations, setShowMobileLocations] =
+    useState<boolean>(false);
 
   // Check for save data and dark mode preference on mount
   useEffect(() => {
@@ -392,7 +401,7 @@ export default function GamePage() {
                   : "bg-white border-purple-200"
               } transition-colors duration-300`}
             >
-              <div className="relative h-[400px] md:h-[500px] lg:h-[600px] bg-gradient-to-b from-purple-100 to-white">
+              <div className="relative h-[400px] md:h-[500px] lg:h-[600px] bg-gradient-to-b from-purple-100 to-white overflow-hidden">
                 {/* Location Background Image */}
                 <img
                   src={`/images/${getCurrentLocationImage()}`}
@@ -400,15 +409,122 @@ export default function GamePage() {
                   className="w-full h-full object-cover"
                 />
 
+                {/* Time-based Atmosphere Overlay */}
+                <div
+                  className={`absolute inset-0 pointer-events-none transition-all duration-1000 ${
+                    getTimeOfDay(hour) === "morning"
+                      ? "bg-gradient-to-b from-orange-300/30 via-transparent to-transparent"
+                      : getTimeOfDay(hour) === "afternoon"
+                      ? "bg-gradient-to-b from-yellow-200/20 via-transparent to-transparent"
+                      : getTimeOfDay(hour) === "evening"
+                      ? "bg-gradient-to-b from-purple-400/40 via-pink-300/20 to-transparent"
+                      : "bg-gradient-to-b from-indigo-900/60 via-purple-900/30 to-black/40"
+                  }`}
+                ></div>
+
+                {/* Floating Particles */}
+                <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                  {[...Array(8)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="absolute w-1 h-1 bg-white/30 rounded-full animate-float"
+                      style={{
+                        left: `${Math.random() * 100}%`,
+                        top: `${Math.random() * 100}%`,
+                        animationDelay: `${Math.random() * 5}s`,
+                        animationDuration: `${10 + Math.random() * 10}s`,
+                      }}
+                    ></div>
+                  ))}
+                </div>
+
                 {/* Dark overlay for better text/character visibility */}
                 <div className="absolute inset-0 bg-black/20"></div>
 
-                {/* Location Name */}
-                <div className="absolute top-2 md:top-4 left-2 md:left-4 bg-black/60 backdrop-blur-sm px-3 md:px-4 py-1 md:py-2 rounded-lg">
-                  <h2 className="text-lg md:text-2xl font-bold text-white drop-shadow-lg">
-                    📍 {currentLocation}
-                  </h2>
+                {/* Location Name & Description */}
+                <div className="absolute top-2 md:top-4 left-2 md:left-4 right-2 md:right-4 z-20">
+                  <div className="bg-black/60 backdrop-blur-sm px-3 md:px-4 py-2 md:py-3 rounded-lg">
+                    <h2 className="text-lg md:text-2xl font-bold text-white drop-shadow-lg mb-1">
+                      📍 {currentLocation}
+                    </h2>
+                    <p className="text-xs md:text-sm text-white/90 italic">
+                      {locationDescriptions[currentLocation]?.[
+                        getTimeOfDay(hour)
+                      ] || locationDescriptions[currentLocation]?.default}
+                    </p>
+                  </div>
                 </div>
+
+                {/* Quick Action Hub (Top Right) */}
+                <div className="absolute top-2 md:top-4 right-2 md:right-4 z-20 max-w-[200px]">
+                  {getQuickActions(currentLocation, hour, player).length >
+                    0 && (
+                    <div className="bg-black/60 backdrop-blur-sm rounded-lg p-2 md:p-3 space-y-1">
+                      <div className="text-[10px] md:text-xs text-white/70 font-semibold mb-1">
+                        💡 Suggestions
+                      </div>
+                      {getQuickActions(currentLocation, hour, player).map(
+                        (action, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => {
+                              if (action.location !== currentLocation) {
+                                moveTo(action.location);
+                              }
+                            }}
+                            className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-sm px-2 py-1 rounded text-left transition-all text-[10px] md:text-xs text-white"
+                          >
+                            <span className="mr-1">{action.icon}</span>
+                            {action.label}
+                          </button>
+                        )
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Interactive Hotspots */}
+                {locationHotspots[currentLocation]?.map((hotspot) => (
+                  <button
+                    key={hotspot.id}
+                    onClick={() => {
+                      // Find the activity and perform it
+                      const activity = locationActivities[
+                        currentLocation
+                      ]?.find((act) => act.name === hotspot.action);
+                      if (activity) {
+                        // Trigger the activity - you might want to create a helper function
+                        alert(
+                          `Quick action: ${hotspot.label}! (${hotspot.action})`
+                        );
+                      }
+                    }}
+                    className="absolute group z-10 transition-all duration-200 hover:scale-125"
+                    style={{
+                      left: hotspot.position.x,
+                      top: hotspot.position.y,
+                      transform: "translate(-50%, -50%)",
+                    }}
+                    title={hotspot.label}
+                  >
+                    <div className="relative">
+                      {/* Pulsing ring */}
+                      <div className="absolute inset-0 bg-yellow-400/50 rounded-full animate-ping"></div>
+                      {/* Icon */}
+                      <div className="relative bg-gradient-to-br from-yellow-400 to-orange-500 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+                        <span className="text-sm md:text-lg">
+                          {hotspot.icon}
+                        </span>
+                      </div>
+                      {/* Label on hover */}
+                      <div className="absolute top-full mt-1 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/80 backdrop-blur-sm px-2 py-1 rounded whitespace-nowrap">
+                        <span className="text-white text-[10px] md:text-xs font-semibold">
+                          {hotspot.label}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                ))}
 
                 {/* Character Portraits on Scene */}
                 <div className="absolute inset-0 flex items-end justify-around px-4 md:px-8 pb-8 md:pb-12">
@@ -505,32 +621,57 @@ export default function GamePage() {
             </div>
 
             {/* Available Locations */}
-            <div
-              className={`rounded-2xl shadow-xl p-4 md:p-6 border-2 ${
-                darkMode
-                  ? "bg-gray-800 border-purple-700"
-                  : "bg-white border-purple-100"
-              } transition-colors duration-300`}
-            >
-              <h3
-                className={`text-xl md:text-2xl font-bold mb-3 md:mb-4 ${
-                  darkMode ? "text-purple-300" : "text-purple-800"
-                }`}
+            {isMobile ? (
+              // Mobile: Compact button that opens modal
+              <div
+                className={`rounded-2xl shadow-xl p-4 border-2 ${
+                  darkMode
+                    ? "bg-gray-800 border-purple-700"
+                    : "bg-white border-purple-100"
+                } transition-colors duration-300`}
               >
-                🗺️ Where to go?
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-                {locationGraph[currentLocation]?.map((loc) => (
-                  <LocationCard
-                    key={loc.name}
-                    location={loc}
-                    onMove={moveTo}
-                    girls={girls}
-                    darkMode={darkMode}
-                  />
-                ))}
+                <button
+                  onClick={() => setShowMobileLocations(true)}
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center justify-between"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="text-2xl">🗺️</span>
+                    <span>Travel to...</span>
+                  </span>
+                  <span className="text-sm opacity-75">
+                    {locationGraph[currentLocation]?.length || 0} places
+                  </span>
+                </button>
               </div>
-            </div>
+            ) : (
+              // Desktop: Cards grid
+              <div
+                className={`rounded-2xl shadow-xl p-4 md:p-6 border-2 ${
+                  darkMode
+                    ? "bg-gray-800 border-purple-700"
+                    : "bg-white border-purple-100"
+                } transition-colors duration-300`}
+              >
+                <h3
+                  className={`text-xl md:text-2xl font-bold mb-3 md:mb-4 ${
+                    darkMode ? "text-purple-300" : "text-purple-800"
+                  }`}
+                >
+                  🗺️ Where to go?
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+                  {locationGraph[currentLocation]?.map((loc) => (
+                    <LocationCard
+                      key={loc.name}
+                      location={loc}
+                      onMove={moveTo}
+                      girls={girls}
+                      darkMode={darkMode}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right Sidebar - Character Interaction or Location Activities */}
@@ -595,6 +736,107 @@ export default function GamePage() {
           isMobile={isMobile}
           dayOfWeek={dayOfWeek}
         />
+      )}
+
+      {/* Mobile Location Menu Modal */}
+      {showMobileLocations && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end justify-center z-50 p-0 animate-fadeIn">
+          <div
+            className={`w-full max-h-[80vh] rounded-t-3xl shadow-2xl overflow-hidden ${
+              darkMode ? "bg-gray-900" : "bg-white"
+            } animate-slideUp`}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b-2 border-purple-200">
+              <h3
+                className={`text-xl font-bold ${
+                  darkMode ? "text-gray-200" : "text-gray-800"
+                }`}
+              >
+                🗺️ Travel Locations
+              </h3>
+              <button
+                onClick={() => setShowMobileLocations(false)}
+                className="bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition-all"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Locations List */}
+            <div className="overflow-y-auto max-h-[calc(80vh-80px)] p-4 space-y-3">
+              {locationGraph[currentLocation]?.map((loc) => {
+                const girlsHere = girls.filter(
+                  (girl) => girl.location === loc.name
+                );
+                return (
+                  <button
+                    key={loc.name}
+                    onClick={() => {
+                      moveTo(loc.name);
+                      setShowMobileLocations(false);
+                    }}
+                    className={`w-full text-left p-4 rounded-xl transition-all duration-200 border-2 ${
+                      darkMode
+                        ? "bg-gray-800 border-purple-700 hover:border-purple-500"
+                        : "bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200 hover:border-purple-400"
+                    } transform active:scale-95`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span
+                        className={`font-bold text-lg ${
+                          darkMode ? "text-gray-200" : "text-gray-800"
+                        }`}
+                      >
+                        {loc.name}
+                      </span>
+                      <div className="flex gap-2">
+                        {loc.cost > 0 && (
+                          <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                            ${loc.cost}
+                          </span>
+                        )}
+                        {loc.time > 0 && (
+                          <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                            {loc.time}h
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Character indicators */}
+                    {girlsHere.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {girlsHere.map((girl) => (
+                          <span
+                            key={girl.name}
+                            className={`text-xs px-2 py-1 rounded-full border ${
+                              darkMode
+                                ? "bg-pink-900/50 text-pink-300 border-pink-700"
+                                : "bg-pink-100 text-pink-700 border-pink-300"
+                            }`}
+                          >
+                            👥 {girl.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Description hint */}
+                    <p
+                      className={`text-xs mt-2 ${
+                        darkMode ? "text-gray-400" : "text-gray-600"
+                      }`}
+                    >
+                      {locationDescriptions[loc.name]?.default ||
+                        "Explore this location"}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
