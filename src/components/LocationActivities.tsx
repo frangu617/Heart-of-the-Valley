@@ -1,6 +1,7 @@
 import { PlayerStats } from "../data/characters";
 import { Dispatch, SetStateAction } from "react";
 import { LocationActivity, locationActivities } from "../data/LocationActivities";
+import { DayOfWeek } from "../data/gameConstants";
 
 interface Props {
   location: string;
