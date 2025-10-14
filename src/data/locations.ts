@@ -55,8 +55,8 @@ export const locationGraph: Record<string, Location[]> = {
   "University Hallway": [
     { name: "Classroom", cost: 0, time: 0, image: "classroom.png" },
     { name: "Office", cost: 0, time: 0, image: "office.png" },
-    { name: "Men's Bathroom", cost: 0, time: 0, image: "bathroom.png" },
-    { name: "Women's Bathroom", cost: 0, time: 0, image: "bathroom.png" },
+    { name: "Men's Bathroom", cost: 0, time: 0, image: "mens_bathroom.png" },
+    { name: "Women's Bathroom", cost: 0, time: 0, image: "womens_bathroom.png" },
     { name: "University", cost: 0, time: 0, image: "university.png" },
   ],
   Classroom: [

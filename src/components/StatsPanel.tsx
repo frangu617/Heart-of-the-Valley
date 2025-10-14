@@ -76,7 +76,7 @@ export default function StatsPanel({
 
   return (
     <div
-      className={`rounded-2xl shadow-xl p-6 space-y-4 border-2 sticky top-4 transition-colors duration-300 ${
+      className={`rounded-2xl shadow-xl p-6 space-y-4 border-2 sticky top-4 transition-colors duration-300 min-w-[180px] min-h-[600px] max-h-[calc(100vh-2rem)] overflow-y-auto ${
         darkMode
           ? "bg-gray-800 border-purple-700"
           : "bg-white border-purple-100"

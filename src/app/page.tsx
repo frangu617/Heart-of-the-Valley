@@ -11,12 +11,11 @@ import DialogueBox from "../components/DialogueBox";
 import { locationGraph } from "../data/locations";
 import PhoneMenu from "@/components/PhoneMenu";
 import { getScheduledLocation } from "@/lib/schedule";
-import { characterSchedules } from "@/data/characterSchedules";
 import {
   PlayerStats,
   defaultPlayerStats,
   Girl,
-  girls,
+  girls as baseGirls,
   GirlStats,
 } from "../data/characters";
 import {
@@ -58,6 +57,21 @@ export default function GamePage() {
   const [metCharacters, setMetCharacters] = useState<Set<string>>(new Set());
   const [showPhone, setShowPhone] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
+
+  // 🔥 NEW: Compute girls with current locations based on schedule
+  const girls = useMemo(() => {
+    return baseGirls.map((girl) => {
+      const scheduledLocation = getScheduledLocation(
+        girl.name,
+        dayOfWeek,
+        hour
+      );
+      return {
+        ...girl,
+        location: scheduledLocation || girl.location, // Fallback to base location if no schedule
+      };
+    });
+  }, [dayOfWeek, hour]); // Recompute when time changes
 
   // Check for save data and dark mode preference on mount
   useEffect(() => {
@@ -108,6 +122,7 @@ export default function GamePage() {
       currentLocation,
       hour,
       dayOfWeek,
+      metCharacters: Array.from(metCharacters), // Save met characters
       timestamp: new Date().toISOString(),
     };
     localStorage.setItem("datingSimSave", JSON.stringify(saveData));
@@ -123,6 +138,7 @@ export default function GamePage() {
       setCurrentLocation(saveData.currentLocation);
       setHour(saveData.hour);
       setDayOfWeek(saveData.dayOfWeek || START_DAY);
+      setMetCharacters(new Set(saveData.metCharacters || [])); // Load met characters
       setSelectedGirl(null);
       setGameState("playing");
     }
@@ -148,6 +164,7 @@ export default function GamePage() {
     setHour(START_HOUR);
     setDayOfWeek(START_DAY);
     setSelectedGirl(null);
+    setMetCharacters(new Set());
     localStorage.removeItem("datingSimSave");
     setHasSaveData(false);
 
@@ -363,10 +380,10 @@ export default function GamePage() {
       </header>
 
       <div className="container mx-auto px-2 md:px-4 py-4 md:py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(180px,200px)_1fr_minmax(250px,300px)]  gap-6">
           {/* Left Sidebar - Stats (Hidden on Mobile) */}
           {!isMobile && (
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 min-w-0">
               <StatsPanel
                 stats={player}
                 hour={hour}
@@ -385,7 +402,7 @@ export default function GamePage() {
                 : selectedGirl !== null
                 ? "lg:col-span-7"
                 : "lg:col-span-7"
-            } space-y-6`}
+            } space-y-6 min-w-0`}
           >
             {/* Current Location Scene with Characters */}
             <div
@@ -395,7 +412,7 @@ export default function GamePage() {
                   : "bg-white border-purple-200"
               } transition-colors duration-300`}
             >
-              <div className="relative h-[400px] md:h-[500px] lg:h-[600px] bg-gradient-to-b from-purple-100 to-white overflow-hidden">
+              <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-purple-100 to-white overflow-hidden">
                 {/* Location Background Image */}
                 <img
                   src={`/images/${getCurrentLocationImage()}`}
@@ -434,7 +451,7 @@ export default function GamePage() {
                 </div>
 
                 {/* Character Portraits on Scene */}
-                <div className="absolute inset-0 flex items-end justify-around px-4 md:px-8 pb-8 md:pb-12">
+                <div className="absolute inset-0 flex items-end justify-around px-4 md:px-8 pb-8 md:pb-0">
                   {presentGirls.map((girl: Girl, index: number) => {
                     return (
                       <button
