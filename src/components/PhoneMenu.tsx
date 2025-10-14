@@ -209,7 +209,7 @@ export default function PhoneMenu({
                   darkMode ? "text-gray-400" : "text-gray-600"
                 }`}
               >
-                Based on your current situation, here's what you might want to
+                Based on your current situation, here&apos;s what you might want to
                 do:
               </p>
 
@@ -270,7 +270,7 @@ export default function PhoneMenu({
                   `}
                 >
                   <div className="text-6xl mb-4">✨</div>
-                  <p>You're doing great!</p>
+                  <p>You&apos;re doing great!</p>
                   <p className="text-sm mt-2">
                     No urgent suggestions right now
                   </p>

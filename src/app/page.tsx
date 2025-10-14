@@ -14,7 +14,7 @@ import { getScheduledLocation } from "@/lib/schedule";
 import { getCharacterImage } from "@/lib/characterImages";
 import {
   getLocationBackground,
-  getAtmosphereOverlay,
+  // getAtmosphereOverlay,
 } from "@/lib/locationImages";
 import {
   PlayerStats,
@@ -263,6 +263,13 @@ const loadGame = () => {
     setDialogueGirlName("");
 
     setGameState("playing");
+  };
+
+  const returnToMainMenu = () => {
+    if (confirm("Return to main menu? Any unsaved progress will be lost.")) {
+      setGameState("mainMenu");
+      setSelectedGirl(null);
+    }
   };
 
   const moveTo = (location: string) => {

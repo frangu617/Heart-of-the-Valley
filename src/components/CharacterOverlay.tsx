@@ -97,7 +97,7 @@ export default function CharacterOverlay({
     // Show what stats will change
     if (action.girlEffects) {
       const changes = Object.entries(action.girlEffects)
-        .filter(([_, value]) => value !== 0)
+        .filter(([_key, value]) => value !== 0)
         .map(([key, value]) => {
           const emoji =
             key === "affection"

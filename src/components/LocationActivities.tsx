@@ -1,19 +1,17 @@
 import React from "react";
 import { PlayerStats } from "../data/characters";
 import { DayOfWeek } from "../data/gameConstants";
-
-// ⬇️ Choose the ONE import that matches where your data map actually lives.
-// If your map is in /data:
-import { locationActivities as activitiesMap } from "../data/LocationActivities";
-// If your map is in /components (comment the line above and uncomment below):
-// import { LocationActivities as activitiesMap } from "../components/LocationActivities";
+import {
+  locationActivities as activitiesMap,
+  LocationActivity as ImportedActivity,
+} from "../data/LocationActivities";
 
 export type LocationActivity = {
   id?: string;
   name: string;
   desc?: string;
-  timeCost?: number; // hours it consumes
-  icon?: string; // emoji/icon
+  timeCost?: number;
+  icon?: string;
   perform?: (player: PlayerStats, ctx: { dayOfWeek: DayOfWeek }) => PlayerStats;
 };
 
@@ -34,9 +32,7 @@ export default function LocationActivitiesPanel({
   darkMode,
   dayOfWeek,
 }: Props) {
-  // support both naming styles: LocationActivities / locationActivities
-  const activities: LocationActivity[] =
-    (activitiesMap as any)[location] ?? activitiesMap?.[location] ?? [];
+  const activities: LocationActivity[] = activitiesMap[location] ?? [];
 
   if (!activities || activities.length === 0) {
     return (
@@ -60,10 +56,9 @@ export default function LocationActivitiesPanel({
   }
 
   const doActivity = (act: LocationActivity) => {
-    // Get the activity from the original data with full type info
-    const fullActivity = (activitiesMap as any)[location]?.find(
-      (a: any) => a.name === act.name
-    );
+    const fullActivity = activitiesMap[location]?.find(
+      (a: ImportedActivity) => a.name === act.name
+    ) as ImportedActivity | undefined;
 
     // Check requirements
     if (fullActivity?.requirements) {
@@ -88,18 +83,14 @@ export default function LocationActivitiesPanel({
     let next: PlayerStats;
 
     if (typeof act.perform === "function") {
-      // Use custom perform function if provided
       next = act.perform(player, { dayOfWeek });
     } else if (fullActivity?.statEffects) {
-      // Apply stat effects from the activity definition
       next = { ...player };
 
-      // Apply each stat effect
       Object.entries(fullActivity.statEffects).forEach(([key, value]) => {
         const statKey = key as keyof PlayerStats;
 
         if (statKey === "inventory") {
-          // Handle inventory separately if needed
           return;
         }
 
@@ -107,25 +98,20 @@ export default function LocationActivitiesPanel({
           const currentValue = next[statKey] as number;
           const newValue = currentValue + value;
 
-          // Clamp values based on stat type
           if (
             statKey === "energy" ||
             statKey === "mood" ||
             statKey === "hunger"
           ) {
-            // These cap at 0-100
             (next[statKey] as number) = Math.max(0, Math.min(100, newValue));
           } else if (statKey === "money") {
-            // Money can't go below 0
             (next[statKey] as number) = Math.max(0, newValue);
           } else {
-            // Intelligence, fitness, style - no upper cap in theory
             (next[statKey] as number) = Math.max(0, newValue);
           }
         }
       });
     } else {
-      // Default: just apply energy cost based on time
       next = {
         ...player,
         energy: Math.max(0, player.energy - (act.timeCost ?? 1) * 5),
@@ -135,20 +121,14 @@ export default function LocationActivitiesPanel({
     setPlayer(next);
     spendTime(act.timeCost ?? 1);
 
-    // Show feedback for significant stat changes
-    showActivityFeedback(fullActivity, next, player);
+    showActivityFeedback(fullActivity);
   };
 
-  const showActivityFeedback = (
-    activity: any,
-    newStats: PlayerStats,
-    oldStats: PlayerStats
-  ) => {
+  const showActivityFeedback = (activity: ImportedActivity | undefined) => {
     if (!activity?.statEffects) return;
 
     const changes: string[] = [];
 
-    // Check for positive changes to highlight
     if (
       activity.statEffects.intelligence &&
       activity.statEffects.intelligence > 0
@@ -168,9 +148,7 @@ export default function LocationActivitiesPanel({
       changes.push(`💸 -$${Math.abs(activity.statEffects.money)}`);
     }
 
-    // Show toast notification if there are meaningful changes
     if (changes.length > 0) {
-      // You could replace this with a toast notification library
       console.log(`✅ ${activity.name} completed!`, changes.join(", "));
     }
   };
@@ -193,11 +171,10 @@ export default function LocationActivitiesPanel({
 
       <div className="grid grid-cols-1 gap-2">
         {activities.map((act) => {
-          const fullActivity = (activitiesMap as any)[location]?.find(
-            (a: any) => a.name === act.name
-          );
+          const fullActivity = activitiesMap[location]?.find(
+            (a: ImportedActivity) => a.name === act.name
+          ) as ImportedActivity | undefined;
 
-          // Check if activity is disabled due to requirements
           const isDisabled =
             fullActivity?.requirements &&
             ((fullActivity.requirements.minEnergy &&
@@ -229,34 +206,38 @@ export default function LocationActivitiesPanel({
                   {act.name}
                 </span>
                 <div className="flex items-center gap-2">
-                  {/* Show stat gains */}
                   {fullActivity?.statEffects && (
                     <div className="flex gap-1 text-xs">
-                      {fullActivity.statEffects.intelligence > 0 && (
-                        <span className="text-blue-500">
-                          🧠+{fullActivity.statEffects.intelligence}
-                        </span>
-                      )}
-                      {fullActivity.statEffects.fitness > 0 && (
-                        <span className="text-green-500">
-                          🏋️+{fullActivity.statEffects.fitness}
-                        </span>
-                      )}
-                      {fullActivity.statEffects.style > 0 && (
-                        <span className="text-pink-500">
-                          💅+{fullActivity.statEffects.style}
-                        </span>
-                      )}
-                      {fullActivity.statEffects.money > 0 && (
-                        <span className="text-yellow-600">
-                          💰+${fullActivity.statEffects.money}
-                        </span>
-                      )}
-                      {fullActivity.statEffects.money < 0 && (
-                        <span className="text-red-500">
-                          💸${Math.abs(fullActivity.statEffects.money)}
-                        </span>
-                      )}
+                      {fullActivity.statEffects.intelligence &&
+                        fullActivity.statEffects.intelligence > 0 && (
+                          <span className="text-blue-500">
+                            🧠+{fullActivity.statEffects.intelligence}
+                          </span>
+                        )}
+                      {fullActivity.statEffects.fitness &&
+                        fullActivity.statEffects.fitness > 0 && (
+                          <span className="text-green-500">
+                            🏋️+{fullActivity.statEffects.fitness}
+                          </span>
+                        )}
+                      {fullActivity.statEffects.style &&
+                        fullActivity.statEffects.style > 0 && (
+                          <span className="text-pink-500">
+                            💅+{fullActivity.statEffects.style}
+                          </span>
+                        )}
+                      {fullActivity.statEffects.money &&
+                        fullActivity.statEffects.money > 0 && (
+                          <span className="text-yellow-600">
+                            💰+${fullActivity.statEffects.money}
+                          </span>
+                        )}
+                      {fullActivity.statEffects.money &&
+                        fullActivity.statEffects.money < 0 && (
+                          <span className="text-red-500">
+                            💸${Math.abs(fullActivity.statEffects.money)}
+                          </span>
+                        )}
                     </div>
                   )}
                   {act.timeCost ? (
@@ -267,7 +248,6 @@ export default function LocationActivitiesPanel({
               {act.desc && (
                 <div className="text-xs opacity-70 mt-0.5">{act.desc}</div>
               )}
-              {/* Show requirement warnings */}
               {isDisabled && fullActivity?.requirements && (
                 <div className="text-xs text-red-500 mt-1">
                   {fullActivity.requirements.minEnergy &&

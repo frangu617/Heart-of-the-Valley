@@ -130,7 +130,7 @@ export const locationDescriptions: Record<string, LocationDescription> = {
 export const getQuickActions = (
   location: string,
   hour: number,
-  player: any
+  player: { energy: number; hunger: number }
 ) => {
   const actions = [];
 
