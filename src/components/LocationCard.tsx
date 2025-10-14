@@ -33,7 +33,7 @@ export default function LocationCard({
         }`}
       >
         <img
-          src={`/images/${location.image}`}
+          src={`/images/locations/${location.name.toLowerCase()}/afternoon.png`}
           alt={location.name}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
         />

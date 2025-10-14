@@ -11,6 +11,11 @@ import DialogueBox from "../components/DialogueBox";
 import { locationGraph } from "../data/locations";
 import PhoneMenu from "@/components/PhoneMenu";
 import { getScheduledLocation } from "@/lib/schedule";
+import { getCharacterImage } from "@/lib/characterImages";
+import {
+  getLocationBackground,
+  getAtmosphereOverlay,
+} from "@/lib/locationImages";
 import {
   PlayerStats,
   defaultPlayerStats,
@@ -275,11 +280,7 @@ export default function GamePage() {
   };
 
   const getCurrentLocationImage = () => {
-    for (const locations of Object.values(locationGraph)) {
-      const found = locations.find((loc) => loc.name === currentLocation);
-      if (found) return found.image;
-    }
-    return "bedroom.png";
+    return getLocationBackground(currentLocation, hour);
   };
 
   const presentGirls = girls.filter(
@@ -471,21 +472,26 @@ export default function GamePage() {
                 </div>
 
                 {/* Character Portraits on Scene */}
-                <div className="absolute inset-0 flex items-end justify-around px-4 md:px-8 pb-8 md:pb-0">
+                <div className="absolute inset-0 flex items-end justify-around px-4 md:px-8 pb-8 md:pb-4">
                   {presentGirls.map((girl: Girl, index: number) => {
+                    const characterImagePath = getCharacterImage(
+                      girl,
+                      currentLocation
+                    );
+
                     return (
                       <button
                         key={girl.name}
                         onClick={() => setSelectedGirl(girl)}
                         className={`
-                          group relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-6
-                          ${
-                            selectedGirl?.name === girl.name
-                              ? "scale-105 -translate-y-6 z-20"
-                              : "z-10"
-                          }
-                          animate-fadeIn
-                        `}
+          group relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-6
+          ${
+            selectedGirl?.name === girl.name
+              ? "scale-105 -translate-y-6 z-20"
+              : "z-10"
+          }
+          animate-fadeIn
+        `}
                         style={{
                           animationDelay: `${index * 0.2}s`,
                         }}
@@ -501,26 +507,47 @@ export default function GamePage() {
                         {/* Character Image - Full body style */}
                         <div className="relative">
                           <img
-                            src={`/images/${girl.name.toLowerCase()}.png`}
+                            src={characterImagePath}
                             alt={girl.name}
                             onError={(e) => {
-                              e.currentTarget.src =
-                                'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="%23e879f9" width="200" height="300"/><text x="50%" y="50%" font-size="60" text-anchor="middle" dy=".3em" fill="white">?</text></svg>';
+                              // Smart fallback chain
+                              const currentSrc = e.currentTarget.src;
+                              const girlName = girl.name.toLowerCase();
+
+                              // Fallback hierarchy
+                              const fallbacks = [
+                                characterImagePath, // Already tried
+                                `/images/characters/${girlName}/casual_neutral.png`,
+                                `/images/${girlName}.png`, // Your old images
+                                'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="%23e879f9" width="200" height="300"/><text x="50%" y="50%" font-size="60" text-anchor="middle" dy=".3em" fill="white">?</text></svg>',
+                              ];
+
+                              // Find the next untried fallback
+                              for (const fallback of fallbacks) {
+                                if (
+                                  !currentSrc.includes(
+                                    fallback.split("/").pop() || ""
+                                  )
+                                ) {
+                                  e.currentTarget.src = fallback;
+                                  break;
+                                }
+                              }
                             }}
                             className={`
-                              w-32 h-48 sm:w-40 sm:h-60 md:w-48 md:h-72 object-cover object-top rounded-3xl
-                              ${
-                                selectedGirl?.name === girl.name
-                                  ? "border-4 border-pink-400 shadow-2xl shadow-pink-500/50"
-                                  : "border-4 border-white/80 shadow-2xl"
-                              }
-                              transition-all filter
-                              ${
-                                selectedGirl && selectedGirl.name !== girl.name
-                                  ? "brightness-75"
-                                  : "brightness-100"
-                              }
-                            `}
+              w-32 h-48 sm:w-40 sm:h-60 md:w-48 md:h-72 object-cover object-top rounded-3xl
+              ${
+                selectedGirl?.name === girl.name
+                  ? "border-4 border-pink-400 shadow-2xl shadow-pink-500/50"
+                  : "border-4 border-white/80 shadow-2xl"
+              }
+              transition-all filter
+              ${
+                selectedGirl && selectedGirl.name !== girl.name
+                  ? "brightness-75"
+                  : "brightness-100"
+              }
+            `}
                           />
 
                           {/* Name Tag - positioned at bottom */}
