@@ -380,7 +380,7 @@ export default function GamePage() {
       </header>
 
       <div className="container mx-auto px-2 md:px-4 py-4 md:py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(180px,200px)_1fr_minmax(250px,300px)]  gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12  gap-6">
           {/* Left Sidebar - Stats (Hidden on Mobile) */}
           {!isMobile && (
             <div className="lg:col-span-2 min-w-0">
@@ -412,6 +412,26 @@ export default function GamePage() {
                   : "bg-white border-purple-200"
               } transition-colors duration-300`}
             >
+              {/* Location Name & Description - Mobile (Outside frame) */}
+              <div className="block md:hidden px-3 py-3">
+                <h2
+                  className={`text-lg font-bold mb-1 ${
+                    darkMode ? "text-purple-300" : "text-purple-800"
+                  }`}
+                >
+                  📍 {currentLocation}
+                </h2>
+                <p
+                  className={`text-xs italic ${
+                    darkMode ? "text-gray-400" : "text-gray-600"
+                  }`}
+                >
+                  {locationDescriptions[currentLocation]?.[
+                    getTimeOfDay(hour)
+                  ] || locationDescriptions[currentLocation]?.default}
+                </p>
+              </div>
+
               <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-purple-100 to-white overflow-hidden">
                 {/* Location Background Image */}
                 <img
@@ -436,8 +456,8 @@ export default function GamePage() {
                 {/* Dark overlay for better text/character visibility */}
                 <div className="absolute inset-0 bg-black/20"></div>
 
-                {/* Location Name & Description */}
-                <div className="absolute top-2 md:top-4 left-2 md:left-4 right-2 md:right-4 z-20">
+                {/* Location Name & Description - Desktop (Inside frame) */}
+                <div className="hidden md:block absolute top-2 md:top-4 left-2 md:left-4 right-2 md:right-4 z-20">
                   <div className="bg-black/60 backdrop-blur-sm px-3 md:px-4 py-2 md:py-3 rounded-lg">
                     <h2 className="text-lg md:text-2xl font-bold text-white drop-shadow-lg mb-1">
                       📍 {currentLocation}
