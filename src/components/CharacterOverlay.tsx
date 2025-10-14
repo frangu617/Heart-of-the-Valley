@@ -92,7 +92,29 @@ export default function CharacterOverlay({
     const dialogue =
       characterDialogues[girl.name]?.[action.label] ||
       getDefaultDialogue(girl.name, action.label);
-    const characterImage = `/images/faces/${girl.name.toLowerCase()}/${getFacialExpression()}.png`;
+    const characterImage = `/images/characters${girl.name.toLowerCase()}/faces/${getFacialExpression()}.png`;
+
+    // Show what stats will change
+    if (action.girlEffects) {
+      const changes = Object.entries(action.girlEffects)
+        .filter(([_, value]) => value !== 0)
+        .map(([key, value]) => {
+          const emoji =
+            key === "affection"
+              ? "💕"
+              : key === "lust"
+              ? "🔥"
+              : key === "trust"
+              ? "🤝"
+              : key === "mood"
+              ? "😊"
+              : "💖";
+          return `${emoji} ${value > 0 ? "+" : ""}${value}`;
+        })
+        .join(", ");
+
+      console.log(`✨ ${action.label} with ${girl.name}: ${changes}`);
+    }
 
     onStartDialogue(dialogue, characterImage, action.girlEffects);
   };
@@ -167,11 +189,11 @@ export default function CharacterOverlay({
         <div className="relative group mb-4">
           <div className="absolute inset-0 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full blur-lg group-hover:blur-xl transition-all"></div>
           <img
-            src={`/images/faces/${girl.name.toLowerCase()}/${expression}.png`}
+            src={`/images/characters/${girl.name.toLowerCase()}/faces/${expression}.png`}
             alt={`${girl.name} - ${expression}`}
             onError={(e) => {
               // Fallback to neutral if expression image doesn't exist
-              e.currentTarget.src = `/images/faces/${girl.name.toLowerCase()}/neutral.png`;
+              e.currentTarget.src = `neutral.png`;
               e.currentTarget.onerror = () => {
                 // Final fallback if no face images exist
                 e.currentTarget.src =

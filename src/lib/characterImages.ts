@@ -57,11 +57,12 @@ export function getCharacterImage(girl: Girl, location: string): string {
   const stance = getRelationshipStance(girl);
 
   // Try specific combination first
-  const specificImage = `/images/characters/${girlName}/${category}_${stance}.png`;
+  const specificImage = `/images/characters/${girlName}/${category}/${stance}.png`;
 
   // Fallback hierarchy
   const fallbacks = [
     specificImage,
+    `/images/characters/${girlName}/casual/${stance}.png`,
     `/images/characters/${girlName}/${category}_neutral.png`,
     `/images/characters/${girlName}/casual_${stance}.png`,
     `/images/characters/${girlName}/casual_neutral.png`,

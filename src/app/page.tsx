@@ -62,6 +62,9 @@ export default function GamePage() {
   const [metCharacters, setMetCharacters] = useState<Set<string>>(new Set());
   const [showPhone, setShowPhone] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [girlStatsOverrides, setGirlStatsOverrides] = useState<
+    Record<string, Partial<GirlStats>>
+  >({});
 
   // 🔥 NEW: Compute girls with current locations based on schedule
   const girls = useMemo(() => {
@@ -71,12 +74,20 @@ export default function GamePage() {
         dayOfWeek,
         hour
       );
+
+      // Apply any stat overrides for this girl
+      const statOverride = girlStatsOverrides[girl.name];
+      const mergedStats = statOverride
+        ? { ...girl.stats, ...statOverride }
+        : girl.stats;
+
       return {
         ...girl,
-        location: scheduledLocation || girl.location, // Fallback to base location if no schedule
+        location: scheduledLocation || girl.location,
+        stats: mergedStats, // Apply stat overrides
       };
     });
-  }, [dayOfWeek, hour]); // Recompute when time changes
+  }, [dayOfWeek, hour, girlStatsOverrides]); // Recompute when time or stats change
 
   // Check for save data and dark mode preference on mount
   useEffect(() => {
@@ -127,7 +138,8 @@ export default function GamePage() {
       currentLocation,
       hour,
       dayOfWeek,
-      metCharacters: Array.from(metCharacters), // Save met characters
+      metCharacters: Array.from(metCharacters),
+      girlStatsOverrides, // NEW: Save girl stats
       timestamp: new Date().toISOString(),
     };
     localStorage.setItem("datingSimSave", JSON.stringify(saveData));
@@ -135,19 +147,20 @@ export default function GamePage() {
     alert("Game saved! 💾");
   };
 
-  const loadGame = () => {
-    const savedGame = localStorage.getItem("datingSimSave");
-    if (savedGame) {
-      const saveData = JSON.parse(savedGame);
-      setPlayer(saveData.player);
-      setCurrentLocation(saveData.currentLocation);
-      setHour(saveData.hour);
-      setDayOfWeek(saveData.dayOfWeek || START_DAY);
-      setMetCharacters(new Set(saveData.metCharacters || [])); // Load met characters
-      setSelectedGirl(null);
-      setGameState("playing");
-    }
-  };
+const loadGame = () => {
+  const savedGame = localStorage.getItem("datingSimSave");
+  if (savedGame) {
+    const saveData = JSON.parse(savedGame);
+    setPlayer(saveData.player);
+    setCurrentLocation(saveData.currentLocation);
+    setHour(saveData.hour);
+    setDayOfWeek(saveData.dayOfWeek || START_DAY);
+    setMetCharacters(new Set(saveData.metCharacters || []));
+    setGirlStatsOverrides(saveData.girlStatsOverrides || {}); // NEW: Load girl stats
+    setSelectedGirl(null);
+    setGameState("playing");
+  }
+};
 
   const newGame = () => {
     if (hasSaveData) {
@@ -170,6 +183,7 @@ export default function GamePage() {
     setDayOfWeek(START_DAY);
     setSelectedGirl(null);
     setMetCharacters(new Set());
+    setGirlStatsOverrides({}); // NEW: Reset girl stats
     localStorage.removeItem("datingSimSave");
     setHasSaveData(false);
 
@@ -204,21 +218,43 @@ export default function GamePage() {
     affection?: number;
     mood?: number;
     trust?: number;
+    love?: number;
+    lust?: number;
   }) => {
-    // Apply stat changes from dialogue choices to the girl
-    if (statChanges && dialogueGirlName) {
-      const girlIndex = girls.findIndex(
+    // Apply stat changes to the girl
+    if (dialogueGirlName) {
+      const girl = girls.find(
         (g: Girl) => g.name.toLowerCase() === dialogueGirlName.toLowerCase()
       );
-      if (girlIndex !== -1) {
-        // In future: persist to girl state
-        console.log(`Stat changes for ${dialogueGirlName}:`, statChanges);
-      }
-    }
 
-    // Apply base girl effects from the interaction
-    if (dialogueGirlEffects && dialogueGirlName) {
-      console.log(`Base effects for ${dialogueGirlName}:`, dialogueGirlEffects);
+      if (girl) {
+        const currentOverride = girlStatsOverrides[dialogueGirlName] || {};
+        const currentStats = { ...girl.stats, ...currentOverride };
+
+        // Combine dialogue choices stat changes with base interaction effects
+        const combinedChanges = { ...dialogueGirlEffects, ...statChanges };
+
+        // Apply all stat changes
+        const newStats: Partial<GirlStats> = { ...currentStats };
+
+        Object.entries(combinedChanges).forEach(([key, value]) => {
+          if (typeof value === "number") {
+            const statKey = key as keyof GirlStats;
+            const currentValue = currentStats[statKey] || 0;
+            const newValue = Math.max(0, Math.min(100, currentValue + value));
+            newStats[statKey] = newValue;
+          }
+        });
+
+        // Update state with new stats
+        setGirlStatsOverrides((prev) => ({
+          ...prev,
+          [dialogueGirlName]: newStats,
+        }));
+
+        // Show feedback
+        console.log(`✅ ${dialogueGirlName} stat changes:`, combinedChanges);
+      }
     }
 
     setCurrentDialogue(null);
@@ -227,13 +263,6 @@ export default function GamePage() {
     setDialogueGirlName("");
 
     setGameState("playing");
-  };
-
-  const returnToMainMenu = () => {
-    if (confirm("Return to main menu? Any unsaved progress will be lost.")) {
-      setGameState("mainMenu");
-      setSelectedGirl(null);
-    }
   };
 
   const moveTo = (location: string) => {
@@ -247,7 +276,7 @@ export default function GamePage() {
         // Show first meeting dialogue
         const firstMeeting = firstMeetingDialogues[girl.name];
         if (firstMeeting) {
-          const characterImage = `/images/faces/${girl.name.toLowerCase()}/neutral.png`;
+          const characterImage = `/images/characters/${girl.name.toLowerCase()}/faces/neutral.png`;
           setMetCharacters(new Set([...metCharacters, girl.name]));
           startDialogue(firstMeeting, characterImage, null);
           break; // Only show one first meeting at a time
@@ -436,9 +465,22 @@ export default function GamePage() {
               <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-purple-100 to-white overflow-hidden">
                 {/* Location Background Image */}
                 <img
-                  src={`/images/${getCurrentLocationImage()}`}
+                  src={getCurrentLocationImage()} // ✅ CORRECT - path already included
                   alt={currentLocation}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // Fallback if time-specific image doesn't exist
+                    const locationKey = currentLocation
+                      .toLowerCase()
+                      .replace(/\s+/g, "_")
+                      .replace(/'/g, "");
+                    e.currentTarget.src = `/images/locations/${locationKey}/afternoon.png`;
+                    e.currentTarget.onerror = () => {
+                      // Final fallback
+                      e.currentTarget.src =
+                        'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23ccc" width="1920" height="1080"/><text x="50%" y="50%" font-size="48" text-anchor="middle" fill="%23666">Location Image</text></svg>';
+                    };
+                  }}
                 />
 
                 {/* Time-based Atmosphere Overlay */}

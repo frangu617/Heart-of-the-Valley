@@ -9,8 +9,10 @@ export function getTimeOfDay(hour: number): TimeOfDay {
 
 export function getLocationBackground(location: string, hour: number): string {
   const timeOfDay = getTimeOfDay(hour);
-  const locationKey = location.toLowerCase().replace(/\s+/g, "_");
-
+  const locationKey = location
+    .toLowerCase()
+    .replace(/\s+/g, "_")
+    .replace(/'/g, "");
   // Try time-specific image first
   const timeSpecific = `/images/locations/${locationKey}/${timeOfDay}.png`;
 

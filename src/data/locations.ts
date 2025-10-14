@@ -19,6 +19,7 @@ export const locationGraph: Record<string, Location[]> = {
   ],
   Hallway: [
     { name: "Living Room", cost: 0, time: 0, image: "bedroom.png" },
+    {name :"Iris' Apartment", cost: 0, time: 0, image: "iris_livingroom.png" },
     { name: "Street", cost: 0, time: 0, image: "street.png" },
   ],
   Street: [
