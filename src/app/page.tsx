@@ -773,14 +773,13 @@ export default function GamePage() {
                 hour={hour}
                 eventState={getOrCreateEventState(selectedGirl.name)}
                 onEventTriggered={(eventId) => {
-                  const newState = {
-                    ...getOrCreateEventState(selectedGirl.name),
-                    eventHistory: [
-                      ...getOrCreateEventState(selectedGirl.name).eventHistory,
-                      { id: eventId, dayOfWeek, hour },
-                    ],
-                    lastInteractionTime: Date.now(),
-                  };
+                  const currentState = getOrCreateEventState(selectedGirl.name);
+                  const newState = recordEventTrigger(
+                    currentState,
+                    eventId,
+                    dayOfWeek,
+                    hour
+                  );
                   setCharacterEventStates((prev) => ({
                     ...prev,
                     [selectedGirl.name]: newState,
