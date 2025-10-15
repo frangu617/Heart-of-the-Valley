@@ -10,7 +10,6 @@ export type RandomEventType =
 
 export type RandomEventConditions = {
   locations: string[]; // Where this can happen
-  minLuck?: number; // Base chance (0-100)
   minPlayerStat?: {
     stat: keyof PlayerStats;
     value: number;
@@ -45,10 +44,9 @@ export const randomEvents: RandomEvent[] = [
     id: "find_money_street",
     name: "Found Money on the Street",
     type: "luckEvent",
-    probability: 15,
+    probability: 5,
     conditions: {
       locations: ["Street", "City"],
-      minLuck: 10,
     },
     dialogue: {
       id: "find_money_street_dialogue",
@@ -171,7 +169,7 @@ export const randomEvents: RandomEvent[] = [
     id: "meet_ruby_gym",
     name: "Unexpected Gym Session with Ruby",
     type: "encounter",
-    probability: 25,
+    probability: 100,
     conditions: {
       locations: ["Gym"],
       hourRange: { min: 6, max: 20 },
@@ -416,6 +414,60 @@ export const randomEvents: RandomEvent[] = [
             },
           ],
         },
+      ],
+    },
+  },
+  {
+    id: "Gwen sex show",
+    name: "See Gwen getting dick!",
+    type: "observation",
+    probability: 100,
+    conditions: {
+      locations: ["Strip Club"],
+      hourRange: { min: 0, max: 23 },
+    },
+    dialogue: {
+      id: "Gwen_sex_show_dialogue",
+      lines: [
+        {
+          speaker: null,
+          text: "Gwen is having a sex show with some friends. You can't help but watch.",
+          imageSlide: "/images/events/gwen_sex_show.png",
+          choices: [
+            {
+              text: "Watch",
+              affectionChange: -5,
+              moodChange: -5,
+              nextDialogueId: "gwen_ntr",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "gwen_ntr",
+    name: "See Gwen getting big dick!",
+    type: "observation",
+    probability: 100,
+    conditions: {
+      locations: ["Strip Club"],
+      hourRange: { min: 0, max: 23 },
+    },
+    dialogue: {
+      id: "gwen_sex_show_dialogue",
+      lines: [
+        {
+          speaker: null,
+          text: "Gwen is having a sex show with some friends. You can't help but watch.",
+          videoSlide: "/video/characters/gwen/club_sex.mp4",
+          videoAutoPlay: true,
+          videoBoomerang: true,
+        },
+        {
+          speaker: "Gwen",
+          text: "I'm so horny! I want to cum so bad!",
+        }
       ],
     },
   },

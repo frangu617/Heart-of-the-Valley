@@ -13,6 +13,9 @@ interface Props {
   darkMode?: boolean;
   characterImage?: string;
   onSkip?: () => void; // Optional skip callback for intro
+
+  // ✅ NEW: when a choice wants to jump to a different dialogue/event
+  onNextDialogueId?: (id: string) => void;
 }
 
 export default function DialogueBox({
@@ -21,6 +24,7 @@ export default function DialogueBox({
   darkMode = false,
   characterImage,
   onSkip,
+  onNextDialogueId,
 }: Props) {
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
@@ -35,24 +39,31 @@ export default function DialogueBox({
   const currentLine = dialogue.lines[currentLineIndex];
   const isLastLine = currentLineIndex === dialogue.lines.length - 1;
 
+  // Optional media fields; we read them without forcing your global types to change
+  const imageSlide: string | undefined = (currentLine as any)?.imageSlide;
+  const videoSlide: string | undefined = (currentLine as any)?.videoSlide;
+  const videoAutoPlay: boolean | undefined = (currentLine as any)
+    ?.videoAutoPlay;
+  const videoBoomerang: boolean | undefined = (currentLine as any)
+    ?.videoBoomerang;
+
+  const hasImageSlide = !!imageSlide;
+  const hasVideoSlide = !!videoSlide;
+  const isNarration = currentLine?.speaker === null;
+
   const handleNext = useCallback(() => {
+    if (!currentLine) return;
+
     if (isTyping) {
-      setDisplayedText(currentLine.text);
+      setDisplayedText(currentLine.text ?? "");
       setIsTyping(false);
       setShowContinue(!currentLine.choices);
     } else if (isLastLine) {
       onComplete(accumulatedStatChanges);
     } else {
-      setCurrentLineIndex(currentLineIndex + 1);
+      setCurrentLineIndex((i) => i + 1);
     }
-  }, [
-    isTyping,
-    isLastLine,
-    currentLineIndex,
-    currentLine,
-    onComplete,
-    accumulatedStatChanges,
-  ]);
+  }, [isTyping, isLastLine, currentLine, onComplete, accumulatedStatChanges]);
 
   // Typewriter effect
   useEffect(() => {
@@ -62,9 +73,9 @@ export default function DialogueBox({
     setIsTyping(true);
     setShowContinue(false);
 
-    let index = 0;
-    const text = currentLine.text;
+    const text = currentLine.text ?? "";
     const typingSpeed = 30;
+    let index = 0;
 
     const interval = setInterval(() => {
       if (index < text.length) {
@@ -83,31 +94,33 @@ export default function DialogueBox({
   const handleChoice = (choice: DialogueChoice) => {
     // Accumulate stat changes
     const newChanges = { ...accumulatedStatChanges };
-    if (choice.affectionChange) {
+    if (choice.affectionChange)
       newChanges.affection =
         (newChanges.affection || 0) + choice.affectionChange;
-    }
-    if (choice.moodChange) {
+    if (choice.moodChange)
       newChanges.mood = (newChanges.mood || 0) + choice.moodChange;
-    }
-    if (choice.trustChange) {
+    if (choice.trustChange)
       newChanges.trust = (newChanges.trust || 0) + choice.trustChange;
-    }
     setAccumulatedStatChanges(newChanges);
 
-    // Move to next line
+    // ✅ Route to another dialogue/event if requested
+    if (choice.nextDialogueId && onNextDialogueId) {
+      onNextDialogueId(choice.nextDialogueId);
+      return;
+    }
+
+    // Otherwise, normal progression
     if (isLastLine) {
       onComplete(newChanges);
     } else {
-      setCurrentLineIndex(currentLineIndex + 1);
+      setCurrentLineIndex((i) => i + 1);
     }
   };
 
-  // Click or Space/Enter to continue
+  // Click or Space/Enter to continue (unless choices present)
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (currentLine?.choices) return; // Don't allow space to continue if choices are present
-
+      if (currentLine?.choices) return;
       if (e.key === " " || e.key === "Enter") {
         e.preventDefault();
         handleNext();
@@ -119,9 +132,6 @@ export default function DialogueBox({
   }, [handleNext, currentLine]);
 
   if (!currentLine) return null;
-
-  const isNarration = currentLine.speaker === null;
-  const hasImageSlide = currentLine.imageSlide;
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center pointer-events-none">
@@ -144,11 +154,11 @@ export default function DialogueBox({
         </button>
       )}
 
-      {/* Image Slide for Intro */}
+      {/* Background Image Slide */}
       {hasImageSlide && (
         <div className="absolute inset-0 pointer-events-none">
           <img
-            src={currentLine.imageSlide}
+            src={imageSlide}
             alt="Scene"
             onError={(e) => {
               e.currentTarget.src =
@@ -156,12 +166,27 @@ export default function DialogueBox({
             }}
             className="w-full h-full object-cover opacity-50"
           />
-          <div className="absolute inset-0 bg-black/40"></div>
+          <div className="absolute inset-0 bg-black/40" />
         </div>
       )}
 
-      {/* Character Portrait (if not narration and has image) */}
-      {!isNarration && !hasImageSlide && characterImage && (
+      {/* Background Video Slide */}
+      {hasVideoSlide && (
+        <div className="absolute inset-0 pointer-events-none">
+          <video
+            src={videoSlide}
+            autoPlay={videoAutoPlay ?? true}
+            loop={videoBoomerang ?? true}
+            muted
+            playsInline
+            className="w-full h-full object-cover opacity-50"
+          />
+          <div className="absolute inset-0 bg-black/40" />
+        </div>
+      )}
+
+      {/* Character Portrait (hidden if media slide is active) */}
+      {!isNarration && !hasImageSlide && !hasVideoSlide && characterImage && (
         <div className="absolute left-8 bottom-40 pointer-events-none animate-fadeIn">
           <img
             src={characterImage}
@@ -186,7 +211,7 @@ export default function DialogueBox({
             backdrop-blur-sm
           `}
         >
-          {/* Speaker Name (if not narration) */}
+          {/* Speaker Name */}
           {!isNarration && (
             <div
               className={`
@@ -199,17 +224,16 @@ export default function DialogueBox({
             `}
             >
               <h3
-                className={`
-                text-xl font-bold
-                ${darkMode ? "text-purple-300" : "text-purple-800"}
-              `}
+                className={`text-xl font-bold ${
+                  darkMode ? "text-purple-300" : "text-purple-800"
+                }`}
               >
                 {currentLine.speaker}
               </h3>
             </div>
           )}
 
-          {/* Dialogue Text */}
+          {/* Text + Choices */}
           <div className="px-8 py-6">
             <p
               className={`
@@ -220,11 +244,10 @@ export default function DialogueBox({
             >
               {displayedText}
               {isTyping && (
-                <span className="inline-block w-2 h-5 bg-purple-500 ml-1 animate-pulse"></span>
+                <span className="inline-block w-2 h-5 bg-purple-500 ml-1 animate-pulse" />
               )}
             </p>
 
-            {/* Choices */}
             {!isTyping && currentLine.choices && (
               <div className="mt-6 space-y-3">
                 {currentLine.choices.map((choice, index) => (
@@ -258,10 +281,9 @@ export default function DialogueBox({
           {showContinue && !currentLine.choices && (
             <div className="absolute bottom-4 right-8 animate-bounce">
               <div
-                className={`
-                text-2xl
-                ${darkMode ? "text-purple-400" : "text-purple-600"}
-              `}
+                className={`text-2xl ${
+                  darkMode ? "text-purple-400" : "text-purple-600"
+                }`}
               >
                 {isLastLine ? "✓" : "▼"}
               </div>

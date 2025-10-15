@@ -30,10 +30,41 @@ export const locationGraph: Record<string, Location[]> = {
   ],
   //Apartment locations
   Hallway: [
-    { name: "Living Room", cost: 0, time: 0, image: "bedroom.png" },
-    { name: "Iris' Apartment", cost: 0, time: 0, image: "iris_livingroom.png" },
-    { name: "Gwen's Apartment", cost: 0, time: 0, image: "gwen_livingroom.png" },
+    { name: "Living Room", cost: 0, time: 0, image: "living_room.png" },
+    { name: "Iris' Living Room", cost: 0, time: 0, image: "iris_bedroom.png" },
+    // { name: "Gwen's Apartment", cost: 0, time: 0, image: "gwen_livingroom.png" },
     { name: "Street", cost: 0, time: 0, image: "street.png" },
+  ],
+  "Iris' Living Room": [
+    { name: "Hallway", cost: 0, time: 0, image: "hallway.png" },
+    { name: "Dawn's bedroom", cost: 0, time: 0, image: "dawns_bedroom.png" },
+    { name: "Iris' Bedroom", cost: 0, time: 0, image: "iris_bedroom.png" },
+    { name: "Iris' Kitchen", cost: 0, time: 0, image: "iris_kitchen.png" },
+    { name: "Iris' Bathroom", cost: 0, time: 0, image: "iris_bathroom.png" },
+  ],
+  "Dawn's bedroom": [
+    { name: "Iris' Living Room", cost: 0, time: 0, image: "iris_bedroom.png" },
+    { name: "Iris' Bedroom", cost: 0, time: 0, image: "iris_bedroom.png" },
+    { name: "Iris' Bathroom", cost: 0, time: 0, image: "iris_bathroom.png" },
+    { name: "Iris' Kitchen", cost: 0, time: 0, image: "iris_kitchen.png" },
+  ],
+  "Iris' Bedroom": [
+    { name: "Iris' Living Room", cost: 0, time: 0, image: "iris_bedroom.png" },
+    { name: "Dawn's bedroom", cost: 0, time: 0, image: "dawns_bedroom.png" },
+    { name: "Iris' Bathroom", cost: 0, time: 0, image: "iris_bathroom.png" },
+    { name: "Iris' Kitchen", cost: 0, time: 0, image: "iris_kitchen.png" },
+  ],
+  "Iris' Bathroom": [
+    { name: "Dawn's bedroom", cost: 0, time: 0, image: "dawns_bedroom.png" },
+    { name: "Iris' Bedroom", cost: 0, time: 0, image: "iris_bedroom.png" },
+    { name: "Iris' Living Room", cost: 0, time: 0, image: "iris_bedroom.png" },
+    { name: "Iris' Kitchen", cost: 0, time: 0, image: "iris_kitchen.png" },
+  ],
+  "Iris' Kitchen": [
+    { name: "Dawn's bedroom", cost: 0, time: 0, image: "dawns_bedroom.png" },
+    { name: "Iris' Bedroom", cost: 0, time: 0, image: "iris_bedroom.png" },
+    { name: "Iris' Living Room", cost: 0, time: 0, image: "iris_bedroom.png" },
+    { name: "Iris' Bathroom", cost: 0, time: 0, image: "iris_bathroom.png" },
   ],
   //Street locations
   Street: [
