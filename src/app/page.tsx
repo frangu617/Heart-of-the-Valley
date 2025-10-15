@@ -12,6 +12,11 @@ import { locationGraph } from "../data/locations";
 import PhoneMenu from "@/components/PhoneMenu";
 import { getScheduledLocation } from "@/lib/schedule";
 import { getCharacterImage } from "@/lib/characterImages";
+
+// ✅ As requested
+import { checkRandomEvent } from "../lib/randomEventSystem";
+import { RandomEvent } from "@/data/events/randomEvents";
+
 import {
   getLocationBackground,
   // getAtmosphereOverlay,
@@ -42,8 +47,7 @@ import {
   getTimeOfDay,
 } from "../data/locationDescriptions";
 import { CharacterEventState } from "@/data/events/types";
-import { findTriggeredEvent, recordEventTrigger } from "@/lib/eventSystem";
-import { getCharacterEvents } from "@/data/events";
+import { recordEventTrigger } from "@/lib/eventSystem";
 
 type GameState = "mainMenu" | "intro" | "playing" | "paused" | "dialogue";
 
@@ -72,7 +76,11 @@ export default function GamePage() {
     Record<string, CharacterEventState>
   >({});
 
-  // 🔥 NEW: Compute girls with current locations based on schedule
+  // ✅ NEW state for random events (already requested)
+  const [currentRandomEvent, setCurrentRandomEvent] =
+    useState<RandomEvent | null>(null);
+
+  // 🔥 Compute girls with schedule + overrides
   const girls = useMemo(() => {
     return baseGirls.map((girl) => {
       const scheduledLocation = getScheduledLocation(
@@ -81,7 +89,6 @@ export default function GamePage() {
         hour
       );
 
-      // Apply any stat overrides for this girl
       const statOverride = girlStatsOverrides[girl.name];
       const mergedStats = statOverride
         ? { ...girl.stats, ...statOverride }
@@ -90,12 +97,12 @@ export default function GamePage() {
       return {
         ...girl,
         location: scheduledLocation || girl.location,
-        stats: mergedStats, // Apply stat overrides
+        stats: mergedStats,
       };
     });
-  }, [dayOfWeek, hour, girlStatsOverrides]); // Recompute when time or stats change
+  }, [dayOfWeek, hour, girlStatsOverrides]);
 
-  // Check for save data and dark mode preference on mount
+  // On mount: save data + dark mode + mobile
   useEffect(() => {
     const savedGame = localStorage.getItem("datingSimSave");
     setHasSaveData(!!savedGame);
@@ -105,16 +112,13 @@ export default function GamePage() {
       setDarkMode(savedDarkMode === "true");
     }
 
-    // Check if device is mobile
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Apply dark mode to document
+  // Apply dark mode class
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
@@ -124,7 +128,7 @@ export default function GamePage() {
     localStorage.setItem("darkMode", darkMode.toString());
   }, [darkMode]);
 
-  // ESC key to toggle pause
+  // ESC pause toggle
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === "Escape" && gameState === "playing") {
@@ -133,7 +137,6 @@ export default function GamePage() {
         setGameState("playing");
       }
     };
-
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [gameState]);
@@ -146,7 +149,7 @@ export default function GamePage() {
       dayOfWeek,
       metCharacters: Array.from(metCharacters),
       girlStatsOverrides,
-      characterEventStates, // NEW: Save event states
+      characterEventStates,
       timestamp: new Date().toISOString(),
     };
     localStorage.setItem("datingSimSave", JSON.stringify(saveData));
@@ -164,7 +167,7 @@ export default function GamePage() {
       setDayOfWeek(saveData.dayOfWeek || START_DAY);
       setMetCharacters(new Set(saveData.metCharacters || []));
       setGirlStatsOverrides(saveData.girlStatsOverrides || {});
-      setCharacterEventStates(saveData.characterEventStates || {}); // NEW: Load event states
+      setCharacterEventStates(saveData.characterEventStates || {});
       setSelectedGirl(null);
       setGameState("playing");
     }
@@ -192,7 +195,7 @@ export default function GamePage() {
     setSelectedGirl(null);
     setMetCharacters(new Set());
     setGirlStatsOverrides({});
-    setCharacterEventStates({}); // NEW: Reset event states
+    setCharacterEventStates({});
     localStorage.removeItem("datingSimSave");
     setHasSaveData(false);
 
@@ -209,7 +212,6 @@ export default function GamePage() {
     setDialogueCharacterImage(characterImage);
     setDialogueGirlEffects(girlEffects);
 
-    // Extract girl name from character image path
     if (characterImage) {
       const match = characterImage.match(/\/([^/]+)\//);
       if (match) {
@@ -229,7 +231,6 @@ export default function GamePage() {
     love?: number;
     lust?: number;
   }) => {
-    // Apply stat changes to the girl
     if (dialogueGirlName) {
       const girl = girls.find(
         (g: Girl) => g.name.toLowerCase() === dialogueGirlName.toLowerCase()
@@ -238,29 +239,22 @@ export default function GamePage() {
       if (girl) {
         const currentOverride = girlStatsOverrides[dialogueGirlName] || {};
         const currentStats = { ...girl.stats, ...currentOverride };
-
-        // Combine dialogue choices stat changes with base interaction effects
         const combinedChanges = { ...dialogueGirlEffects, ...statChanges };
-
-        // Apply all stat changes
         const newStats: Partial<GirlStats> = { ...currentStats };
 
         Object.entries(combinedChanges).forEach(([key, value]) => {
           if (typeof value === "number") {
             const statKey = key as keyof GirlStats;
-            const currentValue = currentStats[statKey] || 0;
-            const newValue = Math.max(0, Math.min(100, currentValue + value));
-            newStats[statKey] = newValue;
+            const cur = currentStats[statKey] || 0;
+            newStats[statKey] = Math.max(0, Math.min(100, cur + value));
           }
         });
 
-        // Update state with new stats
         setGirlStatsOverrides((prev) => ({
           ...prev,
           [dialogueGirlName]: newStats,
         }));
 
-        // Show feedback
         console.log(`✅ ${dialogueGirlName} stat changes:`, combinedChanges);
       }
     }
@@ -273,6 +267,16 @@ export default function GamePage() {
     setGameState("playing");
   };
 
+  // ✅ When a random-event dialogue ends, just clear and resume
+  const endRandomEventDialogue = () => {
+    setCurrentRandomEvent(null);
+    setCurrentDialogue(null);
+    setDialogueCharacterImage("");
+    setDialogueGirlEffects(null);
+    setDialogueGirlName("");
+    setGameState("playing");
+  };
+
   const returnToMainMenu = () => {
     if (confirm("Return to main menu? Any unsaved progress will be lost.")) {
       setGameState("mainMenu");
@@ -280,24 +284,100 @@ export default function GamePage() {
     }
   };
 
+  // ✅ REPLACED moveTo with your requested flow
   const moveTo = (location: string) => {
     setCurrentLocation(location);
     setSelectedGirl(null);
 
-    // Check if there are any unmet characters at this location
+    // First-meeting checks
     const charactersHere = girls.filter((g: Girl) => g.location === location);
     for (const girl of charactersHere) {
       if (!metCharacters.has(girl.name)) {
-        // Show first meeting dialogue
         const firstMeeting = firstMeetingDialogues[girl.name];
         if (firstMeeting) {
           const characterImage = `/images/characters/${girl.name.toLowerCase()}/faces/neutral.png`;
           setMetCharacters(new Set([...metCharacters, girl.name]));
           startDialogue(firstMeeting, characterImage, null);
-          break; // Only show one first meeting at a time
+          return; // Don't trigger random event immediately after a first meeting
         }
       }
     }
+
+    // 🎲 Random event check
+    const randomEvent = checkRandomEvent(location, hour, dayOfWeek, player);
+    if (randomEvent) {
+      console.log(`🎲 Random event triggered: ${randomEvent.name}`);
+      setCurrentRandomEvent(randomEvent);
+
+      // Random events usually don't have a character image
+      startDialogue(randomEvent.dialogue, "", null);
+
+      // Apply rewards immediately (dialogue is just narrative)
+      if (randomEvent.rewards) {
+        applyRandomEventRewards(randomEvent.rewards);
+      }
+    }
+  };
+
+  // ✅ Helper to apply random-event rewards (already present in your file)
+  const applyRandomEventRewards = (rewards: RandomEvent["rewards"]) => {
+    if (!rewards) return;
+
+    let updatedPlayer = { ...player };
+
+    // Money
+    if (rewards.money) {
+      updatedPlayer.money += rewards.money;
+      console.log(`💰 Money: ${rewards.money > 0 ? "+" : ""}${rewards.money}`);
+    }
+
+    // Inventory item
+    if (rewards.item) {
+      updatedPlayer.inventory = [...updatedPlayer.inventory, rewards.item];
+      console.log(`📦 Added ${rewards.item} to inventory`);
+    }
+
+    // Player stat changes
+    if (rewards.playerStats) {
+      Object.entries(rewards.playerStats).forEach(([key, value]) => {
+        const statKey = key as keyof PlayerStats;
+        if (
+          typeof value === "number" &&
+          typeof updatedPlayer[statKey] === "number"
+        ) {
+          const currentValue = updatedPlayer[statKey] as number;
+          const newValue =
+            statKey === "energy" || statKey === "mood" || statKey === "hunger"
+              ? Math.max(0, Math.min(100, currentValue + value))
+              : Math.max(0, currentValue + value);
+          (updatedPlayer[statKey] as number) = newValue;
+        }
+      });
+    }
+
+    // Girl affection changes
+    if (rewards.girlAffection) {
+      Object.entries(rewards.girlAffection).forEach(([girlName, change]) => {
+        const currentOverride = girlStatsOverrides[girlName] || {};
+        const girl = girls.find((g) => g.name === girlName);
+        if (girl) {
+          const currentStats = { ...girl.stats, ...currentOverride };
+          const newAffection = Math.max(
+            0,
+            Math.min(100, (currentStats.affection || 0) + change)
+          );
+          setGirlStatsOverrides((prev) => ({
+            ...prev,
+            [girlName]: { ...currentStats, affection: newAffection },
+          }));
+          console.log(
+            `💕 ${girlName} affection: ${change > 0 ? "+" : ""}${change}`
+          );
+        }
+      });
+    }
+
+    setPlayer(updatedPlayer);
   };
 
   const getOrCreateEventState = (
@@ -306,7 +386,6 @@ export default function GamePage() {
     if (characterEventStates[characterName]) {
       return characterEventStates[characterName];
     }
-
     return {
       characterName,
       eventHistory: [],
@@ -318,19 +397,18 @@ export default function GamePage() {
     const newHour = hour + amount;
 
     if (newHour >= MAX_HOUR) {
-      // Move to next day
+      // Next day
       setHour(START_HOUR);
       const nextDay = getNextDay(dayOfWeek);
       setDayOfWeek(nextDay);
 
-      // Reset player stats for new day
+      // Overnight adjustments
       setPlayer((prev) => ({
         ...prev,
-        energy: Math.min(100, prev.energy + 30), // Restore some energy
-        hunger: Math.min(100, prev.hunger + 20), // Get hungry overnight
+        energy: Math.min(100, prev.energy + 30),
+        hunger: Math.min(100, prev.hunger + 20),
       }));
 
-      // Show "New Day" message
       alert(`A new day begins! It's ${nextDay} morning.`);
     } else {
       setHour(newHour);
@@ -345,7 +423,7 @@ export default function GamePage() {
     (g: Girl) => g.location === currentLocation
   );
 
-  // Render main menu
+  // Main Menu
   if (gameState === "mainMenu") {
     return (
       <MainMenu
@@ -358,7 +436,7 @@ export default function GamePage() {
     );
   }
 
-  // Render intro dialogue or any dialogue
+  // Intro or Dialogue screens
   if ((gameState === "intro" || gameState === "dialogue") && currentDialogue) {
     return (
       <div
@@ -370,9 +448,9 @@ export default function GamePage() {
       >
         <DialogueBox
           dialogue={currentDialogue}
-          onComplete={endDialogue}
+          onComplete={currentRandomEvent ? endRandomEventDialogue : endDialogue}
           darkMode={darkMode}
-          characterImage={dialogueCharacterImage}
+          characterImage={currentRandomEvent ? "" : dialogueCharacterImage}
           onSkip={
             gameState === "intro"
               ? () => {
@@ -386,7 +464,7 @@ export default function GamePage() {
     );
   }
 
-  // Render game with optional pause menu
+  // Gameplay
   return (
     <div
       className={`min-h-screen transition-colors duration-300 ${
@@ -408,7 +486,6 @@ export default function GamePage() {
             {isMobile ? "💖 Dating Sim" : "💖 Dating Sim Adventure"}
           </h1>
           <div className="flex gap-2 items-center">
-            {/* Phone Button - More prominent on mobile */}
             <button
               onClick={() => setShowPhone(true)}
               className={`bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${
@@ -419,7 +496,6 @@ export default function GamePage() {
               <span className="text-xl">📱</span>
               <span className="hidden sm:inline">Phone</span>
             </button>
-            {/* Dark Mode Toggle */}
             <button
               onClick={() => setDarkMode(!darkMode)}
               className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2"
@@ -440,7 +516,7 @@ export default function GamePage() {
 
       <div className="container mx-auto px-2 md:px-4 py-4 md:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12  gap-6">
-          {/* Left Sidebar - Stats (Hidden on Mobile) */}
+          {/* Left Sidebar */}
           {!isMobile && (
             <div className="lg:col-span-2 min-w-0">
               <StatsPanel
@@ -453,7 +529,7 @@ export default function GamePage() {
             </div>
           )}
 
-          {/* Main Content - Center */}
+          {/* Main Content */}
           <div
             className={`${
               isMobile
@@ -463,7 +539,7 @@ export default function GamePage() {
                 : "lg:col-span-7"
             } space-y-6 min-w-0`}
           >
-            {/* Current Location Scene with Characters */}
+            {/* Scene */}
             <div
               className={`rounded-2xl shadow-xl overflow-hidden border-4 ${
                 darkMode
@@ -471,7 +547,7 @@ export default function GamePage() {
                   : "bg-white border-purple-200"
               } transition-colors duration-300`}
             >
-              {/* Location Name & Description - Mobile (Outside frame) */}
+              {/* Mobile location title/desc */}
               <div className="block md:hidden px-3 py-3">
                 <h2
                   className={`text-lg font-bold mb-1 ${
@@ -492,27 +568,25 @@ export default function GamePage() {
               </div>
 
               <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-purple-100 to-white overflow-hidden">
-                {/* Location Background Image */}
+                {/* Background */}
                 <img
-                  src={getCurrentLocationImage()} // ✅ CORRECT - path already included
+                  src={getCurrentLocationImage()}
                   alt={currentLocation}
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    // Fallback if time-specific image doesn't exist
                     const locationKey = currentLocation
                       .toLowerCase()
                       .replace(/\s+/g, "_")
                       .replace(/'/g, "");
                     e.currentTarget.src = `/images/locations/${locationKey}/afternoon.png`;
                     e.currentTarget.onerror = () => {
-                      // Final fallback
                       e.currentTarget.src =
                         'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23ccc" width="1920" height="1080"/><text x="50%" y="50%" font-size="48" text-anchor="middle" fill="%23666">Location Image</text></svg>';
                     };
                   }}
                 />
 
-                {/* Time-based Atmosphere Overlay */}
+                {/* Atmosphere overlay */}
                 <div
                   className={`absolute inset-0 pointer-events-none transition-all duration-1000 ${
                     getTimeOfDay(hour) === "morning"
@@ -525,10 +599,10 @@ export default function GamePage() {
                   }`}
                 ></div>
 
-                {/* Dark overlay for better text/character visibility */}
+                {/* Darken for readability */}
                 <div className="absolute inset-0 bg-black/20"></div>
 
-                {/* Location Name & Description - Desktop (Inside frame) */}
+                {/* Desktop location title/desc */}
                 <div className="hidden md:block absolute top-2 md:top-4 left-2 md:left-4 right-2 md:right-4 z-20">
                   <div className="bg-black/60 backdrop-blur-sm px-3 md:px-4 py-2 md:py-3 rounded-lg">
                     <h2 className="text-lg md:text-2xl font-bold text-white drop-shadow-lg mb-1">
@@ -542,7 +616,7 @@ export default function GamePage() {
                   </div>
                 </div>
 
-                {/* Character Portraits on Scene */}
+                {/* Characters */}
                 <div className="absolute inset-0 flex items-end justify-around px-4 md:px-8 pb-8 md:pb-4">
                   {presentGirls.map((girl: Girl, index: number) => {
                     const characterImagePath = getCharacterImage(
@@ -563,44 +637,37 @@ export default function GamePage() {
           }
           animate-fadeIn
         `}
-                        style={{
-                          animationDelay: `${index * 0.2}s`,
-                        }}
+                        style={{ animationDelay: `${index * 0.2}s` }}
                       >
-                        {/* Shadow underneath character */}
+                        {/* Shadow */}
                         <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-24 sm:w-32 h-3 sm:h-4 bg-black/30 rounded-full blur-md"></div>
 
-                        {/* Glow effect when selected */}
+                        {/* Glow when selected */}
                         {selectedGirl?.name === girl.name && (
                           <div className="absolute inset-0 bg-gradient-to-t from-pink-500 to-purple-500 rounded-3xl blur-xl sm:blur-2xl opacity-60 animate-pulse"></div>
                         )}
 
-                        {/* Character Image - Full body style */}
+                        {/* Character image */}
                         <div className="relative">
                           <img
                             src={characterImagePath}
                             alt={girl.name}
                             onError={(e) => {
-                              // Smart fallback chain
                               const currentSrc = e.currentTarget.src;
                               const girlName = girl.name.toLowerCase();
-
-                              // Fallback hierarchy
                               const fallbacks = [
-                                characterImagePath, // Already tried
+                                characterImagePath,
                                 `/images/characters/${girlName}/casual_neutral.png`,
-                                `/images/${girlName}.png`, // Your old images
+                                `/images/${girlName}.png`,
                                 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="%23e879f9" width="200" height="300"/><text x="50%" y="50%" font-size="60" text-anchor="middle" dy=".3em" fill="white">?</text></svg>',
                               ];
-
-                              // Find the next untried fallback
-                              for (const fallback of fallbacks) {
+                              for (const fb of fallbacks) {
                                 if (
                                   !currentSrc.includes(
-                                    fallback.split("/").pop() || ""
+                                    fb.split("/").pop() || ""
                                   )
                                 ) {
-                                  e.currentTarget.src = fallback;
+                                  e.currentTarget.src = fb;
                                   break;
                                 }
                               }
@@ -621,14 +688,14 @@ export default function GamePage() {
             `}
                           />
 
-                          {/* Name Tag - positioned at bottom */}
+                          {/* Name tag */}
                           <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-pink-500 to-purple-500 px-3 sm:px-5 py-1 sm:py-2 rounded-full shadow-xl border-2 border-white">
                             <span className="text-white font-bold text-xs sm:text-sm whitespace-nowrap drop-shadow-lg">
                               {girl.name}
                             </span>
                           </div>
 
-                          {/* Selection indicator */}
+                          {/* Selected indicator */}
                           {selectedGirl?.name === girl.name && (
                             <div className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 bg-gradient-to-br from-pink-400 to-pink-600 rounded-full p-1 sm:p-2 shadow-xl animate-bounce border-2 border-white">
                               <span className="text-white text-lg sm:text-2xl">
@@ -649,7 +716,7 @@ export default function GamePage() {
                   })}
                 </div>
 
-                {/* Empty state message */}
+                {/* Nobody here */}
                 {presentGirls.length === 0 && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="bg-black/60 backdrop-blur-sm px-4 md:px-8 py-3 md:py-4 rounded-2xl">
@@ -662,7 +729,7 @@ export default function GamePage() {
               </div>
             </div>
 
-            {/* Available Locations */}
+            {/* Available locations */}
             <div
               className={`rounded-2xl shadow-xl p-4 md:p-6 border-2 ${
                 darkMode
@@ -691,7 +758,7 @@ export default function GamePage() {
             </div>
           </div>
 
-          {/* Right Sidebar - Character Interaction or Location Activities */}
+          {/* Right Sidebar */}
           {selectedGirl !== null ? (
             <div className={`${isMobile ? "col-span-1" : "lg:col-span-3"}`}>
               <CharacterOverlay
@@ -706,12 +773,14 @@ export default function GamePage() {
                 hour={hour}
                 eventState={getOrCreateEventState(selectedGirl.name)}
                 onEventTriggered={(eventId) => {
-                  const newState = recordEventTrigger(
-                    getOrCreateEventState(selectedGirl.name),
-                    eventId,
-                    dayOfWeek,
-                    hour
-                  );
+                  const newState = {
+                    ...getOrCreateEventState(selectedGirl.name),
+                    eventHistory: [
+                      ...getOrCreateEventState(selectedGirl.name).eventHistory,
+                      { id: eventId, dayOfWeek, hour },
+                    ],
+                    lastInteractionTime: Date.now(),
+                  };
                   setCharacterEventStates((prev) => ({
                     ...prev,
                     [selectedGirl.name]: newState,
@@ -734,7 +803,7 @@ export default function GamePage() {
         </div>
       </div>
 
-      {/* Pause Menu Overlay */}
+      {/* Pause Menu */}
       {gameState === "paused" && (
         <PauseMenu
           onResume={() => setGameState("playing")}
@@ -746,17 +815,17 @@ export default function GamePage() {
         />
       )}
 
-      {/* Dialogue Overlay during gameplay */}
+      {/* Safety: if some other path renders DialogueBox during gameplay */}
       {currentDialogue && gameState === "dialogue" && (
         <DialogueBox
           dialogue={currentDialogue}
-          onComplete={endDialogue}
+          onComplete={currentRandomEvent ? endRandomEventDialogue : endDialogue}
           darkMode={darkMode}
-          characterImage={dialogueCharacterImage}
+          characterImage={currentRandomEvent ? "" : dialogueCharacterImage}
         />
       )}
 
-      {/* Phone Menu Overlay */}
+      {/* Phone Menu */}
       {showPhone && (
         <PhoneMenu
           player={player}
