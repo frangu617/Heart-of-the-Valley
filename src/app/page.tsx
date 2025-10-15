@@ -154,21 +154,21 @@ export default function GamePage() {
     alert("Game saved! 💾");
   };
 
-const loadGame = () => {
-  const savedGame = localStorage.getItem("datingSimSave");
-  if (savedGame) {
-    const saveData = JSON.parse(savedGame);
-    setPlayer(saveData.player);
-    setCurrentLocation(saveData.currentLocation);
-    setHour(saveData.hour);
-    setDayOfWeek(saveData.dayOfWeek || START_DAY);
-    setMetCharacters(new Set(saveData.metCharacters || []));
-    setGirlStatsOverrides(saveData.girlStatsOverrides || {});
-    setCharacterEventStates(saveData.characterEventStates || {}); // NEW: Load event states
-    setSelectedGirl(null);
-    setGameState("playing");
-  }
-};
+  const loadGame = () => {
+    const savedGame = localStorage.getItem("datingSimSave");
+    if (savedGame) {
+      const saveData = JSON.parse(savedGame);
+      setPlayer(saveData.player);
+      setCurrentLocation(saveData.currentLocation);
+      setHour(saveData.hour);
+      setDayOfWeek(saveData.dayOfWeek || START_DAY);
+      setMetCharacters(new Set(saveData.metCharacters || []));
+      setGirlStatsOverrides(saveData.girlStatsOverrides || {});
+      setCharacterEventStates(saveData.characterEventStates || {}); // NEW: Load event states
+      setSelectedGirl(null);
+      setGameState("playing");
+    }
+  };
 
   const newGame = () => {
     if (hasSaveData) {
@@ -704,20 +704,19 @@ const loadGame = () => {
                 onStartDialogue={startDialogue}
                 dayOfWeek={dayOfWeek}
                 hour={hour}
-                eventState = {getOrCreateEventState(selectedGirl.name)}
-                onEventTriggered = {(eventId)} => {
+                eventState={getOrCreateEventState(selectedGirl.name)}
+                onEventTriggered={(eventId) => {
                   const newState = recordEventTrigger(
-        getOrCreateEventState(selectedGirl.name),
-        eventId,
-        dayOfWeek,
-        hour
-      );
-                const newState = recordEventTrigger(
-        getOrCreateEventState(selectedGirl.name),
-        eventId,
-        dayOfWeek,
-        hour
-      );
+                    getOrCreateEventState(selectedGirl.name),
+                    eventId,
+                    dayOfWeek,
+                    hour
+                  );
+                  setCharacterEventStates((prev) => ({
+                    ...prev,
+                    [selectedGirl.name]: newState,
+                  }));
+                }}
               />
             </div>
           ) : (

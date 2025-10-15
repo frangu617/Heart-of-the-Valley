@@ -6,31 +6,69 @@ export type Location = {
 };
 
 export const locationGraph: Record<string, Location[]> = {
+  //Home locations
   Bedroom: [
     { name: "Bathroom", cost: 0, time: 0, image: "bathroom.png" },
     { name: "Living Room", cost: 0, time: 0, image: "livingroom.png" },
     { name: "Kitchen", cost: 0, time: 0, image: "kitchen.png" },
   ],
-  Bathroom: [{ name: "Bedroom", cost: 0, time: 0, image: "bedroom.png" }],
-  Kitchen: [{ name: "Bedroom", cost: 0, time: 0, image: "bedroom.png" }],
+  Bathroom: [
+    { name: "Bedroom", cost: 0, time: 0, image: "bedroom.png" },
+    { name: "Living Room", cost: 0, time: 0, image: "livingroom.png" },
+    { name: "Kitchen", cost: 0, time: 0, image: "kitchen.png" },
+  ],
+  Kitchen: [
+    { name: "Bedroom", cost: 0, time: 0, image: "bedroom.png" },
+    { name: "Living Room", cost: 0, time: 0, image: "livingroom.png" },
+    { name: "Bathroom", cost: 0, time: 0, image: "bathroom.png" },
+  ],
   "Living Room": [
     { name: "Bedroom", cost: 0, time: 0, image: "bedroom.png" },
+    { name: "Bathroom", cost: 0, time: 0, image: "bathroom.png" },
+    { name: "Kitchen", cost: 0, time: 0, image: "kitchen.png" },
     { name: "Hallway", cost: 0, time: 0, image: "hallway.png" },
   ],
+  //Apartment locations
   Hallway: [
     { name: "Living Room", cost: 0, time: 0, image: "bedroom.png" },
-    {name :"Iris' Apartment", cost: 0, time: 0, image: "iris_livingroom.png" },
+    { name: "Iris' Apartment", cost: 0, time: 0, image: "iris_livingroom.png" },
+    { name: "Gwen's Apartment", cost: 0, time: 0, image: "gwen_livingroom.png" },
     { name: "Street", cost: 0, time: 0, image: "street.png" },
   ],
+  //Street locations
   Street: [
     { name: "Hallway", cost: 0, time: 0, image: "hallway.png" },
     { name: "Beach", cost: 0, time: 0, image: "beach.png" },
     { name: "Mountains", cost: 0, time: 0, image: "mountains.png" },
     { name: "City", cost: 0, time: 0, image: "city.png" },
-    { name: "University", cost: 0, time: 0, image: "university.png" },
+    {
+      name: "University",
+      cost: 0,
+      time: 0,
+      image: "university_parking_lot.png",
+    },
   ],
-  Beach: [{ name: "Street", cost: 0, time: 0, image: "street.png" }],
-  Mountains: [{ name: "Street", cost: 0, time: 0, image: "street.png" }],
+  Beach: [
+    { name: "Street", cost: 0, time: 0, image: "street.png" },
+    { name: "City", cost: 0, time: 0, image: "city.png" },
+    {
+      name: "University",
+      cost: 0,
+      time: 0,
+      image: "university_parking_lot.png",
+    },
+  ],
+  Mountains: [
+    { name: "Street", cost: 0, time: 0, image: "street.png" },
+    { name: "City", cost: 0, time: 0, image: "city.png" },
+    {
+      name: "University",
+      cost: 0,
+      time: 0,
+      image: "university_parking_lot.png",
+    },
+  ],
+  // City locations
   City: [
     { name: "Cafe", cost: 0, time: 0, image: "cafe.png" },
     { name: "Gym", cost: 0, time: 0, image: "gym.png" },
@@ -57,7 +95,12 @@ export const locationGraph: Record<string, Location[]> = {
     { name: "Classroom", cost: 0, time: 0, image: "classroom.png" },
     { name: "Office", cost: 0, time: 0, image: "office.png" },
     { name: "Men's Bathroom", cost: 0, time: 0, image: "mens_bathroom.png" },
-    { name: "Women's Bathroom", cost: 0, time: 0, image: "womens_bathroom.png" },
+    {
+      name: "Women's Bathroom",
+      cost: 0,
+      time: 0,
+      image: "womens_bathroom.png",
+    },
     { name: "University", cost: 0, time: 0, image: "university.png" },
   ],
   Classroom: [
@@ -75,6 +118,9 @@ export const locationGraph: Record<string, Location[]> = {
       time: 0,
       image: "university_hallway.png",
     },
+  ],
+  "Iris' Office": [
+    { name: "University Hallway", cost: 0, time: 0, image: "hallway.png" },
   ],
   "Men's Bathroom": [
     {

@@ -48,251 +48,288 @@ export const getCharacterLocation = (
 export const characterSchedules: Record<string, CharacterSchedule> = {
   Iris: {
     Monday: [
-      { location: "Bedroom", startHour: 0, endHour: 8 },
+      { location: "Iris' Bedroom", startHour: 0, endHour: 8 },
       { location: "University Hallway", startHour: 8, endHour: 10 },
-      { location: "Office", startHour: 10, endHour: 13 },
+      { location: "Iris' Office", startHour: 10, endHour: 13 },
       { location: "Classroom", startHour: 13, endHour: 17 },
-      { location: "Office", startHour: 17, endHour: 18 },
-      { location: "Living Room", startHour: 18, endHour: 24 },
+      { location: "Iris' Office", startHour: 17, endHour: 18 },
+      { location: "Iris' Living Room", startHour: 18, endHour: 24 },
     ],
     Tuesday: [
-      { location: "Bedroom", startHour: 0, endHour: 8 },
+      { location: "Iris' Bedroom", startHour: 0, endHour: 8 },
       { location: "University Hallway", startHour: 8, endHour: 10 },
-      { location: "Office", startHour: 10, endHour: 13 },
+      { location: "Iris' Office", startHour: 10, endHour: 13 },
       { location: "Classroom", startHour: 13, endHour: 17 },
-      { location: "Office", startHour: 17, endHour: 18 },
-      { location: "Living Room", startHour: 18, endHour: 24 },
+      { location: "Iris' Office", startHour: 17, endHour: 18 },
+      { location: "Iris' Living Room", startHour: 18, endHour: 24 },
     ],
     Wednesday: [
-      { location: "Bedroom", startHour: 0, endHour: 8 },
+      { location: "Iris' Bedroom", startHour: 0, endHour: 8 },
       { location: "University Hallway", startHour: 8, endHour: 10 },
-      { location: "Office", startHour: 10, endHour: 13 },
+      { location: "Iris' Office", startHour: 10, endHour: 13 },
       { location: "Classroom", startHour: 13, endHour: 17 },
-      { location: "Office", startHour: 17, endHour: 18 },
-      { location: "Living Room", startHour: 18, endHour: 24 },
+      { location: "Iris' Office", startHour: 17, endHour: 18 },
+      { location: "Iris' Living Room", startHour: 18, endHour: 24 },
     ],
     Thursday: [
-      { location: "Bedroom", startHour: 0, endHour: 8 },
+      { location: "Iris' Bedroom", startHour: 0, endHour: 8 },
       { location: "University Hallway", startHour: 8, endHour: 10 },
-      { location: "Office", startHour: 10, endHour: 13 },
+      { location: "Iris' Office", startHour: 10, endHour: 13 },
       { location: "Classroom", startHour: 13, endHour: 17 },
-      { location: "Office", startHour: 17, endHour: 18 },
-      { location: "Living Room", startHour: 18, endHour: 24 },
+      { location: "Iris' Office", startHour: 17, endHour: 18 },
+      { location: "Iris' Living Room", startHour: 18, endHour: 24 },
     ],
     Friday: [
-      { location: "Bedroom", startHour: 0, endHour: 8 },
+      { location: "Iris' Bedroom", startHour: 0, endHour: 8 },
       { location: "University Hallway", startHour: 8, endHour: 10 },
-      { location: "Office", startHour: 10, endHour: 13 },
+      { location: "Iris' Office", startHour: 10, endHour: 13 },
       { location: "Classroom", startHour: 13, endHour: 17 },
-      { location: "Office", startHour: 17, endHour: 18 },
-      { location: "Living Room", startHour: 18, endHour: 24 },
+      { location: "Iris' Office", startHour: 17, endHour: 18 },
+      { location: "Iris' Living Room", startHour: 18, endHour: 24 },
     ],
     Saturday: [
-      { location: "Bedroom", startHour: 0, endHour: 9 },
-      { location: "Living Room", startHour: 9, endHour: 12 },
-      { location: "Cafe", startHour: 12, endHour: 14 },
-      { location: "Living Room", startHour: 14, endHour: 24 },
+      { location: "Iris' Bedroom", startHour: 0, endHour: 9 },
+      { location: "Cafe", startHour: 9, endHour: 12 },
+      { location: "Gym", startHour: 12, endHour: 14 },
+      { location: "Iris' Living Room", startHour: 14, endHour: 24 },
     ],
     Sunday: [
-      { location: "Bedroom", startHour: 0, endHour: 10 },
-      { location: "Living Room", startHour: 10, endHour: 24 },
+      { location: "Iris' Bedroom", startHour: 0, endHour: 10 },
+      { location: "Iris' Living Room", startHour: 10, endHour: 11 },
+      { location: "Gym", startHour: 11, endHour: 13 },
+      { location: "City", startHour: 13, endHour: 18 },
+      { location: "Iris' Bathroom", startHour: 18, endHour: 19 },
+      { location: "Iris' Bedroom", startHour: 19, endHour: 24 },
     ],
   },
 
   Dawn: {
     Monday: [
-      { location: "Bedroom", startHour: 0, endHour: 7 },
-      { location: "University Hallway", startHour: 7, endHour: 8 },
-      { location: "Classroom", startHour: 8, endHour: 12 }, // Morning classes
-      { location: "Cafe", startHour: 12, endHour: 14 }, // Lunch
-      { location: "Gym", startHour: 14, endHour: 16 }, // Workout
-      { location: "Living Room", startHour: 16, endHour: 24 }, // Home studying/gaming
+      { location: "Dawn's Bedroom", startHour: 0, endHour: 7 },
+      { location: "Iris' Bathroom", startHour: 7, endHour: 8 },
+      { location: "University Hallway", startHour: 8, endHour: 9 },
+      { location: "Classroom", startHour: 9, endHour: 13 },
+      { location: "Cafe", startHour: 13, endHour: 14 },
+      { location: "Gym", startHour: 14, endHour: 16 },
+      { location: "Iris' Living Room", startHour: 16, endHour: 23 },
     ],
     Tuesday: [
-      { location: "Bedroom", startHour: 0, endHour: 9 },
-      { location: "Living Room", startHour: 9, endHour: 13 }, // Home in morning
+      { location: "Dawn's Bedroom", startHour: 0, endHour: 9 },
+      { location: "Iris' Living Room", startHour: 9, endHour: 13 },
       { location: "University Hallway", startHour: 13, endHour: 14 },
-      { location: "Classroom", startHour: 14, endHour: 18 }, // Afternoon classes
-      { location: "Living Room", startHour: 18, endHour: 24 },
+      { location: "Classroom", startHour: 14, endHour: 18 },
+      { location: "Gym", startHour: 18, endHour: 20 },
+      { location: "Iris' Bathroom", startHour: 20, endHour: 21 },
+      { location: "Dawn's Bedroom", startHour: 21, endHour: 23 },
     ],
     Wednesday: [
-      { location: "Bedroom", startHour: 0, endHour: 7 },
-      { location: "University Hallway", startHour: 7, endHour: 8 },
-      { location: "Classroom", startHour: 8, endHour: 12 }, // Morning classes
-      { location: "Cafe", startHour: 12, endHour: 14 },
+      { location: "Dawn's Bedroom", startHour: 0, endHour: 7 },
+      { location: "Iris' Bathroom", startHour: 7, endHour: 8 },
+      { location: "University Hallway", startHour: 8, endHour: 9 },
+      { location: "Classroom", startHour: 9, endHour: 13 },
+      { location: "Cafe", startHour: 13, endHour: 14 },
       { location: "Gym", startHour: 14, endHour: 16 },
-      { location: "Living Room", startHour: 16, endHour: 24 },
+      { location: "Iris' Living Room", startHour: 16, endHour: 23 },
     ],
     Thursday: [
-      { location: "Bedroom", startHour: 0, endHour: 9 },
-      { location: "Living Room", startHour: 9, endHour: 13 },
+      { location: "Dawn's Bedroom", startHour: 0, endHour: 9 },
+      { location: "Iris' Living Room", startHour: 9, endHour: 13 },
       { location: "University Hallway", startHour: 13, endHour: 14 },
-      { location: "Classroom", startHour: 14, endHour: 18 }, // Afternoon classes
-      { location: "Living Room", startHour: 18, endHour: 24 },
+      { location: "Classroom", startHour: 14, endHour: 18 },
+      { location: "Gym", startHour: 18, endHour: 20 },
+      { location: "Iris' Bathroom", startHour: 20, endHour: 21 },
+      { location: "Dawn's Bedroom", startHour: 21, endHour: 23 },
     ],
     Friday: [
-      { location: "Bedroom", startHour: 0, endHour: 9 },
+      { location: "Dawn's Bedroom", startHour: 0, endHour: 9 },
       { location: "Gym", startHour: 9, endHour: 11 },
-      { location: "Mall", startHour: 11, endHour: 15 }, // Shopping
-      { location: "Living Room", startHour: 15, endHour: 24 },
+      { location: "Iris' Bathroom", startHour: 11, endHour: 12 },
+      { location: "Mall", startHour: 12, endHour: 15 },
+      { location: "Beach", startHour: 15, endHour: 17 },
+      { location: "Iris' Living Room", startHour: 17, endHour: 23 },
     ],
     Saturday: [
-      { location: "Bedroom", startHour: 0, endHour: 10 },
+      { location: "Dawn's Bedroom", startHour: 0, endHour: 10 },
       { location: "Gym", startHour: 10, endHour: 12 },
-      { location: "Beach", startHour: 12, endHour: 17 }, // Beach day
-      { location: "Living Room", startHour: 17, endHour: 24 },
+      { location: "Iris' Bathroom", startHour: 12, endHour: 13 },
+      { location: "Beach", startHour: 13, endHour: 17 },
+      { location: "Iris' Living Room", startHour: 17, endHour: 23 },
     ],
     Sunday: [
-      { location: "Bedroom", startHour: 0, endHour: 11 }, // Sleep in
-      { location: "Living Room", startHour: 11, endHour: 24 }, // Gaming/studying
+      { location: "Dawn's Bedroom", startHour: 0, endHour: 11 },
+      { location: "Iris' Living Room", startHour: 11, endHour: 23 },
     ],
   },
 
   Gwen: {
-    // Babysitter during weekdays, stripper on weekend nights
     Monday: [
-      { location: "Bedroom", startHour: 0, endHour: 8 },
-      { location: "Hallway", startHour: 8, endHour: 9 },
-      { location: "City", startHour: 9, endHour: 17 }, // Babysitting (random homes)
-      { location: "Living Room", startHour: 17, endHour: 24 },
+      { location: "Gwen's Bedroom", startHour: 0, endHour: 8 },
+      { location: "Gwen's Bathroom", startHour: 8, endHour: 9 },
+      { location: "Hallway", startHour: 9, endHour: 10 },
+      { location: "City", startHour: 10, endHour: 17 },
+      { location: "Gwen's Living Room", startHour: 17, endHour: 23 },
     ],
     Tuesday: [
-      { location: "Bedroom", startHour: 0, endHour: 8 },
-      { location: "Hallway", startHour: 8, endHour: 9 },
-      { location: "City", startHour: 9, endHour: 17 }, // Babysitting
-      { location: "Living Room", startHour: 17, endHour: 24 },
+      { location: "Gwen's Bedroom", startHour: 0, endHour: 8 },
+      { location: "Gwen's Bathroom", startHour: 8, endHour: 9 },
+      { location: "Hallway", startHour: 9, endHour: 10 },
+      { location: "City", startHour: 10, endHour: 17 },
+      { location: "Gwen's Living Room", startHour: 17, endHour: 23 },
     ],
     Wednesday: [
-      { location: "Bedroom", startHour: 0, endHour: 8 },
-      { location: "Hallway", startHour: 8, endHour: 9 },
-      { location: "City", startHour: 9, endHour: 17 }, // Babysitting
-      { location: "Living Room", startHour: 17, endHour: 24 },
+      { location: "Gwen's Bedroom", startHour: 0, endHour: 8 },
+      { location: "Gwen's Bathroom", startHour: 8, endHour: 9 },
+      { location: "Hallway", startHour: 9, endHour: 10 },
+      { location: "City", startHour: 10, endHour: 17 },
+      { location: "Gwen's Living Room", startHour: 17, endHour: 23 },
     ],
     Thursday: [
-      { location: "Bedroom", startHour: 0, endHour: 8 },
-      { location: "Hallway", startHour: 8, endHour: 9 },
-      { location: "City", startHour: 9, endHour: 17 }, // Babysitting
-      { location: "Living Room", startHour: 17, endHour: 24 },
+      { location: "Gwen's Bedroom", startHour: 0, endHour: 8 },
+      { location: "Gwen's Bathroom", startHour: 8, endHour: 9 },
+      { location: "Hallway", startHour: 9, endHour: 10 },
+      { location: "City", startHour: 10, endHour: 17 },
+      { location: "Gwen's Living Room", startHour: 17, endHour: 23 },
     ],
     Friday: [
-      { location: "Bedroom", startHour: 0, endHour: 8 },
-      { location: "Hallway", startHour: 8, endHour: 9 },
-      { location: "City", startHour: 9, endHour: 17 }, // Babysitting
-      { location: "Living Room", startHour: 17, endHour: 21 },
-      { location: "Strip Club", startHour: 21, endHour: 24 }, // Night shift
+      { location: "Gwen's Bedroom", startHour: 0, endHour: 8 },
+      { location: "Gwen's Bathroom", startHour: 8, endHour: 9 },
+      { location: "Hallway", startHour: 9, endHour: 10 },
+      { location: "City", startHour: 10, endHour: 17 },
+      { location: "Gwen's Living Room", startHour: 17, endHour: 21 },
+      { location: "Strip Club", startHour: 21, endHour: 23 },
     ],
     Saturday: [
-      { location: "Bedroom", startHour: 0, endHour: 3 }, // Home from strip club
-      { location: "Bedroom", startHour: 3, endHour: 11 }, // Sleep in
-      { location: "Living Room", startHour: 11, endHour: 18 },
-      { location: "Strip Club", startHour: 21, endHour: 24 }, // Night shift
+      { location: "Gwen's Bedroom", startHour: 0, endHour: 3 },
+      { location: "Gwen's Bathroom", startHour: 3, endHour: 4 },
+      { location: "Gwen's Bedroom", startHour: 4, endHour: 11 },
+      { location: "Gwen's Living Room", startHour: 11, endHour: 18 },
+      { location: "Gwen's Bathroom", startHour: 18, endHour: 19 },
+      { location: "Strip Club", startHour: 21, endHour: 23 },
     ],
     Sunday: [
-      { location: "Bedroom", startHour: 0, endHour: 3 }, // Home from strip club
-      { location: "Bedroom", startHour: 3, endHour: 12 }, // Sleep in
-      { location: "Living Room", startHour: 12, endHour: 24 }, // Day off
+      { location: "Gwen's Bedroom", startHour: 0, endHour: 3 },
+      { location: "Gwen's Bathroom", startHour: 3, endHour: 4 },
+      { location: "Gwen's Bedroom", startHour: 4, endHour: 12 },
+      { location: "Gwen's Living Room", startHour: 12, endHour: 23 },
     ],
   },
 
   Yumi: {
     Monday: [
-      { location: "Bedroom", startHour: 0, endHour: 8 },
-      { location: "University Hallway", startHour: 8, endHour: 9 },
-      { location: "Classroom", startHour: 9, endHour: 12 }, // Frank's class
-      { location: "Classroom", startHour: 12, endHour: 14 }, // Stays after class
-      { location: "Cafe", startHour: 14, endHour: 17 }, // Study
-      { location: "Bedroom", startHour: 17, endHour: 20 },
-      { location: "Bedroom", startHour: 20, endHour: 24 }, // Streaming at home
+      { location: "Yumi's Bedroom", startHour: 0, endHour: 8 },
+      { location: "Yumi's Bathroom", startHour: 8, endHour: 9 },
+      { location: "University Hallway", startHour: 9, endHour: 10 },
+      { location: "Classroom", startHour: 10, endHour: 12 },
+      { location: "Classroom", startHour: 12, endHour: 14 },
+      { location: "Cafe", startHour: 14, endHour: 17 },
+      { location: "Yumi's Bedroom", startHour: 17, endHour: 20 },
+      { location: "Yumi's Bedroom", startHour: 20, endHour: 23 },
     ],
     Tuesday: [
-      { location: "Bedroom", startHour: 0, endHour: 9 },
-      { location: "Cafe", startHour: 9, endHour: 14 }, // Study day
-      { location: "Mall", startHour: 14, endHour: 17 }, // Shopping
-      { location: "Bedroom", startHour: 17, endHour: 20 },
-      { location: "Bedroom", startHour: 20, endHour: 24 }, // Streaming
+      { location: "Yumi's Bedroom", startHour: 0, endHour: 9 },
+      { location: "Yumi's Bathroom", startHour: 9, endHour: 10 },
+      { location: "Cafe", startHour: 10, endHour: 14 },
+      { location: "Mall", startHour: 14, endHour: 17 },
+      { location: "Yumi's Bedroom", startHour: 17, endHour: 20 },
+      { location: "Yumi's Bedroom", startHour: 20, endHour: 23 },
     ],
     Wednesday: [
-      { location: "Bedroom", startHour: 0, endHour: 8 },
-      { location: "University Hallway", startHour: 8, endHour: 9 },
-      { location: "Classroom", startHour: 9, endHour: 12 }, // Frank's class
-      { location: "Classroom", startHour: 12, endHour: 14 }, // Stays after class
+      { location: "Yumi's Bedroom", startHour: 0, endHour: 8 },
+      { location: "Yumi's Bathroom", startHour: 8, endHour: 9 },
+      { location: "University Hallway", startHour: 9, endHour: 10 },
+      { location: "Classroom", startHour: 10, endHour: 12 },
+      { location: "Classroom", startHour: 12, endHour: 14 },
       { location: "Cafe", startHour: 14, endHour: 17 },
-      { location: "Bedroom", startHour: 17, endHour: 20 },
-      { location: "Bedroom", startHour: 20, endHour: 24 }, // Streaming
+      { location: "Yumi's Bedroom", startHour: 17, endHour: 20 },
+      { location: "Yumi's Bedroom", startHour: 20, endHour: 23 },
     ],
     Thursday: [
-      { location: "Bedroom", startHour: 0, endHour: 10 },
+      { location: "Yumi's Bedroom", startHour: 0, endHour: 9 },
+      { location: "Yumi's Bathroom", startHour: 9, endHour: 10 },
       { location: "Gym", startHour: 10, endHour: 12 },
       { location: "Cafe", startHour: 12, endHour: 18 },
-      { location: "Bedroom", startHour: 18, endHour: 20 },
-      { location: "Bedroom", startHour: 20, endHour: 24 }, // Streaming
+      { location: "Yumi's Bedroom", startHour: 18, endHour: 20 },
+      { location: "Yumi's Bedroom", startHour: 20, endHour: 23 },
     ],
     Friday: [
-      { location: "Bedroom", startHour: 0, endHour: 9 },
-      { location: "University Hallway", startHour: 9, endHour: 10 },
-      { location: "Classroom", startHour: 10, endHour: 13 },
-      { location: "City", startHour: 13, endHour: 19 }, // Out with friends
-      { location: "Bedroom", startHour: 19, endHour: 24 },
+      { location: "Yumi's Bedroom", startHour: 0, endHour: 9 },
+      { location: "Yumi's Bathroom", startHour: 9, endHour: 10 },
+      { location: "University Hallway", startHour: 10, endHour: 11 },
+      { location: "Classroom", startHour: 11, endHour: 14 },
+      { location: "City", startHour: 14, endHour: 19 },
+      { location: "Yumi's Bedroom", startHour: 19, endHour: 23 },
     ],
     Saturday: [
-      { location: "Bedroom", startHour: 0, endHour: 11 },
-      { location: "Cafe", startHour: 11, endHour: 16 },
-      { location: "Bedroom", startHour: 16, endHour: 20 },
-      { location: "Bedroom", startHour: 20, endHour: 24 }, // Streaming
+      { location: "Yumi's Bedroom", startHour: 0, endHour: 11 },
+      { location: "Yumi's Bathroom", startHour: 11, endHour: 12 },
+      { location: "Cafe", startHour: 12, endHour: 16 },
+      { location: "Yumi's Bedroom", startHour: 16, endHour: 20 },
+      { location: "Yumi's Bedroom", startHour: 20, endHour: 23 },
     ],
     Sunday: [
-      { location: "Bedroom", startHour: 0, endHour: 10 },
-      { location: "Beach", startHour: 10, endHour: 15 }, // Relax day
-      { location: "Bedroom", startHour: 15, endHour: 24 },
+      { location: "Yumi's Bedroom", startHour: 0, endHour: 10 },
+      { location: "Yumi's Bathroom", startHour: 10, endHour: 11 },
+      { location: "Beach", startHour: 11, endHour: 15 },
+      { location: "Yumi's Bedroom", startHour: 15, endHour: 23 },
     ],
   },
 
   Ruby: {
-    // Personal trainer - works at gym most days
     Monday: [
-      { location: "Bedroom", startHour: 0, endHour: 6 },
-      { location: "Gym", startHour: 6, endHour: 14 }, // Morning shift
-      { location: "Living Room", startHour: 14, endHour: 17 },
-      { location: "Gym", startHour: 17, endHour: 21 }, // Evening shift
-      { location: "Living Room", startHour: 21, endHour: 24 },
+      { location: "Ruby's Bedroom", startHour: 0, endHour: 6 },
+      { location: "Ruby's Bathroom", startHour: 6, endHour: 7 },
+      { location: "Gym", startHour: 7, endHour: 14 },
+      { location: "Ruby's Living Room", startHour: 14, endHour: 17 },
+      { location: "Gym", startHour: 17, endHour: 21 },
+      { location: "Ruby's Bathroom", startHour: 21, endHour: 22 },
+      { location: "Ruby's Living Room", startHour: 22, endHour: 23 },
     ],
     Tuesday: [
-      { location: "Bedroom", startHour: 0, endHour: 6 },
-      { location: "Gym", startHour: 6, endHour: 14 },
-      { location: "Living Room", startHour: 14, endHour: 17 },
+      { location: "Ruby's Bedroom", startHour: 0, endHour: 6 },
+      { location: "Ruby's Bathroom", startHour: 6, endHour: 7 },
+      { location: "Gym", startHour: 7, endHour: 14 },
+      { location: "Ruby's Living Room", startHour: 14, endHour: 17 },
       { location: "Gym", startHour: 17, endHour: 21 },
-      { location: "Living Room", startHour: 21, endHour: 24 },
+      { location: "Ruby's Bathroom", startHour: 21, endHour: 22 },
+      { location: "Ruby's Living Room", startHour: 22, endHour: 23 },
     ],
     Wednesday: [
-      { location: "Bedroom", startHour: 0, endHour: 6 },
-      { location: "Gym", startHour: 6, endHour: 14 },
-      { location: "Living Room", startHour: 14, endHour: 17 },
+      { location: "Ruby's Bedroom", startHour: 0, endHour: 6 },
+      { location: "Ruby's Bathroom", startHour: 6, endHour: 7 },
+      { location: "Gym", startHour: 7, endHour: 14 },
+      { location: "Ruby's Living Room", startHour: 14, endHour: 17 },
       { location: "Gym", startHour: 17, endHour: 21 },
-      { location: "Living Room", startHour: 21, endHour: 24 },
+      { location: "Ruby's Bathroom", startHour: 21, endHour: 22 },
+      { location: "Ruby's Living Room", startHour: 22, endHour: 23 },
     ],
     Thursday: [
-      { location: "Bedroom", startHour: 0, endHour: 6 },
-      { location: "Gym", startHour: 6, endHour: 14 },
-      { location: "Living Room", startHour: 14, endHour: 17 },
+      { location: "Ruby's Bedroom", startHour: 0, endHour: 6 },
+      { location: "Ruby's Bathroom", startHour: 6, endHour: 7 },
+      { location: "Gym", startHour: 7, endHour: 14 },
+      { location: "Ruby's Living Room", startHour: 14, endHour: 17 },
       { location: "Gym", startHour: 17, endHour: 21 },
-      { location: "Living Room", startHour: 21, endHour: 24 },
+      { location: "Ruby's Bathroom", startHour: 21, endHour: 22 },
+      { location: "Ruby's Living Room", startHour: 22, endHour: 23 },
     ],
     Friday: [
-      { location: "Bedroom", startHour: 0, endHour: 6 },
-      { location: "Gym", startHour: 6, endHour: 14 },
-      { location: "Beach", startHour: 14, endHour: 19 }, // Afternoon off
-      { location: "Living Room", startHour: 19, endHour: 24 },
+      { location: "Ruby's Bedroom", startHour: 0, endHour: 6 },
+      { location: "Ruby's Bathroom", startHour: 6, endHour: 7 },
+      { location: "Gym", startHour: 7, endHour: 14 },
+      { location: "Beach", startHour: 14, endHour: 19 },
+      { location: "Ruby's Bathroom", startHour: 19, endHour: 20 },
+      { location: "Ruby's Living Room", startHour: 20, endHour: 23 },
     ],
     Saturday: [
-      { location: "Bedroom", startHour: 0, endHour: 7 },
-      { location: "Gym", startHour: 7, endHour: 13 }, // Morning classes
-      { location: "Living Room", startHour: 13, endHour: 24 }, // Day off
+      { location: "Ruby's Bedroom", startHour: 0, endHour: 7 },
+      { location: "Ruby's Bathroom", startHour: 7, endHour: 8 },
+      { location: "Gym", startHour: 8, endHour: 13 },
+      { location: "Ruby's Living Room", startHour: 13, endHour: 23 },
     ],
     Sunday: [
-      { location: "Bedroom", startHour: 0, endHour: 9 },
-      { location: "Living Room", startHour: 9, endHour: 12 },
+      { location: "Ruby's Bedroom", startHour: 0, endHour: 9 },
+      { location: "Ruby's Living Room", startHour: 9, endHour: 12 },
       { location: "Beach", startHour: 12, endHour: 17 }, // Relax
-      { location: "Living Room", startHour: 17, endHour: 24 },
+      { location: "Ruby's Living Room", startHour: 17, endHour: 24 },
     ],
   },
 };
