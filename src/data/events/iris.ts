@@ -1,0 +1,262 @@
+// src/data/events/iris.ts
+import { CharacterEvent } from "./types";
+
+export const irisEvents: CharacterEvent[] = [
+  {
+    id: "iris_coffee_date",
+    name: "Coffee Date with Iris",
+    description: "Iris invites you for coffee after building some affection",
+    priority: 100,
+    repeatable: false,
+    cooldownHours: 48,
+    conditions: {
+      minAffection: 15,
+      minTrust: 10,
+      minHour: 12,
+      maxHour: 18,
+      requiredLocation: "Cafe",
+    },
+    dialogue: {
+      id: "iris_coffee_date_dialogue",
+      lines: [
+        {
+          speaker: "Iris",
+          text: "Frank, I'm glad we could meet here...",
+          expression: "neutral",
+        },
+        {
+          speaker: "Iris",
+          text: "I wanted to... talk to you about something.",
+          expression: "shy",
+        },
+        {
+          speaker: "You",
+          text: "Of course. What's on your mind?",
+        },
+        {
+          speaker: "Iris",
+          text: "I've been thinking... we've been spending time together and...",
+          expression: "neutral",
+        },
+        {
+          speaker: "Iris",
+          text: "I really enjoy your company. More than I expected.",
+          expression: "happy",
+        },
+        {
+          speaker: "You",
+          text: "How do you respond?",
+          choices: [
+            {
+              text: "I enjoy spending time with you too, Iris.",
+              affectionChange: 5,
+              trustChange: 3,
+              moodChange: 5,
+            },
+            {
+              text: "We're just friends, Iris. Let's not complicate things.",
+              affectionChange: -10,
+              trustChange: -5,
+              moodChange: -15,
+            },
+            {
+              text: "I've been wanting to tell you the same thing.",
+              affectionChange: 8,
+              trustChange: 5,
+              moodChange: 8,
+            },
+          ],
+        },
+        {
+          speaker: "Iris",
+          text: "Thank you for being honest with me, Frank.",
+          expression: "love",
+        },
+      ],
+    },
+  },
+
+  {
+    id: "iris_research_help",
+    name: "Help Iris with Research",
+    description: "Iris needs help with academic research",
+    priority: 80,
+    repeatable: true,
+    cooldownHours: 72,
+    conditions: {
+      minAffection: 20,
+      minPlayerIntelligence: 15,
+      requiredLocation: "Office",
+      minHour: 9,
+      maxHour: 17,
+    },
+    dialogue: {
+      id: "iris_research_help_dialogue",
+      lines: [
+        {
+          speaker: "Iris",
+          text: "Frank, could you help me with something?",
+          expression: "neutral",
+        },
+        {
+          speaker: "You",
+          text: "Sure, what do you need?",
+        },
+        {
+          speaker: "Iris",
+          text: "I'm working on a paper about the intersection of technology and literature...",
+          expression: "neutral",
+        },
+        {
+          speaker: "Iris",
+          text: "Your expertise in programming could provide a unique perspective.",
+          expression: "happy",
+        },
+        {
+          speaker: null,
+          text: "You spend the next few hours discussing algorithms as narrative devices.",
+        },
+        {
+          speaker: "Iris",
+          text: "Thank you so much! This is exactly what I needed.",
+          expression: "love",
+        },
+      ],
+    },
+    rewards: {
+      playerStats: {
+        intelligence: 2,
+      },
+    },
+  },
+
+  {
+    id: "iris_confession",
+    name: "Iris's Confession",
+    description: "Iris confesses her feelings",
+    priority: 200,
+    repeatable: false,
+    conditions: {
+      minAffection: 50,
+      minTrust: 40,
+      minLove: 30,
+      requiredLocation: "Living Room",
+      minHour: 18,
+      requiredPreviousEvents: ["iris_coffee_date"],
+    },
+    dialogue: {
+      id: "iris_confession_dialogue",
+      lines: [
+        {
+          speaker: null,
+          text: "Iris sits down next to you, her hands trembling slightly.",
+        },
+        {
+          speaker: "Iris",
+          text: "Frank... I need to tell you something important.",
+          expression: "nervous",
+        },
+        {
+          speaker: "You",
+          text: "What is it, Iris?",
+        },
+        {
+          speaker: "Iris",
+          text: "I... I've developed feelings for you. Real feelings.",
+          expression: "love",
+        },
+        {
+          speaker: "Iris",
+          text: "I know this complicates things with Dawn, but I couldn't keep it to myself anymore.",
+          expression: "sad",
+        },
+        {
+          speaker: "You",
+          text: "How do you respond?",
+          choices: [
+            {
+              text: "I have feelings for you too, Iris.",
+              affectionChange: 20,
+              trustChange: 15,
+              moodChange: 20,
+            },
+            {
+              text: "I need time to think about this.",
+              affectionChange: 0,
+              trustChange: 5,
+              moodChange: -5,
+            },
+            {
+              text: "I'm sorry, but I can't return those feelings.",
+              affectionChange: -15,
+              trustChange: -10,
+              moodChange: -25,
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  {
+    id: "iris_jealous_dawn",
+    name: "Iris is Jealous of Dawn",
+    description: "Iris notices your interactions with Dawn",
+    priority: 90,
+    repeatable: false,
+    conditions: {
+      minAffection: 30,
+      minLove: 20,
+      // This would require tracking Dawn's affection too
+      // You could add a custom check in the game logic
+    },
+    dialogue: {
+      id: "iris_jealous_dialogue",
+      lines: [
+        {
+          speaker: "Iris",
+          text: "Frank... can we talk?",
+          expression: "sad",
+        },
+        {
+          speaker: "You",
+          text: "Of course. What's wrong?",
+        },
+        {
+          speaker: "Iris",
+          text: "I've noticed you and Dawn have been... close lately.",
+          expression: "angry",
+        },
+        {
+          speaker: "Iris",
+          text: "She's my daughter. I don't want to compete with her for your affection.",
+          expression: "sad",
+        },
+        {
+          speaker: "You",
+          text: "How do you respond?",
+          choices: [
+            {
+              text: "There's nothing going on with Dawn. You're the one I care about.",
+              affectionChange: 10,
+              trustChange: 8,
+              moodChange: 15,
+            },
+            {
+              text: "I care about both of you. Why does it have to be a competition?",
+              affectionChange: -5,
+              trustChange: -3,
+              moodChange: -10,
+            },
+            {
+              text: "I'll be more careful about how I interact with Dawn.",
+              affectionChange: 5,
+              trustChange: 5,
+              moodChange: 5,
+            },
+          ],
+        },
+      ],
+    },
+  },
+];

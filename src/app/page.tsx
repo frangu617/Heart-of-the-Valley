@@ -41,6 +41,9 @@ import {
   locationDescriptions,
   getTimeOfDay,
 } from "../data/locationDescriptions";
+import { CharacterEventState } from "@/data/events/types";
+import { findTriggeredEvent, recordEventTrigger } from "@/lib/eventSystem";
+import { getCharacterEvents } from "@/data/events";
 
 type GameState = "mainMenu" | "intro" | "playing" | "paused" | "dialogue";
 
@@ -64,6 +67,9 @@ export default function GamePage() {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [girlStatsOverrides, setGirlStatsOverrides] = useState<
     Record<string, Partial<GirlStats>>
+  >({});
+  const [characterEventStates, setCharacterEventStates] = useState<
+    Record<string, CharacterEventState>
   >({});
 
   // 🔥 NEW: Compute girls with current locations based on schedule
@@ -139,7 +145,8 @@ export default function GamePage() {
       hour,
       dayOfWeek,
       metCharacters: Array.from(metCharacters),
-      girlStatsOverrides, // NEW: Save girl stats
+      girlStatsOverrides,
+      characterEventStates, // NEW: Save event states
       timestamp: new Date().toISOString(),
     };
     localStorage.setItem("datingSimSave", JSON.stringify(saveData));
@@ -156,7 +163,8 @@ const loadGame = () => {
     setHour(saveData.hour);
     setDayOfWeek(saveData.dayOfWeek || START_DAY);
     setMetCharacters(new Set(saveData.metCharacters || []));
-    setGirlStatsOverrides(saveData.girlStatsOverrides || {}); // NEW: Load girl stats
+    setGirlStatsOverrides(saveData.girlStatsOverrides || {});
+    setCharacterEventStates(saveData.characterEventStates || {}); // NEW: Load event states
     setSelectedGirl(null);
     setGameState("playing");
   }
@@ -183,11 +191,11 @@ const loadGame = () => {
     setDayOfWeek(START_DAY);
     setSelectedGirl(null);
     setMetCharacters(new Set());
-    setGirlStatsOverrides({}); // NEW: Reset girl stats
+    setGirlStatsOverrides({});
+    setCharacterEventStates({}); // NEW: Reset event states
     localStorage.removeItem("datingSimSave");
     setHasSaveData(false);
 
-    // Always show intro on New Game
     setGameState("intro");
     setCurrentDialogue(introDialogue);
   };
@@ -290,6 +298,20 @@ const loadGame = () => {
         }
       }
     }
+  };
+
+  const getOrCreateEventState = (
+    characterName: string
+  ): CharacterEventState => {
+    if (characterEventStates[characterName]) {
+      return characterEventStates[characterName];
+    }
+
+    return {
+      characterName,
+      eventHistory: [],
+      lastInteractionTime: 0,
+    };
   };
 
   const spendTime = (amount: number) => {
@@ -680,6 +702,22 @@ const loadGame = () => {
                 spendTime={spendTime}
                 onClose={() => setSelectedGirl(null)}
                 onStartDialogue={startDialogue}
+                dayOfWeek={dayOfWeek}
+                hour={hour}
+                eventState = {getOrCreateEventState(selectedGirl.name)}
+                onEventTriggered = {(eventId)} => {
+                  const newState = recordEventTrigger(
+        getOrCreateEventState(selectedGirl.name),
+        eventId,
+        dayOfWeek,
+        hour
+      );
+                const newState = recordEventTrigger(
+        getOrCreateEventState(selectedGirl.name),
+        eventId,
+        dayOfWeek,
+        hour
+      );
               />
             </div>
           ) : (

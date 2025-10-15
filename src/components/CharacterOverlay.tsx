@@ -1,12 +1,17 @@
+// src/components/CharacterOverlay.tsx - Updated with event system
 import { Girl, GirlStats } from "../data/characters";
 import { PlayerStats } from "../data/characters";
 import { Interaction, interactionMenu } from "../data/interactions";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useEffect } from "react";
 import {
   characterDialogues,
   getDefaultDialogue,
   Dialogue,
 } from "../data/dialogues/index";
+import { DayOfWeek } from "@/data/gameConstants";
+import { CharacterEventState } from "@/data/events/types";
+import { findTriggeredEvent } from "@/lib/eventSystem";
+import { getCharacterEvents } from "@/data/events";
 
 interface Props {
   girl: Girl;
@@ -20,6 +25,11 @@ interface Props {
     characterImage: string,
     girlEffects?: Partial<GirlStats>
   ) => void;
+  // NEW EVENT PROPS:
+  dayOfWeek: DayOfWeek;
+  hour: number;
+  eventState: CharacterEventState;
+  onEventTriggered: (eventId: string) => void;
 }
 
 export default function CharacterOverlay({
@@ -30,8 +40,64 @@ export default function CharacterOverlay({
   spendTime,
   onClose,
   onStartDialogue,
+  dayOfWeek,
+  hour,
+  eventState,
+  onEventTriggered,
 }: Props) {
+  // Check for triggered events when component mounts or dependencies change
+  useEffect(() => {
+    const events = getCharacterEvents(girl.name);
+    const triggeredEvent = findTriggeredEvent(
+      events,
+      girl,
+      player,
+      location,
+      dayOfWeek,
+      hour,
+      eventState
+    );
+
+    if (triggeredEvent) {
+      console.log(`🎉 Event triggered: ${triggeredEvent.name}`);
+
+      // Show event dialogue
+      const characterImage = `/images/characters/${girl.name.toLowerCase()}/faces/neutral.png`;
+
+      // Mark event as triggered
+      onEventTriggered(triggeredEvent.id);
+
+      // Start the event dialogue
+      onStartDialogue(triggeredEvent.dialogue, characterImage, null);
+
+      // Apply rewards if any
+      if (triggeredEvent.rewards) {
+        const updatedPlayer = { ...player };
+
+        if (triggeredEvent.rewards.playerMoney) {
+          updatedPlayer.money += triggeredEvent.rewards.playerMoney;
+        }
+
+        if (triggeredEvent.rewards.playerStats) {
+          if (triggeredEvent.rewards.playerStats.intelligence) {
+            updatedPlayer.intelligence +=
+              triggeredEvent.rewards.playerStats.intelligence;
+          }
+          if (triggeredEvent.rewards.playerStats.fitness) {
+            updatedPlayer.fitness += triggeredEvent.rewards.playerStats.fitness;
+          }
+          if (triggeredEvent.rewards.playerStats.style) {
+            updatedPlayer.style += triggeredEvent.rewards.playerStats.style;
+          }
+        }
+
+        setPlayer(updatedPlayer);
+      }
+    }
+  }, [girl.name, location, dayOfWeek, hour]); // Re-check when these change
+
   const interact = (action: Interaction) => {
+    // ... rest of your existing interact function stays the same
     // Check requirements
     if (
       action.requiresItem &&
@@ -50,7 +116,6 @@ export default function CharacterOverlay({
     if (action.label === "Hug") {
       if (girl.stats.affection < 20) {
         alert(`${girl.name} doesn't seem comfortable with that right now...`);
-        // Apply negative effect
         const updatedStats = { ...player };
         updatedStats.mood = Math.max(0, updatedStats.mood - 10);
         setPlayer(updatedStats);
@@ -92,7 +157,7 @@ export default function CharacterOverlay({
     const dialogue =
       characterDialogues[girl.name]?.[action.label] ||
       getDefaultDialogue(girl.name, action.label);
-    const characterImage = `/images/characters${girl.name.toLowerCase()}/faces/${getFacialExpression()}.png`;
+    const characterImage = `/images/characters/${girl.name.toLowerCase()}/faces/${getFacialExpression()}.png`;
 
     // Show what stats will change
     if (action.girlEffects) {
@@ -118,6 +183,8 @@ export default function CharacterOverlay({
 
     onStartDialogue(dialogue, characterImage, action.girlEffects);
   };
+
+  // ... rest of your component (getActionIcon, getActionColor, getFacialExpression, etc.) stays the same
 
   const getActionIcon = (type: string) => {
     switch (type) {
@@ -153,17 +220,9 @@ export default function CharacterOverlay({
     }
   };
 
-  // Get facial expression based on relationship stats
   const getFacialExpression = () => {
     const { affection, mood, love } = girl.stats;
     const totalPositive = affection + love;
-
-    // You can place different facial expression images like:
-    // /images/faces/{charactername}_happy.png
-    // /images/faces/{charactername}_neutral.png
-    // /images/faces/{charactername}_sad.png
-    // /images/faces/{charactername}_love.png
-    // /images/faces/{charactername}_angry.png
 
     if (love >= 50 || totalPositive >= 80) return "love";
     if (affection >= 40 && mood >= 60) return "happy";
@@ -176,7 +235,7 @@ export default function CharacterOverlay({
 
   return (
     <div className="bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 rounded-2xl shadow-xl p-6 border-4 border-purple-200 sticky top-4 animate-slideUp">
-      {/* Close Button */}
+      {/* ... rest of your JSX stays exactly the same ... */}
       <button
         onClick={onClose}
         className="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition-all z-10 shadow-lg"
@@ -184,7 +243,6 @@ export default function CharacterOverlay({
         ✕
       </button>
 
-      {/* Character Face Portrait */}
       <div className="flex flex-col items-center mb-6">
         <div className="relative group mb-4">
           <div className="absolute inset-0 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full blur-lg group-hover:blur-xl transition-all"></div>
@@ -192,10 +250,8 @@ export default function CharacterOverlay({
             src={`/images/characters/${girl.name.toLowerCase()}/faces/${expression}.png`}
             alt={`${girl.name} - ${expression}`}
             onError={(e) => {
-              // Fallback to neutral if expression image doesn't exist
               e.currentTarget.src = `neutral.png`;
               e.currentTarget.onerror = () => {
-                // Final fallback if no face images exist
                 e.currentTarget.src =
                   'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><circle cx="100" cy="100" r="100" fill="%23e879f9"/><circle cx="70" cy="80" r="10" fill="white"/><circle cx="130" cy="80" r="10" fill="white"/><path d="M 60 130 Q 100 150 140 130" stroke="white" stroke-width="5" fill="none"/></svg>';
               };
@@ -214,7 +270,6 @@ export default function CharacterOverlay({
         </div>
       </div>
 
-      {/* Character Stats */}
       <div className="bg-white rounded-xl p-4 mb-4 space-y-2 shadow-md">
         <h4 className="font-bold text-purple-700 text-center mb-2 text-sm">
           Relationship
@@ -245,7 +300,6 @@ export default function CharacterOverlay({
         </div>
       </div>
 
-      {/* Interaction Menu */}
       <div className="space-y-2">
         <h4 className="text-lg font-bold text-purple-800 mb-3 text-center">
           💝 Actions
@@ -291,7 +345,6 @@ export default function CharacterOverlay({
         })}
       </div>
 
-      {/* Tip */}
       <div className="mt-4 bg-white rounded-lg p-3 border-2 border-purple-200 shadow">
         <p className="text-xs text-gray-600 text-center">
           <span className="font-semibold text-purple-600">💡</span> Different
