@@ -12,10 +12,10 @@ interface Props {
   }) => void;
   darkMode?: boolean;
   characterImage?: string;
-  onSkip?: () => void; // Optional skip callback for intro
-
-  // ✅ NEW: when a choice wants to jump to a different dialogue/event
+  onSkip?: () => void;
   onNextDialogueId?: (id: string) => void;
+  isMobile?: boolean;
+  locationImage?: string;
 }
 
 export default function DialogueBox({
@@ -25,6 +25,8 @@ export default function DialogueBox({
   characterImage,
   onSkip,
   onNextDialogueId,
+  isMobile = false,
+  locationImage,
 }: Props) {
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
@@ -39,7 +41,6 @@ export default function DialogueBox({
   const currentLine = dialogue.lines[currentLineIndex];
   const isLastLine = currentLineIndex === dialogue.lines.length - 1;
 
-  // Optional media fields; we read them without forcing your global types to change
   const imageSlide: string | undefined = (currentLine as any)?.imageSlide;
   const videoSlide: string | undefined = (currentLine as any)?.videoSlide;
   const videoAutoPlay: boolean | undefined = (currentLine as any)
@@ -49,6 +50,7 @@ export default function DialogueBox({
 
   const hasImageSlide = !!imageSlide;
   const hasVideoSlide = !!videoSlide;
+  const hasEventMedia = hasImageSlide || hasVideoSlide;
   const isNarration = currentLine?.speaker === null;
 
   const handleNext = useCallback(() => {
@@ -65,7 +67,6 @@ export default function DialogueBox({
     }
   }, [isTyping, isLastLine, currentLine, onComplete, accumulatedStatChanges]);
 
-  // Typewriter effect
   useEffect(() => {
     if (!currentLine) return;
 
@@ -83,7 +84,7 @@ export default function DialogueBox({
         index++;
       } else {
         setIsTyping(false);
-        setShowContinue(!currentLine.choices); // Don't show continue if there are choices
+        setShowContinue(!currentLine.choices);
         clearInterval(interval);
       }
     }, typingSpeed);
@@ -92,7 +93,6 @@ export default function DialogueBox({
   }, [currentLineIndex, currentLine]);
 
   const handleChoice = (choice: DialogueChoice) => {
-    // Accumulate stat changes
     const newChanges = { ...accumulatedStatChanges };
     if (choice.affectionChange)
       newChanges.affection =
@@ -103,13 +103,11 @@ export default function DialogueBox({
       newChanges.trust = (newChanges.trust || 0) + choice.trustChange;
     setAccumulatedStatChanges(newChanges);
 
-    // ✅ Route to another dialogue/event if requested
     if (choice.nextDialogueId && onNextDialogueId) {
       onNextDialogueId(choice.nextDialogueId);
       return;
     }
 
-    // Otherwise, normal progression
     if (isLastLine) {
       onComplete(newChanges);
     } else {
@@ -117,7 +115,6 @@ export default function DialogueBox({
     }
   };
 
-  // Click or Space/Enter to continue (unless choices present)
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (currentLine?.choices) return;
@@ -134,8 +131,46 @@ export default function DialogueBox({
   if (!currentLine) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center pointer-events-none">
-      {/* Skip Button (top-right) */}
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-between pointer-events-none">
+      {/* ===== BACKGROUND LAYER ===== */}
+      {/* Event Media - Full Screen Background */}
+      {hasImageSlide && (
+        <img
+          src={imageSlide}
+          alt="Background"
+          onError={(e) => {
+            e.currentTarget.src =
+              'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23666" width="1920" height="1080"/></svg>';
+          }}
+          className="absolute inset-0 w-full h-full object-cover opacity-30 z-0"
+        />
+      )}
+
+      {hasVideoSlide && (
+        <video
+          src={videoSlide}
+          autoPlay={videoAutoPlay ?? true}
+          loop={videoBoomerang ?? true}
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover opacity-30 z-0"
+        />
+      )}
+
+      {/* Location Background - When NO Event */}
+      {!hasEventMedia && locationImage && (
+        <img
+          src={locationImage}
+          alt="Location Background"
+          onError={(e) => {
+            e.currentTarget.src =
+              'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23333" width="1920" height="1080"/></svg>';
+          }}
+          className="absolute inset-0 w-full h-full object-cover opacity-40 z-0"
+        />
+      )}
+
+      {/* Skip Button */}
       {onSkip && (
         <button
           onClick={onSkip}
@@ -154,50 +189,117 @@ export default function DialogueBox({
         </button>
       )}
 
-      {/* Background Image Slide */}
-      {hasImageSlide && (
-        <div className="absolute inset-0 pointer-events-none">
-          <img
-            src={imageSlide}
-            alt="Scene"
-            onError={(e) => {
-              e.currentTarget.src =
-                'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23666" width="1920" height="1080"/><text x="50%" y="50%" font-size="48" text-anchor="middle" fill="white">Image Coming Soon</text></svg>';
-            }}
-            className="w-full h-full object-cover opacity-50"
-          />
-          <div className="absolute inset-0 bg-black/40" />
+      {/* ===== DESKTOP + EVENT: Framed Image/Video in Middle ===== */}
+      {!isMobile && hasEventMedia && (
+        <div className="flex-1 flex items-center justify-center pointer-events-none z-30 pt-8">
+          <div className="relative w-11/12 max-w-4xl aspect-[4/3] bg-gradient-to-b from-gray-100 to-white rounded-2xl shadow-2xl overflow-hidden border-4 border-purple-300">
+            {hasImageSlide && (
+              <img
+                src={imageSlide}
+                alt="Scene"
+                onError={(e) => {
+                  e.currentTarget.src =
+                    'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23666" width="1920" height="1080"/><text x="50%" y="50%" font-size="48" text-anchor="middle" fill="white">Image Coming Soon</text></svg>';
+                }}
+                className="w-full h-full object-cover"
+              />
+            )}
+            {hasVideoSlide && (
+              <video
+                src={videoSlide}
+                autoPlay={videoAutoPlay ?? true}
+                loop={videoBoomerang ?? true}
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+              />
+            )}
+          </div>
         </div>
       )}
 
-      {/* Background Video Slide */}
-      {hasVideoSlide && (
-        <div className="absolute inset-0 pointer-events-none">
-          <video
-            src={videoSlide}
-            autoPlay={videoAutoPlay ?? true}
-            loop={videoBoomerang ?? true}
-            muted
-            playsInline
-            className="w-full h-full object-cover opacity-50"
-          />
-          <div className="absolute inset-0 bg-black/40" />
-        </div>
-      )}
+      {/* ===== MOBILE + EVENT: Portrait Small in Dialogue Box ===== */}
+      {/* (will be rendered in dialogue box section below) */}
 
-      {/* Character Portrait (hidden if media slide is active) */}
-      {!isNarration && !hasImageSlide && !hasVideoSlide && characterImage && (
-        <div className="absolute left-8 bottom-40 pointer-events-none animate-fadeIn">
+      {/* ===== DESKTOP + EVENT: Portrait High on Left ===== */}
+      {!isMobile && hasEventMedia && !isNarration && characterImage && (
+        <div className="absolute left-16 top-32 pointer-events-none animate-fadeIn z-20">
           <img
             src={characterImage}
             alt={currentLine.speaker || "Character"}
+            onError={(e) => {
+              const el = e.currentTarget;
+              el.src =
+                'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="%23e879f9" width="200" height="300"/><circle cx="60" cy="80" r="15" fill="white"/><circle cx="140" cy="80" r="15" fill="white"/><path d="M 70 150 Q 100 180 130 150" stroke="white" stroke-width="8" fill="none"/></svg>';
+            }}
             className="w-64 h-96 object-cover object-top rounded-2xl border-4 border-white shadow-2xl"
           />
         </div>
       )}
 
-      {/* Dialogue Box */}
-      <div className="w-full max-w-5xl mx-4 mb-8 pointer-events-auto animate-slideUp mt-auto">
+      {/* ===== DESKTOP + NO EVENT: Large Portrait Center (before dialogue) ===== */}
+      {!isMobile && !hasEventMedia && !isNarration && characterImage && (
+        <div className="flex-1 flex items-center justify-center pointer-events-none z-20 pt-12">
+          <img
+            src={characterImage}
+            alt={currentLine.speaker || "Character"}
+            onError={(e) => {
+              const el = e.currentTarget;
+              el.src =
+                'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="%23e879f9" width="200" height="300"/><circle cx="60" cy="80" r="15" fill="white"/><circle cx="140" cy="80" r="15" fill="white"/><path d="M 70 150 Q 100 180 130 150" stroke="white" stroke-width="8" fill="none"/></svg>';
+            }}
+            className="w-80 h-full max-h-96 object-cover object-top rounded-3xl border-4 border-white shadow-2xl animate-fadeIn"
+          />
+        </div>
+      )}
+
+      {/* ===== MOBILE + NO EVENT: Large Portrait Center ===== */}
+      {isMobile && !hasEventMedia && !isNarration && characterImage && (
+        <div className="flex-1 flex items-center justify-center pointer-events-none z-20">
+          <img
+            src={characterImage}
+            alt={currentLine.speaker || "Character"}
+            onError={(e) => {
+              const el = e.currentTarget;
+              el.src =
+                'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="%23e879f9" width="200" height="300"/><circle cx="60" cy="80" r="15" fill="white"/><circle cx="140" cy="80" r="15" fill="white"/><path d="M 70 150 Q 100 180 130 150" stroke="white" stroke-width="8" fill="none"/></svg>';
+            }}
+            className="w-56 h-80 object-cover object-top rounded-2xl border-4 border-white shadow-2xl animate-fadeIn"
+          />
+        </div>
+      )}
+
+      {/* ===== MOBILE + EVENT: Framed Image/Video ===== */}
+      {isMobile && hasEventMedia && (
+        <div className="flex-1 flex items-center justify-center pointer-events-none z-30 pt-4">
+          <div className="relative w-11/12 max-w-2xl aspect-[4/3] bg-gradient-to-b from-gray-100 to-white rounded-xl shadow-2xl overflow-hidden border-4 border-purple-300">
+            {hasImageSlide && (
+              <img
+                src={imageSlide}
+                alt="Scene"
+                onError={(e) => {
+                  e.currentTarget.src =
+                    'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23666" width="1920" height="1080"/></svg>';
+                }}
+                className="w-full h-full object-cover"
+              />
+            )}
+            {hasVideoSlide && (
+              <video
+                src={videoSlide}
+                autoPlay={videoAutoPlay ?? true}
+                loop={videoBoomerang ?? true}
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+              />
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ===== DIALOGUE BOX - Always at bottom ===== */}
+      <div className="w-full max-w-5xl mx-4 mb-8 pointer-events-auto animate-slideUp mt-auto z-40">
         <div
           onClick={currentLine.choices ? undefined : handleNext}
           className={`
@@ -211,18 +313,33 @@ export default function DialogueBox({
             backdrop-blur-sm
           `}
         >
-          {/* Speaker Name */}
-          {!isNarration && (
-            <div
-              className={`
-              px-6 py-3 border-b-2 
-              ${
-                darkMode
-                  ? "border-purple-700 bg-purple-900/50"
-                  : "border-purple-200 bg-purple-50"
-              }
-            `}
-            >
+          {/* Header with optional mobile portrait */}
+          <div
+            className={`
+            flex items-start gap-4
+            px-6 py-3 border-b-2
+            ${
+              darkMode
+                ? "border-purple-700 bg-purple-900/50"
+                : "border-purple-200 bg-purple-50"
+            }
+          `}
+          >
+            {/* Mobile + Event: Small Portrait in Dialogue */}
+            {isMobile && hasEventMedia && !isNarration && characterImage && (
+              <img
+                src={characterImage}
+                alt={currentLine.speaker || "Character"}
+                onError={(e) => {
+                  const el = e.currentTarget;
+                  el.src =
+                    'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="%23e879f9" width="200" height="300"/><circle cx="60" cy="80" r="15" fill="white"/><circle cx="140" cy="80" r="15" fill="white"/><path d="M 70 150 Q 100 180 130 150" stroke="white" stroke-width="8" fill="none"/></svg>';
+                }}
+                className="w-16 h-20 object-cover object-top rounded-lg border-2 border-white flex-shrink-0"
+              />
+            )}
+
+            {!isNarration && (
               <h3
                 className={`text-xl font-bold ${
                   darkMode ? "text-purple-300" : "text-purple-800"
@@ -230,8 +347,8 @@ export default function DialogueBox({
               >
                 {currentLine.speaker}
               </h3>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Text + Choices */}
           <div className="px-8 py-6">

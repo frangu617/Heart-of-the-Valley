@@ -393,6 +393,7 @@ export default function GamePage() {
     );
   }
 
+  // ===== FIRST LOCATION updated: pass isMobile and locationImage =====
   if ((gameState === "intro" || gameState === "dialogue") && currentDialogue) {
     return (
       <div
@@ -415,8 +416,9 @@ export default function GamePage() {
                 }
               : undefined
           }
-          // ✅ wire the router
           onNextDialogueId={goToDialogueByEventId}
+          isMobile={isMobile}
+          locationImage={getCurrentLocationImage()}
         />
       </div>
     );
@@ -773,7 +775,7 @@ export default function GamePage() {
         />
       )}
 
-      {/* Safety: Dialogue while playing */}
+      {/* Safety: Dialogue while playing — updated to pass isMobile & locationImage */}
       {currentDialogue && gameState === "dialogue" && (
         <DialogueBox
           dialogue={currentDialogue}
@@ -781,6 +783,8 @@ export default function GamePage() {
           darkMode={darkMode}
           characterImage={currentRandomEvent ? "" : dialogueCharacterImage}
           onNextDialogueId={goToDialogueByEventId}
+          isMobile={isMobile}
+          locationImage={getCurrentLocationImage()}
         />
       )}
 

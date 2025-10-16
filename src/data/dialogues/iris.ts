@@ -14,16 +14,12 @@ export const irisFirstMeeting: Dialogue = {
     },
     {
       speaker: null,
-      text: "Professor Iris - she teaches literature. You've seen her around campus, and you're pretty sure she lives in your apartment building too.",
+      text: "Professor Iris - she teaches literature. You've known her for a while, and you are good friends.",
     },
     {
       speaker: "Iris",
       text: "I was just heading to grab some coffee. Would you... like to join me?",
       expression: "neutral",
-    },
-    {
-      speaker: null,
-      text: "She fidgets with her book, avoiding direct eye contact.",
     },
     {
       speaker: "You",
@@ -33,6 +29,7 @@ export const irisFirstMeeting: Dialogue = {
           text: "Sure, I could use some coffee.",
           affectionChange: 3,
           moodChange: 2,
+          nextDialogueId: "iris intro choice yes",
         },
         {
           text: "Maybe another time. I have work to do.",
@@ -47,7 +44,17 @@ export const irisFirstMeeting: Dialogue = {
       expression: "neutral",
     },
   ],
+  id: "iris intro choice yes",
+lines[
+  {
+    speaker:"Iris",
+    text:"Great, I'll see you later then!",
+    expression: "excited",
+  
+  }
+]
 };
+
 
 export const irisDialogues: Record<string, Dialogue> = {
   Chat: {
