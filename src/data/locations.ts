@@ -119,7 +119,7 @@ export const locationGraph: Record<string, Location[]> = {
       time: 0,
       image: "university_hallway.png",
     },
-    { name: "Parking Lot", cost: 0, time: 0, image: "parking_lot.png" },
+    { name: "University Parking Lot", cost: 0, time: 0, image: "university_parking_lot.png" },
     { name: "Street", cost: 0, time: 0, image: "street.png" },
   ],
   "University Hallway": [
@@ -169,7 +169,7 @@ export const locationGraph: Record<string, Location[]> = {
       image: "university_hallway.png",
     },
   ],
-  "Parking Lot": [
+  "University Parking Lot": [
     { name: "University", cost: 0, time: 0, image: "university.png" },
   ],
 };

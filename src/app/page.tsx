@@ -120,6 +120,8 @@ export default function GamePage() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+ 
+
   // girls with schedules + overrides
   const girls = useMemo(() => {
     return baseGirls.map((girl) => {
@@ -136,6 +138,17 @@ export default function GamePage() {
       };
     });
   }, [dayOfWeek, hour, girlStatsOverrides]);
+
+ useEffect(() => {
+    if (selectedGirl) {
+      const stillPresent = girls.find(
+        (g) => g.name === selectedGirl.name && g.location === currentLocation
+      );
+      if (!stillPresent) {
+        setSelectedGirl(null);
+      }
+    }
+  }, [girls, selectedGirl, currentLocation]);
 
   // save/load
   const saveGame = () => {
@@ -206,7 +219,7 @@ export default function GamePage() {
     setDialogueGirlEffects(girlEffects);
 
     if (characterImage) {
-      const m = characterImage.match(/\/([^/]+)\//);
+      const m = characterImage.match(/\/characters\/([^/]+)\//); 
       if (m) setDialogueGirlName(m[1].charAt(0).toUpperCase() + m[1].slice(1));
     }
 
@@ -243,6 +256,7 @@ export default function GamePage() {
     setDialogueCharacterImage("");
     setDialogueGirlEffects(null);
     setDialogueGirlName("");
+    setSelectedGirl(null);
     setGameState("playing");
   };
 
@@ -362,6 +376,9 @@ export default function GamePage() {
         energy: Math.min(100, prev.energy + 30),
         hunger: Math.min(100, prev.hunger + 20),
       }));
+
+      // Clear selected girl when day changes  ← NEW LINE
+    setSelectedGirl(null);  //← NEW LINE
 
       alert(`A new day begins! It's ${nextDay} morning.`);
     } else {
