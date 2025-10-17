@@ -22,6 +22,7 @@ type Props = {
   spendTime: (amount: number) => void;
   darkMode?: boolean;
   dayOfWeek: DayOfWeek;
+  onUnlockCharacter?: (characterName: string) => void;
 };
 
 export default function LocationActivitiesPanel({
@@ -31,6 +32,7 @@ export default function LocationActivitiesPanel({
   spendTime,
   darkMode,
   dayOfWeek,
+  onUnlockCharacter,
 }: Props) {
   const activities: LocationActivity[] = activitiesMap[location] ?? [];
 
@@ -120,6 +122,27 @@ export default function LocationActivitiesPanel({
 
     setPlayer(next);
     spendTime(act.timeCost ?? 1);
+    //Unlock Ruby when working out at Gym
+    if (
+      location === "Gym" &&
+      (act.name === "Workout" || act.name === "Light Exercise")
+    ) {
+      // Notify parent component to unlock Ruby
+      if (onUnlockCharacter) {
+        onUnlockCharacter("Ruby");
+      }
+    }
+
+    //Unlock Yumi after teaching class
+    if (
+      location === "Classroom" &&
+      act.name === "Teach Class"
+    ) {
+      // Notify parent component to unlock Yumi
+      if (onUnlockCharacter) {
+        onUnlockCharacter("Yumi");
+      }
+    }
 
     showActivityFeedback(fullActivity);
   };

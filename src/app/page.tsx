@@ -84,6 +84,19 @@ export default function GamePage() {
   const [currentRandomEvent, setCurrentRandomEvent] =
     useState<RandomEvent | null>(null);
 
+  //Characters lock status
+  const [characterUnlocks, setCharacterUnlocks] = useState<{
+    Yumi: boolean;
+    Gwen: boolean;
+    Dawn: boolean;
+    Ruby: boolean;
+  }>({
+    Yumi: false,
+    Gwen: false,
+    Dawn: false,
+    Ruby: false,
+  });
+
   // helpers
   const getGameTimeHours = useCallback((day: DayOfWeek, h: number) => {
     const idx = Math.max(0, DAYS_OF_WEEK.indexOf(day));
@@ -124,20 +137,33 @@ export default function GamePage() {
 
   // girls with schedules + overrides
   const girls = useMemo(() => {
-    return baseGirls.map((girl) => {
-      const scheduledLocation = getScheduledLocation(
-        girl.name,
-        dayOfWeek,
-        hour
-      );
-      const override = girlStatsOverrides[girl.name];
-      return {
-        ...girl,
-        location: scheduledLocation || girl.location,
-        stats: override ? { ...girl.stats, ...override } : girl.stats,
-      };
-    });
-  }, [dayOfWeek, hour, girlStatsOverrides]);
+    return baseGirls
+      .filter((girl) => {
+        // Iris is always available
+        if (girl.name === "Iris") return true;
+
+        // Other characters require unlocking
+        if (girl.name === "Yumi") return characterUnlocks.Yumi;
+        if (girl.name === "Gwen") return characterUnlocks.Gwen;
+        if (girl.name === "Dawn") return characterUnlocks.Dawn;
+        if (girl.name === "Ruby") return characterUnlocks.Ruby;
+
+        return true; // Default: show character
+      })
+      .map((girl) => {
+        const scheduledLocation = getScheduledLocation(
+          girl.name,
+          dayOfWeek,
+          hour
+        );
+        const override = girlStatsOverrides[girl.name];
+        return {
+          ...girl,
+          location: scheduledLocation || girl.location,
+          stats: override ? { ...girl.stats, ...override } : girl.stats,
+        };
+      });
+  }, [dayOfWeek, hour, girlStatsOverrides, characterUnlocks]);
 
  useEffect(() => {
     if (selectedGirl) {
@@ -160,6 +186,7 @@ export default function GamePage() {
       metCharacters: Array.from(metCharacters),
       girlStatsOverrides,
       characterEventStates,
+      characterUnlocks,
       timestamp: new Date().toISOString(),
     };
     localStorage.setItem("datingSimSave", JSON.stringify(saveData));
@@ -178,6 +205,15 @@ export default function GamePage() {
     setMetCharacters(new Set(data.metCharacters ?? []));
     setGirlStatsOverrides(data.girlStatsOverrides ?? {});
     setCharacterEventStates(data.characterEventStates ?? {});
+    setCharacterUnlocks(
+      data.characterUnlocks ?? {
+        // ADD THIS
+        Yumi: false,
+        Gwen: false,
+        Dawn: false,
+        Ruby: false,
+      }
+    );
     setSelectedGirl(null);
     setGameState("playing");
   };
@@ -191,6 +227,15 @@ export default function GamePage() {
     setMetCharacters(new Set());
     setGirlStatsOverrides({});
     setCharacterEventStates({});
+    setCharacterUnlocks(
+       {
+        // ADD THIS
+        Yumi: false,
+        Gwen: false,
+        Dawn: false,
+        Ruby: false,
+      }
+    );
     localStorage.removeItem("datingSimSave");
     setHasSaveData(false);
 
@@ -249,6 +294,10 @@ export default function GamePage() {
           ...prev,
           [dialogueGirlName]: newStats,
         }));
+        //Unlock Dawn after first interaction with Iris
+        if (dialogueGirlName === "Iris" && !characterUnlocks.Dawn) {
+          setCharacterUnlocks((prev) => ({ ...prev, Dawn: true }));
+        }
       }
     }
 
@@ -284,6 +333,20 @@ export default function GamePage() {
   const moveTo = (location: string) => {
     setCurrentLocation(location);
     setSelectedGirl(null);
+
+   // Unlock Gwen when entering Hallway after 5 PM
+  if (location === "Hallway" && hour >= 17 && !characterUnlocks.Gwen) {
+    setCharacterUnlocks((prev) => ({ ...prev, Gwen: true }));
+    
+    // Trigger Gwen's first meeting
+    const firstMeeting = firstMeetingDialogues["Gwen"];
+    if (firstMeeting) {
+      const characterImage = "/images/characters/gwen/faces/neutral.png";
+      setMetCharacters(new Set([...metCharacters, "Gwen"]));
+      startDialogue(firstMeeting, characterImage, null);
+      return;
+    }
+  }
 
     // first meeting check
     const charactersHere = girls.filter((g) => g.location === location);
@@ -595,7 +658,11 @@ export default function GamePage() {
                 {/* Characters */}
                 <div className="absolute inset-0 flex items-end justify-around px-4 md:px-8 pb-8 md:pb-4">
                   {presentGirls.map((girl, index) => {
-                    const imgPath = getCharacterImage(girl, currentLocation, hour);
+                    const imgPath = getCharacterImage(
+                      girl,
+                      currentLocation,
+                      hour
+                    );
                     return (
                       <button
                         key={girl.name}
@@ -774,6 +841,9 @@ export default function GamePage() {
                 spendTime={spendTime}
                 darkMode={darkMode}
                 dayOfWeek={dayOfWeek}
+                onUnlockCharacter={(name) => {
+                  setCharacterUnlocks((prev) => ({ ...prev, [name]: true }));
+                }}
               />
             </div>
           )}
