@@ -349,18 +349,18 @@ export default function GamePage() {
   }
 
     // first meeting check
-    const charactersHere = girls.filter((g) => g.location === location);
-    for (const girl of charactersHere) {
-      if (!metCharacters.has(girl.name)) {
-        const firstMeeting = firstMeetingDialogues[girl.name];
-        if (firstMeeting) {
-          const characterImage = `/images/characters/${girl.name.toLowerCase()}/faces/neutral.png`;
-          setMetCharacters(new Set([...metCharacters, girl.name]));
-          startDialogue(firstMeeting, characterImage, null);
-          return; // don't immediately trigger random event
-        }
-      }
-    }
+    // const charactersHere = girls.filter((g) => g.location === location);
+    // for (const girl of charactersHere) {
+    //   if (!metCharacters.has(girl.name)) {
+    //     const firstMeeting = firstMeetingDialogues[girl.name];
+    //     if (firstMeeting) {
+    //       const characterImage = `/images/characters/${girl.name.toLowerCase()}/faces/neutral.png`;
+    //       setMetCharacters(new Set([...metCharacters, girl.name]));
+    //       startDialogue(firstMeeting, characterImage, null);
+    //       return; // don't immediately trigger random event
+    //     }
+    //   }
+    // }
 
     // random event roll
     const randomEvent = checkRandomEvent(location, hour, dayOfWeek, player);
