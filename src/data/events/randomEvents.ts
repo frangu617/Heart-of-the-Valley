@@ -449,7 +449,7 @@ export const randomEvents: RandomEvent[] = [
     id: "gwen_ntr",
     name: "See Gwen getting big dick!",
     type: "observation",
-    probability: 100,
+    probability: 1,
     conditions: {
       locations: ["Strip Club"],
       hourRange: { min: 0, max: 23 },

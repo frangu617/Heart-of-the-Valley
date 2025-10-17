@@ -1,6 +1,6 @@
 // src/lib/randomEventSystem.ts
 import { RandomEvent, randomEvents } from "@/data/events/randomEvents";
-import { PlayerStats, Girl } from "@/data/characters";
+import { PlayerStats } from "@/data/characters";
 import { DayOfWeek } from "@/data/gameConstants";
 
 export type RandomEventTriggerResult = {

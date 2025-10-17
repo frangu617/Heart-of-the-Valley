@@ -68,7 +68,7 @@ export default function CharacterOverlay({
       onEventTriggered(triggeredEvent.id);
 
       // Start the event dialogue
-      onStartDialogue(triggeredEvent.dialogue, characterImage, null);
+      onStartDialogue(triggeredEvent.dialogue, characterImage, undefined);
 
       // Apply rewards if any
       if (triggeredEvent.rewards) {
@@ -94,7 +94,7 @@ export default function CharacterOverlay({
         setPlayer(updatedPlayer);
       }
     }
-  }, [girl.name, location, dayOfWeek, hour]); // Re-check when these change
+  }, [girl, girl.name, girl.stats, location, dayOfWeek, hour, eventState, player, onEventTriggered, onStartDialogue, setPlayer]); // Re-check when these change
 
   const interact = (action: Interaction) => {
     // ... rest of your existing interact function stays the same
@@ -162,7 +162,7 @@ export default function CharacterOverlay({
     // Show what stats will change
     if (action.girlEffects) {
       const changes = Object.entries(action.girlEffects)
-        .filter(([_key, value]) => value !== 0)
+        .filter(([key, value]) => value !== 0)
         .map(([key, value]) => {
           const emoji =
             key === "affection"

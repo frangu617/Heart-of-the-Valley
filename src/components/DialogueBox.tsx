@@ -41,12 +41,10 @@ export default function DialogueBox({
   const currentLine = dialogue.lines[currentLineIndex];
   const isLastLine = currentLineIndex === dialogue.lines.length - 1;
 
-  const imageSlide: string | undefined = (currentLine as any)?.imageSlide;
-  const videoSlide: string | undefined = (currentLine as any)?.videoSlide;
-  const videoAutoPlay: boolean | undefined = (currentLine as any)
-    ?.videoAutoPlay;
-  const videoBoomerang: boolean | undefined = (currentLine as any)
-    ?.videoBoomerang;
+  const imageSlide: string | undefined = currentLine?.imageSlide;
+  const videoSlide: string | undefined = currentLine?.videoSlide;
+  const videoAutoPlay: boolean | undefined = currentLine?.videoAutoPlay;
+  const videoBoomerang: boolean | undefined = currentLine?.videoBoomerang;
 
   const hasImageSlide = !!imageSlide;
   const hasVideoSlide = !!videoSlide;

@@ -27,34 +27,60 @@ const locationToCategory: Record<string, LocationCategory> = {
   City: "casual",
   Street: "casual",
   Hallway: "home",
-  "Strip Club": "casual", // Gwen's work outfit
+  "Strip Club": "date",
+  // Iris's apartment
+  "Iris' Living Room": "home",
+  "Iris' Bedroom": "home",
+  "Iris' Kitchen": "home",
+  "Iris' Bathroom": "home",
+  "Dawn's bedroom": "home",
 };
+
+// Check if location is a home location
+const homeLocations = [
+  "Bedroom",
+  "Living Room",
+  "Kitchen",
+  "Bathroom",
+  "Hallway",
+  "Iris' Living Room",
+  "Iris' Bedroom",
+  "Iris' Kitchen",
+  "Iris' Bathroom",
+  "Dawn's bedroom",
+];
 
 // Determine relationship stance based on stats
 export function getRelationshipStance(girl: Girl): RelationshipStance {
   const { affection, love, trust } = girl.stats;
 
-  // In a relationship
   if (love >= 60) return "love";
-
-  // Very close but not in love yet
   if (affection >= 50 && trust >= 40) return "intimate";
-
-  // Getting comfortable
   if (affection >= 30) return "confident";
-
-  // Starting to open up
   if (affection >= 15 || trust >= 20) return "shy";
-
-  // Default
   return "neutral";
 }
 
-// Get the appropriate character image
-export function getCharacterImage(girl: Girl, location: string): string {
+// Get the appropriate character image with time-based outfit selection
+export function getCharacterImage(
+  girl: Girl,
+  location: string,
+  hour: number
+): string {
   const girlName = girl.name.toLowerCase();
-  const category = locationToCategory[location] || "casual";
+  let category = locationToCategory[location] || "casual";
   const stance = getRelationshipStance(girl);
+
+  // Special logic for home locations:
+  // Before 6 PM, use casual clothes
+  // After 6 PM, use home/pajama outfits
+  if (homeLocations.includes(location)) {
+    if (hour < 18) {
+      category = "casual";
+    } else {
+      category = "home";
+    }
+  }
 
   // Try specific combination first
   const specificImage = `/images/characters/${girlName}/${category}/${stance}.png`;
@@ -66,18 +92,22 @@ export function getCharacterImage(girl: Girl, location: string): string {
     `/images/characters/${girlName}/${category}_neutral.png`,
     `/images/characters/${girlName}/casual_${stance}.png`,
     `/images/characters/${girlName}/casual_neutral.png`,
-    `/images/${girlName}.png`, // Your current images
+    `/images/${girlName}.png`,
   ];
 
-  return fallbacks[0]; // Return primary, handle errors in component
+  return fallbacks[0];
 }
 
 // Get outfit description for image naming reference
-export function getOutfitDescription(location: string): string {
-  const category = locationToCategory[location] || "casual";
+export function getOutfitDescription(location: string, hour: number): string {
+  let category = locationToCategory[location] || "casual";
+
+  if (homeLocations.includes(location)) {
+    category = hour < 18 ? "casual" : "home";
+  }
 
   const descriptions: Record<LocationCategory, string> = {
-    home: "comfortable home clothes",
+    home: "comfortable home clothes/pajamas",
     gym: "athletic workout gear",
     university: "professional/academic attire",
     beach: "swimsuit or beach wear",

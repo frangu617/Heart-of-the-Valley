@@ -14,7 +14,7 @@ A narrative-driven dating simulation game built with Next.js, featuring dynamic 
 ### Characters
 - **Iris**: Shy literature professor and mother of Dawn
 - **Dawn**: Confident young woman, Iris's daughter
-- **Ruby**: Jealous personal trainer at the gym
+- **Ruby**: Athletic personal trainer at the gym
 - **Yumi**: Independent student in your programming class
 - **Gwen**: Bold neighbor with a mysterious side
 

@@ -298,7 +298,7 @@ export default function GamePage() {
   // rewards
   const applyRandomEventRewards = (rewards: RandomEvent["rewards"]) => {
     if (!rewards) return;
-    let updated = { ...player };
+    const updated = { ...player };
 
     if (typeof rewards.money === "number") {
       updated.money += rewards.money;
@@ -578,7 +578,7 @@ export default function GamePage() {
                 {/* Characters */}
                 <div className="absolute inset-0 flex items-end justify-around px-4 md:px-8 pb-8 md:pb-4">
                   {presentGirls.map((girl, index) => {
-                    const imgPath = getCharacterImage(girl, currentLocation);
+                    const imgPath = getCharacterImage(girl, currentLocation, hour);
                     return (
                       <button
                         key={girl.name}

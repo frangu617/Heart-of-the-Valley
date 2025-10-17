@@ -1,6 +1,6 @@
 // src/data/events/types.ts
 import { Dialogue } from "../dialogues";
-import { GirlStats } from "../characters";
+// import { GirlStats } from "../characters";
 
 export type EventConditions = {
   // Minimum stat requirements
