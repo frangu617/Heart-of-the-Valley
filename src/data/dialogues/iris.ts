@@ -44,15 +44,15 @@ export const irisFirstMeeting: Dialogue = {
       expression: "neutral",
     },
   ],
-  id: "iris intro choice yes",
-lines[
-  {
-    speaker:"Iris",
-    text:"Great, I'll see you later then!",
-    expression: "excited",
+  // id: "iris intro choice yes",
+// lines[
+//   {
+//     speaker:"Iris",
+//     text:"Great, I'll see you later then!",
+//     expression: "excited",
   
-  }
-]
+//   }
+// ]
 };
 
 
