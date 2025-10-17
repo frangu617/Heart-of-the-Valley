@@ -27,7 +27,7 @@ const locationToCategory: Record<string, LocationCategory> = {
   City: "casual",
   Street: "casual",
   Hallway: "home",
-  "Strip Club": "date", // Gwen's work outfit
+  "Strip Club": "casual", // Gwen's work outfit
 };
 
 // Determine relationship stance based on stats
