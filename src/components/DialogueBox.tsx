@@ -168,7 +168,28 @@ export default function DialogueBox({
   
   useEffect(() => {
     if (!currentLine) return;
+    // ✨ Check if current line meets conditions
+    if (currentLine.condition) {
+      const meetsCondition = checkChoiceCondition(
+        currentLine.condition,
+        currentLocation,
+        currentHour,
+        currentDay,
+        playerStats,
+        girlStats
+      );
 
+      if (!meetsCondition) {
+        // Skip this line and move to next
+        if (currentLineIndex < dialogue.lines.length - 1) {
+          setCurrentLineIndex((i) => i + 1);
+        } else {
+          // If this was the last line, complete dialogue
+          onComplete(accumulatedStatChanges, chosenOptionRef.current);
+        }
+        return;
+      }
+    }
     setDisplayedText("");
     setIsTyping(true);
     setShowContinue(false);

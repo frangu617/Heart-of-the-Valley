@@ -23,6 +23,7 @@ export type DialogueLine = {
   videoSlide?: string; // e.g. "/video/characters/gwen/club_sex.mp4"
   videoAutoPlay?: boolean; // default true if you want
   videoBoomerang?: boolean; // if true, loop and auto-reverse effect
+  condition?: DialogueChoiceCondition;
 };
 
 export type Dialogue = {
