@@ -113,7 +113,7 @@ export const randomEvents: RandomEvent[] = [
     id: "find_money_street",
     name: "Found Money on the Street",
     type: "luckEvent",
-    probability: 5,
+    probability: 1,
     conditions: {
       locations: ["Street", "City"],
     },

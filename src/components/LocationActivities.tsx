@@ -131,6 +131,8 @@ export default function LocationActivitiesPanel({
       if (onUnlockCharacter) {
         onUnlockCharacter("Ruby");
       }
+      // show success message
+      alert("A Girl approaches you with a smile.");
     }
 
     //Unlock Yumi after teaching class

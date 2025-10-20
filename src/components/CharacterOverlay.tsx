@@ -12,6 +12,7 @@ import { DayOfWeek } from "@/data/gameConstants";
 import { CharacterEventState } from "@/data/events/types";
 import { findTriggeredEvent } from "@/lib/eventSystem";
 import { getCharacterEvents } from "@/data/events";
+import { firstMeetingDialogues } from "../data/dialogues/index";
 
 interface Props {
   girl: Girl;
@@ -46,7 +47,29 @@ export default function CharacterOverlay({
   onEventTriggered,
 }: Props) {
   // Check for triggered events when component mounts or dependencies change
+  // Check for first meeting or triggered events
   useEffect(() => {
+    // ✨ CHECK FOR FIRST MEETING FIRST
+    if (
+      !eventState.eventHistory.some(
+        (h) => h.eventId === `${girl.name}_first_meeting`
+      )
+    ) {
+      const firstMeeting = firstMeetingDialogues[girl.name];
+      if (firstMeeting) {
+        console.log(`👋 First time meeting ${girl.name}!`);
+        const characterImage = `/images/characters/${girl.name.toLowerCase()}/faces/neutral.png`;
+
+        // Mark as met
+        onEventTriggered(`${girl.name}_first_meeting`);
+
+        // Start dialogue
+        onStartDialogue(firstMeeting, characterImage, undefined);
+        return; // Stop here, don't check other events
+      }
+    }
+
+    // Check for other triggered events
     const events = getCharacterEvents(girl.name);
     const triggeredEvent = findTriggeredEvent(
       events,
@@ -61,16 +84,10 @@ export default function CharacterOverlay({
     if (triggeredEvent) {
       console.log(`🎉 Event triggered: ${triggeredEvent.name}`);
 
-      // Show event dialogue
       const characterImage = `/images/characters/${girl.name.toLowerCase()}/faces/neutral.png`;
-
-      // Mark event as triggered
       onEventTriggered(triggeredEvent.id);
-
-      // Start the event dialogue
       onStartDialogue(triggeredEvent.dialogue, characterImage, undefined);
 
-      // Apply rewards if any
       if (triggeredEvent.rewards) {
         const updatedPlayer = { ...player };
 
@@ -94,8 +111,7 @@ export default function CharacterOverlay({
         setPlayer(updatedPlayer);
       }
     }
-  }, [girl, girl.name, girl.stats, location, dayOfWeek, hour, eventState, player, onEventTriggered, onStartDialogue, setPlayer]); // Re-check when these change
-
+  }, [girl.name]); // ✨ Only re-run when girl changes
   const interact = (action: Interaction) => {
     // ... rest of your existing interact function stays the same
     // Check requirements

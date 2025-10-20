@@ -417,6 +417,9 @@ export default function GamePage() {
     
 
     // Unlock Gwen when entering Hallway after 5 PM
+    console.log(
+      `📍 Moved to: ${location}, Hour: ${hour}, Gwen unlocked: ${characterUnlocks.Gwen}`
+    );
     if (location === "Hallway" && hour >= 17 && !characterUnlocks.Gwen) {
       setCharacterUnlocks((prev) => ({ ...prev, Gwen: true }));
 
@@ -922,6 +925,18 @@ export default function GamePage() {
                 dayOfWeek={dayOfWeek}
                 onUnlockCharacter={(name) => {
                   setCharacterUnlocks((prev) => ({ ...prev, [name]: true }));
+                  // triggers for character unlocks
+                  if (name === "Ruby") {
+                    // Small delay to let the unlock register
+                    setTimeout(() => {
+                      const firstMeeting = firstMeetingDialogues["Ruby"];
+                      if (firstMeeting) {
+                        const characterImage =
+                          "/images/characters/ruby/faces/neutral.png";
+                        startDialogue(firstMeeting, characterImage, null);
+                      }
+                    }, 100);
+                  }
                 }}
               />
             </div>
