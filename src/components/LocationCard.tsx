@@ -1,11 +1,19 @@
 import { Location } from "../data/locations";
 import { Girl } from "../data/characters";
 
+interface ScheduledEncounter {
+  characterName: string;
+  location: string;
+  eventId: string;
+  label?: string;
+}
+
 interface Props {
   location: Location;
   onMove: (name: string) => void;
   girls: Girl[];
   darkMode?: boolean;
+  scheduledEncounters?: ScheduledEncounter[]; // ✨ NEW
 }
 
 export default function LocationCard({
@@ -13,9 +21,15 @@ export default function LocationCard({
   onMove,
   girls,
   darkMode = false,
+  scheduledEncounters = [], // ✨ NEW
 }: Props) {
   // Find which girls are at this location
   const girlsHere = girls.filter((girl) => girl.location === location.name);
+
+  // ✨ NEW: Check if there's a scheduled encounter at this location
+  const pendingEncounter = scheduledEncounters.find(
+    (e) => e.location === location.name
+  );
 
   return (
     <div
@@ -23,6 +37,10 @@ export default function LocationCard({
         darkMode
           ? "bg-gray-800 border-gray-700 hover:border-purple-500"
           : "bg-white border-gray-200 hover:border-purple-400"
+      } ${
+        pendingEncounter
+          ? "ring-4 ring-pink-400 ring-opacity-50 animate-pulse"
+          : ""
       }`}
     >
       <div
@@ -55,8 +73,18 @@ export default function LocationCard({
           </div>
         )}
 
+        {/* ✨ NEW: Scheduled encounter indicator */}
+        {pendingEncounter && (
+          <div className="absolute top-2 left-2">
+            <div className="bg-gradient-to-r from-pink-500 to-red-500 text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg flex items-center gap-1 animate-bounce">
+              <span>💝</span>
+              <span>{pendingEncounter.label || "Date"}</span>
+            </div>
+          </div>
+        )}
+
         {/* Character indicators */}
-        {girlsHere.length > 0 && (
+        {girlsHere.length > 0 && !pendingEncounter && (
           <div className="absolute top-2 left-2">
             <div className="bg-pink-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg flex items-center gap-1 animate-pulse">
               <span>👥</span>
@@ -74,6 +102,15 @@ export default function LocationCard({
         >
           {location.name}
         </h3>
+
+        {/* ✨ NEW: Show who you're meeting */}
+        {pendingEncounter && (
+          <div className="mb-2 text-center">
+            <p className="text-xs font-semibold text-pink-600 dark:text-pink-400">
+              Meeting {pendingEncounter.characterName}
+            </p>
+          </div>
+        )}
 
         {/* Show who's there */}
         {girlsHere.length > 0 && (
@@ -95,9 +132,13 @@ export default function LocationCard({
 
         <button
           onClick={() => onMove(location.name)}
-          className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md"
+          className={`w-full font-semibold py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md ${
+            pendingEncounter
+              ? "bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white animate-pulse"
+              : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+          }`}
         >
-          Go →
+          {pendingEncounter ? `Go to ${pendingEncounter.label} →` : "Go →"}
         </button>
       </div>
     </div>

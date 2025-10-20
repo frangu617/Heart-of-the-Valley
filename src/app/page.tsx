@@ -127,6 +127,12 @@ export default function GamePage() {
           encounter.characterName
         } at ${encounter.location}`
       );
+      console.log(
+        `✅ SCHEDULED: ${encounter.label || "encounter"} with ${
+          encounter.characterName
+        } at ${encounter.location}`
+      );
+      console.log("📋 All scheduled encounters:", [...prev, encounter]);
       return [...prev, encounter];
     });
   };
@@ -158,7 +164,12 @@ export default function GamePage() {
         startDialogue(event.dialogue, "", null);
         if (event.rewards) applyRandomEventRewards(event.rewards);
         return true; // Encounter triggered
-      }
+      } else {
+      console.error(`❌ Event not found: ${encounter.eventId}`);
+    }
+  } else {
+    console.log(`ℹ️ No encounters at ${location}`);
+  
     }
 
     return false; // No encounter at this location
@@ -845,6 +856,7 @@ export default function GamePage() {
                     onMove={moveTo}
                     girls={girls}
                     darkMode={darkMode}
+                    scheduledEncounters={scheduledEncounters}
                   />
                 ))}
               </div>
