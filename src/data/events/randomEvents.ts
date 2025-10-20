@@ -30,6 +30,7 @@ export type RandomEvent = {
   probability: number; // 0-100, chance to trigger
   conditions: RandomEventConditions;
   dialogue: Dialogue;
+  timeCost?: number; // NEW: Hours to spend when this event completes
   rewards?: {
     money?: number;
     item?: string;
@@ -39,6 +40,74 @@ export type RandomEvent = {
 };
 
 export const randomEvents: RandomEvent[] = [
+  // === IRIS INTRO COFFEE EVENT ===
+  {
+    id: "iris_intro_coffee_yes",
+    name: "Coffee with Iris",
+    type: "encounter",
+    probability: 100, // This triggers via nextDialogueId, so 100%
+    conditions: {
+      locations: [
+        "Cafe",
+        "University Hallway",
+        "Office",
+        "Classroom",
+        "Iris' Office",
+      ], // Allow from any location since it's a continuation
+    },
+    dialogue: {
+      id: "iris_intro_coffee_yes_dialogue",
+      lines: [
+        {
+          speaker: null,
+          text: "You walk together to the nearby cafe. The morning air is crisp and refreshing.",
+          imageSlide: "/images/locations/cafe/morning.png",
+        },
+        {
+          speaker: "Iris",
+          text: "I... I'm glad you agreed to come with me.",
+          expression: "happy",
+        },
+        {
+          speaker: null,
+          text: "You both order coffee and find a quiet corner table.",
+        },
+        {
+          speaker: "Iris",
+          text: "You know, Frank... we've worked together for a while now, but we rarely talk outside of work.",
+          expression: "neutral",
+        },
+        {
+          speaker: "You",
+          text: "You're right. We should do this more often.",
+        },
+        {
+          speaker: "Iris",
+          text: "I'd... I'd like that very much.",
+          expression: "love",
+        },
+        {
+          speaker: null,
+          text: "You spend a pleasant hour talking about books, teaching, and life. The conversation flows naturally.",
+        },
+        {
+          speaker: "Iris",
+          text: "Thank you for this, Frank. It means a lot to me.",
+          expression: "happy",
+        },
+        {
+          speaker: null,
+          text: "As you finish your coffee, you feel like this was the start of something special.",
+        },
+      ],
+    },
+    timeCost: 1, // Spend 1 hour having coffee together
+    rewards: {
+      playerStats: { mood: 10, energy: 5 },
+      girlAffection: { Iris: 5 },
+    },
+  },
+
   // === LUCK EVENTS ===
   {
     id: "find_money_street",
@@ -467,7 +536,7 @@ export const randomEvents: RandomEvent[] = [
         {
           speaker: "Gwen",
           text: "I'm so horny! I want to cum so bad!",
-        }
+        },
       ],
     },
   },

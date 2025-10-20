@@ -29,7 +29,7 @@ export const irisFirstMeeting: Dialogue = {
           text: "Sure, I could use some coffee.",
           affectionChange: 3,
           moodChange: 2,
-          nextDialogueId: "iris intro choice yes",
+          nextDialogueId: "iris_intro_coffee_yes",
         },
         {
           text: "Maybe another time. I have work to do.",
@@ -44,17 +44,7 @@ export const irisFirstMeeting: Dialogue = {
       expression: "neutral",
     },
   ],
-  // id: "iris intro choice yes",
-// lines[
-//   {
-//     speaker:"Iris",
-//     text:"Great, I'll see you later then!",
-//     expression: "excited",
-  
-//   }
-// ]
 };
-
 
 export const irisDialogues: Record<string, Dialogue> = {
   Chat: {

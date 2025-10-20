@@ -228,7 +228,7 @@ export default function GamePage() {
     setGirlStatsOverrides({});
     setCharacterEventStates({});
     setCharacterUnlocks(
-       {
+      {
         // ADD THIS
         Yumi: false,
         Gwen: false,
@@ -310,6 +310,11 @@ export default function GamePage() {
   };
 
   const endRandomEventDialogue = () => {
+   // Spend time if the event has a timeCost
+    if (currentRandomEvent?.timeCost) {
+      spendTime(currentRandomEvent.timeCost);
+    }
+
     setCurrentRandomEvent(null);
     setCurrentDialogue(null);
     setDialogueCharacterImage("");
