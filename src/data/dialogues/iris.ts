@@ -29,7 +29,12 @@ export const irisFirstMeeting: Dialogue = {
           text: "Sure, I could use some coffee.",
           affectionChange: 3,
           moodChange: 2,
-          nextDialogueId: "iris_intro_coffee_yes",
+          scheduleEncounter: {
+            characterName: "Iris",
+            location: "Cafe",
+            eventId: "iris_intro_coffee_yes",
+            label: "Coffee Date",
+          }
         },
         {
           text: "Maybe another time. I have work to do.",
@@ -40,8 +45,8 @@ export const irisFirstMeeting: Dialogue = {
     },
     {
       speaker: "Iris",
-      text: "I understand. Have a good day, Frank.",
-      expression: "neutral",
+      text: "Great! I'll meet you at the cafe then.",
+      expression: "happy",
     },
   ],
 };
@@ -165,4 +170,137 @@ export const irisDialogues: Record<string, Dialogue> = {
       },
     ],
   },
+};
+
+export const irisIntroCoffeeDate: Dialogue = {
+  id: "iris_intro_coffee_yes",
+  lines: [
+    {
+      speaker: null,
+      text: "You walk together to the nearby cafe. The morning air is crisp and refreshing.",
+      imageSlide: "/images/locations/cafe/morning.png",
+    },
+    {
+      speaker: "Iris",
+      text: "I... I'm glad you agreed to come with me.",
+      expression: "happy",
+    },
+    {
+      speaker: null,
+      text: "You both order coffee and find a quiet corner table.",
+    },
+    {
+      speaker: "Iris",
+      text: "You know, Frank... we've worked together for a while now, but we rarely talk outside of work.",
+      expression: "neutral",
+    },
+    {
+      speaker: "You",
+      text: "You're right. We should do this more often.",
+    },
+    {
+      speaker: "Iris",
+      text: "I'd... I'd like that very much.",
+      expression: "love",
+    },
+    {
+      speaker: null,
+      text: "You spend a pleasant hour talking about books, teaching, and life. The conversation flows naturally.",
+    },
+    {
+      speaker: "Iris",
+      text: "Thank you for this, Frank. It means a lot to me.",
+      expression: "happy",
+    },
+    {
+      speaker: null,
+      text: "As you finish your coffee, you feel like this was the start of something special.",
+    },    
+  ]
+};
+
+export const irisRegularCoffeeDate: Dialogue = {
+  id: "iris_regular_coffee",
+  lines: [
+    {
+      speaker: null,
+      text: "You walk together to the nearby cafe.",
+      imageSlide: "/images/locations/cafe/morning.png",
+    },
+    {
+      speaker: null,
+      text: "You enjoy a cup of coffee together",
+      imageSlide: "/images/locations/cafe/afternoon.png",
+    },
+  ]
+};
+
+export const irisSexyCoffeeDate: Dialogue = {
+  id: "iris_sexy_coffee",
+  lines: [
+    {
+      speaker: null,
+      text: "You walk together to the nearby cafe.",
+      imageSlide: "/images/locations/cafe/morning.png",
+    },
+    {
+      speaker: null,
+      text: "You enjoy a cup of coffee together",
+      imageSlide: "/images/locations/cafe/afternoon.png",
+    },
+    {
+      speaker: "Iris",
+      text: "You're so sexy, Frank.",
+      
+    },
+    {
+      speaker: "Iris",
+      text: "I want you so bad!",
+      choices: [
+        {
+          text: "Lets get out of here.",
+          affectionChange: 10,
+          trustChange: 10,
+          moodChange: 10,        
+          nextDialogueId: "iris_after_coffee_sex",
+          condition: {
+            minLove: 75,
+          }
+          
+        },
+        {
+          text: "Not today.",
+          affectionChange: -10,
+          trustChange: -10,
+          moodChange: -10
+        }        
+      ],
+    },
+  ],
+};
+
+export const irisAfterCoffeeSex: Dialogue = {
+  id: "iris_after_coffee_sex",
+  lines: [
+    {
+      speaker: null,
+      text: "You walk away from the cafe.",
+      imageSlide: "/images/locations/cafe/afternoon.png",
+    },
+    {
+      speaker: "Iris",
+      text: "I want you to fuck me so bad!",
+      imageSlide: "images/events/Iris_living_room_sex.png"
+    },
+    {
+      speaker: "Iris",
+      text: "You're so big, I still can't get used to it",
+      imageSlide: "images/events/Iris_living_room_sex.png"
+    },
+    {
+      speaker: null,
+      text: "You have sex with Iris",
+      imageSlide: "images/events/Iris_living_room_sex.png"
+    }
+  ]
 };
