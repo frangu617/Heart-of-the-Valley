@@ -19,6 +19,7 @@ import { getLocationBackground } from "../lib/locationImages";
 import { checkRandomEvent } from "../lib/randomEventSystem";
 
 // Data / Types
+
 import { locationGraph } from "../data/locations";
 import {
   PlayerStats,
@@ -48,8 +49,15 @@ import {
 import type { RandomEvent } from "../data/events/randomEvents";
 import { randomEvents } from "../data/events/randomEvents";
 import type { CharacterEventState, EventHistory } from "../data/events/types";
+import { DialogueChoice } from "../data/dialogues";
 
 type GameState = "mainMenu" | "intro" | "playing" | "paused" | "dialogue";
+type ScheduledEncounter = {
+  characterName: string;
+  location: string;
+  eventId: string; // The random event ID to trigger
+  label?: string; // Optional: "Coffee Date", "Gym Session", etc.
+};
 
 export default function GamePage() {
   const [gameState, setGameState] = useState<GameState>("mainMenu");
@@ -97,10 +105,64 @@ export default function GamePage() {
     Ruby: false,
   });
 
-  // ☕ Track pending coffee date with Iris (NEW)
-  const [pendingCoffeeWithIris, setPendingCoffeeWithIris] =
-    useState<boolean>(false);
+  // ☕ Track scheduled encounters
+  const [scheduledEncounters, setScheduledEncounters] = useState<
+    ScheduledEncounter[]
+  >([]);
 
+ 
+  // Schedule a new encounter
+  const scheduleEncounter = (encounter: ScheduledEncounter) => {
+    setScheduledEncounters((prev) => {
+      // Avoid duplicates
+      const exists = prev.some(
+        (e) =>
+          e.characterName === encounter.characterName &&
+          e.eventId === encounter.eventId
+      );
+      if (exists) return prev;
+
+      console.log(
+        `📅 Scheduled: ${encounter.label || "encounter"} with ${
+          encounter.characterName
+        } at ${encounter.location}`
+      );
+      return [...prev, encounter];
+    });
+  };
+
+  // Cancel a specific encounter
+  const cancelEncounter = (characterName: string, eventId: string) => {
+    setScheduledEncounters((prev) =>
+      prev.filter(
+        (e) => !(e.characterName === characterName && e.eventId === eventId)
+      )
+    );
+  };
+
+  // Check and trigger encounters at a location
+  const checkScheduledEncounters = (location: string): boolean => {
+    const encounter = scheduledEncounters.find((e) => e.location === location);
+
+    if (encounter) {
+      // Remove from scheduled list
+      setScheduledEncounters((prev) => prev.filter((e) => e !== encounter));
+
+      // Find and trigger the event
+      const event = randomEvents.find((e) => e.id === encounter.eventId);
+      if (event) {
+        console.log(
+          `✨ Triggering scheduled encounter: ${encounter.label || event.name}`
+        );
+        setCurrentRandomEvent(event);
+        startDialogue(event.dialogue, "", null);
+        if (event.rewards) applyRandomEventRewards(event.rewards);
+        return true; // Encounter triggered
+      }
+    }
+
+    return false; // No encounter at this location
+  };
   // helpers
   const getGameTimeHours = useCallback((day: DayOfWeek, h: number) => {
     const idx = Math.max(0, DAYS_OF_WEEK.indexOf(day));
@@ -189,7 +251,7 @@ export default function GamePage() {
       girlStatsOverrides,
       characterEventStates,
       characterUnlocks,
-      pendingCoffeeWithIris, // NEW: persist coffee flag
+      scheduledEncounters, // NEW: persist coffee flag
       timestamp: new Date().toISOString(),
     };
     localStorage.setItem("datingSimSave", JSON.stringify(saveData));
@@ -216,7 +278,7 @@ export default function GamePage() {
         Ruby: false,
       }
     );
-    setPendingCoffeeWithIris(data.pendingCoffeeWithIris ?? false); // NEW
+    setScheduledEncounters(data.scheduledEncounters ?? []); // NEW
     setSelectedGirl(null);
     setGameState("playing");
   };
@@ -236,7 +298,7 @@ export default function GamePage() {
       Dawn: false,
       Ruby: false,
     });
-    setPendingCoffeeWithIris(false); // NEW
+    setScheduledEncounters( []); // NEW
     localStorage.removeItem("datingSimSave");
     setHasSaveData(false);
 
@@ -272,13 +334,13 @@ export default function GamePage() {
     setGameState("dialogue");
   };
 
-  const endDialogue = (statChanges?: Partial<GirlStats>) => {
+  const endDialogue = (
+    statChanges?: Partial<GirlStats>,
+    chosenOption?: DialogueChoice
+  ) => {
     // ☕ If this was Iris's first meeting and the player accepted coffee, schedule the coffee date
-    if (currentDialogue?.id === "iris_first_meeting" && statChanges) {
-      if (statChanges.affection === 3) {
-        setPendingCoffeeWithIris(true);
-        console.log("☕ Coffee date with Iris scheduled!");
-      }
+    if (chosenOption?.scheduleEncounter) {
+      scheduleEncounter(chosenOption.scheduleEncounter);
     }
 
     if (dialogueGirlName) {
@@ -349,19 +411,10 @@ export default function GamePage() {
     setSelectedGirl(null);
 
     // ☕ Trigger pending coffee date with Iris if arriving at Cafe
-    if (location === "Cafe" && pendingCoffeeWithIris) {
-      setPendingCoffeeWithIris(false);
-      const coffeeEvent = randomEvents.find(
-        (e) => e.id === "iris_intro_coffee_yes"
-      );
-      if (coffeeEvent) {
-        console.log("☕ Coffee date with Iris is happening!");
-        setCurrentRandomEvent(coffeeEvent);
-        startDialogue(coffeeEvent.dialogue, "", null);
-        if (coffeeEvent.rewards) applyRandomEventRewards(coffeeEvent.rewards);
-        return; // Don't check for other events
-      }
+    if (checkScheduledEncounters(location)) {
+      return;
     }
+    
 
     // Unlock Gwen when entering Hallway after 5 PM
     if (location === "Hallway" && hour >= 17 && !characterUnlocks.Gwen) {
@@ -376,6 +429,7 @@ export default function GamePage() {
         return;
       }
     }
+  
 
     // random event roll
     const randomEvent = checkRandomEvent(location, hour, dayOfWeek, player);
@@ -897,6 +951,16 @@ export default function GamePage() {
           onNextDialogueId={goToDialogueByEventId}
           isMobile={isMobile}
           locationImage={getCurrentLocationImage()}
+          currentLocation={currentLocation}
+          currentHour={hour}
+          currentDay={dayOfWeek}
+          playerStats={player}
+          girlStats={
+            selectedGirl?.stats ||
+            (dialogueGirlName
+              ? girls.find((g) => g.name === dialogueGirlName)?.stats
+              : undefined)
+          }
         />
       )}
 
@@ -911,16 +975,6 @@ export default function GamePage() {
           onSave={saveGame}
           isMobile={isMobile}
           dayOfWeek={dayOfWeek}
-          currentLocation={currentLocation}
-          currentHour={hour}
-          currentDay={dayOfWeek}
-          playerStats={player}
-          girlStats={
-            selectedGirl?.stats ||
-            (dialogueGirlName
-              ? girls.find((g) => g.name === dialogueGirlName)?.stats
-              : undefined)
-          }
         />
       )}
     </div>

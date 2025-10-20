@@ -10,7 +10,9 @@ interface Props {
     trust?: number;
     love?: number;
     lust?: number;
-  }) => void;
+  },
+  chosenOption?: DialogueChoice
+) => void;
   darkMode?: boolean;
   characterImage?: string;
   onSkip?: () => void;
@@ -22,6 +24,7 @@ interface Props {
   currentDay?: string;
   playerStats?: PlayerStats;
   girlStats?: Partial<GirlStats>;
+  
 }
 
 const checkChoiceCondition = (
@@ -188,7 +191,7 @@ export default function DialogueBox({
     }
 
     if (isLastLine) {
-      onComplete(newChanges);
+      onComplete(newChanges, choice);
     } else {
       setCurrentLineIndex((i) => i + 1);
     }

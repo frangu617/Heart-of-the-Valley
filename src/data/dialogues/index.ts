@@ -6,6 +6,12 @@ export type DialogueChoice = {
   trustChange?: number;
   nextDialogueId?: string;
   condition?: DialogueChoiceCondition;
+  scheduleEncounter?: {
+    characterName: string;
+    location: string;
+    eventId: string;
+    label?: string;
+  }
 };
 
 export type DialogueLine = {
