@@ -18,12 +18,45 @@ export const dawnFirstMeeting: Dialogue = {
       expression: "happy",
       choices: [
         { text: "I'm here to meet you!", affectionChange: 10, trustChange: 10 },
-        { text: "I'm here to ask you a question.", affectionChange: 0, trustChange: 0 },
-      ]
+        {
+          text: "I'm here to ask you a question.",
+          affectionChange: 0,
+          trustChange: 0,
+        },
+        {
+          text: "I work here. I'm here to work.",
+          affectionChange: 5,
+          trustChange: 5,
+          condition: {
+            location: [
+              "University",
+              "University Hallway",
+              "Classroom",
+              "Office",
+              "Iris' Office",
+              "Men's Bathroom",
+              "Women's Bathroom",
+              "University Parking Lot",
+            ],
+          },
+        },
+      ],
     },
     {
       speaker: "You",
-      text: "Hey Dawn! Yeah, I've been coming here for a while.",
+      text: "Hey Dawn! Yeah, I work here, don't you remember?",
+      condition: {
+        location: [
+          "University",
+          "University Hallway",
+          "Classroom",
+          "Office",
+          "Iris' Office",
+          "Men's Bathroom",
+          "Women's Bathroom",
+          "University Parking Lot",
+        ],
+      },
     },
     {
       speaker: "Dawn",

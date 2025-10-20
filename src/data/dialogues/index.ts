@@ -62,7 +62,7 @@ export const characterDialogues: Record<string, Record<string, Dialogue>> = {
 
 // Condition for type of dialogue choices
 export type DialogueChoiceCondition = {
-  location?: string; // Only show if at this location
+  location?: string | string[]; // Only show if at this location
   minAffection?: number; // Only show if girl's affection is at least this
   minTrust?: number;
   minLove?: number;

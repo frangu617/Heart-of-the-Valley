@@ -37,9 +37,19 @@ const checkChoiceCondition = (
 ): boolean => {
   if (!condition) return true; // No condition means always show
 
-  // Check location
-  if (condition.location && location !== condition.location) {
-    return false;
+  // Check location - now supports both string and array
+  if (condition.location) {
+    if (Array.isArray(condition.location)) {
+      // If it's an array, check if current location is in the array
+      if (!condition.location.includes(location || "")) {
+        return false;
+      }
+    } else {
+      // If it's a string, check for exact match
+      if (location !== condition.location) {
+        return false;
+      }
+    }
   }
 
   // Check time of day
