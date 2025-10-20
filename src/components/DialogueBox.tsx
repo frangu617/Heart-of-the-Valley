@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { Dialogue, DialogueChoice } from "../data/dialogues";
+import { Dialogue, DialogueChoice, DialogueChoiceCondition } from "../data/dialogues";
+import { PlayerStats, GirlStats } from "@/data/characters";
 
 interface Props {
   dialogue: Dialogue;
@@ -16,7 +17,80 @@ interface Props {
   onNextDialogueId?: (id: string) => void;
   isMobile?: boolean;
   locationImage?: string;
+  currentLocation?: string;
+  currentHour?: number;
+  currentDay?: string;
+  playerStats?: PlayerStats;
+  girlStats?: Partial<GirlStats>;
 }
+
+const checkChoiceCondition = (
+  condition: DialogueChoiceCondition | undefined,
+  location?: string,
+  hour?: number,
+  day?: string,
+  player?: PlayerStats,
+  girl?: Partial<GirlStats>
+): boolean => {
+  if (!condition) return true; // No condition means always show
+
+  // Check location
+  if (condition.location && location !== condition.location) {
+    return false;
+  }
+
+  // Check time of day
+  if (condition.timeOfDay && hour !== undefined) {
+    const getTimeOfDay = (h: number) => {
+      if (h >= 6 && h < 12) return "morning";
+      if (h >= 12 && h < 17) return "afternoon";
+      if (h >= 17 && h < 21) return "evening";
+      return "night";
+    };
+    if (getTimeOfDay(hour) !== condition.timeOfDay) {
+      return false;
+    }
+  }
+
+  // Check day of week
+  if (condition.dayOfWeek && day !== condition.dayOfWeek) {
+    return false;
+  }
+
+  // Check girl stats
+  if (
+    condition.minAffection &&
+    (!girl || (girl.affection ?? 0) < condition.minAffection)
+  ) {
+    return false;
+  }
+  if (condition.minTrust && (!girl || (girl.trust ?? 0) < condition.minTrust)) {
+    return false;
+  }
+  if (condition.minLove && (!girl || (girl.love ?? 0) < condition.minLove)) {
+    return false;
+  }
+
+  // Check player stats
+  if (condition.minPlayerStat && player) {
+    const statValue = player[condition.minPlayerStat.stat];
+    if (
+      typeof statValue === "number" &&
+      statValue < condition.minPlayerStat.value
+    ) {
+      return false;
+    }
+  }
+
+  // Check inventory
+  if (condition.hasItem && player) {
+    if (!player.inventory.includes(condition.hasItem)) {
+      return false;
+    }
+  }
+
+  return true;
+};
 
 export default function DialogueBox({
   dialogue,
@@ -27,6 +101,11 @@ export default function DialogueBox({
   onNextDialogueId,
   isMobile = false,
   locationImage,
+  currentLocation,
+  currentHour,
+  currentDay,
+  playerStats,
+  girlStats,
 }: Props) {
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
@@ -37,6 +116,8 @@ export default function DialogueBox({
     mood?: number;
     trust?: number;
   }>({});
+
+  
 
   const currentLine = dialogue.lines[currentLineIndex];
   const isLastLine = currentLineIndex === dialogue.lines.length - 1;
@@ -127,6 +208,17 @@ export default function DialogueBox({
   }, [handleNext, currentLine]);
 
   if (!currentLine) return null;
+
+  const availableChoices = currentLine?.choices?.filter((choice) =>
+    checkChoiceCondition(
+      choice.condition,
+      currentLocation,
+      currentHour,
+      currentDay,
+      playerStats,
+      girlStats
+    )
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-between pointer-events-none">
@@ -363,9 +455,9 @@ export default function DialogueBox({
               )}
             </p>
 
-            {!isTyping && currentLine.choices && (
+            {!isTyping && availableChoices && availableChoices.length > 0 && (
               <div className="mt-6 space-y-3">
-                {currentLine.choices.map((choice, index) => (
+                {availableChoices.map((choice, index) => (
                   <button
                     key={index}
                     onClick={() => handleChoice(choice)}

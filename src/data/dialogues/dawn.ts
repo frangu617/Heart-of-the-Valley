@@ -5,17 +5,21 @@ export const dawnFirstMeeting: Dialogue = {
   lines: [
     {
       speaker: null,
-      text: "At the gym, a familiar energetic voice calls out to you.",
+      text: "A familiar energetic voice calls out to you.",
     },
-    { speaker: "Dawn", text: "Uncle Frank! Hey!", expression: "happy" },
+    { speaker: "Dawn", text: "Frank! Hey!", expression: "happy" },
     {
       speaker: null,
       text: "Dawn - Iris's daughter. You've known her since she was a kid. She just turned 18.",
     },
     {
       speaker: "Dawn",
-      text: "I didn't know you worked out here! That's so cool!",
+      text: "What are you doing here?",
       expression: "happy",
+      choices: [
+        { text: "I'm here to meet you!", affectionChange: 10, trustChange: 10 },
+        { text: "I'm here to ask you a question.", affectionChange: 0, trustChange: 0 },
+      ]
     },
     {
       speaker: "You",

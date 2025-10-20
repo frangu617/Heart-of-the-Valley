@@ -5,6 +5,7 @@ export type DialogueChoice = {
   moodChange?: number;
   trustChange?: number;
   nextDialogueId?: string;
+  condition?: DialogueChoiceCondition;
 };
 
 export type DialogueLine = {
@@ -51,6 +52,21 @@ export const characterDialogues: Record<string, Record<string, Dialogue>> = {
   Gwen: gwenDialogues,
   Yumi: yumiDialogues,
   Ruby: rubyDialogues,
+};
+
+// Condition for type of dialogue choices
+export type DialogueChoiceCondition = {
+  location?: string; // Only show if at this location
+  minAffection?: number; // Only show if girl's affection is at least this
+  minTrust?: number;
+  minLove?: number;
+  minPlayerStat?: {
+    stat: "intelligence" | "fitness" | "style" | "money";
+    value: number;
+  };
+  hasItem?: string; // Only show if player has this item
+  timeOfDay?: "morning" | "afternoon" | "evening" | "night"; // Only show at certain times
+  dayOfWeek?: string; // Only show on certain days
 };
 
 // Default dialogue helper

@@ -29,7 +29,6 @@ export const irisFirstMeeting: Dialogue = {
           text: "Sure, I could use some coffee.",
           affectionChange: 3,
           moodChange: 2,
-          nextDialogueId: "iris_intro_coffee_yes",
         },
         {
           text: "Maybe another time. I have work to do.",
@@ -40,8 +39,8 @@ export const irisFirstMeeting: Dialogue = {
     },
     {
       speaker: "Iris",
-      text: "I understand. Have a good day, Frank.",
-      expression: "neutral",
+      text: "Great! I'll meet you at the cafe then.",
+      expression: "happy",
     },
   ],
 };
