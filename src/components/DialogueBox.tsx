@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Dialogue, DialogueChoice, DialogueChoiceCondition } from "../data/dialogues";
 import { PlayerStats, GirlStats } from "@/data/characters";
 
@@ -37,9 +37,19 @@ const checkChoiceCondition = (
 ): boolean => {
   if (!condition) return true; // No condition means always show
 
-  // Check location
-  if (condition.location && location !== condition.location) {
-    return false;
+  // Check location - now supports both string and array
+  if (condition.location) {
+    if (Array.isArray(condition.location)) {
+      // If it's an array, check if current location is in the array
+      if (!condition.location.includes(location || "")) {
+        return false;
+      }
+    } else {
+      // If it's a string, check for exact match
+      if (location !== condition.location) {
+        return false;
+      }
+    }
   }
 
   // Check time of day
@@ -120,8 +130,6 @@ export default function DialogueBox({
     trust?: number;
   }>({});
 
-  
-
   const currentLine = dialogue.lines[currentLineIndex];
   const isLastLine = currentLineIndex === dialogue.lines.length - 1;
 
@@ -135,6 +143,8 @@ export default function DialogueBox({
   const hasEventMedia = hasImageSlide || hasVideoSlide;
   const isNarration = currentLine?.speaker === null;
 
+  const chosenOptionRef = useRef<DialogueChoice | undefined>(undefined);
+
   const handleNext = useCallback(() => {
     if (!currentLine) return;
 
@@ -143,15 +153,43 @@ export default function DialogueBox({
       setIsTyping(false);
       setShowContinue(!currentLine.choices);
     } else if (isLastLine) {
-      onComplete(accumulatedStatChanges);
+      console.log("🎬 DialogueBox: Completing dialogue");
+      console.log("📦 Chosen option from ref:", chosenOptionRef.current);
+      onComplete(accumulatedStatChanges, chosenOptionRef.current); // ✨ Use ref
     } else {
       setCurrentLineIndex((i) => i + 1);
     }
   }, [isTyping, isLastLine, currentLine, onComplete, accumulatedStatChanges]);
 
+  // Reset chosen option when dialogue changes
+  useEffect(() => {
+    chosenOptionRef.current = undefined;
+  }, [dialogue.id]);
+  
   useEffect(() => {
     if (!currentLine) return;
+    // ✨ Check if current line meets conditions
+    if (currentLine.condition) {
+      const meetsCondition = checkChoiceCondition(
+        currentLine.condition,
+        currentLocation,
+        currentHour,
+        currentDay,
+        playerStats,
+        girlStats
+      );
 
+      if (!meetsCondition) {
+        // Skip this line and move to next
+        if (currentLineIndex < dialogue.lines.length - 1) {
+          setCurrentLineIndex((i) => i + 1);
+        } else {
+          // If this was the last line, complete dialogue
+          onComplete(accumulatedStatChanges, chosenOptionRef.current);
+        }
+        return;
+      }
+    }
     setDisplayedText("");
     setIsTyping(true);
     setShowContinue(false);
@@ -175,6 +213,7 @@ export default function DialogueBox({
   }, [currentLineIndex, currentLine]);
 
   const handleChoice = (choice: DialogueChoice) => {
+    console.log("👆 DialogueBox: Choice selected:", choice);
     const newChanges = { ...accumulatedStatChanges };
     if (choice.affectionChange)
       newChanges.affection =
@@ -185,14 +224,24 @@ export default function DialogueBox({
       newChanges.trust = (newChanges.trust || 0) + choice.trustChange;
     setAccumulatedStatChanges(newChanges);
 
+    // ✨ Save to ref instead of state
+    chosenOptionRef.current = choice;
+    console.log("💾 Saved choice to ref:", chosenOptionRef.current);
+
     if (choice.nextDialogueId && onNextDialogueId) {
+      console.log(
+        "↪️ DialogueBox: Redirecting to dialogue:",
+        choice.nextDialogueId
+      );
       onNextDialogueId(choice.nextDialogueId);
       return;
     }
 
     if (isLastLine) {
+      console.log("🎬 DialogueBox: Last line, completing with choice:", choice);
       onComplete(newChanges, choice);
     } else {
+      console.log("➡️ DialogueBox: Moving to next line");
       setCurrentLineIndex((i) => i + 1);
     }
   };

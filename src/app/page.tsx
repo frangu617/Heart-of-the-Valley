@@ -17,6 +17,7 @@ import { getScheduledLocation } from "../lib/schedule";
 import { getCharacterImage } from "../lib/characterImages";
 import { getLocationBackground } from "../lib/locationImages";
 import { checkRandomEvent } from "../lib/randomEventSystem";
+import { getCharacterEvents } from "../data/events/index";
 
 // Data / Types
 
@@ -110,7 +111,6 @@ export default function GamePage() {
     ScheduledEncounter[]
   >([]);
 
- 
   // Schedule a new encounter
   const scheduleEncounter = (encounter: ScheduledEncounter) => {
     setScheduledEncounters((prev) => {
@@ -127,6 +127,12 @@ export default function GamePage() {
           encounter.characterName
         } at ${encounter.location}`
       );
+      console.log(
+        `✅ SCHEDULED: ${encounter.label || "encounter"} with ${
+          encounter.characterName
+        } at ${encounter.location}`
+      );
+      console.log("📋 All scheduled encounters:", [...prev, encounter]);
       return [...prev, encounter];
     });
   };
@@ -141,6 +147,7 @@ export default function GamePage() {
   };
 
   // Check and trigger encounters at a location
+  // Update the checkScheduledEncounters function
   const checkScheduledEncounters = (location: string): boolean => {
     const encounter = scheduledEncounters.find((e) => e.location === location);
 
@@ -148,8 +155,53 @@ export default function GamePage() {
       // Remove from scheduled list
       setScheduledEncounters((prev) => prev.filter((e) => e !== encounter));
 
-      // Find and trigger the event
-      const event = randomEvents.find((e) => e.id === encounter.eventId);
+      // First, try to find in randomEvents
+      let event = randomEvents.find((e) => e.id === encounter.eventId);
+
+      // If not found, search character-specific events
+      if (!event) {
+        const characterEvents = getCharacterEvents(encounter.characterName);
+        const characterEvent = characterEvents.find(
+          (e) => e.id === encounter.eventId
+        );
+
+        if (characterEvent) {
+          // Convert CharacterEvent to RandomEvent format
+          console.log(
+            `✨ Triggering scheduled character event: ${
+              encounter.label || characterEvent.name
+            }`
+          );
+          setCurrentRandomEvent(null); // Not a random event, but we can still use the dialogue system
+
+          const characterImage = `/images/characters/${encounter.characterName.toLowerCase()}/faces/neutral.png`;
+          startDialogue(characterEvent.dialogue, characterImage, null);
+
+          if (characterEvent.rewards) {
+            const updatedPlayer = { ...player };
+            if (characterEvent.rewards.playerMoney) {
+              updatedPlayer.money += characterEvent.rewards.playerMoney;
+            }
+            if (characterEvent.rewards.playerStats) {
+              Object.entries(characterEvent.rewards.playerStats).forEach(
+                ([key, value]) => {
+                  if (
+                    value &&
+                    typeof updatedPlayer[key as keyof PlayerStats] === "number"
+                  ) {
+                    (updatedPlayer[key as keyof PlayerStats] as number) +=
+                      value;
+                  }
+                }
+              );
+            }
+            setPlayer(updatedPlayer);
+          }
+
+          return true;
+        }
+      }
+
       if (event) {
         console.log(
           `✨ Triggering scheduled encounter: ${encounter.label || event.name}`
@@ -157,11 +209,15 @@ export default function GamePage() {
         setCurrentRandomEvent(event);
         startDialogue(event.dialogue, "", null);
         if (event.rewards) applyRandomEventRewards(event.rewards);
-        return true; // Encounter triggered
+        return true;
+      } else {
+        console.error(`❌ Event not found: ${encounter.eventId}`);
       }
+    } else {
+      console.log(`ℹ️ No encounters at ${location}`);
     }
 
-    return false; // No encounter at this location
+    return false;
   };
   // helpers
   const getGameTimeHours = useCallback((day: DayOfWeek, h: number) => {
@@ -298,7 +354,7 @@ export default function GamePage() {
       Dawn: false,
       Ruby: false,
     });
-    setScheduledEncounters( []); // NEW
+    setScheduledEncounters([]); // NEW
     localStorage.removeItem("datingSimSave");
     setHasSaveData(false);
 
@@ -414,7 +470,6 @@ export default function GamePage() {
     if (checkScheduledEncounters(location)) {
       return;
     }
-    
 
     // Unlock Gwen when entering Hallway after 5 PM
     console.log(
@@ -432,7 +487,6 @@ export default function GamePage() {
         return;
       }
     }
-  
 
     // random event roll
     const randomEvent = checkRandomEvent(location, hour, dayOfWeek, player);
@@ -845,6 +899,7 @@ export default function GamePage() {
                     onMove={moveTo}
                     girls={girls}
                     darkMode={darkMode}
+                    scheduledEncounters={scheduledEncounters}
                   />
                 ))}
               </div>

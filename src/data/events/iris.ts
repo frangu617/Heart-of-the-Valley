@@ -1,7 +1,41 @@
 // src/data/events/iris.ts
 import { CharacterEvent } from "./types";
 
+
 export const irisEvents: CharacterEvent[] = [
+  {
+    id: "iris_intro_coffee_yes",
+    name: "Intro Coffee Date with Iris",
+    description: "Iris invites you for coffee",
+    priority: 100,
+    repeatable: false,
+    conditions: {
+      minAffection: 0,
+      minTrust: 0,
+      minHour: 0,
+      maxHour: 24,
+      requiredLocation: "Cafe",
+    },
+    dialogue:{
+      id: "iris_intro_coffee_yes_dialogue",
+      lines: [
+        {
+          speaker: "Iris",
+          text: "Frank, I'm glad we could meet here...",
+          expression: "neutral",
+        },
+        {
+          speaker: "Iris",
+          text: "I wanted to... talk to you about something.",
+          expression: "shy",
+        },
+        {
+          speaker: "You",
+          text: "Of course. What's on your mind?",
+        },
+      ]
+    }
+  },
   {
     id: "iris_coffee_date",
     name: "Coffee Date with Iris",
