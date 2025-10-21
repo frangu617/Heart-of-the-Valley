@@ -138,7 +138,7 @@ export default function GamePage() {
   };
 
   // Cancel a specific encounter
-  const cancelEncounter = (characterName: string, eventId: string) => {
+  const _cancelEncounter = (characterName: string, eventId: string) => {
     setScheduledEncounters((prev) =>
       prev.filter(
         (e) => !(e.characterName === characterName && e.eventId === eventId)
@@ -156,7 +156,7 @@ export default function GamePage() {
       setScheduledEncounters((prev) => prev.filter((e) => e !== encounter));
 
       // First, try to find in randomEvents
-      let event = randomEvents.find((e) => e.id === encounter.eventId);
+      const  event = randomEvents.find((e) => e.id === encounter.eventId);
 
       // If not found, search character-specific events
       if (!event) {
