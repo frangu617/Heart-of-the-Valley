@@ -13,6 +13,9 @@ import { CharacterEventState } from "@/data/events/types";
 import { findTriggeredEvent } from "@/lib/eventSystem";
 import { getCharacterEvents } from "@/data/events";
 import { firstMeetingDialogues } from "../data/dialogues/index";
+import  DatePlanner from "./DatePlanner";
+import { DateLocation } from "@/data/dates/types";
+import { useState } from "react";
 
 interface Props {
   girl: Girl;
@@ -26,11 +29,20 @@ interface Props {
     characterImage: string,
     girlEffects?: Partial<GirlStats>
   ) => void;
-  // NEW EVENT PROPS:
   dayOfWeek: DayOfWeek;
   hour: number;
   eventState: CharacterEventState;
   onEventTriggered: (eventId: string) => void;
+  darkMode?: boolean; 
+  onScheduleDate: (date: {
+    characterName: string;
+    location: string;
+    day: DayOfWeek;
+    hour: number;
+    activities: string[];
+    eventId: string;
+    label: string;
+  }) => void;
 }
 
 export default function CharacterOverlay({
@@ -45,7 +57,10 @@ export default function CharacterOverlay({
   hour,
   eventState,
   onEventTriggered,
+  darkMode,
+  onScheduleDate
 }: Props) {
+  const [showDatePlanner, setShowDatePlanner] = useState(false);
   // Check for triggered events when component mounts or dependencies change
   // Check for first meeting or triggered events
   useEffect(() => {
@@ -68,6 +83,49 @@ export default function CharacterOverlay({
         return; // Stop here, don't check other events
       }
     }
+
+    //Date handler
+    const handleScheduleDate = (
+      dateLocation: DateLocation,
+      day: DayOfWeek,
+      dateHour: number,
+      activities: string[]
+    ) => {
+      // Check if she accepts (random chance based on affection)
+      const acceptanceChance = Math.min(
+        95,
+        50 + girl.stats.affection / 2 + girl.stats.trust / 4
+      );
+      const roll = Math.random() * 100;
+
+      if (roll > acceptanceChance) {
+        alert(
+          `${girl.name} politely declines. Maybe try again when you're closer?`
+        );
+        setShowDatePlanner(false);
+        return;
+      }
+
+      // She accepted! Create the date event
+      const dateEvent = {
+        characterName: girl.name,
+        location: dateLocation,
+        day: day,
+        hour: dateHour,
+        activities: activities,
+        eventId: `date_${girl.name}_${dateLocation}_${Date.now()}`,
+        label: `Date at ${dateLocation}`,
+      };
+
+      // Call parent's schedule function
+      onScheduleDate(dateEvent);
+
+      alert(
+        `${girl.name} happily agrees! The date is set for ${day} at ${dateHour}:00!`
+      );
+      setShowDatePlanner(false);
+      spendTime(1); // Planning takes time
+    };
 
     // Check for other triggered events
     const events = getCharacterEvents(girl.name);
@@ -250,15 +308,22 @@ export default function CharacterOverlay({
   const expression = getFacialExpression();
 
   return (
-    <div className="bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 rounded-2xl shadow-xl p-6 border-4 border-purple-200 sticky top-4 animate-slideUp">
-      {/* ... rest of your JSX stays exactly the same ... */}
+    <div
+      className={`bg-gradient-to-br ${
+        darkMode
+          ? "from-gray-800 via-purple-900 to-gray-900"
+          : "from-pink-100 via-purple-100 to-blue-100"
+      } rounded-2xl shadow-xl p-6 border-4 ${
+        darkMode ? "border-purple-700" : "border-purple-200"
+      } sticky top-4 animate-slideUp`}
+    >
+      {" "}
       <button
         onClick={onClose}
         className="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition-all z-10 shadow-lg"
       >
         ✕
       </button>
-
       <div className="flex flex-col items-center mb-6">
         <div className="relative group mb-4">
           <div className="absolute inset-0 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full blur-lg group-hover:blur-xl transition-all"></div>
@@ -285,7 +350,6 @@ export default function CharacterOverlay({
           {girl.relationship}
         </div>
       </div>
-
       <div className="bg-white rounded-xl p-4 mb-4 space-y-2 shadow-md">
         <h4 className="font-bold text-purple-700 text-center mb-2 text-sm">
           Relationship
@@ -315,11 +379,28 @@ export default function CharacterOverlay({
           </div>
         </div>
       </div>
-
       <div className="space-y-2">
-        <h4 className="text-lg font-bold text-purple-800 mb-3 text-center">
+        <h4
+          className={`text-lg font-bold ${
+            darkMode ? "text-purple-300" : "text-purple-800"
+          } mb-3 text-center`}
+        >
+          {" "}
           💝 Actions
         </h4>
+        <button
+          onClick={() => setShowDatePlanner(true)}
+          className="relative overflow-hidden group w-full bg-gradient-to-r from-red-400 to-pink-600 hover:from-red-500 hover:to-pink-700 shadow-md hover:shadow-lg transform hover:scale-102 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 text-sm"
+        >
+          <div className="flex items-center justify-between relative z-10">
+            <span className="flex items-center gap-2">
+              <span className="text-lg">💕</span>
+              <span>Ask on Date</span>
+            </span>
+            <span className="text-xs opacity-75">Plan</span>
+          </div>
+          <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity"></div>
+        </button>
 
         {interactionMenu.map((action) => {
           const isDisabled = Boolean(
@@ -360,13 +441,23 @@ export default function CharacterOverlay({
           );
         })}
       </div>
-
       <div className="mt-4 bg-white rounded-lg p-3 border-2 border-purple-200 shadow">
         <p className="text-xs text-gray-600 text-center">
           <span className="font-semibold text-purple-600">💡</span> Different
           actions affect {girl.name}&apos;s feelings toward you!
         </p>
       </div>
+      {showDatePlanner && (
+        <DatePlanner
+          girl={girl}
+          currentDay={dayOfWeek}
+          currentHour={hour}
+          playerMoney={player.money}
+          onCancel={() => setShowDatePlanner(false)}
+          onScheduleDate={handleScheduleDate}
+          darkMode={darkMode}
+        />
+      )}
     </div>
   );
 }

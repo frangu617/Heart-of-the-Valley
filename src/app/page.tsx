@@ -53,11 +53,15 @@ import type { CharacterEventState, EventHistory } from "../data/events/types";
 import { DialogueChoice } from "../data/dialogues";
 
 type GameState = "mainMenu" | "intro" | "playing" | "paused" | "dialogue";
+
 type ScheduledEncounter = {
   characterName: string;
   location: string;
   eventId: string; // The random event ID to trigger
   label?: string; // Optional: "Coffee Date", "Gym Session", etc.
+  day?: string; // explicit string to allow serialization
+  hour?: number;
+  activities?: string[];
 };
 
 export default function GamePage() {
@@ -125,15 +129,40 @@ export default function GamePage() {
       console.log(
         `📅 Scheduled: ${encounter.label || "encounter"} with ${
           encounter.characterName
-        } at ${encounter.location}`
+        } at ${encounter.location}${
+          encounter.day ? ` on ${encounter.day} at ${encounter.hour}:00` : ""
+        }`
       );
-      console.log(
-        `✅ SCHEDULED: ${encounter.label || "encounter"} with ${
-          encounter.characterName
-        } at ${encounter.location}`
-      );
-      console.log("📋 All scheduled encounters:", [...prev, encounter]);
       return [...prev, encounter];
+    });
+  };
+
+  // Handler specifically for dates
+  const handleScheduleDate = (date: {
+    characterName: string;
+    location: string;
+    day: DayOfWeek;
+    hour: number;
+    activities: string[];
+    eventId: string;
+    label: string;
+  }) => {
+    setScheduledEncounters((prev) => {
+      console.log(
+        `💕 Date scheduled: ${date.label} with ${date.characterName} on ${date.day} at ${date.hour}:00`
+      );
+      return [
+        ...prev,
+        {
+          characterName: date.characterName,
+          location: date.location,
+          eventId: date.eventId,
+          label: date.label,
+          day: date.day,
+          hour: date.hour,
+          activities: date.activities,
+        },
+      ];
     });
   };
 
@@ -146,84 +175,130 @@ export default function GamePage() {
     );
   };
 
-  // Check and trigger encounters at a location
-  // Update the checkScheduledEncounters function
-  const checkScheduledEncounters = (location: string): boolean => {
-    const encounter = scheduledEncounters.find((e) => e.location === location);
-
-    if (encounter) {
-      // Remove from scheduled list
-      setScheduledEncounters((prev) => prev.filter((e) => e !== encounter));
-
-      // First, try to find in randomEvents
-      const  event = randomEvents.find((e) => e.id === encounter.eventId);
-
-      // If not found, search character-specific events
-      if (!event) {
-        const characterEvents = getCharacterEvents(encounter.characterName);
-        const characterEvent = characterEvents.find(
-          (e) => e.id === encounter.eventId
-        );
-
-        if (characterEvent) {
-          // Convert CharacterEvent to RandomEvent format
-          console.log(
-            `✨ Triggering scheduled character event: ${
-              encounter.label || characterEvent.name
-            }`
-          );
-          setCurrentRandomEvent(null); // Not a random event, but we can still use the dialogue system
-
-          const characterImage = `/images/characters/${encounter.characterName.toLowerCase()}/faces/neutral.png`;
-          startDialogue(characterEvent.dialogue, characterImage, null);
-
-          if (characterEvent.rewards) {
-            const updatedPlayer = { ...player };
-            if (characterEvent.rewards.playerMoney) {
-              updatedPlayer.money += characterEvent.rewards.playerMoney;
-            }
-            if (characterEvent.rewards.playerStats) {
-              Object.entries(characterEvent.rewards.playerStats).forEach(
-                ([key, value]) => {
-                  if (
-                    value &&
-                    typeof updatedPlayer[key as keyof PlayerStats] === "number"
-                  ) {
-                    (updatedPlayer[key as keyof PlayerStats] as number) +=
-                      value;
-                  }
-                }
-              );
-            }
-            setPlayer(updatedPlayer);
-          }
-
-          return true;
-        }
-      }
-
-      if (event) {
-        console.log(
-          `✨ Triggering scheduled encounter: ${encounter.label || event.name}`
-        );
-        setCurrentRandomEvent(event);
-        startDialogue(event.dialogue, "", null);
-        if (event.rewards) applyRandomEventRewards(event.rewards);
-        return true;
-      } else {
-        console.error(`❌ Event not found: ${encounter.eventId}`);
-      }
-    } else {
-      console.log(`ℹ️ No encounters at ${location}`);
-    }
-
-    return false;
-  };
-  // helpers
+  // ✅ helpers
   const getGameTimeHours = useCallback((day: DayOfWeek, h: number) => {
     const idx = Math.max(0, DAYS_OF_WEEK.indexOf(day));
     return idx * MAX_HOUR + h;
   }, []);
+
+  // ✅ Update the checkScheduledEncounters function to support day/hour + dates
+  const checkScheduledEncounters = (location: string): boolean => {
+    const encounter = scheduledEncounters.find((e) => {
+      // Check location
+      if (e.location !== location) return false;
+
+      // If it's a date with specific day/hour, check those too
+      if (e.day && e.hour !== undefined) {
+        return e.day === (dayOfWeek as unknown as string) && e.hour === hour;
+      }
+
+      // Otherwise just match by location
+      return true;
+    });
+
+    if (!encounter) {
+      console.log(`ℹ️ No encounters at ${location}`);
+      return false;
+    }
+
+    console.log(`✨ Triggering encounter: ${encounter.label || "Event"}`);
+
+    // Remove from scheduled list
+    setScheduledEncounters((prev) => prev.filter((e) => e !== encounter));
+
+    // If it's a date with activities, handle it specially (simple bootstrap)
+    if (encounter.activities && encounter.activities.length > 0) {
+      console.log(`💕 Starting date with ${encounter.characterName}`);
+
+      const girl = girls.find((g) => g.name === encounter.characterName);
+      if (girl) {
+        const characterImage = `/images/characters/${encounter.characterName.toLowerCase()}/faces/happy.png`;
+
+        // Create a date start dialogue
+        const dateStartDialogue: Dialogue = {
+          id: encounter.eventId,
+          lines: [
+            {
+              speaker: null,
+              text: `You arrive at ${encounter.location} for your date with ${encounter.characterName}.`,
+            },
+            {
+              speaker: encounter.characterName,
+              text: "Hey! I'm so glad you made it!",
+              expression: "happy",
+            },
+            {
+              speaker: null,
+              text: "Your date begins...",
+            },
+          ],
+        };
+
+        // Kick off the date
+        startDialogue(dateStartDialogue, characterImage, null);
+      }
+
+      return true;
+    }
+
+    // Handle regular character events first
+    let event = randomEvents.find((e) => e.id === encounter.eventId);
+
+    if (!event) {
+      const characterEvents = getCharacterEvents(encounter.characterName);
+      const characterEvent = characterEvents.find(
+        (e) => e.id === encounter.eventId
+      );
+
+      if (characterEvent) {
+        console.log(
+          `✨ Triggering scheduled character event: ${
+            encounter.label || characterEvent.name
+          }`
+        );
+        setCurrentRandomEvent(null);
+
+        const characterImage = `/images/characters/${encounter.characterName.toLowerCase()}/faces/neutral.png`;
+        startDialogue(characterEvent.dialogue, characterImage, null);
+
+        if (characterEvent.rewards) {
+          const updatedPlayer = { ...player };
+          if (characterEvent.rewards.playerMoney) {
+            updatedPlayer.money += characterEvent.rewards.playerMoney;
+          }
+          if (characterEvent.rewards.playerStats) {
+            Object.entries(characterEvent.rewards.playerStats).forEach(
+              ([key, value]) => {
+                if (
+                  value &&
+                  typeof updatedPlayer[key as keyof PlayerStats] === "number"
+                ) {
+                  (updatedPlayer[key as keyof PlayerStats] as number) += value;
+                }
+              }
+            );
+          }
+          setPlayer(updatedPlayer);
+        }
+
+        return true;
+      }
+    }
+
+    if (event) {
+      console.log(
+        `✨ Triggering scheduled encounter: ${encounter.label || event.name}`
+      );
+      setCurrentRandomEvent(event);
+      startDialogue(event.dialogue, "", null);
+      if (event.rewards) applyRandomEventRewards(event.rewards);
+      return true;
+    } else {
+      console.error(`❌ Event not found: ${encounter.eventId}`);
+    }
+
+    return false;
+  };
 
   // mount
   useEffect(() => {
@@ -307,7 +382,7 @@ export default function GamePage() {
       girlStatsOverrides,
       characterEventStates,
       characterUnlocks,
-      scheduledEncounters, // NEW: persist coffee flag
+      scheduledEncounters, // This now includes dates with activities
       timestamp: new Date().toISOString(),
     };
     localStorage.setItem("datingSimSave", JSON.stringify(saveData));
@@ -334,7 +409,7 @@ export default function GamePage() {
         Ruby: false,
       }
     );
-    setScheduledEncounters(data.scheduledEncounters ?? []); // NEW
+    setScheduledEncounters(data.scheduledEncounters ?? []); // This loads dates too
     setSelectedGirl(null);
     setGameState("playing");
   };
@@ -354,7 +429,7 @@ export default function GamePage() {
       Dawn: false,
       Ruby: false,
     });
-    setScheduledEncounters([]); // NEW
+    setScheduledEncounters([]);
     localStorage.removeItem("datingSimSave");
     setHasSaveData(false);
 
@@ -394,7 +469,7 @@ export default function GamePage() {
     statChanges?: Partial<GirlStats>,
     chosenOption?: DialogueChoice
   ) => {
-    // ☕ If this was Iris's first meeting and the player accepted coffee, schedule the coffee date
+    // ☕ If dialogue option scheduled an encounter, queue it
     if (chosenOption?.scheduleEncounter) {
       scheduleEncounter(chosenOption.scheduleEncounter);
     }
@@ -466,7 +541,7 @@ export default function GamePage() {
     setCurrentLocation(location);
     setSelectedGirl(null);
 
-    // ☕ Trigger pending coffee date with Iris if arriving at Cafe
+    // ☕ Trigger pending scheduled encounters (incl. dates)
     if (checkScheduledEncounters(location)) {
       return;
     }
@@ -967,6 +1042,8 @@ export default function GamePage() {
                     [name]: newState,
                   }));
                 }}
+                darkMode={darkMode}
+                onScheduleDate={handleScheduleDate}
               />
             </div>
           ) : (

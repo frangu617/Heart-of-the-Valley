@@ -80,6 +80,11 @@ export default function LocationCard({
               <span>💝</span>
               <span>{pendingEncounter.label || "Date"}</span>
             </div>
+            {pendingEncounter.day && pendingEncounter.hour !== undefined && (
+              <div className="mt-1 bg-purple-600 text-white text-xs px-2 py-1 rounded-full text-center">
+                {pendingEncounter.day} {pendingEncounter.hour}:00
+              </div>
+            )}
           </div>
         )}
 
@@ -107,8 +112,16 @@ export default function LocationCard({
         {pendingEncounter && (
           <div className="mb-2 text-center">
             <p className="text-xs font-semibold text-pink-600 dark:text-pink-400">
-              Meeting {pendingEncounter.characterName}
+              {pendingEncounter.day && pendingEncounter.hour !== undefined
+                ? `Date with ${pendingEncounter.characterName}`
+                : `Meeting ${pendingEncounter.characterName}`}
             </p>
+            {pendingEncounter.activities &&
+              pendingEncounter.activities.length > 0 && (
+                <p className="text-xs opacity-75 mt-1">
+                  {pendingEncounter.activities.length} activities planned
+                </p>
+              )}
           </div>
         )}
 
