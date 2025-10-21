@@ -1,4 +1,5 @@
-import { DateActivity, DateLocation } from "./types";
+// import { DateActivity, DateLocation } from "../src/data/dates/types";
+import { DateActivity, DateLocation } from "../dates/types";
 
 export const dateActivitiesByLocation: Record<DateLocation, DateActivity[]> = {
   Cafe: [
@@ -346,7 +347,7 @@ export const dateActivitiesByLocation: Record<DateLocation, DateActivity[]> = {
       outcomes: [
         {
           id: "movies_romantic_mood",
-          conditions: { minLove: 20 },
+          conditions: { minAffection: 20 },
           weight: 2,
           dialogue: {
             id: "movies_romance_success",

@@ -28,6 +28,9 @@ export const irisEvents: CharacterEvent[] = [
           speaker: "Iris",
           text: "I wanted to... talk to you about something.",
           expression: "shy",
+          videoSlide: "/images/locations/cafe/morning.png",
+          videoAutoPlay: true,
+          videoBoomerang: true,
         },
         {
           speaker: "You",

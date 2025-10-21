@@ -19,53 +19,31 @@ interface Props {
   darkMode?: boolean;
 }
 
-const locationInfo: Record
-  DateLocation,
-  { name: string; cost: number; description: string; icon: string }
-> = {
-  Cafe: {
-    name: "Cafe",
-    cost: 20,
-    description: "Cozy and intimate. Perfect for conversation.",
-    icon: "☕",
-  },
-  Beach: {
-    name: "Beach",
-    cost: 15,
-    description: "Sun, sand, and romance.",
-    icon: "🏖️",
-  },
-  Mall: {
-    name: "Mall",
-    cost: 50,
-    description: "Shopping and hanging out.",
-    icon: "🛍️",
-  },
-  Restaurant: {
-    name: "Restaurant",
-    cost: 100,
-    description: "Fancy dining experience.",
-    icon: "🍽️",
-  },
-  Movies: {
-    name: "Movies",
-    cost: 30,
-    description: "Watch a movie together.",
-    icon: "🎬",
-  },
-  City: {
-    name: "City",
-    cost: 25,
-    description: "Explore downtown together.",
-    icon: "🌆",
-  },
-  Park: {
-    name: "Park",
-    cost: 15,
-    description: "Relaxing nature date.",
-    icon: "🌳",
-  },
+type LocationInfo = {
+  name: string;
+  cost: number;
+  description: string;
+  icon: string;
 };
+
+const locationInfo: Record<
+  DateLocation,
+  LocationInfo
+> = {
+  // Example entries — you must include ALL DateLocation keys
+  Cafe:        { name: "Cafe",        cost: 20, description: "Quiet spot for conversation.",   icon: "☕" },
+  Beach:       { name: "Beach",       cost: 10, description: "Sun, waves, and boardwalk.",     icon: "🏖️" },
+  Mall:        { name: "Mall",        cost: 30, description: "Shops and window shopping.",     icon: "🛍️" },
+  City:        { name: "City",        cost: 25, description: "Downtown lights and strolls.",   icon: "🌆" },
+  Restaurant:  { name: "Restaurant",  cost: 50, description: "Sit-down dinner reservation.",   icon: "🍽️" },
+  Movies:      { name: "Movies",      cost: 35, description: "Shared laughs & popcorn.",       icon: "🎬" },
+  Park:        { name: "Park",        cost:  5, description: "Casual walk & benches.",         icon: "🌳" },
+  "Strip Club":{ name: "Strip Club",  cost: 60, description: "Adults-only evening.",           icon: "🪩" },
+  Gym:         { name: "Gym",         cost:  0, description: "Workout & spot each other.",     icon: "💪" },
+  "Living Room":{name: "Living Room", cost:  0, description: "At-home cozy date.",             icon: "🛋️" },
+  Home:        { name: "Home",        cost:  0, description: "Quiet time at your place.",      icon: "🏠" },
+};
+
 
 export default function DatePlanner({
   girl,
