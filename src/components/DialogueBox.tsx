@@ -5,6 +5,8 @@ import {
   DialogueChoiceCondition,
 } from "../data/dialogues";
 import { PlayerStats, GirlStats } from "@/data/characters";
+import { getCharacterImage } from "@/lib/characterImages";
+import { girls } from "@/data/characters";
 
 interface Props {
   dialogue: Dialogue;
@@ -24,6 +26,7 @@ interface Props {
   onNextDialogueId?: (id: string) => void;
   isMobile?: boolean;
   locationImage?: string;
+  characterName?: string;
   currentLocation?: string;
   currentHour?: number;
   currentDay?: string;
@@ -103,6 +106,7 @@ export default function DialogueBox({
   isMobile = false,
   locationImage,
   currentLocation,
+  characterName,
   currentHour,
   currentDay,
   playerStats,
@@ -246,6 +250,29 @@ export default function DialogueBox({
       girlStats
     )
   );
+ const getDynamicCharacterImage = (): string => {
+   // If no character name provided, fall back to prop
+   if (!characterName || !currentLocation || currentHour === undefined) {
+     return characterImage || "";
+   }
+
+   // Find the girl by name
+   const girl = girls.find((g) => g.name === characterName);
+   if (!girl) return characterImage || "";
+
+   // Get expression from current line, default to "neutral"
+   const expression = currentLine?.expression || "neutral";
+
+   // Generate dynamic image - merge girlStats with original stats to ensure all properties exist
+   return getCharacterImage(
+     { ...girl, stats: { ...girl.stats, ...girlStats } }, // Merge instead of replacing
+     currentLocation,
+     currentHour,
+     expression
+   );
+ };
+
+  const displayImage = getDynamicCharacterImage();
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-between pointer-events-none">
@@ -337,7 +364,7 @@ export default function DialogueBox({
               <div className="relative w-[400px] h-[600px] rounded-2xl overflow-hidden shadow-2xl border-4 border-white/80">
                 <div className="absolute inset-0 bg-gradient-to-b from-purple-200/90 via-pink-200/90 to-blue-200/90" />
                 <img
-                  src={characterImage}
+                  src={displayImage}
                   alt={currentLine.speaker || "Character"}
                   onError={(e) => {
                     const el = e.currentTarget;

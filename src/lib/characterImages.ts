@@ -65,11 +65,14 @@ export function getRelationshipStance(girl: Girl): RelationshipStance {
 export function getCharacterImage(
   girl: Girl,
   location: string,
-  hour: number
+  hour: number,
+  expression?: string // Add this parameter
 ): string {
   const girlName = girl.name.toLowerCase();
   let category = locationToCategory[location] || "casual";
-  const stance = getRelationshipStance(girl);
+
+  // Use expression if provided, otherwise calculate stance from stats
+  const stance = expression || getRelationshipStance(girl);
 
   // Special logic for home locations:
   // Before 6 PM, use casual clothes

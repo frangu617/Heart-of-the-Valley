@@ -259,10 +259,10 @@ export default function GamePage() {
         setCurrentRandomEvent(null);
 
         const characterImage = getCharacterImage(
-            girls.find(g => g.name === encounter.characterName)!,
-            currentLocation,
-            hour
-);;
+          girls.find((g) => g.name === encounter.characterName)!,
+          currentLocation,
+          hour
+        );
         startDialogue(characterEvent.dialogue, characterImage, null);
 
         if (characterEvent.rewards) {
@@ -455,11 +455,14 @@ export default function GamePage() {
   const startDialogue = (
     dialogue: Dialogue,
     characterImage: string = "",
-    girlEffects: Partial<GirlStats> | null = null
+    girlEffects: Partial<GirlStats> | null = null,
+    characterName?: string
   ) => {
     setCurrentDialogue(dialogue);
     setDialogueCharacterImage(characterImage);
     setDialogueGirlEffects(girlEffects);
+    setDialogueGirlName(characterName || "");
+    setGameState("dialogue");
 
     if (characterImage) {
       const m = characterImage.match(/\/characters\/([^/]+)\//);
@@ -564,7 +567,7 @@ export default function GamePage() {
           girls.find((g) => g.name === "Gwen")!,
           currentLocation,
           hour
-        );;
+        );
         setMetCharacters(new Set([...metCharacters, "Gwen"]));
         startDialogue(firstMeeting, characterImage, null);
         return;
@@ -697,6 +700,7 @@ export default function GamePage() {
           onComplete={currentRandomEvent ? endRandomEventDialogue : endDialogue}
           darkMode={darkMode}
           characterImage={currentRandomEvent ? "" : dialogueCharacterImage}
+          characterName={dialogueGirlName}
           onSkip={
             gameState === "intro"
               ? () => {
@@ -708,9 +712,8 @@ export default function GamePage() {
           onNextDialogueId={goToDialogueByEventId}
           isMobile={isMobile}
           locationImage={getCurrentLocationImage()}
-          // Add midground properties:
-          midgroundImage={getCurrentLocationImage()} // Same as background
-          midgroundOpacity={0.3} // Reduced opacity
+          midgroundImage={getCurrentLocationImage()}
+          midgroundOpacity={0.3}
           midgroundBlend="normal"
           midgroundFit="cover"
           currentLocation={currentLocation}

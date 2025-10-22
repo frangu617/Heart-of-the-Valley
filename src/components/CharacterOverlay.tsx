@@ -16,6 +16,9 @@ import { firstMeetingDialogues } from "../data/dialogues/index";
 import  DatePlanner from "./DatePlanner";
 import { DateLocation } from "@/data/dates/types";
 import { useState } from "react";
+import { getCharacterImage } from "@/lib/characterImages";
+import { get } from "http";
+
 
 interface Props {
   girl: Girl;
@@ -116,7 +119,7 @@ export default function CharacterOverlay({
       const firstMeeting = firstMeetingDialogues[girl.name];
       if (firstMeeting) {
         console.log(`👋 First time meeting ${girl.name}!`);
-        const characterImage = `/images/characters/${girl.name.toLowerCase()}/faces/neutral.png`;
+        const characterImage = getCharacterImage(girl, location, hour);
 
         // Mark as met
         onEventTriggered(`${girl.name}_first_meeting`);
@@ -142,7 +145,7 @@ export default function CharacterOverlay({
     if (triggeredEvent) {
       console.log(`🎉 Event triggered: ${triggeredEvent.name}`);
 
-      const characterImage = `/images/characters/${girl.name.toLowerCase()}/faces/neutral.png`;
+      const characterImage = getCharacterImage(girl, location, hour, getFacialExpression());
       onEventTriggered(triggeredEvent.id);
       onStartDialogue(triggeredEvent.dialogue, characterImage, undefined);
 
@@ -231,7 +234,7 @@ export default function CharacterOverlay({
     const dialogue =
       characterDialogues[girl.name]?.[action.label] ||
       getDefaultDialogue(girl.name, action.label);
-    const characterImage = `/images/characters/${girl.name.toLowerCase()}/faces/${getFacialExpression()}.png`;
+    const characterImage = getCharacterImage(girl, location, hour, getFacialExpression());
 
     // Show what stats will change
     if (action.girlEffects) {
