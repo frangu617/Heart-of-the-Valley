@@ -441,4 +441,100 @@ export const dateActivitiesByLocation: Record<DateLocation, DateActivity[]> = {
       ],
     },
   ],
+  "Strip Club": [
+    {
+      id: "strip_dance",
+      name: "Strip Dancing",
+      description: "Dance the night away",
+      icon: "🕺",
+      requirements: {
+        minAffection: 20,
+      },
+      outcomes: [
+        {
+          id: "strip_dance_success",
+          conditions: { minAffection: 30, minMood: 50 },
+          weight: 2,
+          dialogue: {
+            id: "strip_dance_success",
+            lines: [
+              {
+                speaker: null,
+                text: "You dance the night away, leaving the club with a smile on your face.",
+              },
+            ],
+          },
+          effects: {
+            girlStats: { affection: 15, love: 12, trust: 10 },
+            playerStats: { mood: 20 },
+            playerMoney: -25,
+          },
+        },
+      ],
+    },
+  ],
+  Gym: [
+    {
+      id: "gym_workout",
+      name: "Workout Together",
+      description: "Workout together",
+      icon: "💪",
+      requirements: {
+        minAffection: 20,
+      },
+      outcomes: [
+        {
+          id: "gym_workout_success",
+          conditions: { minAffection: 30, minMood: 50 },
+          weight: 2,
+          dialogue: {
+            id: "gym_workout_success",
+            lines: [
+              {
+                speaker: null,
+                text: "You work out together, leaving the gym with a smile on your face.",
+              },
+            ],
+          },
+          effects: {
+            girlStats: { affection: 15, love: 12, trust: 10 },
+            playerStats: { mood: 20 },
+            playerMoney: -25,
+          },
+        },
+      ],
+    },
+  ],
+  "Living Room": [
+    {
+      id: "romance_romance",
+      name: "Romance Romance",
+      description: "Romance Romance",
+      icon: "🧡",
+      requirements: {
+        minAffection: 20,
+      },
+      outcomes: [
+        {
+          id: "romance_romance_success",
+          conditions: { minAffection: 30, minMood: 50 },
+          weight: 2,
+          dialogue: {
+            id: "romance_romance_success",
+            lines: [
+              {
+                speaker: null,
+                text: "You spend the night together, leaving the room with a smile on your face.",
+              },
+            ],
+          },
+          effects: {
+            girlStats: { affection: 15, love: 12, trust: 10 },
+            playerStats: { mood: 20 },
+            playerMoney: -25,
+          },
+        },
+      ],
+    },
+  ] 
 };

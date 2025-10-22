@@ -63,6 +63,49 @@ export default function CharacterOverlay({
   const [showDatePlanner, setShowDatePlanner] = useState(false);
   // Check for triggered events when component mounts or dependencies change
   // Check for first meeting or triggered events
+  //Date handler
+  const handleScheduleDate = (
+    dateLocation: DateLocation,
+    day: DayOfWeek,
+    dateHour: number,
+    activities: string[]
+  ) => {
+    // Check if she accepts (random chance based on affection)
+    const acceptanceChance = Math.min(
+      95,
+      50 + girl.stats.affection / 2 + girl.stats.trust / 4
+    );
+    const roll = Math.random() * 100;
+
+    if (roll > acceptanceChance) {
+      alert(
+        `${girl.name} politely declines. Maybe try again when you're closer?`
+      );
+      setShowDatePlanner(false);
+      return;
+    }
+
+    // She accepted! Create the date event
+    const dateEvent = {
+      characterName: girl.name,
+      location: dateLocation,
+      day: day,
+      hour: dateHour,
+      activities: activities,
+      eventId: `date_${girl.name}_${dateLocation}_${Date.now()}`,
+      label: `Date at ${dateLocation}`,
+    };
+
+    // Call parent's schedule function
+    onScheduleDate(dateEvent);
+
+    alert(
+      `${girl.name} happily agrees! The date is set for ${day} at ${dateHour}:00!`
+    );
+    setShowDatePlanner(false);
+    spendTime(1); // Planning takes time
+  };
+  
   useEffect(() => {
     // ✨ CHECK FOR FIRST MEETING FIRST
     if (
@@ -83,49 +126,6 @@ export default function CharacterOverlay({
         return; // Stop here, don't check other events
       }
     }
-
-    //Date handler
-    const handleScheduleDate = (
-      dateLocation: DateLocation,
-      day: DayOfWeek,
-      dateHour: number,
-      activities: string[]
-    ) => {
-      // Check if she accepts (random chance based on affection)
-      const acceptanceChance = Math.min(
-        95,
-        50 + girl.stats.affection / 2 + girl.stats.trust / 4
-      );
-      const roll = Math.random() * 100;
-
-      if (roll > acceptanceChance) {
-        alert(
-          `${girl.name} politely declines. Maybe try again when you're closer?`
-        );
-        setShowDatePlanner(false);
-        return;
-      }
-
-      // She accepted! Create the date event
-      const dateEvent = {
-        characterName: girl.name,
-        location: dateLocation,
-        day: day,
-        hour: dateHour,
-        activities: activities,
-        eventId: `date_${girl.name}_${dateLocation}_${Date.now()}`,
-        label: `Date at ${dateLocation}`,
-      };
-
-      // Call parent's schedule function
-      onScheduleDate(dateEvent);
-
-      alert(
-        `${girl.name} happily agrees! The date is set for ${day} at ${dateHour}:00!`
-      );
-      setShowDatePlanner(false);
-      spendTime(1); // Planning takes time
-    };
 
     // Check for other triggered events
     const events = getCharacterEvents(girl.name);

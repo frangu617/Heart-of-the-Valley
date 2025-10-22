@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Girl, PlayerStats } from "@/data/characters";
+import { Girl, PlayerStats, GirlStats } from "@/data/characters";
 import { DateOutcome } from "@/data/dates/types";
 import { dateActivitiesByLocation } from "@/data/dates/activities";
 import DialogueBox from "./DialogueBox";

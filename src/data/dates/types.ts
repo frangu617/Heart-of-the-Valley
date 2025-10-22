@@ -11,8 +11,7 @@ export type DateLocation =
   | "Park"
   | "Strip Club"
   | "Gym"
-  | "Living Room"
-  | "Home";
+  | "Living Room";
 
 export type DateActivity = {
   id: string;

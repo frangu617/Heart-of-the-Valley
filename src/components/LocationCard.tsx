@@ -6,6 +6,9 @@ interface ScheduledEncounter {
   location: string;
   eventId: string;
   label?: string;
+  day?: string;
+  hour?: number;
+  activities?: string[];
 }
 
 interface Props {
