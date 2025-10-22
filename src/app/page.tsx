@@ -167,13 +167,13 @@ export default function GamePage() {
   };
 
   // Cancel a specific encounter
-  const _cancelEncounter = (characterName: string, eventId: string) => {
-    setScheduledEncounters((prev) =>
-      prev.filter(
-        (e) => !(e.characterName === characterName && e.eventId === eventId)
-      )
-    );
-  };
+  // const _cancelEncounter = (characterName: string, eventId: string) => {
+  //   setScheduledEncounters((prev) =>
+  //     prev.filter(
+  //       (e) => !(e.characterName === characterName && e.eventId === eventId)
+  //     )
+  //   );
+  // };
 
   // ✅ helpers
   const getGameTimeHours = useCallback((day: DayOfWeek, h: number) => {
@@ -242,7 +242,7 @@ export default function GamePage() {
     }
 
     // Handle regular character events first
-    let event = randomEvents.find((e) => e.id === encounter.eventId);
+    const event = randomEvents.find((e) => e.id === encounter.eventId);
 
     if (!event) {
       const characterEvents = getCharacterEvents(encounter.characterName);
@@ -700,6 +700,10 @@ export default function GamePage() {
           onNextDialogueId={goToDialogueByEventId}
           isMobile={isMobile}
           locationImage={getCurrentLocationImage()}
+          midgroundImage={getCurrentLocationImage()}
+          midgroundOpacity={0.5}
+          midgroundBlend="normal"
+          midgroundFit="contain"
           currentLocation={currentLocation}
           currentHour={hour}
           currentDay={dayOfWeek}

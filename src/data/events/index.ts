@@ -5,7 +5,7 @@ import { irisEvents } from "./iris";
 // import { dawnEvents } from "./dawn";
 // import { gwenEvents } from "./gwen";
 // import { yumiEvents } from "./yumi";
-// import { rubyEvents } from "./ruby";
+import { rubyEvents } from "./ruby";
 
 export * from "./types";
 
@@ -15,7 +15,7 @@ export const characterEvents: Record<string, CharacterEvent[]> = {
   // Dawn: dawnEvents,
   // Gwen: gwenEvents,
   // Yumi: yumiEvents,
-  // Ruby: rubyEvents,
+  Ruby: rubyEvents,
 };
 
 // Get events for a specific character

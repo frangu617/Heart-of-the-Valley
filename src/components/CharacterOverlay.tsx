@@ -169,7 +169,7 @@ export default function CharacterOverlay({
         setPlayer(updatedPlayer);
       }
     }
-  }, [girl.name]); // ✨ Only re-run when girl changes
+  }, []); // ✨ Only re-run when girl changes
   const interact = (action: Interaction) => {
     // ... rest of your existing interact function stays the same
     // Check requirements
@@ -236,7 +236,7 @@ export default function CharacterOverlay({
     // Show what stats will change
     if (action.girlEffects) {
       const changes = Object.entries(action.girlEffects)
-        .filter(([key, value]) => value !== 0)
+        .filter(([, value]) => value !== 0)
         .map(([key, value]) => {
           const emoji =
             key === "affection"
@@ -328,7 +328,7 @@ export default function CharacterOverlay({
         <div className="relative group mb-4">
           <div className="absolute inset-0 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full blur-lg group-hover:blur-xl transition-all"></div>
           <img
-            src={`/images/characters/${girl.name.toLowerCase()}/faces/${expression}.png`}
+            src={`/images/characters/${girl.name.toLowerCase()}/casual/${expression}.png`}
             alt={`${girl.name} - ${expression}`}
             onError={(e) => {
               e.currentTarget.src = `neutral.png`;

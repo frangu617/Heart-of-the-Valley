@@ -131,8 +131,14 @@ export default function DateEvent({
       Object.entries(selectedOutcome.effects.playerStats).forEach(
         ([key, value]) => {
           const k = key as keyof PlayerStats;
-          const cur = (newPlayerStats[k] as number) ?? 0;
-          newPlayerStats[k] = cur + (value as number);
+          // Only update if both current value and new value are numbers (skip inventory)
+          if (
+            typeof value === "number" &&
+            typeof newPlayerStats[k] === "number"
+          ) {
+            const cur = (newPlayerStats[k] as number) ?? 0;
+            (newPlayerStats[k] as number) = cur + value;
+          }
         }
       );
     }

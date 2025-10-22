@@ -197,7 +197,7 @@ export const randomEvents: RandomEvent[] = [
     id: "meet_iris_cafe",
     name: "Random Coffee with Iris",
     type: "encounter",
-    probability: 20,
+    probability: 5,
     conditions: {
       locations: ["Cafe"],
       hourRange: { min: 12, max: 18 },
@@ -234,42 +234,42 @@ export const randomEvents: RandomEvent[] = [
     },
   },
 
-  {
-    id: "meet_ruby_gym",
-    name: "Unexpected Gym Session with Ruby",
-    type: "encounter",
-    probability: 100,
-    conditions: {
-      locations: ["Gym"],
-      hourRange: { min: 6, max: 20 },
-    },
-    dialogue: {
-      id: "meet_ruby_gym_dialogue",
-      lines: [
-        {
-          speaker: null,
-          text: "Ruby is working out at the gym. She hasn't noticed you yet.",
-        },
-        {
-          speaker: "Ruby",
-          text: "Frank! Perfect timing! Want to do some cardio with me?",
-          expression: "happy",
-        },
-        {
-          speaker: "You",
-          text: "Sure, let's go.",
-        },
-        {
-          speaker: null,
-          text: "You work out together. Ruby pushes you hard, but it feels good.",
-        },
-      ],
-    },
-    rewards: {
-      playerStats: { fitness: 2 },
-      girlAffection: { Ruby: 2 },
-    },
-  },
+  // {
+  //   id: "meet_ruby_gym",
+  //   name: "Unexpected Gym Session with Ruby",
+  //   type: "encounter",
+  //   probability: 100,
+  //   conditions: {
+  //     locations: ["Gym"],
+  //     hourRange: { min: 6, max: 20 },
+  //   },
+  //   dialogue: {
+  //     id: "meet_ruby_gym_dialogue",
+  //     lines: [
+  //       {
+  //         speaker: null,
+  //         text: "Ruby is working out at the gym. She hasn't noticed you yet.",
+  //       },
+  //       {
+  //         speaker: "Ruby",
+  //         text: "Frank! Perfect timing! Want to do some cardio with me?",
+  //         expression: "happy",
+  //       },
+  //       {
+  //         speaker: "You",
+  //         text: "Sure, let's go.",
+  //       },
+  //       {
+  //         speaker: null,
+  //         text: "You work out together. Ruby pushes you hard, but it feels good.",
+  //       },
+  //     ],
+  //   },
+  //   rewards: {
+  //     playerStats: { fitness: 2 },
+  //     girlAffection: { Ruby: 2 },
+  //   },
+  // },
 
   {
     id: "meet_yumi_mall",

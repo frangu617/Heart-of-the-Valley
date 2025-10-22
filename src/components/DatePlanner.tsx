@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Girl } from "@/data/characters";
-import { DateLocation, DateActivity } from "@/data/dates/types";
+import { DateLocation } from "@/data/dates/types";
 import { dateActivitiesByLocation } from "@/data/dates/activities";
 import { DayOfWeek, DAYS_OF_WEEK } from "@/data/gameConstants";
 

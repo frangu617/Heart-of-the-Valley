@@ -1,18 +1,23 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Dialogue, DialogueChoice, DialogueChoiceCondition } from "../data/dialogues";
+import {
+  Dialogue,
+  DialogueChoice,
+  DialogueChoiceCondition,
+} from "../data/dialogues";
 import { PlayerStats, GirlStats } from "@/data/characters";
 
 interface Props {
   dialogue: Dialogue;
-  onComplete: (statChanges?: {
-    affection?: number;
-    mood?: number;
-    trust?: number;
-    love?: number;
-    lust?: number;
-  },
-  chosenOption?: DialogueChoice
-) => void;
+  onComplete: (
+    statChanges?: {
+      affection?: number;
+      mood?: number;
+      trust?: number;
+      love?: number;
+      lust?: number;
+    },
+    chosenOption?: DialogueChoice
+  ) => void;
   darkMode?: boolean;
   characterImage?: string;
   onSkip?: () => void;
@@ -24,7 +29,12 @@ interface Props {
   currentDay?: string;
   playerStats?: PlayerStats;
   girlStats?: Partial<GirlStats>;
-  
+
+  /** NEW: midground/overlay layer that sits between background and character */
+  midgroundImage?: string;
+  midgroundOpacity?: number; // 0..1 (default 1)
+  midgroundBlend?: React.CSSProperties["mixBlendMode"]; // e.g., "multiply", "screen"
+  midgroundFit?: "cover" | "contain"; // default "cover"
 }
 
 const checkChoiceCondition = (
@@ -35,24 +45,16 @@ const checkChoiceCondition = (
   player?: PlayerStats,
   girl?: Partial<GirlStats>
 ): boolean => {
-  if (!condition) return true; // No condition means always show
+  if (!condition) return true;
 
-  // Check location - now supports both string and array
   if (condition.location) {
     if (Array.isArray(condition.location)) {
-      // If it's an array, check if current location is in the array
-      if (!condition.location.includes(location || "")) {
-        return false;
-      }
+      if (!condition.location.includes(location || "")) return false;
     } else {
-      // If it's a string, check for exact match
-      if (location !== condition.location) {
-        return false;
-      }
+      if (location !== condition.location) return false;
     }
   }
 
-  // Check time of day
   if (condition.timeOfDay && hour !== undefined) {
     const getTimeOfDay = (h: number) => {
       if (h >= 6 && h < 12) return "morning";
@@ -60,46 +62,32 @@ const checkChoiceCondition = (
       if (h >= 17 && h < 21) return "evening";
       return "night";
     };
-    if (getTimeOfDay(hour) !== condition.timeOfDay) {
-      return false;
-    }
+    if (getTimeOfDay(hour) !== condition.timeOfDay) return false;
   }
 
-  // Check day of week
-  if (condition.dayOfWeek && day !== condition.dayOfWeek) {
-    return false;
-  }
+  if (condition.dayOfWeek && day !== condition.dayOfWeek) return false;
 
-  // Check girl stats
   if (
     condition.minAffection &&
     (!girl || (girl.affection ?? 0) < condition.minAffection)
-  ) {
+  )
     return false;
-  }
-  if (condition.minTrust && (!girl || (girl.trust ?? 0) < condition.minTrust)) {
+  if (condition.minTrust && (!girl || (girl.trust ?? 0) < condition.minTrust))
     return false;
-  }
-  if (condition.minLove && (!girl || (girl.love ?? 0) < condition.minLove)) {
+  if (condition.minLove && (!girl || (girl.love ?? 0) < condition.minLove))
     return false;
-  }
 
-  // Check player stats
   if (condition.minPlayerStat && player) {
     const statValue = player[condition.minPlayerStat.stat];
     if (
       typeof statValue === "number" &&
       statValue < condition.minPlayerStat.value
-    ) {
+    )
       return false;
-    }
   }
 
-  // Check inventory
   if (condition.hasItem && player) {
-    if (!player.inventory.includes(condition.hasItem)) {
-      return false;
-    }
+    if (!player.inventory.includes(condition.hasItem)) return false;
   }
 
   return true;
@@ -119,6 +107,12 @@ export default function DialogueBox({
   currentDay,
   playerStats,
   girlStats,
+
+  // NEW midground props
+  midgroundImage,
+  midgroundOpacity = 1,
+  midgroundBlend,
+  midgroundFit = "cover",
 }: Props) {
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
@@ -153,22 +147,19 @@ export default function DialogueBox({
       setIsTyping(false);
       setShowContinue(!currentLine.choices);
     } else if (isLastLine) {
-      console.log("🎬 DialogueBox: Completing dialogue");
-      console.log("📦 Chosen option from ref:", chosenOptionRef.current);
-      onComplete(accumulatedStatChanges, chosenOptionRef.current); // ✨ Use ref
+      onComplete(accumulatedStatChanges, chosenOptionRef.current);
     } else {
       setCurrentLineIndex((i) => i + 1);
     }
   }, [isTyping, isLastLine, currentLine, onComplete, accumulatedStatChanges]);
 
-  // Reset chosen option when dialogue changes
   useEffect(() => {
     chosenOptionRef.current = undefined;
   }, [dialogue.id]);
-  
+
   useEffect(() => {
     if (!currentLine) return;
-    // ✨ Check if current line meets conditions
+
     if (currentLine.condition) {
       const meetsCondition = checkChoiceCondition(
         currentLine.condition,
@@ -180,16 +171,13 @@ export default function DialogueBox({
       );
 
       if (!meetsCondition) {
-        // Skip this line and move to next
-        if (currentLineIndex < dialogue.lines.length - 1) {
+        if (currentLineIndex < dialogue.lines.length - 1)
           setCurrentLineIndex((i) => i + 1);
-        } else {
-          // If this was the last line, complete dialogue
-          onComplete(accumulatedStatChanges, chosenOptionRef.current);
-        }
+        else onComplete(accumulatedStatChanges, chosenOptionRef.current);
         return;
       }
     }
+
     setDisplayedText("");
     setIsTyping(true);
     setShowContinue(false);
@@ -213,7 +201,6 @@ export default function DialogueBox({
   }, [currentLineIndex, currentLine]);
 
   const handleChoice = (choice: DialogueChoice) => {
-    console.log("👆 DialogueBox: Choice selected:", choice);
     const newChanges = { ...accumulatedStatChanges };
     if (choice.affectionChange)
       newChanges.affection =
@@ -224,26 +211,15 @@ export default function DialogueBox({
       newChanges.trust = (newChanges.trust || 0) + choice.trustChange;
     setAccumulatedStatChanges(newChanges);
 
-    // ✨ Save to ref instead of state
     chosenOptionRef.current = choice;
-    console.log("💾 Saved choice to ref:", chosenOptionRef.current);
 
     if (choice.nextDialogueId && onNextDialogueId) {
-      console.log(
-        "↪️ DialogueBox: Redirecting to dialogue:",
-        choice.nextDialogueId
-      );
       onNextDialogueId(choice.nextDialogueId);
       return;
     }
 
-    if (isLastLine) {
-      console.log("🎬 DialogueBox: Last line, completing with choice:", choice);
-      onComplete(newChanges, choice);
-    } else {
-      console.log("➡️ DialogueBox: Moving to next line");
-      setCurrentLineIndex((i) => i + 1);
-    }
+    if (isLastLine) onComplete(newChanges, choice);
+    else setCurrentLineIndex((i) => i + 1);
   };
 
   useEffect(() => {
@@ -254,7 +230,6 @@ export default function DialogueBox({
         handleNext();
       }
     };
-
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [handleNext, currentLine]);
@@ -274,8 +249,7 @@ export default function DialogueBox({
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-between pointer-events-none">
-      {/* ===== BACKGROUND LAYER ===== */}
-      {/* Event Media - Full Screen Background */}
+      {/* ===== BACKGROUND LAYER (z-0) ===== */}
       {hasImageSlide && (
         <img
           src={imageSlide}
@@ -287,7 +261,6 @@ export default function DialogueBox({
           className="absolute inset-0 w-full h-full object-cover opacity-30 z-0"
         />
       )}
-
       {hasVideoSlide && (
         <video
           src={videoSlide}
@@ -298,21 +271,41 @@ export default function DialogueBox({
           className="absolute inset-0 w-full h-full object-cover opacity-30 z-0"
         />
       )}
-
-      {/* Location Background - When NO Event */}
       {!hasEventMedia && locationImage && (
+        <div className="absolute inset-0 w-full h-full z-0">
+          <img
+            src={locationImage}
+            alt="Location Background"
+            onError={(e) => {
+              e.currentTarget.src =
+                'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23333" width="1920" height="1080"/></svg>';
+            }}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/40" />
+        </div>
+      )}
+
+      {/* ===== NEW: MIDGROUND LAYER (z-10) ===== */}
+      {midgroundImage && (
         <img
-          src={locationImage}
-          alt="Location Background"
+          src={midgroundImage}
+          alt="Midground Overlay"
           onError={(e) => {
             e.currentTarget.src =
-              'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23333" width="1920" height="1080"/></svg>';
+              'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="transparent" width="1920" height="1080"/></svg>';
           }}
-          className="absolute inset-0 w-full h-full object-cover opacity-40 z-0"
+          style={{
+            mixBlendMode: midgroundBlend,
+            opacity: Math.min(1, Math.max(0, midgroundOpacity)),
+          }}
+          className={`absolute inset-0 w-full h-full ${
+            midgroundFit === "contain" ? "object-contain" : "object-cover"
+          } pointer-events-none z-10`}
         />
       )}
 
-      {/* Skip Button */}
+      {/* Skip Button (z-50) */}
       {onSkip && (
         <button
           onClick={onSkip}
@@ -331,116 +324,62 @@ export default function DialogueBox({
         </button>
       )}
 
-      {/* ===== DESKTOP + EVENT: Framed Image/Video in Middle ===== */}
-      {!isMobile && hasEventMedia && (
-        <div className="flex-1 flex items-center justify-center pointer-events-none z-30 pt-8">
-          <div className="relative w-11/12 max-w-4xl aspect-[4/3] bg-gradient-to-b from-gray-100 to-white rounded-2xl shadow-2xl overflow-hidden border-4 border-purple-300">
-            {hasImageSlide && (
-              <img
-                src={imageSlide}
-                alt="Scene"
-                onError={(e) => {
-                  e.currentTarget.src =
-                    'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23666" width="1920" height="1080"/><text x="50%" y="50%" font-size="48" text-anchor="middle" fill="white">Image Coming Soon</text></svg>';
-                }}
-                className="w-full h-full object-cover"
-              />
-            )}
-            {hasVideoSlide && (
-              <video
-                src={videoSlide}
-                autoPlay={videoAutoPlay ?? true}
-                loop={videoBoomerang ?? true}
-                muted
-                playsInline
-                className="w-full h-full object-cover"
-              />
-            )}
-          </div>
+      {/* ===== CHARACTER PORTRAIT CARD (z-20) ===== */}
+      {!isNarration && characterImage && (
+        <div className="absolute bottom-32 left-0 right-0 flex justify-center items-end pointer-events-none z-20 px-4">
+          {!isMobile && (
+            <div className="relative animate-fadeIn">
+              <div className="relative w-[400px] h-[600px] rounded-2xl overflow-hidden shadow-2xl border-4 border-white/80">
+                <div className="absolute inset-0 bg-gradient-to-b from-purple-200/90 via-pink-200/90 to-blue-200/90" />
+                <img
+                  src={characterImage}
+                  alt={currentLine.speaker || "Character"}
+                  onError={(e) => {
+                    const el = e.currentTarget;
+                    el.src =
+                      'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><rect fill="%23e879f9" width="400" height="600"/></svg>';
+                  }}
+                  className="absolute inset-0 w-full h-full object-cover object-top"
+                />
+                {currentLine.speaker && (
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-pink-500 to-purple-500 py-3 px-4">
+                    <h3 className="text-white text-xl font-bold text-center drop-shadow-lg">
+                      {currentLine.speaker}
+                    </h3>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {isMobile && (
+            <div className="relative animate-fadeIn">
+              <div className="relative w-[280px] h-[420px] rounded-xl overflow-hidden shadow-2xl border-4 border-white/80">
+                <div className="absolute inset-0 bg-gradient-to-b from-purple-200/90 via-pink-200/90 to-blue-200/90" />
+                <img
+                  src={characterImage}
+                  alt={currentLine.speaker || "Character"}
+                  onError={(e) => {
+                    const el = e.currentTarget;
+                    el.src =
+                      'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="280" height="420"><rect fill="%23e879f9" width="280" height="420"/></svg>';
+                  }}
+                  className="absolute inset-0 w-full h-full object-cover object-top"
+                />
+                {currentLine.speaker && (
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-pink-500 to-purple-500 py-2 px-3">
+                    <h3 className="text-white text-lg font-bold text-center drop-shadow-lg">
+                      {currentLine.speaker}
+                    </h3>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* ===== MOBILE + EVENT: Portrait Small in Dialogue Box ===== */}
-      {/* (will be rendered in dialogue box section below) */}
-
-      {/* ===== DESKTOP + EVENT: Portrait High on Left ===== */}
-      {!isMobile && hasEventMedia && !isNarration && characterImage && (
-        <div className="absolute left-16 top-32 pointer-events-none animate-fadeIn z-20">
-          <img
-            src={characterImage}
-            alt={currentLine.speaker || "Character"}
-            onError={(e) => {
-              const el = e.currentTarget;
-              el.src =
-                'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="%23e879f9" width="200" height="300"/><circle cx="60" cy="80" r="15" fill="white"/><circle cx="140" cy="80" r="15" fill="white"/><path d="M 70 150 Q 100 180 130 150" stroke="white" stroke-width="8" fill="none"/></svg>';
-            }}
-            className="w-64 h-96 object-cover object-top rounded-2xl border-4 border-white shadow-2xl"
-          />
-        </div>
-      )}
-
-      {/* ===== DESKTOP + NO EVENT: Large Portrait Center (before dialogue) ===== */}
-      {!isMobile && !hasEventMedia && !isNarration && characterImage && (
-        <div className="flex-1 flex items-center justify-center pointer-events-none z-20 pt-12">
-          <img
-            src={characterImage}
-            alt={currentLine.speaker || "Character"}
-            onError={(e) => {
-              const el = e.currentTarget;
-              el.src =
-                'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="%23e879f9" width="200" height="300"/><circle cx="60" cy="80" r="15" fill="white"/><circle cx="140" cy="80" r="15" fill="white"/><path d="M 70 150 Q 100 180 130 150" stroke="white" stroke-width="8" fill="none"/></svg>';
-            }}
-            className="w-80 h-full max-h-96 object-cover object-top rounded-3xl border-4 border-white shadow-2xl animate-fadeIn"
-          />
-        </div>
-      )}
-
-      {/* ===== MOBILE + NO EVENT: Large Portrait Center ===== */}
-      {isMobile && !hasEventMedia && !isNarration && characterImage && (
-        <div className="flex-1 flex items-center justify-center pointer-events-none z-20">
-          <img
-            src={characterImage}
-            alt={currentLine.speaker || "Character"}
-            onError={(e) => {
-              const el = e.currentTarget;
-              el.src =
-                'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="%23e879f9" width="200" height="300"/><circle cx="60" cy="80" r="15" fill="white"/><circle cx="140" cy="80" r="15" fill="white"/><path d="M 70 150 Q 100 180 130 150" stroke="white" stroke-width="8" fill="none"/></svg>';
-            }}
-            className="w-56 h-80 object-cover object-top rounded-2xl border-4 border-white shadow-2xl animate-fadeIn"
-          />
-        </div>
-      )}
-
-      {/* ===== MOBILE + EVENT: Framed Image/Video ===== */}
-      {isMobile && hasEventMedia && (
-        <div className="flex-1 flex items-center justify-center pointer-events-none z-30 pt-4">
-          <div className="relative w-11/12 max-w-2xl aspect-[4/3] bg-gradient-to-b from-gray-100 to-white rounded-xl shadow-2xl overflow-hidden border-4 border-purple-300">
-            {hasImageSlide && (
-              <img
-                src={imageSlide}
-                alt="Scene"
-                onError={(e) => {
-                  e.currentTarget.src =
-                    'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23666" width="1920" height="1080"/></svg>';
-                }}
-                className="w-full h-full object-cover"
-              />
-            )}
-            {hasVideoSlide && (
-              <video
-                src={videoSlide}
-                autoPlay={videoAutoPlay ?? true}
-                loop={videoBoomerang ?? true}
-                muted
-                playsInline
-                className="w-full h-full object-cover"
-              />
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ===== DIALOGUE BOX - Always at bottom ===== */}
+      {/* ===== DIALOGUE BOX (z-40) ===== */}
       <div className="w-full max-w-5xl mx-4 mb-8 pointer-events-auto animate-slideUp mt-auto z-40">
         <div
           onClick={currentLine.choices ? undefined : handleNext}
@@ -455,7 +394,6 @@ export default function DialogueBox({
             backdrop-blur-sm
           `}
         >
-          {/* Header with optional mobile portrait */}
           <div
             className={`
             flex items-start gap-4
@@ -467,20 +405,6 @@ export default function DialogueBox({
             }
           `}
           >
-            {/* Mobile + Event: Small Portrait in Dialogue */}
-            {isMobile && hasEventMedia && !isNarration && characterImage && (
-              <img
-                src={characterImage}
-                alt={currentLine.speaker || "Character"}
-                onError={(e) => {
-                  const el = e.currentTarget;
-                  el.src =
-                    'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="%23e879f9" width="200" height="300"/><circle cx="60" cy="80" r="15" fill="white"/><circle cx="140" cy="80" r="15" fill="white"/><path d="M 70 150 Q 100 180 130 150" stroke="white" stroke-width="8" fill="none"/></svg>';
-                }}
-                className="w-16 h-20 object-cover object-top rounded-lg border-2 border-white flex-shrink-0"
-              />
-            )}
-
             {!isNarration && (
               <h3
                 className={`text-xl font-bold ${
@@ -492,7 +416,6 @@ export default function DialogueBox({
             )}
           </div>
 
-          {/* Text + Choices */}
           <div className="px-8 py-6">
             <p
               className={`
@@ -536,7 +459,6 @@ export default function DialogueBox({
             )}
           </div>
 
-          {/* Continue Indicator */}
           {showContinue && !currentLine.choices && (
             <div className="absolute bottom-4 right-8 animate-bounce">
               <div
@@ -549,7 +471,6 @@ export default function DialogueBox({
             </div>
           )}
 
-          {/* Instructions */}
           {!currentLine.choices && (
             <div
               className={`
