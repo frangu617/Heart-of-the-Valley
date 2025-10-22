@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Girl, PlayerStats } from "@/data/characters";
-import { DateActivity, DateOutcome } from "@/data/dates/types";
+import { DateOutcome } from "@/data/dates/types";
 import { dateActivitiesByLocation } from "@/data/dates/activities";
 import DialogueBox from "./DialogueBox";
 
@@ -15,6 +15,19 @@ interface Props {
     moneyCost: number
   ) => void;
   darkMode?: boolean;
+  characterImage?: string;
+  onSkip?: () => void;
+  onNextDialogueId?: (id: string) => void;
+
+  // ✅ New/extended fields used by page.tsx
+  isMobile?: boolean;
+  locationImage?: string;
+  currentLocation?: string;
+  currentHour?: number;
+  // You can use string, or import DayOfWeek and use `DayOfWeek` — page.tsx passes a DayOfWeek
+  currentDay?: string;
+  playerStats?: PlayerStats;
+  girlStats?: Partial<GirlStats>;
 }
 
 export default function DateEvent({
@@ -25,20 +38,26 @@ export default function DateEvent({
   onComplete,
   darkMode,
 }: Props) {
-  const [currentActivityIndex, setCurrentActivityIndex] = useState(0);
-  const [showingOutcome, setShowingOutcome] = useState(false);
+  // ✅ Explicit generics on the same line
+  const [currentActivityIndex, setCurrentActivityIndex] = useState<number>(0);
+  const [showingOutcome, setShowingOutcome] = useState<boolean>(false);
   const [selectedOutcome, setSelectedOutcome] = useState<DateOutcome | null>(
     null
   );
-  const [accumulatedGirlStats, setAccumulatedGirlStats] = useState
+  const [accumulatedGirlStats, setAccumulatedGirlStats] = useState<
     Partial<Girl["stats"]>
   >({});
-  const [accumulatedPlayerStats, setAccumulatedPlayerStats] = useState
+  const [accumulatedPlayerStats, setAccumulatedPlayerStats] = useState<
     Partial<PlayerStats>
   >({});
-  const [totalCost, setTotalCost] = useState(0);
+  const [totalCost, setTotalCost] = useState<number>(0);
 
-  const allActivities = dateActivitiesByLocation[location as keyof typeof dateActivitiesByLocation];
+  // Resolve activities for this location
+  const allActivities =
+    dateActivitiesByLocation[
+      location as keyof typeof dateActivitiesByLocation
+    ] ?? [];
+
   const currentActivity = allActivities.find(
     (a) => a.id === activities[currentActivityIndex]
   );
@@ -53,9 +72,9 @@ export default function DateEvent({
       if (!outcome.conditions) return true;
 
       const c = outcome.conditions;
-      if (c.minAffection && girl.stats.affection < c.minAffection)
+      if (c.minAffection && (girl.stats.affection ?? 0) < c.minAffection)
         return false;
-      if (c.minMood && girl.stats.mood < c.minMood) return false;
+      if (c.minMood && (girl.stats.mood ?? 0) < c.minMood) return false;
       if (
         c.minPlayerIntelligence &&
         player.intelligence < c.minPlayerIntelligence
@@ -68,8 +87,11 @@ export default function DateEvent({
       return true;
     });
 
-    // Weighted random selection
-    const totalWeight = eligibleOutcomes.reduce(
+    if (eligibleOutcomes.length === 0) {
+      return <div>No eligible outcomes for this activity.</div>;
+    }
+
+    const totalWeight: number = eligibleOutcomes.reduce(
       (sum, o) => sum + o.weight,
       0
     );
@@ -92,15 +114,15 @@ export default function DateEvent({
     if (!selectedOutcome) return;
 
     // Accumulate stats
-    const newGirlStats = { ...accumulatedGirlStats };
-    const newPlayerStats = { ...accumulatedPlayerStats };
+    const newGirlStats: Partial<Girl["stats"]> = { ...accumulatedGirlStats };
+    const newPlayerStats: Partial<PlayerStats> = { ...accumulatedPlayerStats };
 
     if (selectedOutcome.effects.girlStats) {
       Object.entries(selectedOutcome.effects.girlStats).forEach(
         ([key, value]) => {
-          newGirlStats[key as keyof Girl["stats"]] =
-            ((newGirlStats[key as keyof Girl["stats"]] as number) || 0) +
-            (value as number);
+          const k = key as keyof Girl["stats"];
+          const cur = (newGirlStats[k] as number) ?? 0;
+          newGirlStats[k] = cur + (value as number);
         }
       );
     }
@@ -108,9 +130,9 @@ export default function DateEvent({
     if (selectedOutcome.effects.playerStats) {
       Object.entries(selectedOutcome.effects.playerStats).forEach(
         ([key, value]) => {
-          newPlayerStats[key as keyof PlayerStats] =
-            ((newPlayerStats[key as keyof PlayerStats] as number) || 0) +
-            (value as number);
+          const k = key as keyof PlayerStats;
+          const cur = (newPlayerStats[k] as number) ?? 0;
+          newPlayerStats[k] = cur + (value as number);
         }
       );
     }
@@ -121,13 +143,12 @@ export default function DateEvent({
     setAccumulatedPlayerStats(newPlayerStats);
     setTotalCost(newCost);
 
-    // Move to next activity or complete date
+    // Next activity or complete
     if (currentActivityIndex < activities.length - 1) {
       setCurrentActivityIndex(currentActivityIndex + 1);
       setShowingOutcome(false);
       setSelectedOutcome(null);
     } else {
-      // Date complete!
       onComplete(newGirlStats, newPlayerStats, newCost);
     }
   };
