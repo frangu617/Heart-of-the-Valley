@@ -41,7 +41,7 @@ const locationInfo: Record<
   "Strip Club":{ name: "Strip Club",  cost: 60, description: "Adults-only evening.",           icon: "🪩" },
   Gym:         { name: "Gym",         cost:  0, description: "Workout & spot each other.",     icon: "💪" },
   "Living Room":{name: "Living Room", cost:  0, description: "At-home cozy date.",             icon: "🛋️" },
-  Home:        { name: "Home",        cost:  0, description: "Quiet time at your place.",      icon: "🏠" },
+  // Home:        { name: "Home",        cost:  0, description: "Quiet time at your place.",      icon: "🏠" },
 };
 
 
