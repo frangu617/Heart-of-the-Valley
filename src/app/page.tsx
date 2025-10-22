@@ -212,7 +212,7 @@ export default function GamePage() {
 
       const girl = girls.find((g) => g.name === encounter.characterName);
       if (girl) {
-        const characterImage = `/images/characters/${encounter.characterName.toLowerCase()}/faces/happy.png`;
+        const characterImage = getCharacterImage(girl, currentLocation, hour);
 
         // Create a date start dialogue
         const dateStartDialogue: Dialogue = {
@@ -258,7 +258,11 @@ export default function GamePage() {
         );
         setCurrentRandomEvent(null);
 
-        const characterImage = `/images/characters/${encounter.characterName.toLowerCase()}/faces/neutral.png`;
+        const characterImage = getCharacterImage(
+            girls.find(g => g.name === encounter.characterName)!,
+            currentLocation,
+            hour
+);;
         startDialogue(characterEvent.dialogue, characterImage, null);
 
         if (characterEvent.rewards) {
@@ -556,7 +560,11 @@ export default function GamePage() {
       // Trigger Gwen's first meeting
       const firstMeeting = firstMeetingDialogues["Gwen"];
       if (firstMeeting) {
-        const characterImage = "/images/characters/gwen/faces/neutral.png";
+        const characterImage = getCharacterImage(
+          girls.find((g) => g.name === "Gwen")!,
+          currentLocation,
+          hour
+        );;
         setMetCharacters(new Set([...metCharacters, "Gwen"]));
         startDialogue(firstMeeting, characterImage, null);
         return;
@@ -700,10 +708,11 @@ export default function GamePage() {
           onNextDialogueId={goToDialogueByEventId}
           isMobile={isMobile}
           locationImage={getCurrentLocationImage()}
-          midgroundImage={getCurrentLocationImage()}
-          midgroundOpacity={0.5}
+          // Add midground properties:
+          midgroundImage={getCurrentLocationImage()} // Same as background
+          midgroundOpacity={0.3} // Reduced opacity
           midgroundBlend="normal"
-          midgroundFit="contain"
+          midgroundFit="cover"
           currentLocation={currentLocation}
           currentHour={hour}
           currentDay={dayOfWeek}
@@ -1067,8 +1076,11 @@ export default function GamePage() {
                     setTimeout(() => {
                       const firstMeeting = firstMeetingDialogues["Ruby"];
                       if (firstMeeting) {
-                        const characterImage =
-                          "/images/characters/ruby/faces/neutral.png";
+                        const characterImage = getCharacterImage(
+                          girls.find((g) => g.name === "Ruby")!,
+                          currentLocation,
+                          hour
+                        );
                         startDialogue(firstMeeting, characterImage, null);
                       }
                     }, 100);

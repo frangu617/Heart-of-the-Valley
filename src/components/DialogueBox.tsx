@@ -288,21 +288,25 @@ export default function DialogueBox({
 
       {/* ===== NEW: MIDGROUND LAYER (z-10) ===== */}
       {midgroundImage && (
-        <img
-          src={midgroundImage}
-          alt="Midground Overlay"
-          onError={(e) => {
-            e.currentTarget.src =
-              'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="transparent" width="1920" height="1080"/></svg>';
-          }}
-          style={{
-            mixBlendMode: midgroundBlend,
-            opacity: Math.min(1, Math.max(0, midgroundOpacity)),
-          }}
-          className={`absolute inset-0 w-full h-full ${
-            midgroundFit === "contain" ? "object-contain" : "object-cover"
-          } pointer-events-none z-10`}
-        />
+        <div className="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-hidden">
+          <img
+            src={midgroundImage}
+            alt="Midground Overlay"
+            onError={(e) => {
+              e.currentTarget.src =
+                'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="transparent" width="1920" height="1080"/></svg>';
+            }}
+            style={{
+              mixBlendMode: midgroundBlend,
+              opacity: Math.min(1, Math.max(0, midgroundOpacity)),
+              filter: "blur(8px) brightness(0.8)", // Add blur and darken
+              transform: "scale(1.1)", // Slightly scale to hide blur edges
+            }}
+            className={`absolute inset-0 w-full h-full ${
+              midgroundFit === "contain" ? "object-contain" : "object-cover"
+            } pointer-events-none`}
+          />
+        </div>
       )}
 
       {/* Skip Button (z-50) */}
@@ -325,8 +329,9 @@ export default function DialogueBox({
       )}
 
       {/* ===== CHARACTER PORTRAIT CARD (z-20) ===== */}
+      {/* ===== CHARACTER PORTRAIT CARD (z-20) ===== */}
       {!isNarration && characterImage && (
-        <div className="absolute bottom-32 left-0 right-0 flex justify-center items-end pointer-events-none z-20 px-4">
+        <div className="absolute bottom-62 left-0 right-0 flex justify-center items-end pointer-events-none z-20 px-4">
           {!isMobile && (
             <div className="relative animate-fadeIn">
               <div className="relative w-[400px] h-[600px] rounded-2xl overflow-hidden shadow-2xl border-4 border-white/80">
@@ -339,7 +344,12 @@ export default function DialogueBox({
                     el.src =
                       'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><rect fill="%23e879f9" width="400" height="600"/></svg>';
                   }}
-                  className="absolute inset-0 w-full h-full object-cover object-top"
+                  className="absolute inset-0 w-full h-full object-cover"
+                  style={{
+                    objectPosition: "center 20%", // Show top portion
+                    transform: "scale(1.9)", // Zoom in
+                    transformOrigin: "center 0%", // Zoom from upper portion
+                  }}
                 />
                 {currentLine.speaker && (
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-pink-500 to-purple-500 py-3 px-4">
@@ -364,7 +374,12 @@ export default function DialogueBox({
                     el.src =
                       'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="280" height="420"><rect fill="%23e879f9" width="280" height="420"/></svg>';
                   }}
-                  className="absolute inset-0 w-full h-full object-cover object-top"
+                  className="absolute inset-0 w-full h-full object-cover"
+                  style={{
+                    objectPosition: "center 20%",
+                    transform: "scale(1.8)",
+                    transformOrigin: "center 0%",
+                  }}
                 />
                 {currentLine.speaker && (
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-pink-500 to-purple-500 py-2 px-3">
