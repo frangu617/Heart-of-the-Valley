@@ -182,7 +182,7 @@ export default function DateEvent({
       dialogue={dialogue}
       onComplete={handleOutcomeComplete}
       darkMode={darkMode}
-      characterImage={`/images/characters/${girl.name.toLowerCase()}/faces/happy.png`}
+      characterImage={`/images/characters/${girl.name.toLowerCase()}/faces/happy.webp`}
       isMobile={false}
       locationImage={`/images/locations/${location.toLowerCase()}/afternoon.png`}
     />

@@ -435,7 +435,7 @@ export default function PhoneMenu({
                     `}
                     >
                       <img
-                        src={`/images/${girl.name.toLowerCase()}.png`}
+                        src={`/images/characters/${girl.name.toLowerCase()}/casual/neutral.webp`}
                         alt={girl.name}
                         onError={(e) => {
                           e.currentTarget.src =

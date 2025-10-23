@@ -919,8 +919,8 @@ export default function GamePage() {
                               const girlName = girl.name.toLowerCase();
                               const fallbacks = [
                                 imgPath,
-                                `/images/characters/${girlName}/casual_neutral.png`,
-                                `/images/${girlName}.png`,
+                                `/images/characters/${girlName}/casual/neutral.png`,
+                                `/images/${girlName}.webp`,
                                 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="%23e879f9" width="200" height="300"/><text x="50%" y="50%" font-size="60" text-anchor="middle" dy=".3em" fill="white">?</text></svg>',
                               ];
                               const cur = el.src;

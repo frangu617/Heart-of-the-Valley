@@ -86,7 +86,7 @@ export function getCharacterImage(
   }
 
   // Try specific combination first
-  const specificImage = `/images/characters/${girlName}/${category}/${stance}.png`;
+  const specificImage = `/images/characters/${girlName}/${category}/${stance}.webp`;
 
   // Fallback hierarchy
   const fallbacks = [

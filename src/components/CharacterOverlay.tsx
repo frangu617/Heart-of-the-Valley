@@ -331,10 +331,10 @@ export default function CharacterOverlay({
         <div className="relative group mb-4">
           <div className="absolute inset-0 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full blur-lg group-hover:blur-xl transition-all"></div>
           <img
-            src={`/images/characters/${girl.name.toLowerCase()}/casual/${expression}.png`}
+            src={`/images/characters/${girl.name.toLowerCase()}/casual/${expression}.webp`}
             alt={`${girl.name} - ${expression}`}
             onError={(e) => {
-              e.currentTarget.src = `neutral.png`;
+              e.currentTarget.src = `neutral.webp`;
               e.currentTarget.onerror = () => {
                 e.currentTarget.src =
                   'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><circle cx="100" cy="100" r="100" fill="%23e879f9"/><circle cx="70" cy="80" r="10" fill="white"/><circle cx="130" cy="80" r="10" fill="white"/><path d="M 60 130 Q 100 150 140 130" stroke="white" stroke-width="5" fill="none"/></svg>';
