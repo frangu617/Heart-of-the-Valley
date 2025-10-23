@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 // Main dialogue types and exports
 export type DialogueChoice = {
   text: string;
@@ -24,6 +25,19 @@ export type DialogueLine = {
   videoAutoPlay?: boolean; // default true if you want
   videoBoomerang?: boolean; // if true, loop and auto-reverse effect
   condition?: DialogueChoiceCondition;
+
+  //Midground event media
+  midgroundImage?: string;
+  midgroundVideo?: string;
+  midgroundOpacity?: number;
+  midgroundBlend?: CSSProperties["mixBlendMode"];
+  midgroundFit?: "cover" | "contain";
+
+  //Foreground event media
+  foregroundImage?: string;
+  foregroundVideo?: string;
+  foregroundPosition?: "center" | "left" | "right";
+  foregroundSize?: "full" | "large" | "medium";
 };
 
 export type Dialogue = {

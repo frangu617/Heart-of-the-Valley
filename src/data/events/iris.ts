@@ -16,28 +16,60 @@ export const irisEvents: CharacterEvent[] = [
       maxHour: 24,
       requiredLocation: "Cafe",
     },
-    dialogue:{
+    dialogue: {
       id: "iris_intro_coffee_yes_dialogue",
       lines: [
         {
           speaker: "Iris",
           text: "Frank, I'm glad we could meet here...",
           expression: "neutral",
+          midgroundImage: "/images/events/gwen_sex_show.png",
+          midgroundOpacity: 1.0,
+          // midgroundBlend: "multiply",
+          midgroundFit: "cover",
         },
         {
           speaker: "Iris",
-          text: "I wanted to... talk to you about something.",
-          expression: "shy",
-          videoSlide: "/images/characters/iris/casual/bj.mp4",
-          videoAutoPlay: true,
-          videoBoomerang: true,
+          text: "We don't hang out as much anymore, not since you moved in as my neighbor",
+          expression: "annoyed",
+        },
+        {
+          speaker: "Iris",
+          text: "Have you been avoiding me?",
+          expression: "sad",
         },
         {
           speaker: "You",
-          text: "Of course. What's on your mind?",
+          text: "I... I'm sorry.",
+          expression: "sad",
         },
-      ]
-    }
+        {
+          speaker: "You",
+          text: "I've just been getting used to the new place, and the new job...",
+          expression: "sad",
+        },
+        {
+          speaker: "Iris",
+          text: "You've been here for a while now, if you need help with adjusting, you can ask you know!",
+          expression: "annoyed",
+        },
+        {
+          speaker: "You",
+          text: "Thanks, Iris. I'll be sure to ask you later.",
+        },
+        {
+          speaker: "Iris",
+          text: "See you later, Frank.",
+          // expression: "happy",
+          // foregroundVideo: "/images/characters/iris/casual/bj.mp4",
+          // foregroundPosition: "right", // Shows on right side
+          // foregroundSize: "large", // Takes up 70% of screen
+          // imageSlide: "/images/events/gwen_sex_show.png",
+
+          expression: "blowKiss",
+        },
+      ],
+    },
   },
   {
     id: "iris_coffee_date",

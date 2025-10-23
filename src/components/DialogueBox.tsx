@@ -1,4 +1,6 @@
+// import React from "react";
 import { useState, useEffect, useCallback, useRef } from "react";
+
 import {
   Dialogue,
   DialogueChoice,
@@ -7,6 +9,7 @@ import {
 import { PlayerStats, GirlStats } from "@/data/characters";
 import { getCharacterImage } from "@/lib/characterImages";
 import { girls } from "@/data/characters";
+
 
 interface Props {
   dialogue: Dialogue;
@@ -38,6 +41,11 @@ interface Props {
   midgroundOpacity?: number; // 0..1 (default 1)
   midgroundBlend?: React.CSSProperties["mixBlendMode"]; // e.g., "multiply", "screen"
   midgroundFit?: "cover" | "contain"; // default "cover"
+  //Foreground event media */
+  foregroundImage?: string;
+  foregroundVideo?: string;
+  foregroundPosition?: "center" | "left" | "right"; // Where to position it
+  foregroundSize?: "full" | "large" | "medium"; // How big
 }
 
 const checkChoiceCondition = (
@@ -117,6 +125,12 @@ export default function DialogueBox({
   midgroundOpacity = 1,
   midgroundBlend,
   midgroundFit = "cover",
+
+  // NEW foreground props
+  foregroundImage,
+  foregroundVideo,
+  foregroundPosition = "center",
+  foregroundSize = "large",
 }: Props) {
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
@@ -140,6 +154,19 @@ export default function DialogueBox({
   const hasVideoSlide = !!videoSlide;
   const hasEventMedia = hasImageSlide || hasVideoSlide;
   const isNarration = currentLine?.speaker === null;
+
+  //midground media
+  const lineMidImage = currentLine?.midgroundImage ?? midgroundImage;
+  const lineMidVideo = currentLine?.midgroundVideo; // no prop fallback (optional)
+  const lineMidOpacity = currentLine?.midgroundOpacity ?? midgroundOpacity;
+  const lineMidBlend = currentLine?.midgroundBlend ?? midgroundBlend;
+  const lineMidFit = currentLine?.midgroundFit ?? midgroundFit;
+
+  //Foreground media
+  const foregroundImg = currentLine?.foregroundImage;
+  const foregroundVid = currentLine?.foregroundVideo;
+  const foregroundPos = currentLine?.foregroundPosition || "center";
+  const foregroundSz = currentLine?.foregroundSize || "large";
 
   const chosenOptionRef = useRef<DialogueChoice | undefined>(undefined);
 
@@ -250,27 +277,27 @@ export default function DialogueBox({
       girlStats
     )
   );
- const getDynamicCharacterImage = (): string => {
-   // If no character name provided, fall back to prop
-   if (!characterName || !currentLocation || currentHour === undefined) {
-     return characterImage || "";
-   }
+  const getDynamicCharacterImage = (): string => {
+    // If no character name provided, fall back to prop
+    if (!characterName || !currentLocation || currentHour === undefined) {
+      return characterImage || "";
+    }
 
-   // Find the girl by name
-   const girl = girls.find((g) => g.name === characterName);
-   if (!girl) return characterImage || "";
+    // Find the girl by name
+    const girl = girls.find((g) => g.name === characterName);
+    if (!girl) return characterImage || "";
 
-   // Get expression from current line, default to "neutral"
-   const expression = currentLine?.expression || "neutral";
+    // Get expression from current line, default to "neutral"
+    const expression = currentLine?.expression || "neutral";
 
-   // Generate dynamic image - merge girlStats with original stats to ensure all properties exist
-   return getCharacterImage(
-     { ...girl, stats: { ...girl.stats, ...girlStats } }, // Merge instead of replacing
-     currentLocation,
-     currentHour,
-     expression
-   );
- };
+    // Generate dynamic image - merge girlStats with original stats to ensure all properties exist
+    return getCharacterImage(
+      { ...girl, stats: { ...girl.stats, ...girlStats } }, // Merge instead of replacing
+      currentLocation,
+      currentHour,
+      expression
+    );
+  };
 
   const displayImage = getDynamicCharacterImage();
 
@@ -313,26 +340,94 @@ export default function DialogueBox({
         </div>
       )}
 
-      {/* ===== NEW: MIDGROUND LAYER (z-10) ===== */}
-      {midgroundImage && (
+      {/* ===== MIDGROUND LAYER (z-10) ===== */}
+      {(lineMidImage || lineMidVideo) && (
         <div className="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-hidden">
-          <img
-            src={midgroundImage}
-            alt="Midground Overlay"
-            onError={(e) => {
-              e.currentTarget.src =
-                'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="transparent" width="1920" height="1080"/></svg>';
-            }}
-            style={{
-              mixBlendMode: midgroundBlend,
-              opacity: Math.min(1, Math.max(0, midgroundOpacity)),
-              filter: "blur(8px) brightness(0.8)", // Add blur and darken
-              transform: "scale(1.1)", // Slightly scale to hide blur edges
-            }}
-            className={`absolute inset-0 w-full h-full ${
-              midgroundFit === "contain" ? "object-contain" : "object-cover"
-            } pointer-events-none`}
-          />
+          {lineMidVideo ? (
+            <video
+              src={lineMidVideo}
+              autoPlay
+              loop
+              muted
+              playsInline
+              style={{
+                mixBlendMode: lineMidBlend,
+                opacity: Math.min(1, Math.max(0, lineMidOpacity ?? 1)),
+                filter: "blur(4px) brightness(0.92)",
+                transform: "scale(1.05)",
+              }}
+              className={`absolute inset-0 w-full h-full ${
+                lineMidFit === "contain" ? "object-contain" : "object-cover"
+              }`}
+            />
+          ) : (
+            <img
+              src={lineMidImage!}
+              alt="Midground Overlay"
+              onError={(e) => {
+                e.currentTarget.src =
+                  'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="transparent" width="1920" height="1080"/></svg>';
+              }}
+              style={{
+                mixBlendMode: lineMidBlend,
+                opacity: Math.min(1, Math.max(0, lineMidOpacity ?? 1)),
+                filter: "blur(4px) brightness(0.92)",
+                transform: "scale(1.05)",
+              }}
+              className={`absolute inset-0 w-full h-full ${
+                lineMidFit === "contain" ? "object-contain" : "object-cover"
+              }`}
+            />
+          )}
+        </div>
+      )}
+
+      {/*===== NEW: FOREGROUND EVENT MEDIA (z-30) =====*/}
+      {(foregroundImage || foregroundVideo || videoSlide) && (
+        <div
+          className={`absolute pointer-events-none overflow-hidden ${
+            foregroundPosition === "center"
+              ? "inset-0 flex items-center justify-center"
+              : foregroundPosition === "left"
+              ? "left-0 top-0 bottom-0 flex items-center"
+              : "right-0 top-0 bottom-0 flex items-center"
+          }`}
+          style={{ zIndex: 30 }}
+        >
+          {foregroundImage && (
+            <img
+              src={foregroundImage}
+              alt="Event"
+              onError={(e) => {
+                e.currentTarget.src =
+                  'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect fill="%23666" width="1800" height="1600"/></svg>';
+              }}
+              className={`${
+                foregroundSize === "full"
+                  ? "w-full h-full object-cover"
+                  : foregroundSize === "large"
+                  ? "max-w-[70%] max-h-[80%] object-contain"
+                  : "max-w-[50%] max-h-[60%] object-contain"
+              } shadow-2xl rounded-xl`}
+            />
+          )}
+
+          {(foregroundVideo || videoSlide) && (
+            <video
+              src={foregroundVideo ?? videoSlide}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className={`${
+                foregroundSize === "full"
+                  ? "w-full h-full object-cover"
+                  : foregroundSize === "large"
+                  ? "max-w-[170%] max-h-[180%] object-contain"
+                  : "max-w-[150%] max-h-[160%] object-contain"
+              } shadow-2xl rounded-xl`}
+            />
+          )}
         </div>
       )}
 
@@ -355,7 +450,6 @@ export default function DialogueBox({
         </button>
       )}
 
-      {/* ===== CHARACTER PORTRAIT CARD (z-20) ===== */}
       {/* ===== CHARACTER PORTRAIT CARD (z-20) ===== */}
       {!isNarration && characterImage && (
         <div className="absolute bottom-62 left-0 right-0 flex justify-center items-end pointer-events-none z-20 px-4">

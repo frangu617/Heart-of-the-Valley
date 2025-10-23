@@ -330,18 +330,25 @@ export default function CharacterOverlay({
       <div className="flex flex-col items-center mb-6">
         <div className="relative group mb-4">
           <div className="absolute inset-0 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full blur-lg group-hover:blur-xl transition-all"></div>
-          <img
-            src={`/images/characters/${girl.name.toLowerCase()}/casual/${expression}.webp`}
-            alt={`${girl.name} - ${expression}`}
-            onError={(e) => {
-              e.currentTarget.src = `neutral.webp`;
-              e.currentTarget.onerror = () => {
-                e.currentTarget.src =
-                  'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><circle cx="100" cy="100" r="100" fill="%23e879f9"/><circle cx="70" cy="80" r="10" fill="white"/><circle cx="130" cy="80" r="10" fill="white"/><path d="M 60 130 Q 100 150 140 130" stroke="white" stroke-width="5" fill="none"/></svg>';
-              };
-            }}
-            className="relative w-32 h-32 object-cover rounded-full border-4 border-white shadow-xl"
-          />
+          <div className="relative w-50 h-60 rounded-full border-4 border-white shadow-xl overflow-hidden">
+            <img
+              src={`/images/characters/${girl.name.toLowerCase()}/casual/${expression}.webp`}
+              alt={`${girl.name} - ${expression}`}
+              onError={(e) => {
+                e.currentTarget.src = `neutral.webp`;
+                e.currentTarget.onerror = () => {
+                  e.currentTarget.src =
+                    'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><circle cx="100" cy="100" r="100" fill="%23e879f9"/><circle cx="70" cy="80" r="10" fill="white"/><circle cx="130" cy="80" r="10" fill="white"/><path d="M 60 130 Q 100 150 140 130" stroke="white" stroke-width="5" fill="none"/></svg>';
+                };
+              }}
+              className="w-full h-full object-cover"
+              style={{
+                objectPosition: "center 20%", // Show top portion (face)
+                transform: "scale(2)", // Zoom in 1.8x
+                transformOrigin: "center 0%", // Zoom from top
+              }}
+            />
+          </div>
         </div>
 
         <h3 className="text-2xl font-bold text-purple-800 mb-1">{girl.name}</h3>

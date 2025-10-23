@@ -749,7 +749,7 @@ export default function GamePage() {
       >
         <div className="container mx-auto px-4 flex justify-between items-center">
           <h1 className="text-2xl md:text-4xl font-bold">
-            {isMobile ? "💖 Dating Sim" : "💖 Dating Sim Adventure"}
+            {isMobile ? "💖 HotV" : "💖 Heart of the Valley"}
           </h1>
           <div className="flex gap-2 items-center">
             <button
