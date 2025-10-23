@@ -10,6 +10,8 @@ import { PlayerStats, GirlStats } from "@/data/characters";
 import { getCharacterImage } from "@/lib/characterImages";
 import { girls } from "@/data/characters";
 
+import type { CSSProperties } from "react";
+
 
 interface Props {
   dialogue: Dialogue;
@@ -39,8 +41,23 @@ interface Props {
   /** NEW: midground/overlay layer that sits between background and character */
   midgroundImage?: string;
   midgroundOpacity?: number; // 0..1 (default 1)
-  midgroundBlend?: React.CSSProperties["mixBlendMode"]; // e.g., "multiply", "screen"
+  midgroundBlend?: CSSProperties["mixBlendMode"]; // e.g., "multiply", "screen"
   midgroundFit?: "cover" | "contain"; // default "cover"
+  midgroundBlurPx?: number; // default 0
+  midgroundBrightness?: number; // default 1
+  midgroundScale?: number; // default 1
+  midgroundWidthPct?: number; // 10..100, default 100
+  midgroundHeightPct?: number; // 10..100, default 100
+  midgroundPosition2?:
+    | "center"
+    | "top"
+    | "bottom"
+    | "left"
+    | "right"
+    | "top-left"
+    | "top-right"
+    | "bottom-left"
+    | "bottom-right"; // where to place the box inside the screen
   //Foreground event media */
   foregroundImage?: string;
   foregroundVideo?: string;
@@ -125,6 +142,12 @@ export default function DialogueBox({
   midgroundOpacity = 1,
   midgroundBlend,
   midgroundFit = "cover",
+  midgroundBlurPx = 4,
+  midgroundBrightness = 0.92,
+  midgroundScale = 1.05,
+  midgroundWidthPct = 100,
+  midgroundHeightPct = 100,
+  midgroundPosition2 = "center",
 
   // NEW foreground props
   foregroundImage,
@@ -161,6 +184,31 @@ export default function DialogueBox({
   const lineMidOpacity = currentLine?.midgroundOpacity ?? midgroundOpacity;
   const lineMidBlend = currentLine?.midgroundBlend ?? midgroundBlend;
   const lineMidFit = currentLine?.midgroundFit ?? midgroundFit;
+  const lineMidBlurPx =
+    (currentLine as any)?.midgroundBlurPx ??
+    midgroundBlurPx ??
+    4;
+  const lineMidBrightness =
+    (currentLine as any)?.midgroundBrightness ??
+    midgroundBrightness ??
+    0.92;
+  const lineMidScale =
+    (currentLine as any)?.midgroundScale ??
+    midgroundScale ??
+    1.05;
+
+  const lineMidWidthPct =
+    (currentLine as any)?.midgroundWidthPct ??
+    midgroundWidthPct ??
+    100;
+  const lineMidHeightPct =
+    (currentLine as any)?.midgroundHeightPct ??
+    midgroundHeightPct ??
+    100;
+  const lineMidPosition2 =
+    (currentLine as any)?.midgroundPosition2 ??
+    midgroundPosition2 ??
+    "center";
 
   //Foreground media
   const foregroundImg = currentLine?.foregroundImage;
@@ -340,48 +388,78 @@ export default function DialogueBox({
         </div>
       )}
 
-      {/* ===== MIDGROUND LAYER (z-10) ===== */}
+      {/* ===== MIDGROUND LAYER (z-10) with blur/size controls ===== */}
       {(lineMidImage || lineMidVideo) && (
-        <div className="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-hidden">
-          {lineMidVideo ? (
-            <video
-              src={lineMidVideo}
-              autoPlay
-              loop
-              muted
-              playsInline
-              style={{
-                mixBlendMode: lineMidBlend,
-                opacity: Math.min(1, Math.max(0, lineMidOpacity ?? 1)),
-                filter: "blur(4px) brightness(0.92)",
-                transform: "scale(1.05)",
-              }}
-              className={`absolute inset-0 w-full h-full ${
-                lineMidFit === "contain" ? "object-contain" : "object-cover"
-              }`}
-            />
-          ) : (
-            <img
-              src={lineMidImage!}
-              alt="Midground Overlay"
-              onError={(e) => {
-                e.currentTarget.src =
-                  'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="transparent" width="1920" height="1080"/></svg>';
-              }}
-              style={{
-                mixBlendMode: lineMidBlend,
-                opacity: Math.min(1, Math.max(0, lineMidOpacity ?? 1)),
-                filter: "blur(4px) brightness(0.92)",
-                transform: "scale(1.05)",
-              }}
-              className={`absolute inset-0 w-full h-full ${
-                lineMidFit === "contain" ? "object-contain" : "object-cover"
-              }`}
-            />
-          )}
+        <div
+          className="absolute inset-0 z-10 pointer-events-none overflow-hidden flex"
+          style={{
+            // align the inner box inside the screen area
+            justifyContent: ["top-left", "left", "bottom-left"].includes(
+              lineMidPosition2
+            )
+              ? "flex-start"
+              : ["top-right", "right", "bottom-right"].includes(
+                  lineMidPosition2
+                )
+              ? "flex-end"
+              : "center",
+            alignItems: ["top", "top-left", "top-right"].includes(
+              lineMidPosition2
+            )
+              ? "flex-start"
+              : ["bottom", "bottom-left", "bottom-right"].includes(
+                  lineMidPosition2
+                )
+              ? "flex-end"
+              : "center",
+          }}
+        >
+          <div
+            className="relative overflow-hidden"
+            style={{
+              width: `${Math.min(100, Math.max(10, lineMidWidthPct))}%`,
+              height: `${Math.min(100, Math.max(10, lineMidHeightPct))}%`,
+            }}
+          >
+            {lineMidVideo ? (
+              <video
+                src={lineMidVideo}
+                autoPlay
+                loop
+                muted
+                playsInline
+                style={{
+                  mixBlendMode: lineMidBlend,
+                  opacity: Math.min(1, Math.max(0, lineMidOpacity ?? 1)),
+                  filter: `blur(${lineMidBlurPx}px) brightness(${lineMidBrightness})`,
+                  transform: `scale(${lineMidScale})`,
+                }}
+                className={`absolute inset-0 w-full h-full ${
+                  lineMidFit === "contain" ? "object-contain" : "object-cover"
+                }`}
+              />
+            ) : (
+              <img
+                src={lineMidImage!}
+                alt="Midground Overlay"
+                onError={(e) => {
+                  e.currentTarget.src =
+                    'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="transparent" width="1920" height="1080"/></svg>';
+                }}
+                style={{
+                  mixBlendMode: lineMidBlend,
+                  opacity: Math.min(1, Math.max(0, lineMidOpacity ?? 1)),
+                  filter: `blur(${midgroundBlurPx}px) brightness(${midgroundBrightness})`,
+                  transform: `scale(${midgroundScale})`,
+                }}
+                className={`absolute inset-0 w-full h-full ${
+                  lineMidFit === "contain" ? "object-contain" : "object-cover"
+                }`}
+              />
+            )}
+          </div>
         </div>
       )}
-
       {/*===== NEW: FOREGROUND EVENT MEDIA (z-30) =====*/}
       {(foregroundImage || foregroundVideo || videoSlide) && (
         <div

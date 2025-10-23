@@ -32,7 +32,12 @@ export type DialogueLine = {
   midgroundOpacity?: number;
   midgroundBlend?: CSSProperties["mixBlendMode"];
   midgroundFit?: "cover" | "contain";
-
+  midgroundBlurPx?: number;
+  midgroundBrightness?: number;
+  midgroundScale?: number;
+  midgroundWidthPct?: number;
+  midgroundHeightPct?: number;
+  midgroundPosition2?: "center" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
   //Foreground event media
   foregroundImage?: string;
   foregroundVideo?: string;
