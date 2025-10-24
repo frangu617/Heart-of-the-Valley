@@ -1,24 +1,27 @@
 "use client";
-
+import MainMenu from "@/components/MainMenu";
 import { useGameStore } from "@/state/gameStore";
+import { useState } from "react";
 
 export default function MenuScene() {
-  const setGameState = useGameStore((s) => s.setGameState);
+  const [darkMode, setDarkMode] = useState(true);
+  const hasSave = useGameStore((s) => s.saveSlots.some(Boolean));
+
+  const handleNewGame = () => {
+    useGameStore.getState().newGame({ startingLocation: "Bedroom" });
+  };
+
+  const handleContinue = () => {
+    useGameStore.getState().setGameState("playing");
+  };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-8">
-      <div className="w-full max-w-md rounded-lg border border-white/10 bg-black/30 p-6 text-center backdrop-blur">
-        <h1 className="mb-6 text-3xl font-bold text-white">
-          Heart of the Valley
-        </h1>
-        <button
-          className="w-full rounded bg-white/10 py-3 font-semibold text-white hover:bg-white/20"
-          onClick={() => setGameState("intro")}
-        >
-          New Game
-        </button>
-        <div className="mt-3 text-sm text-white/60">v-slice bootstrap</div>
-      </div>
-    </div>
+    <MainMenu
+      onNewGame={handleNewGame}
+      onContinue={handleContinue}
+      hasSaveData={hasSave}
+      darkMode={darkMode}
+      onToggleDarkMode={() => setDarkMode((d) => !d)}
+    />
   );
 }

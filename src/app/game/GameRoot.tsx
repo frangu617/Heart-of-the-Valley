@@ -10,12 +10,6 @@ import ExplorationScene from "./scenes/ExplorationScene";
 export default function GameRoot() {
   const gameState = useGameStore((s) => s.gameState);
   const darkMode = true; // or from uiStore
-  const rollDailyGoals = useGameStore((s) => s.rollDailyGoals);
-  const todayGoals = useGameStore((s) => s.todayGoals);
-
-  useEffect(() => {
-    if (!todayGoals.length) rollDailyGoals(2);
-  }, [todayGoals.length, rollDailyGoals]);
 
   const bgClass = darkMode
     ? "bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900"
