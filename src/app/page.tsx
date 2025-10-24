@@ -2,6 +2,7 @@
 "use client";
 
 import GameRoot from "./game/GameRoot";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 /**
  * Entry point for Heart of the Valley (refactor branch).
@@ -9,5 +10,9 @@ import GameRoot from "./game/GameRoot";
  * All game/UI state comes from Zustand stores under src/state/*.
  */
 export default function Page() {
-  return <GameRoot />;
+  return (
+    <ErrorBoundary>
+      <GameRoot />
+    </ErrorBoundary>
+  );
 }

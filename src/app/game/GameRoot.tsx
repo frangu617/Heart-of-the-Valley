@@ -6,6 +6,7 @@ import { useUIStore } from "@/state/uiStore";
 import MenuScene from "./scenes/MenuScene";
 import DialogueScene from "./scenes/DialogueScene";
 import ExplorationScene from "./scenes/ExplorationScene";
+import DebugOverlay from "./ui/DebugOverlay";
 
 export default function GameRoot() {
   const gameState = useGameStore((s) => s.gameState);
@@ -21,6 +22,7 @@ export default function GameRoot() {
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${bgClass}`}>
+      <DebugOverlay />
       {gameState === "mainMenu" && <MenuScene />}
       {gameState === "dialogue" && <DialogueScene />}
       {(gameState === "intro" ||
