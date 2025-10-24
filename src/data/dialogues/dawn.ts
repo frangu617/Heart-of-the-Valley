@@ -1,4 +1,4 @@
-import { Dialogue } from "./index";
+import type { Dialogue } from "@/types/dialogue";
 
 export const dawnFirstMeeting: Dialogue = {
   id: "dawn_first_meeting",

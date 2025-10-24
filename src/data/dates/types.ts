@@ -1,4 +1,4 @@
-import { Dialogue } from "../dialogues";
+import type { Dialogue } from "@/types/dialogue" ;
 import { GirlStats, PlayerStats } from "../characters";
 
 export type DateLocation =

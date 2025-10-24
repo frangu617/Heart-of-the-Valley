@@ -1,4 +1,4 @@
-import { Dialogue } from "./index";
+import type { Dialogue } from "@/types/dialogue";
 
 export const rubyFirstMeeting: Dialogue = {
   id: "ruby_first_meeting",

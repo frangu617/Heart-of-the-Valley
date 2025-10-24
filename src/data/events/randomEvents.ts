@@ -1,5 +1,5 @@
 // src/data/events/randomEvents.ts
-import { Dialogue } from "../dialogues";
+import type { Dialogue } from "@/types/dialogue";
 import { PlayerStats } from "../characters";
 
 export type RandomEventType =

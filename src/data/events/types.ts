@@ -1,5 +1,5 @@
 // src/data/events/types.ts
-import { Dialogue } from "../dialogues";
+import type { Dialogue } from "@/types/dialogue";
 // import { GirlStats } from "../characters";
 
 export type EventConditions = {

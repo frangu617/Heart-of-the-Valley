@@ -1,4 +1,4 @@
-import { Dialogue } from "./index";
+import type { Dialogue } from "@/types/dialogue";
 
 export const irisFirstMeeting: Dialogue = {
   id: "iris_first_meeting",
