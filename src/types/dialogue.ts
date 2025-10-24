@@ -1,7 +1,7 @@
 import type { MixBlendMode } from "./media";
 
 export type DialogueChoiceCondition = {
-    location?: string;  
+    location?: string | string[];  
   minAffection?: number;
   minTrust?: number;
   minLove?: number;
