@@ -6,8 +6,8 @@ import { Dispatch, SetStateAction, useEffect } from "react";
 import {
   characterDialogues,
   getDefaultDialogue,
-  Dialogue,
 } from "../data/dialogues/index";
+import { Dialogue } from "@/types/dialogue";
 import { DayOfWeek } from "@/data/gameConstants";
 import { CharacterEventState } from "@/data/events/types";
 import { findTriggeredEvent } from "@/lib/eventSystem";
@@ -17,7 +17,7 @@ import  DatePlanner from "./DatePlanner";
 import { DateLocation } from "@/data/dates/types";
 import { useState } from "react";
 import { getCharacterImage } from "@/lib/characterImages";
-import { get } from "http";
+// import { get } from "http";
 
 
 interface Props {

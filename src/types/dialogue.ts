@@ -1,7 +1,8 @@
+// src/types/dialogue.ts
 import type { MixBlendMode } from "./media";
 
 export type DialogueChoiceCondition = {
-    location?: string | string[];  
+  location?: string | string[];
   minAffection?: number;
   minTrust?: number;
   minLove?: number;
@@ -12,7 +13,6 @@ export type DialogueChoiceCondition = {
   hasItem?: string;
   timeOfDay?: "morning" | "afternoon" | "evening" | "night";
   dayOfWeek?: string;
-  flag?: string;
 };
 
 export type DialogueChoice = {
@@ -41,25 +41,31 @@ export type DialogueLine = {
   videoBoomerang?: boolean;
   condition?: DialogueChoiceCondition;
 
-  // Midground event media
+  // Midground
   midgroundImage?: string;
   midgroundVideo?: string;
   midgroundOpacity?: number;
-  midgroundBlend?: MixBlendMode; // <-- use CSS mix-blend-mode type
+  midgroundBlend?: MixBlendMode;
   midgroundFit?: "cover" | "contain";
   midgroundBlurPx?: number;
-    midgroundBrightness?: number;
-    midgroundScale?: number;
-    midgroundWidthPct?: number;
-    midgroundHeightPct?: number;
-    midgroundPosition2?: "center" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
-    //Foreground event media
-    foregroundImage?: string;
-    foregroundVideo?: string;
-    foregroundPosition?: "center" | "left" | "right";
-    foregroundSize?: "full" | "large" | "medium";
+  midgroundBrightness?: number;
+  midgroundScale?: number;
+  midgroundWidthPct?: number;
+  midgroundHeightPct?: number;
+  midgroundPosition2?:
+    | "center"
+    | "top-left"
+    | "top-right"
+    | "bottom-left"
+    | "bottom-right";
 
-    nextDialogueId?: string;
+  // Foreground
+  foregroundImage?: string;
+  foregroundVideo?: string;
+  foregroundPosition?: "center" | "left" | "right";
+  foregroundSize?: "full" | "large" | "medium";
+
+  nextDialogueId?: string;
 };
 
 export type Dialogue = {
@@ -67,3 +73,5 @@ export type Dialogue = {
   lines: DialogueLine[];
   requiresFirstTimeOnly?: boolean;
 };
+
+export type { MixBlendMode };
