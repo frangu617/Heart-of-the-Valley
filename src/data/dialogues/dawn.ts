@@ -50,8 +50,27 @@ export const dawnFirstMeeting: Dialogue = {
     },
     {
       speaker: null,
-      text: "She walks away motioning obscene gestures."
-    }
+      text: "She walks away motioning obscene gestures.",
+      choices: [
+        {text: "follow her", affectionChange: 0, trustChange: 0},
+        {text: "ignore her", affectionChange: 0, trustChange: 0}
+      ]
+    },
+    {
+      speaker: "Dawn",
+      text: "Good, you came, 'Daddy'",
+      expression: "happy"
+    },
+    {
+      speaker: null,
+      text: "Fuck! I've missed this cock!",
+      expression: "/images/events/dawn_school_bj.png",
+      midgroundBlurPx: -1,
+      // midgroundSize: "contain",
+      midgroundOpacity: 1.0,
+      midgroundBlend: "multiply",
+      midgroundFit: "contain",
+    },
     
   ],
 };
