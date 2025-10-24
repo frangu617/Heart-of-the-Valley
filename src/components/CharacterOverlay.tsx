@@ -17,14 +17,15 @@ import  DatePlanner from "./DatePlanner";
 import { DateLocation } from "@/data/dates/types";
 import { useState } from "react";
 import { getCharacterImage } from "@/lib/characterImages";
-import { get } from "http";
+// import { get } from "http";
+import { useGame } from "@/contexts/GameContext";
 
 
 interface Props {
   girl: Girl;
   location: string;
-  player: PlayerStats;
-  setPlayer: Dispatch<SetStateAction<PlayerStats>>;
+  // player: PlayerStats;
+  // setPlayer: Dispatch<SetStateAction<PlayerStats>>;
   spendTime: (amount: number) => void;
   onClose: () => void;
   onStartDialogue: (
@@ -32,8 +33,8 @@ interface Props {
     characterImage: string,
     girlEffects?: Partial<GirlStats>
   ) => void;
-  dayOfWeek: DayOfWeek;
-  hour: number;
+  // dayOfWeek: DayOfWeek;
+  // hour: number;
   eventState: CharacterEventState;
   onEventTriggered: (eventId: string) => void;
   darkMode?: boolean; 
@@ -51,18 +52,27 @@ interface Props {
 export default function CharacterOverlay({
   girl,
   location,
-  player,
-  setPlayer,
+  // player,
+  // setPlayer,
   spendTime,
   onClose,
   onStartDialogue,
-  dayOfWeek,
-  hour,
+  // dayOfWeek,
+  // hour,
   eventState,
   onEventTriggered,
   darkMode,
   onScheduleDate
 }: Props) {
+  const { state, dispatch} = useGame();
+  const player = state.player;
+  const dayOfWeek = state.dayOfWeek;
+  const hour = state.hour;
+
+  const updatePlayer = (updates: Partial<PlayerStats>) => {
+    dispatch({ type: "UPDATE_PLAYER", payload: updates });
+  };
+  
   const [showDatePlanner, setShowDatePlanner] = useState(false);
   // Check for triggered events when component mounts or dependencies change
   // Check for first meeting or triggered events

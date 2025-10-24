@@ -1,4 +1,6 @@
 // src/contexts/GameContext.tsx
+"use client";
+
 import React, {
   createContext,
   useContext,
