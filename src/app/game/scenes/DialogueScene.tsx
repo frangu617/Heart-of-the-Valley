@@ -1,26 +1,32 @@
 // src/app/game/scenes/DialogueScene.tsx
 "use client";
 
-import DialogueBox from "@/components/DialogueBox";
+import { useEffect } from "react";
 import { useGameStore } from "@/state/gameStore";
-import { asDialogue } from "@/compat/dialogueBridge";
+import DialogueBox from "@/components/DialogueBox";
 
 export default function DialogueScene() {
-  const currentDialogue = asDialogue(useGameStore((s) => s.currentDialogue)); // normalize
+  const currentDialogue = useGameStore((s) => s.currentDialogue);
   const dialogueIndex = useGameStore((s) => s.dialogueIndex);
   const setGameState = useGameStore((s) => s.setGameState);
   const advanceDialogue = useGameStore((s) => s.advanceDialogue);
 
+  // ✅ Don’t update state during render. Do it here instead:
+  useEffect(() => {
+    if (!currentDialogue || currentDialogue.lines.length === 0) {
+      setGameState("playing");
+    }
+  }, [currentDialogue, setGameState]);
+
   if (!currentDialogue || currentDialogue.lines.length === 0) {
-    setGameState("playing");
-    return null;
+    return null; // render nothing while it redirects back to "playing"
   }
 
   return (
     <div className="mx-auto max-w-5xl p-4">
       <DialogueBox
-        dialogue={currentDialogue} // your DialogueBox expects Dialogue
-        // currentLineIndex={dialogueIndex as number | undefined} // only if supported
+        dialogue={currentDialogue}
+        currentLineIndex={dialogueIndex as number | undefined}
         onComplete={advanceDialogue}
         darkMode
         onNextDialogueId={advanceDialogue}
