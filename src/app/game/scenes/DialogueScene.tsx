@@ -10,17 +10,15 @@ export default function DialogueScene() {
   const dialogueIndex = useGameStore((s) => s.dialogueIndex);
   const setGameState = useGameStore((s) => s.setGameState);
   const advanceDialogue = useGameStore((s) => s.advanceDialogue);
+  const beginDialogueById = useGameStore((s) => s.beginDialogueById); // ✅
 
-  // ✅ Don’t update state during render. Do it here instead:
   useEffect(() => {
     if (!currentDialogue || currentDialogue.lines.length === 0) {
       setGameState("playing");
     }
   }, [currentDialogue, setGameState]);
 
-  if (!currentDialogue || currentDialogue.lines.length === 0) {
-    return null; // render nothing while it redirects back to "playing"
-  }
+  if (!currentDialogue) return null;
 
   return (
     <div className="mx-auto max-w-5xl p-4">
@@ -29,7 +27,7 @@ export default function DialogueScene() {
         currentLineIndex={dialogueIndex as number | undefined}
         onComplete={advanceDialogue}
         darkMode
-        onNextDialogueId={advanceDialogue}
+        onNextDialogueId={beginDialogueById} // ✅ instead of advanceDialogue
       />
     </div>
   );

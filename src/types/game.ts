@@ -1,4 +1,5 @@
 // Core game enums & shapes shared across scenes and stores
+import type  { locationGraph } from "@/data/locations";
 
 export type GameState =
   | "mainMenu"
@@ -21,14 +22,15 @@ export type TimeState = {
   hour: number; // 0-23
 };
 
-export type LocationKey =
-  | "apartment"
-  | "library"
-  | "bar"
-  | "university"
-  | "gym"
-  | "street"
-  | "diner"; // extend as needed
+// export type LocationKey =
+//   | "apartment"
+//   | "library"
+//   | "bar"
+//   | "university"
+//   | "gym"
+//   | "street"
+//   | "diner"; // extend as needed
+export type LocationKey = keyof typeof locationGraph;
 
 export type RouteKey = "iris" | "lenore" | "riven" | null;
 
