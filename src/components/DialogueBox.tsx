@@ -280,6 +280,7 @@ export default function DialogueBox({
   }, [currentLineIndex, currentLine]);
 
   const handleChoice = (choice: DialogueChoice) => {
+    console.log("[DialogueBox] choice clicked:", choice);
     const newChanges = { ...accumulatedStatChanges };
     if (choice.affectionChange)
       newChanges.affection =

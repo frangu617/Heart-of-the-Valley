@@ -43,6 +43,8 @@ export type DialogueLine = {
   foregroundVideo?: string;
   foregroundPosition?: "center" | "left" | "right";
   foregroundSize?: "full" | "large" | "medium";
+
+  nextDialogueId?: string;
 };
 
 export type Dialogue = {
