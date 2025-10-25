@@ -1,13 +1,20 @@
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
 import type { Dialogue } from "@/types/dialogue";
 import type { LocationKey } from "@/types/game";
 import { START_DAY, START_HOUR } from "@/data/gameConstants";
 import { getDialogueById } from "@/data/dialogues/registry";
 
+// ===== Types =====
+export type GameStateUnion =
+  | "mainMenu"
+  | "intro"
+  | "playing"
+  | "paused"
+  | "dialogue";
+
 export interface GameTime {
   dayIndex: number; // 1 = Monday
-  day: string; // label e.g. "Monday"
+  day: string;
   hour: number; // 0..23
 }
 
@@ -22,30 +29,25 @@ export interface PlayerStats {
   inventory: string[];
 }
 
-export type GameStateUnion =
-  | "mainMenu"
-  | "intro"
-  | "playing"
-  | "paused"
-  | "dialogue";
+export interface SavePayload {
+  gameState: GameStateUnion;
+  time: GameTime;
+  currentLocation: LocationKey;
+  currentRoute: string | null;
+  player: PlayerStats;
+  flags: Record<string, boolean>;
+  currentDialogue: Dialogue | null;
+  dialogueIndex: number;
+}
 
 export interface SaveSnapshot {
   stamp: number; // Date.now()
   name?: string;
-  data: {
-    gameState: GameStateUnion;
-    time: GameTime;
-    currentLocation: LocationKey;
-    currentRoute: string | null;
-    player: PlayerStats;
-    flags: Record<string, boolean>;
-    currentDialogue: Dialogue | null;
-    dialogueIndex: number;
-  };
+  data: SavePayload;
 }
 
 export interface GameStore {
-  // Core state
+  // Core
   gameState: GameStateUnion;
   setGameState: (s: GameStateUnion) => void;
 
@@ -54,7 +56,7 @@ export interface GameStore {
   advanceHours: (hours: number) => void;
   nextDay: () => void;
 
-  // Location & Route
+  // Location & route
   currentLocation: LocationKey;
   setLocation: (loc: LocationKey) => void;
   currentRoute: string | null;
@@ -81,17 +83,20 @@ export interface GameStore {
   spendEnergy: (amount: number) => boolean; // positive=spend, negative=restore
   addMoney: (delta: number) => void;
 
-  // Saves (3 slots by default)
-  saveSlots: (SaveSnapshot | null)[];
+  // Manual saves (3 slots by default)
   saveToSlot: (slotIndex: number, name?: string) => void;
   loadFromSlot: (slotIndex: number) => void;
   deleteSlot: (slotIndex: number) => void;
+  listSaves: () => (SaveSnapshot | null)[];
+  hasAnySave: () => boolean;
+  loadMostRecent: () => boolean;
 
-  // New game / hard reset
+  // New game / full reset
   newGame: (opts?: { startingLocation?: LocationKey }) => void;
-  hardResetStorage: () => void;
+  hardResetStorage: () => void; // wipes all manual saves
 }
 
+// ===== Defaults =====
 const STARTING_STATS: PlayerStats = {
   energy: 100,
   mood: 50,
@@ -103,7 +108,7 @@ const STARTING_STATS: PlayerStats = {
   inventory: [],
 };
 
-// 👉 change this to whatever you want the true default to be
+// change to the location key you want from locations.ts
 const DEFAULT_START_LOCATION = "Bedroom" as LocationKey;
 
 const DEFAULTS: Pick<
@@ -116,7 +121,6 @@ const DEFAULTS: Pick<
   | "currentDialogue"
   | "dialogueIndex"
   | "flags"
-  | "saveSlots"
 > = {
   gameState: "mainMenu",
   time: { dayIndex: 1, day: START_DAY, hour: START_HOUR },
@@ -126,167 +130,209 @@ const DEFAULTS: Pick<
   currentDialogue: null,
   dialogueIndex: 0,
   flags: {},
-  saveSlots: [null, null, null],
 };
 
-const STORAGE_KEY = "hotv-game-store";
-const SAVE_VERSION = 2;
+// ===== Manual save helpers (localStorage) =====
+const SLOTS = 3;
+const SAVE_PREFIX = "hotv-manual-save-"; // hotv-manual-save-0, -1, -2
+const META_LAST_USED = "hotv-last-used-slot";
 
-function makeSnapshot(state: GameStore, name?: string): SaveSnapshot {
-  return {
-    stamp: Date.now(),
-    name,
-    data: {
-      gameState: state.gameState,
-      time: state.time,
-      currentLocation: state.currentLocation,
-      currentRoute: state.currentRoute,
-      player: state.player,
-      flags: state.flags,
-      currentDialogue: state.currentDialogue,
-      dialogueIndex: state.dialogueIndex,
-    },
-  };
+function lsGet<T>(key: string): T | null {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : null;
+  } catch {
+    return null;
+  }
 }
 
-export const useGameStore = create<GameStore>()(
-  persist(
-    (set, get) => ({
-      ...DEFAULTS,
+function lsSet<T>(key: string, value: T) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
 
-      setGameState: (s) => set({ gameState: s }),
+function lsRemove(key: string) {
+  localStorage.removeItem(key);
+}
 
-      // Time
-      advanceHours: (hours) =>
-        set((st) => {
-          let newHour = st.time.hour + hours;
-          let newDayIndex = st.time.dayIndex;
-          if (newHour >= 24) {
-            newDayIndex += Math.floor(newHour / 24);
-            newHour = newHour % 24;
-          }
-          return { time: { ...st.time, hour: newHour, dayIndex: newDayIndex } };
-        }),
-      nextDay: () =>
-        set((st) => ({
-          time: {
-            ...st.time,
-            dayIndex: st.time.dayIndex + 1,
-            hour: START_HOUR,
-          },
-        })),
+function getSlotKey(i: number) {
+  return `${SAVE_PREFIX}${i}`;
+}
 
-      // Location & Route
-      setLocation: (loc) => set({ currentLocation: loc }),
-      setRoute: (r) => set({ currentRoute: r }),
+function makeSnapshot(state: GameStore, name?: string): SaveSnapshot {
+  const payload: SavePayload = {
+    gameState: state.gameState,
+    time: state.time,
+    currentLocation: state.currentLocation,
+    currentRoute: state.currentRoute,
+    player: state.player,
+    flags: state.flags,
+    currentDialogue: state.currentDialogue,
+    dialogueIndex: state.dialogueIndex,
+  };
+  return { stamp: Date.now(), name, data: payload };
+}
 
-      // Player
-      setPlayer: (changes) =>
-        set((st) => ({ player: { ...st.player, ...changes } })),
+// ===== Store (no persist!) =====
+export const useGameStore = create<GameStore>()((set, get) => ({
+  ...DEFAULTS,
 
-      // Dialogue
-      setDialogue: (d) =>
-        set((st) => ({
-          currentDialogue: d,
-          dialogueIndex: d ? 0 : st.dialogueIndex,
-          gameState: d ? "dialogue" : st.gameState,
-        })),
-      advanceDialogue: () =>
-        set((st) => {
-          const d = st.currentDialogue;
-          if (!d) return {};
-          const next = st.dialogueIndex + 1;
-          if (next >= d.lines.length) {
-            return {
-              currentDialogue: null,
-              dialogueIndex: 0,
-              gameState: "playing",
-            };
-          }
-          return { dialogueIndex: next };
-        }),
-      beginDialogueById: (id) => {
-        const d = getDialogueById(id);
-        if (!d) return;
-        set({ currentDialogue: d, dialogueIndex: 0, gameState: "dialogue" });
-      },
+  // Core
+  setGameState: (s) => set({ gameState: s }),
 
-      // Flags
-      setFlag: (k, v) => set((st) => ({ flags: { ...st.flags, [k]: v } })),
-      getFlag: (k) => !!get().flags[k],
+  // Time
+  advanceHours: (hours) =>
+    set((st) => {
+      let newHour = st.time.hour + hours;
+      let newDayIndex = st.time.dayIndex;
+      if (newHour >= 24) {
+        newDayIndex += Math.floor(newHour / 24);
+        newHour = newHour % 24;
+      }
+      return { time: { ...st.time, hour: newHour, dayIndex: newDayIndex } };
+    }),
+  nextDay: () =>
+    set((st) => ({
+      time: { ...st.time, dayIndex: st.time.dayIndex + 1, hour: START_HOUR },
+    })),
 
-      // Resources
-      canSpend: (energyCost) => get().player.energy >= energyCost,
-      spendEnergy: (amount) => {
-        const p = get().player;
-        const newEnergy = Math.max(0, Math.min(100, p.energy - amount));
-        set({ player: { ...p, energy: newEnergy } });
-        return newEnergy > 0;
-      },
-      addMoney: (delta) => {
-        const p = get().player;
-        set({ player: { ...p, money: p.money + delta } });
-      },
+  // Location & Route
+  setLocation: (loc) => set({ currentLocation: loc }),
+  setRoute: (r) => set({ currentRoute: r }),
 
-      // Saves
-      saveToSlot: (slotIndex, name) =>
-        set((st) => {
-          const slots = [...st.saveSlots];
-          slots[slotIndex] = makeSnapshot(get(), name);
-          return { saveSlots: slots };
-        }),
-      loadFromSlot: (slotIndex) => {
-        const snap = get().saveSlots[slotIndex];
-        if (!snap) return;
+  // Player
+  setPlayer: (changes) =>
+    set((st) => ({ player: { ...st.player, ...changes } })),
+
+  // Dialogue
+  setDialogue: (d) =>
+    set((st) => ({
+      currentDialogue: d,
+      dialogueIndex: d ? 0 : st.dialogueIndex,
+      gameState: d ? "dialogue" : st.gameState,
+    })),
+  advanceDialogue: () =>
+    set((st) => {
+      const d = st.currentDialogue;
+      if (!d) return {};
+      const next = st.dialogueIndex + 1;
+      if (next >= d.lines.length) {
+        return {
+          currentDialogue: null,
+          dialogueIndex: 0,
+          gameState: "playing",
+        };
+      }
+      return { dialogueIndex: next };
+    }),
+  beginDialogueById: (id) => {
+    const d = getDialogueById(id);
+    if (!d) return;
+    set({ currentDialogue: d, dialogueIndex: 0, gameState: "dialogue" });
+  },
+
+  // Flags
+  setFlag: (k, v) => set((st) => ({ flags: { ...st.flags, [k]: v } })),
+  getFlag: (k) => !!get().flags[k],
+
+  // Resources
+  canSpend: (energyCost) => get().player.energy >= energyCost,
+  spendEnergy: (amount) => {
+    const p = get().player;
+    const newEnergy = Math.max(0, Math.min(100, p.energy - amount));
+    set({ player: { ...p, energy: newEnergy } });
+    return newEnergy > 0;
+  },
+  addMoney: (delta) => {
+    const p = get().player;
+    set({ player: { ...p, money: p.money + delta } });
+  },
+
+  // ===== Manual saves =====
+  saveToSlot: (slotIndex, name) => {
+    if (slotIndex < 0 || slotIndex >= SLOTS) return;
+    const snap = makeSnapshot(get(), name);
+    lsSet<SaveSnapshot>(getSlotKey(slotIndex), snap);
+    lsSet<number>(META_LAST_USED, slotIndex);
+  },
+
+  loadFromSlot: (slotIndex) => {
+    if (slotIndex < 0 || slotIndex >= SLOTS) return;
+    const snap = lsGet<SaveSnapshot>(getSlotKey(slotIndex));
+    if (!snap) return;
+    set({
+      ...snap.data,
+      // when you load, go to dialogue if mid-dialogue; else playing
+      gameState: snap.data.currentDialogue ? "dialogue" : "playing",
+    });
+    lsSet<number>(META_LAST_USED, slotIndex);
+  },
+
+  deleteSlot: (slotIndex) => {
+    if (slotIndex < 0 || slotIndex >= SLOTS) return;
+    lsRemove(getSlotKey(slotIndex));
+    // if it was last used, clear that pointer
+    const last = lsGet<number>(META_LAST_USED);
+    if (last === slotIndex) lsRemove(META_LAST_USED);
+  },
+
+  listSaves: () => {
+    const arr: (SaveSnapshot | null)[] = [];
+    for (let i = 0; i < SLOTS; i++) {
+      arr.push(lsGet<SaveSnapshot>(getSlotKey(i)));
+    }
+    return arr;
+  },
+
+  hasAnySave: () => {
+    for (let i = 0; i < SLOTS; i++) {
+      if (lsGet<SaveSnapshot>(getSlotKey(i))) return true;
+    }
+    return false;
+  },
+
+  loadMostRecent: () => {
+    // use last-used pointer first; fallback to newest stamp
+    const last = lsGet<number>(META_LAST_USED);
+    if (typeof last === "number") {
+      const snap = lsGet<SaveSnapshot>(getSlotKey(last));
+      if (snap) {
         set({
           ...snap.data,
-          // when you load, you’re back in playing unless a dialogue is in progress
           gameState: snap.data.currentDialogue ? "dialogue" : "playing",
         });
-      },
-      deleteSlot: (slotIndex) =>
-        set((st) => {
-          const slots = [...st.saveSlots];
-          slots[slotIndex] = null;
-          return { saveSlots: slots };
-        }),
-
-      // New game / hard reset
-      newGame: (opts) =>
-        set({
-          ...DEFAULTS,
-          currentLocation: (opts?.startingLocation ??
-            DEFAULT_START_LOCATION) as LocationKey,
-          gameState: "intro", // or "playing" if you skip intro
-        }),
-      hardResetStorage: () => {
-        // Clear persisted storage and memory state to defaults
-        localStorage.removeItem(STORAGE_KEY);
-        set({ ...DEFAULTS, gameState: "mainMenu" });
-      },
-    }),
-    {
-      name: STORAGE_KEY,
-      version: SAVE_VERSION,
-      storage: createJSONStorage(() => localStorage),
-      migrate: (persisted: any) => {
-        // simple guard to ensure we never start from an invalid location
-        const s = persisted?.state ?? {};
-        if (!s.currentLocation) s.currentLocation = DEFAULT_START_LOCATION;
-        return { ...persisted, state: s };
-      },
-      partialize: (s) => ({
-        // Persist everything you care about:
-        gameState: s.gameState,
-        time: s.time,
-        currentLocation: s.currentLocation,
-        currentRoute: s.currentRoute,
-        player: s.player,
-        flags: s.flags,
-        currentDialogue: s.currentDialogue,
-        dialogueIndex: s.dialogueIndex,
-        saveSlots: s.saveSlots,
-      }),
+        return true;
+      }
     }
-  )
-);
+    // find newest
+    let best: { i: number; snap: SaveSnapshot } | null = null;
+    for (let i = 0; i < SLOTS; i++) {
+      const s = lsGet<SaveSnapshot>(getSlotKey(i));
+      if (s && (!best || s.stamp > best.snap.stamp)) best = { i, snap: s };
+    }
+    if (best) {
+      set({
+        ...best.snap.data,
+        gameState: best.snap.data.currentDialogue ? "dialogue" : "playing",
+      });
+      lsSet<number>(META_LAST_USED, best.i);
+      return true;
+    }
+    return false;
+  },
+
+  // ===== New game / reset (no autosave at all) =====
+  newGame: (opts) =>
+    set({
+      ...DEFAULTS,
+      currentLocation: (opts?.startingLocation ??
+        DEFAULT_START_LOCATION) as LocationKey,
+      gameState: "intro", // or "playing" if you skip intro
+    }),
+
+  hardResetStorage: () => {
+    // wipe all manual saves and return to main menu
+    for (let i = 0; i < SLOTS; i++) lsRemove(getSlotKey(i));
+    lsRemove(META_LAST_USED);
+    set({ ...DEFAULTS });
+  },
+}));

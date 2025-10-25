@@ -1,11 +1,17 @@
+// src/components/StatsPanel.tsx
+"use client";
+
 import { PlayerStats } from "../data/characters";
 import { DayOfWeek } from "../data/gameConstants";
+// ⬇️ NEW: pull save/load actions from the game store
+import { useGameStore } from "@/state/gameStore";
 
 interface Props {
   stats: PlayerStats;
   hour: number;
   dayOfWeek: DayOfWeek;
   darkMode?: boolean;
+  /** Optional legacy callback; if provided we'll prefer this for Quick Save */
   onSave?: () => void;
 }
 
@@ -16,6 +22,23 @@ export default function StatsPanel({
   darkMode = false,
   onSave,
 }: Props) {
+  // ⬇️ NEW: wire to existing store helpers
+  const saveToSlot = useGameStore((s) => s.saveToSlot);
+  const loadFromSlot = useGameStore((s) => s.loadFromSlot);
+
+  const handleQuickSave = () => {
+    if (onSave) {
+      onSave(); // keep backward compatibility
+      return;
+    }
+    // Use slot 0 as the quick-save slot with a friendly name
+    saveToSlot(0, "Quick Save");
+  };
+
+  const handleQuickLoad = () => {
+    loadFromSlot(0);
+  };
+
   const getTimeOfDay = () => {
     if (hour < 12) return "Morning";
     if (hour < 17) return "Afternoon";
@@ -45,14 +68,14 @@ export default function StatsPanel({
       <div className="flex justify-between items-center">
         <span
           className={`text-sm font-medium ${
-            darkMode ? "text-gray-300" : "text-gray-700"
+            darkMode ? "text-gray-300" : "text-gray-300"
           }`}
         >
           {icon} {label}
         </span>
         <span
           className={`text-sm font-bold ${
-            darkMode ? "text-purple-400" : "text-purple-600"
+            darkMode ? "text-purple-400" : "text-purple-400"
           }`}
         >
           {value}
@@ -60,7 +83,7 @@ export default function StatsPanel({
       </div>
       <div
         className={`w-full rounded-full h-2 overflow-hidden ${
-          darkMode ? "bg-gray-700" : "bg-gray-200"
+          darkMode ? "bg-gray-700" : "bg-gray-700"
         }`}
       >
         <div
@@ -76,10 +99,10 @@ export default function StatsPanel({
 
   return (
     <div
-      className={`rounded-2xl shadow-xl p-6 space-y-4 border-2 sticky top-4 transition-colors duration-300 min-w-[180px] min-h-[600px] max-h-[calc(100vh-2rem)] overflow-y-auto ${
+      className={`rounded-2xl shadow-xl p-2 space-y-4 border-2 sticky top-4 transition-colors duration-300 min-w-[180px] min-h-[600px] max-h-[calc(100vh-2rem)] maw-w-[200px] overflow-y-auto ${
         darkMode
           ? "bg-gray-800 border-purple-700"
-          : "bg-white border-purple-100"
+          : "bg-gray-800 border-purple-700"
       }`}
     >
       {/* Time Display */}
@@ -95,7 +118,7 @@ export default function StatsPanel({
           className={`text-lg font-bold border-b-2 pb-2 ${
             darkMode
               ? "text-gray-200 border-purple-700"
-              : "text-gray-800 border-purple-200"
+              : "text-gray-200 border-purple-700"
           }`}
         >
           Your Stats
@@ -119,13 +142,13 @@ export default function StatsPanel({
         className={`rounded-xl p-4 border-2 ${
           darkMode
             ? "bg-gradient-to-r from-yellow-900/50 to-yellow-800/50 border-yellow-700"
-            : "bg-gradient-to-r from-yellow-100 to-yellow-50 border-yellow-300"
+            : "bg-gradient-to-r from-yellow-900/50 to-yellow-800/50 border-yellow-700"
         } transition-colors duration-300`}
       >
         <div className="flex items-center justify-between">
           <span
             className={`text-lg font-semibold ${
-              darkMode ? "text-gray-200" : "text-gray-700"
+              darkMode ? "text-gray-200" : "text-gray-200"
             }`}
           >
             💰 Money
@@ -173,15 +196,21 @@ export default function StatsPanel({
         </div>
       )}
 
-      {/* Quick Save Button */}
-      {onSave && (
+      {/* Quick Save / Load */}
+      <div className="grid grid-cols-2 gap-2">
         <button
-          onClick={onSave}
-          className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
+          onClick={handleQuickSave}
+          className="col-span-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
         >
           💾 Quick Save
         </button>
-      )}
+        <button
+          onClick={handleQuickLoad}
+          className="col-span-2 bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200"
+        >
+          ⏪ Quick Load
+        </button>
+      </div>
     </div>
   );
 }

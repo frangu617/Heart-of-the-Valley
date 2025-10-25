@@ -24,6 +24,9 @@ import type { DayOfWeek } from "@/data/gameConstants";
 import { DAYS_OF_WEEK } from "@/data/gameConstants";
 import { getCharacterLocation } from "@/data/characterSchedules";
 import type { CharacterEventState, EventHistory } from "@/data/events/types";
+import StatsPanel from "@/components/StatsPanel";
+import { getCharacterImage } from "@/lib/characterImages";
+
 
 export default function ExplorationScene() {
   const [phoneOpen, setPhoneOpen] = useState(false);
@@ -80,10 +83,24 @@ export default function ExplorationScene() {
 
   return (
     <div className="relative mx-auto max-w-6xl p-4 text-white">
-      <div className="mb-3 text-white/70">State: {gameState}</div>
+      {/* <div className="mb-3 text-white/70">State: {gameState}</div> */}
 
+<div className="flex flex-row gap-4">
+  
+    <StatsPanel
+        stats={charPlayer}
+        hour={time.hour}
+        dayOfWeek={dayOfWeek}
+        onSave={() => {
+          setGameState("playing");
+          setPhoneOpen(false);
+          setCharPlayer(defaultCharPlayer);
+          addMoney(charPlayer.money);
+        }}
+      />
+      
       {/* Background */}
-      <div className="relative mb-4 h-[420px] w-full overflow-hidden rounded-lg">
+      <div className="relative bottom-0mb-4 w-full overflow-hidden rounded-lg shadow-lg border-4 border-purple-300">
         <Image
           src={bgSrc}
           alt={currentLocation}
@@ -98,6 +115,7 @@ export default function ExplorationScene() {
           {currentLocation}
         </div>
       </div>
+      </div>
 
       {/* Characters Here */}
       <div className="mb-6">
@@ -110,14 +128,22 @@ export default function ExplorationScene() {
               <button
                 key={g.name}
                 onClick={() => setActiveGirl(g)}
-                className="rounded bg-white/10 px-3 py-2 text-sm hover:bg-white/20"
+                className="flex items-center gap-2 rounded bg-white/10 px-3 py-2 text-sm hover:bg-white/20"
               >
+                <Image
+                  src={getCharacterImage(g.name, location, time.hour)}
+                  alt={g.name}
+                  width={40}
+                  height={40}
+                  className="rounded-full"
+                />
                 Talk to {g.name}
               </button>
             ))}
           </div>
         )}
       </div>
+      
 
       {/* Nearby Locations (from locations.ts) */}
       <div>
@@ -125,7 +151,7 @@ export default function ExplorationScene() {
         {neighbors.length === 0 ? (
           <div className="text-sm opacity-75">No nearby locations.</div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {neighbors.map((dest) => (
               <button
                 key={dest.name}
@@ -150,14 +176,11 @@ export default function ExplorationScene() {
                     src={getLocationBackground(dest.name, time.hour)}
                     alt={dest.name}
                     fill
-                    className="object-cover transition-transform duration-200 group-hover:scale-105"
+                    className="object-cover object-center  transition-transform duration-200 group-hover:scale-105"
                   />
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-semibold">{dest.name}</div>
-                  <div className="text-xs opacity-80">
-                    +{dest.time}h • ${dest.cost}
-                  </div>
                 </div>
               </button>
             ))}

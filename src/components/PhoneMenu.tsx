@@ -3,6 +3,7 @@ import { PlayerStats } from "../data/characters";
 import { Girl } from "../data/characters";
 import { DayOfWeek } from "../data/gameConstants";
 import { getQuickActions } from "../data/locationDescriptions";
+import PauseMenu from "./PauseMenu";
 
 interface Props {
   player: PlayerStats;
@@ -17,13 +18,13 @@ interface Props {
   onNavigate?: (location: string) => void;
 }
 
-type PhoneTab = "stats" | "contacts" | "gallery" | "messages" | "suggestions";
+type PhoneTab = "stats" | "contacts" | "gallery" | "messages" | "suggestions" | "pause";
 
 export default function PhoneMenu({
   player,
   hour,
   girls,
-  darkMode = false,
+  darkMode = true,
   onClose,
   onSave,
   isMobile = false,
@@ -480,7 +481,7 @@ export default function PhoneMenu({
                 </p>
               </div>
             </div>
-          )}
+          )}          
         </div>
 
         {/* Phone Navigation */}
