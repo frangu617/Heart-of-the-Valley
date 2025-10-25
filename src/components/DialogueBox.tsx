@@ -20,11 +20,11 @@ interface Props {
   ) => void;
   darkMode?: boolean;
   characterImage?: string;
+  characterName?: string;
   onSkip?: () => void;
   onNextDialogueId?: (id: string) => void;
   isMobile?: boolean;
   locationImage?: string;
-  characterName?: string;
   currentLocation?: string;
   currentHour?: number;
   currentDay?: string;
@@ -115,6 +115,7 @@ export default function DialogueBox({
   onComplete,
   darkMode = false,
   characterImage,
+  characterName,
   onSkip,
   onNextDialogueId,
   isMobile = false,
@@ -277,6 +278,21 @@ export default function DialogueBox({
     )
   );
 
+  const getCurrentCharacterImage = () => {
+    if (!characterName || !currentLine?.expression) {
+      return characterImage; // fallback to original
+    }
+
+    // Construct dynamic image path based on expression
+    const name = characterName.toLowerCase();
+    const expression = currentLine.expression || "neutral";
+
+    // Try the casual outfit path (you can adjust based on your needs)
+    return `/images/characters/${name}/casual/${expression}.webp`;
+  };
+
+  const dynamicCharacterImage = getCurrentCharacterImage();
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-between pointer-events-none">
       {/* ===== BACKGROUND LAYER ===== */}
@@ -376,7 +392,7 @@ export default function DialogueBox({
               <div className="relative w-[400px] h-[600px] rounded-2xl overflow-hidden shadow-2xl border-4 border-white/80">
                 <div className="absolute inset-0 bg-gradient-to-b from-purple-200/90 via-pink-200/90 to-blue-200/90" />
                 <img
-                  src={characterImage}
+                  src={dynamicCharacterImage}
                   alt={currentLine.speaker || "Character"}
                   onError={(e) => {
                     const el = e.currentTarget;

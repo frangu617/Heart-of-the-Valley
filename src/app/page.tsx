@@ -699,7 +699,7 @@ export default function GamePage() {
           dialogue={currentDialogue}
           onComplete={currentRandomEvent ? endRandomEventDialogue : endDialogue}
           darkMode={darkMode}
-          characterImage={currentRandomEvent ? "" : dialogueCharacterImage}
+          characterImage={dialogueCharacterImage}
           characterName={dialogueGirlName}
           onSkip={
             gameState === "intro"
