@@ -64,12 +64,7 @@ export const dawnFirstMeeting: Dialogue = {
     {
       speaker: null,
       text: "Fuck! I've missed this cock!",
-      expression: "/images/events/dawn_school_bj.png",
-      midgroundBlurPx: -1,
-      // midgroundSize: "contain",
-      midgroundOpacity: 1.0,
-      midgroundBlend: "multiply",
-      midgroundFit: "contain",
+      imageSlide: "/images/events/dawn_school_bj.png",
     },
     
   ],
@@ -80,7 +75,7 @@ export const iWorkHere: Dialogue = {
     {
       speaker: "You",
       text: "Hey Dawn! Yeah, I work here, don't you remember?",
-      // ❌ Remove the condition here
+      imageSlide: "/images/locations/office/afternoon.png",
     },
     {
       speaker: "Dawn",
@@ -90,7 +85,6 @@ export const iWorkHere: Dialogue = {
     {
       speaker: "Dawn",
       text: "What do you teach?",
-      // ❌ Remove the condition here too
       choices: [
         {
           text: "I'm a programming professor.",
