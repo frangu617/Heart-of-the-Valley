@@ -184,31 +184,16 @@ export default function DialogueBox({
   const lineMidOpacity = currentLine?.midgroundOpacity ?? midgroundOpacity;
   const lineMidBlend = currentLine?.midgroundBlend ?? midgroundBlend;
   const lineMidFit = currentLine?.midgroundFit ?? midgroundFit;
-  const lineMidBlurPx =
-    (currentLine as any)?.midgroundBlurPx ??
-    midgroundBlurPx ??
-    4;
+  const lineMidBlurPx = currentLine?.midgroundBlurPx ?? midgroundBlurPx ?? 4;
   const lineMidBrightness =
-    (currentLine as any)?.midgroundBrightness ??
-    midgroundBrightness ??
-    0.92;
-  const lineMidScale =
-    (currentLine as any)?.midgroundScale ??
-    midgroundScale ??
-    1.05;
-
+    currentLine?.midgroundBrightness ?? midgroundBrightness ?? 0.92;
+  const lineMidScale = currentLine?.midgroundScale ?? midgroundScale ?? 1.05;
   const lineMidWidthPct =
-    (currentLine as any)?.midgroundWidthPct ??
-    midgroundWidthPct ??
-    100;
+    currentLine?.midgroundWidthPct ?? midgroundWidthPct ?? 100;
   const lineMidHeightPct =
-    (currentLine as any)?.midgroundHeightPct ??
-    midgroundHeightPct ??
-    100;
+    currentLine?.midgroundHeightPct ?? midgroundHeightPct ?? 100;
   const lineMidPosition2 =
-    (currentLine as any)?.midgroundPosition2 ??
-    midgroundPosition2 ??
-    "center";
+    currentLine?.midgroundPosition2 ?? midgroundPosition2 ?? "center";
 
   //Foreground media
   const foregroundImg = currentLine?.foregroundImage;
