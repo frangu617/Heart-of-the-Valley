@@ -784,7 +784,7 @@ export default function GamePage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Sidebar */}
           {!isMobile && (
-            <div className="lg:col-span-2 min-w-0">
+            <div className="lg:col-span-3 min-w-[180px] max-w-[180px]">
               <StatsPanel
                 stats={player}
                 hour={hour}
@@ -803,7 +803,7 @@ export default function GamePage() {
           >
             {/* Scene */}
             <div
-              className={`rounded-2xl shadow-xl overflow-hidden border-4 ${
+              className={`rounded-2xl shadow-xl overflow-hidden border-4 w-full ${
                 darkMode
                   ? "bg-gray-800 border-purple-700"
                   : "bg-white border-purple-200"

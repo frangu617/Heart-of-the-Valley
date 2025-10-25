@@ -40,73 +40,7 @@ export type RandomEvent = {
 };
 
 export const randomEvents: RandomEvent[] = [
-  // // === IRIS INTRO COFFEE EVENT ===
-  // {
-  //   id: "iris_intro_coffee_yes",
-  //   name: "Coffee with Iris",
-  //   type: "encounter",
-  //   probability: 100, // This triggers via nextDialogueId, so 100%
-  //   conditions: {
-  //     locations: [
-  //       "Cafe",
-  //       "University Hallway",
-  //       "Office",
-  //       "Classroom",
-  //       "Iris' Office",
-  //     ], // Allow from any location since it's a continuation
-  //   },
-  //   dialogue: {
-  //     id: "iris_intro_coffee_yes_dialogue",
-  //     lines: [
-  //       {
-  //         speaker: null,
-  //         text: "You walk together to the nearby cafe. The morning air is crisp and refreshing.",
-  //         imageSlide: "/images/locations/cafe/morning.png",
-  //       },
-  //       {
-  //         speaker: "Iris",
-  //         text: "I... I'm glad you agreed to come with me.",
-  //         expression: "happy",
-  //       },
-  //       {
-  //         speaker: null,
-  //         text: "You both order coffee and find a quiet corner table.",
-  //       },
-  //       {
-  //         speaker: "Iris",
-  //         text: "You know, Frank... we've worked together for a while now, but we rarely talk outside of work.",
-  //         expression: "neutral",
-  //       },
-  //       {
-  //         speaker: "You",
-  //         text: "You're right. We should do this more often.",
-  //       },
-  //       {
-  //         speaker: "Iris",
-  //         text: "I'd... I'd like that very much.",
-  //         expression: "love",
-  //       },
-  //       {
-  //         speaker: null,
-  //         text: "You spend a pleasant hour talking about books, teaching, and life. The conversation flows naturally.",
-  //       },
-  //       {
-  //         speaker: "Iris",
-  //         text: "Thank you for this, Frank. It means a lot to me.",
-  //         expression: "happy",
-  //       },
-  //       {
-  //         speaker: null,
-  //         text: "As you finish your coffee, you feel like this was the start of something special.",
-  //       },
-  //     ],
-  //   },
-  //   timeCost: 1, // Spend 1 hour having coffee together
-  //   rewards: {
-  //     playerStats: { mood: 10, energy: 5 },
-  //     girlAffection: { Iris: 5 },
-  //   },
-  // },
+  
 
   // === LUCK EVENTS ===
   {
@@ -234,43 +168,7 @@ export const randomEvents: RandomEvent[] = [
     },
   },
 
-  // {
-  //   id: "meet_ruby_gym",
-  //   name: "Unexpected Gym Session with Ruby",
-  //   type: "encounter",
-  //   probability: 100,
-  //   conditions: {
-  //     locations: ["Gym"],
-  //     hourRange: { min: 6, max: 20 },
-  //   },
-  //   dialogue: {
-  //     id: "meet_ruby_gym_dialogue",
-  //     lines: [
-  //       {
-  //         speaker: null,
-  //         text: "Ruby is working out at the gym. She hasn't noticed you yet.",
-  //       },
-  //       {
-  //         speaker: "Ruby",
-  //         text: "Frank! Perfect timing! Want to do some cardio with me?",
-  //         expression: "happy",
-  //       },
-  //       {
-  //         speaker: "You",
-  //         text: "Sure, let's go.",
-  //       },
-  //       {
-  //         speaker: null,
-  //         text: "You work out together. Ruby pushes you hard, but it feels good.",
-  //       },
-  //     ],
-  //   },
-  //   rewards: {
-  //     playerStats: { fitness: 2 },
-  //     girlAffection: { Ruby: 2 },
-  //   },
-  // },
-
+  
   {
     id: "meet_yumi_mall",
     name: "Yumi Shopping Trip",
