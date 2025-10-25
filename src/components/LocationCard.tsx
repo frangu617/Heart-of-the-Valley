@@ -24,7 +24,7 @@ export default function LocationCard({
   onMove,
   girls,
   darkMode = false,
-  scheduledEncounters = [], // ✨ NEW
+  scheduledEncounters = [],
 }: Props) {
   // Find which girls are at this location
   const girlsHere = girls.filter((girl) => girl.location === location.name);
@@ -36,7 +36,8 @@ export default function LocationCard({
 
   return (
     <div
-      className={`group rounded-xl shadow-lg overflow-hidden border-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer ${
+      onClick={() => onMove(location.name)} // ✨ MOVED HERE
+      className={`group flex flex-col gap-2 rounded-xl shadow-lg overflow-hidden border-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer ${
         darkMode
           ? "bg-gray-800 border-gray-700 hover:border-purple-500"
           : "bg-white border-gray-200 hover:border-purple-400"
@@ -76,7 +77,7 @@ export default function LocationCard({
           </div>
         )}
 
-        {/* ✨ NEW: Scheduled encounter indicator */}
+        {/* Scheduled encounter indicator */}
         {pendingEncounter && (
           <div className="absolute top-2 left-2">
             <div className="bg-gradient-to-r from-pink-500 to-red-500 text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg flex items-center gap-1 animate-bounce">
@@ -111,7 +112,7 @@ export default function LocationCard({
           {location.name}
         </h3>
 
-        {/* ✨ NEW: Show who you're meeting */}
+        {/* Show who you're meeting */}
         {pendingEncounter && (
           <div className="mb-2 text-center">
             <p className="text-xs font-semibold text-pink-600 dark:text-pink-400">
@@ -146,16 +147,16 @@ export default function LocationCard({
           </div>
         )}
 
-        <button
-          onClick={() => onMove(location.name)}
-          className={`w-full font-semibold py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md ${
+        {/* Visual button - no onClick needed since card handles it */}
+        <div
+          className={`w-full font-semibold py-2 px-4 rounded-lg transition-all duration-200 text-center ${
             pendingEncounter
-              ? "bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white animate-pulse"
-              : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+              ? "bg-gradient-to-r from-pink-500 to-red-500 text-white"
+              : "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
           }`}
         >
           {pendingEncounter ? `Go to ${pendingEncounter.label} →` : "Go →"}
-        </button>
+        </div>
       </div>
     </div>
   );

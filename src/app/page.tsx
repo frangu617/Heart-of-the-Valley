@@ -29,11 +29,11 @@ import {
   girls as baseGirls,
   GirlStats,
 } from "../data/characters";
-import {
-  introDialogue,
-  type Dialogue,
-  firstMeetingDialogues,
-} from "../data/dialogues";
+// import {
+//   introDialogue,
+//   // type Dialogue,
+//   firstMeetingDialogues,
+// } from "../data/dialogues";
 import {
   DayOfWeek,
   START_DAY,
@@ -46,6 +46,14 @@ import {
   locationDescriptions,
   getTimeOfDay,
 } from "../data/locationDescriptions";
+import {
+  introDialogue,
+  characterDialogues,
+  getDefaultDialogue,
+  type Dialogue,
+  firstMeetingDialogues,
+} from "../data/dialogues/index";
+
 
 import type { RandomEvent } from "../data/events/randomEvents";
 import { randomEvents } from "../data/events/randomEvents";
@@ -532,16 +540,45 @@ export default function GamePage() {
     setGameState("playing");
   };
 
-  // ✅ Router for nextDialogueId coming from DialogueBox
-  const goToDialogueByEventId = (id: string) => {
-    const ev = randomEvents.find((e) => e.id === id);
-    if (!ev) {
-      console.warn("[Dialogue] nextDialogueId not found:", id);
-      return;
+ // ✅ Router for nextDialogueId coming from DialogueBox
+const goToDialogueByEventId = (id: string) => {
+  // First, try to find in character dialogues
+  let foundDialogue: Dialogue | null = null;
+  let characterImage = "";
+
+  // Search through all character dialogues
+  for (const [characterName, dialogues] of Object.entries(characterDialogues)) {
+    if (dialogues[id]) {
+      foundDialogue = dialogues[id];
+      // Get the character image for this dialogue
+      const girl = girls.find((g) => g.name === characterName);
+      if (girl) {
+        characterImage = getCharacterImage(girl, currentLocation, hour);
+      }
+      console.log(`✅ Found dialogue '${id}' for character ${characterName}`);
+      break;
     }
-    setCurrentRandomEvent(ev); // keep context if this is a chain
-    startDialogue(ev.dialogue, "", null);
-  };
+  }
+
+  // If not found in character dialogues, try random events
+  if (!foundDialogue) {
+    const ev = randomEvents.find((e) => e.id === id);
+    if (ev) {
+      foundDialogue = ev.dialogue;
+      setCurrentRandomEvent(ev);
+      console.log(`✅ Found dialogue '${id}' in random events`);
+    }
+  }
+
+  // If still not found, warn and return
+  if (!foundDialogue) {
+    console.warn(`❌ [Dialogue] nextDialogueId not found: ${id}`);
+    return;
+  }
+
+  // Start the dialogue
+  startDialogue(foundDialogue, characterImage, null);
+};
 
   // location change + random events
   const moveTo = (location: string) => {
@@ -712,10 +749,10 @@ export default function GamePage() {
           onNextDialogueId={goToDialogueByEventId}
           isMobile={isMobile}
           locationImage={getCurrentLocationImage()}
-          midgroundImage={getCurrentLocationImage()}
-          midgroundOpacity={0.3}
-          midgroundBlend="normal"
-          midgroundFit="cover"
+          // midgroundImage={getCurrentLocationImage()}
+          // midgroundOpacity={0.3}
+          // midgroundBlend="normal"
+          // midgroundFit="cover"
           currentLocation={currentLocation}
           currentHour={hour}
           currentDay={dayOfWeek}
@@ -784,7 +821,7 @@ export default function GamePage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Sidebar */}
           {!isMobile && (
-            <div className="lg:col-span-3 min-w-[180px] max-w-[180px]">
+            <div className="lg:col-span-3 min-w-[240px] max-w-[240px]">
               <StatsPanel
                 stats={player}
                 hour={hour}
@@ -919,7 +956,7 @@ export default function GamePage() {
                               const girlName = girl.name.toLowerCase();
                               const fallbacks = [
                                 imgPath,
-                                `/images/characters/${girlName}/casual/neutral.png`,
+                                `/images/characters/${girlName}/casual/neutral.webp`,
                                 `/images/${girlName}.webp`,
                                 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="%23e879f9" width="200" height="300"/><text x="50%" y="50%" font-size="60" text-anchor="middle" dy=".3em" fill="white">?</text></svg>',
                               ];
@@ -954,7 +991,7 @@ export default function GamePage() {
                   })}
                 </div>
 
-                {/* Nobody */}
+                {/* Nobody
                 {presentGirls.length === 0 && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="bg-black/60 backdrop-blur-sm px-4 md:px-8 py-3 md:py-4 rounded-2xl">
@@ -963,13 +1000,13 @@ export default function GamePage() {
                       </p>
                     </div>
                   </div>
-                )}
+                )} */}
               </div>
             </div>
 
             {/* Available locations */}
             <div
-              className={`rounded-2xl shadow-xl p-4 md:p-6 border-2 ${
+              className={`flex flex-col gap-3 md:gap-4 rounded-2xl shadow-xl p-4 md:p-6 border-2  ${
                 darkMode
                   ? "bg-gray-800 border-purple-700"
                   : "bg-white border-purple-100"
@@ -1063,7 +1100,7 @@ export default function GamePage() {
               />
             </div>
           ) : (
-            <div className={`${isMobile ? "col-span-1" : "lg:col-span-3"}`}>
+            <div className={`${isMobile ? "col-span-1" : "lg:col-span-2"}`}>
               <LocationActivities
                 location={currentLocation}
                 player={player}

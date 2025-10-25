@@ -5,6 +5,8 @@ import {
   DialogueChoiceCondition,
 } from "../data/dialogues";
 import { PlayerStats, GirlStats } from "@/data/characters";
+import { getCharacterImage } from "@/lib/characterImages";
+import { Girl } from "@/data/characters";
 
 interface Props {
   dialogue: Dialogue;
@@ -283,12 +285,36 @@ export default function DialogueBox({
       return characterImage; // fallback to original
     }
 
-    // Construct dynamic image path based on expression
-    const name = characterName.toLowerCase();
+    // If we don't have location/hour info, fall back to original
+    if (!currentLocation || currentHour === undefined) {
+      return characterImage;
+    }
+
+    const name = characterName;
     const expression = currentLine.expression || "neutral";
 
-    // Try the casual outfit path (you can adjust based on your needs)
-    return `/images/characters/${name}/casual/${expression}.webp`;
+    // Create a minimal Girl object for the getCharacterImage function
+    const mockGirl: Girl = {
+      name: name,
+      location: currentLocation,
+      relationship: "Single",
+      personality: "",
+      stats: {
+        affection: girlStats?.affection ?? 0,
+        lust: girlStats?.lust ?? 0,
+        mood: girlStats?.mood ?? 50,
+        trust: girlStats?.trust ?? 0,
+        love: girlStats?.love ?? 0,
+      },
+    };
+
+    // Use the existing location-aware image selection logic
+    return getCharacterImage(
+      mockGirl,
+      currentLocation,
+      currentHour,
+      expression
+    );
   };
 
   const dynamicCharacterImage = getCurrentCharacterImage();

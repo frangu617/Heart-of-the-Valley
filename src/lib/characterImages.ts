@@ -91,11 +91,11 @@ export function getCharacterImage(
   // Fallback hierarchy
   const fallbacks = [
     specificImage,
-    `/images/characters/${girlName}/casual/${stance}.png`,
-    `/images/characters/${girlName}/${category}_neutral.png`,
-    `/images/characters/${girlName}/casual_${stance}.png`,
-    `/images/characters/${girlName}/casual_neutral.png`,
-    `/images/${girlName}.png`,
+    `/images/characters/${girlName}/casual/${stance}.webp`,
+    `/images/characters/${girlName}/${category}_neutral.webp`,
+    `/images/characters/${girlName}/casual_${stance}.webp`,
+    `/images/characters/${girlName}/casual_neutral.webp`,
+    `/images/${girlName}.webp`,
   ];
 
   return fallbacks[0];
