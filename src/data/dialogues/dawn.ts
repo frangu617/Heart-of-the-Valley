@@ -80,18 +80,7 @@ export const iWorkHere: Dialogue = {
     {
       speaker: "You",
       text: "Hey Dawn! Yeah, I work here, don't you remember?",
-      condition: {
-        location: [
-          "University",
-          "University Hallway",
-          "Classroom",
-          "Office",
-          "Iris' Office",
-          "Men's Bathroom",
-          "Women's Bathroom",
-          "University Parking Lot",
-        ],
-      },
+      // ❌ Remove the condition here
     },
     {
       speaker: "Dawn",
@@ -101,18 +90,7 @@ export const iWorkHere: Dialogue = {
     {
       speaker: "Dawn",
       text: "What do you teach?",
-      condition: {
-        location: [
-          "University",
-          "University Hallway",
-          "Classroom",
-          "Office",
-          "Iris' Office",
-          "Men's Bathroom",
-          "Women's Bathroom",
-          "University Parking Lot",
-        ],
-      },
+      // ❌ Remove the condition here too
       choices: [
         {
           text: "I'm a programming professor.",
