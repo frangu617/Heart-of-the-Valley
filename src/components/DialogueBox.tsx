@@ -255,6 +255,14 @@ export default function DialogueBox({
   };
 
   useEffect(() => {
+    // Reset reading state whenever we switch to a new dialogue
+    setCurrentLineIndex(0);
+    setDisplayedText("");
+    setIsTyping(true);
+    setShowContinue(false);
+  }, [dialogue.id]);
+
+  useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (currentLine?.choices) return;
       if (e.key === " " || e.key === "Enter") {
