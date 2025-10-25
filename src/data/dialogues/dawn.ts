@@ -206,6 +206,20 @@ export const toldTeachingProgramming: Dialogue = {
     }
   ],
 }
+
+ export const fuckMe: Dialogue = {
+   id: "dawn_fuck_me",
+   lines: [
+     {
+       speaker: "Dawn",
+       text: "You're not supposed to touch me!",
+       expression: "angry",
+     },
+     { speaker: "You", text: "I'm sorry, I didn't mean to..." },
+     { speaker: "Dawn", text: "But I liked it!", expression: "happy" },
+   ],
+ };
+
 export const dawnDialogues: Record<string, Dialogue> = {
   Chat: {
     id: "dawn_chat",
@@ -279,9 +293,12 @@ export const dawnDialogues: Record<string, Dialogue> = {
       },
       { speaker: null, text: "You notice she's trembling slightly." },
     ],
-  },
+  }, 
+
   i_work_here: iWorkHere,
+  dawn_fuck_me: fuckMe,
   checking_out_the_student_body: checkingOutTheStudentBody,
   dawn_sex_ed_joke: dawnSexEdJoke,
   told_teaching_programming: toldTeachingProgramming,
+
 };

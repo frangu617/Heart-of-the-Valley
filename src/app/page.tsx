@@ -54,7 +54,6 @@ import {
   firstMeetingDialogues,
 } from "../data/dialogues/index";
 
-
 import type { RandomEvent } from "../data/events/randomEvents";
 import { randomEvents } from "../data/events/randomEvents";
 import type { CharacterEventState, EventHistory } from "../data/events/types";
@@ -540,45 +539,47 @@ export default function GamePage() {
     setGameState("playing");
   };
 
- // ✅ Router for nextDialogueId coming from DialogueBox
-const goToDialogueByEventId = (id: string) => {
-  // First, try to find in character dialogues
-  let foundDialogue: Dialogue | null = null;
-  let characterImage = "";
+  // ✅ Router for nextDialogueId coming from DialogueBox
+  const goToDialogueByEventId = (id: string) => {
+    // First, try to find in character dialogues
+    let foundDialogue: Dialogue | null = null;
+    let characterImage = "";
 
-  // Search through all character dialogues
-  for (const [characterName, dialogues] of Object.entries(characterDialogues)) {
-    if (dialogues[id]) {
-      foundDialogue = dialogues[id];
-      // Get the character image for this dialogue
-      const girl = girls.find((g) => g.name === characterName);
-      if (girl) {
-        characterImage = getCharacterImage(girl, currentLocation, hour);
+    // Search through all character dialogues
+    for (const [characterName, dialogues] of Object.entries(
+      characterDialogues
+    )) {
+      if (dialogues[id]) {
+        foundDialogue = dialogues[id];
+        // Get the character image for this dialogue
+        const girl = girls.find((g) => g.name === characterName);
+        if (girl) {
+          characterImage = getCharacterImage(girl, currentLocation, hour);
+        }
+        console.log(`✅ Found dialogue '${id}' for character ${characterName}`);
+        break;
       }
-      console.log(`✅ Found dialogue '${id}' for character ${characterName}`);
-      break;
     }
-  }
 
-  // If not found in character dialogues, try random events
-  if (!foundDialogue) {
-    const ev = randomEvents.find((e) => e.id === id);
-    if (ev) {
-      foundDialogue = ev.dialogue;
-      setCurrentRandomEvent(ev);
-      console.log(`✅ Found dialogue '${id}' in random events`);
+    // If not found in character dialogues, try random events
+    if (!foundDialogue) {
+      const ev = randomEvents.find((e) => e.id === id);
+      if (ev) {
+        foundDialogue = ev.dialogue;
+        setCurrentRandomEvent(ev);
+        console.log(`✅ Found dialogue '${id}' in random events`);
+      }
     }
-  }
 
-  // If still not found, warn and return
-  if (!foundDialogue) {
-    console.warn(`❌ [Dialogue] nextDialogueId not found: ${id}`);
-    return;
-  }
+    // If still not found, warn and return
+    if (!foundDialogue) {
+      console.warn(`❌ [Dialogue] nextDialogueId not found: ${id}`);
+      return;
+    }
 
-  // Start the dialogue
-  startDialogue(foundDialogue, characterImage, null);
-};
+    // Start the dialogue
+    startDialogue(foundDialogue, characterImage, null);
+  };
 
   // location change + random events
   const moveTo = (location: string) => {
@@ -818,10 +819,10 @@ const goToDialogueByEventId = (id: string) => {
       </header>
 
       <div className="container mx-auto px-2 md:px-4 py-4 md:py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:[grid-template-columns:240px_minmax(0,1fr)_320px] gap-6">
           {/* Left Sidebar */}
           {!isMobile && (
-            <div className="lg:col-span-3 min-w-[240px] max-w-[240px]">
+            <div className="hidden lg:block">
               <StatsPanel
                 stats={player}
                 hour={hour}
@@ -833,11 +834,7 @@ const goToDialogueByEventId = (id: string) => {
           )}
 
           {/* Main */}
-          <div
-            className={`${
-              isMobile ? "col-span-1" : "lg:col-span-7"
-            } space-y-6 min-w-0`}
-          >
+          <div className="space-y-6 min-w-0">
             {/* Scene */}
             <div
               className={`rounded-2xl shadow-xl overflow-hidden border-4 w-full ${
@@ -1013,30 +1010,32 @@ const goToDialogueByEventId = (id: string) => {
               } transition-colors duration-300`}
             >
               <h3
-                className={`text-xl md:text-2xl font-bold mb-3 md:mb-4 ${
+                className={`text-xl text-center md:text-2xl font-bold mb-3 md:mb-4 ${
                   darkMode ? "text-purple-300" : "text-purple-800"
                 }`}
               >
                 🗺️ Where to go?
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-                {locationGraph[currentLocation]?.map((loc) => (
-                  <LocationCard
-                    key={loc.name}
-                    location={loc}
-                    onMove={moveTo}
-                    girls={girls}
-                    darkMode={darkMode}
-                    scheduledEncounters={scheduledEncounters}
-                  />
-                ))}
+              <div className="mt-4 overflow-x-auto [-webkit-overflow-scrolling:touch]">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+                  {locationGraph[currentLocation]?.map((loc) => (
+                    <LocationCard
+                      key={loc.name}
+                      location={loc}
+                      onMove={moveTo}
+                      girls={girls}
+                      darkMode={darkMode}
+                      scheduledEncounters={scheduledEncounters}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
 
           {/* Right Sidebar */}
           {selectedGirl ? (
-            <div className={`${isMobile ? "col-span-1" : "lg:col-span-3"}`}>
+            <div className="hidden lg:block">
               <CharacterOverlay
                 girl={selectedGirl}
                 location={currentLocation}
@@ -1100,7 +1099,7 @@ const goToDialogueByEventId = (id: string) => {
               />
             </div>
           ) : (
-            <div className={`${isMobile ? "col-span-1" : "lg:col-span-2"}`}>
+            <div className={`${isMobile ? "hidden" : "block"}`}>
               <LocationActivities
                 location={currentLocation}
                 player={player}
