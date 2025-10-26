@@ -25,7 +25,7 @@ export const rubyEvents: CharacterEvent[] = [
         },
         {
           speaker: "Ruby",
-          text: "Frank! Perfect timing! Want to do some cardio with me?",
+          text: "{playerName}! Perfect timing! Want to do some cardio with me?",
           expression: "happy",
         },
         {

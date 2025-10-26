@@ -9,7 +9,7 @@ export const yumiFirstMeeting: Dialogue = {
     },
     {
       speaker: "Yumi",
-      text: "Professor Frank? Do you have a moment?",
+      text: "Professor {playerName}? Do you have a moment?",
       expression: "neutral",
     },
     {
@@ -54,7 +54,7 @@ export const yumiDialogues: Record<string, Dialogue> = {
     lines: [
       {
         speaker: "Yumi",
-        text: "Professor Frank! Do you have a moment?",
+        text: "Professor {playerName}! Do you have a moment?",
         expression: "neutral",
       },
       { speaker: "You", text: "Of course, Yumi. What can I help you with?" },

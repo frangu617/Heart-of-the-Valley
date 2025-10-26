@@ -1,4 +1,5 @@
 export type PlayerStats = {
+  name: string;
   energy: number;
   mood: number;
   hunger: number;
@@ -10,6 +11,7 @@ export type PlayerStats = {
 };
 
 export const defaultPlayerStats: PlayerStats = {
+  name: "You",
   energy: 100,
   mood: 50,
   hunger: 50,
@@ -32,7 +34,7 @@ export type Girl = {
   name: string;
   stats: GirlStats;
   location: string;
-  relationship: "Single" | "DatingFrank" | "DatingJohn" | "DatingRick";
+  relationship: "Single" | "DatingMC" | "DatingJohn" | "DatingRick";
   personality: string;
 };
 

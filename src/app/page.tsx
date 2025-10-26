@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 
 // Components
+import NameInput from "@/components/NameInput";
 import StatsPanel from "../components/StatsPanel";
 import LocationCard from "../components/LocationCard";
 import CharacterOverlay from "../components/CharacterOverlay";
@@ -29,11 +30,6 @@ import {
   girls as baseGirls,
   GirlStats,
 } from "../data/characters";
-// import {
-//   introDialogue,
-//   // type Dialogue,
-//   firstMeetingDialogues,
-// } from "../data/dialogues";
 import {
   DayOfWeek,
   START_DAY,
@@ -121,6 +117,14 @@ export default function GamePage() {
   const [scheduledEncounters, setScheduledEncounters] = useState<
     ScheduledEncounter[]
   >([]);
+
+  type GameState =
+    | "mainMenu"
+    | "nameInput"
+    | "intro"
+    | "playing"
+    | "paused"
+    | "dialogue";
 
   // Schedule a new encounter
   const scheduleEncounter = (encounter: ScheduledEncounter) => {
@@ -450,6 +454,7 @@ export default function GamePage() {
 
   const newGame = () => {
     if (!hasSaveData) return resetGame();
+    setGameState("nameInput");
     if (
       confirm(
         "Starting a new game will overwrite your saved progress. Continue?"
@@ -709,6 +714,21 @@ export default function GamePage() {
     setGameState("mainMenu");
     setSelectedGirl(null);
   };
+  //handler for name submission
+  const handleNameSubmit = (playerName: string) => {
+    setPlayer((prev) => ({ ...prev, name: playerName }));
+    setGameState("intro");
+    setCurrentDialogue(introDialogue);
+  };
+
+  if (gameState == "nameInput") {
+    return (
+      <NameInput
+        onNameSubmit={handleNameSubmit}
+        darkMode={darkMode}
+      />
+    )
+  }
 
   // screens
   if (gameState === "mainMenu") {

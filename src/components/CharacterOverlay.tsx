@@ -351,8 +351,8 @@ export default function CharacterOverlay({
           </div>
         </div>
 
-        <h3 className="text-2xl font-bold text-purple-800 mb-1">{girl.name}</h3>
-        <p className="text-gray-600 italic mb-2 text-sm">
+        <h3 className="text-2xl font-bold text-purple-500 mb-1">{girl.name}</h3>
+        <p className="text-gray-500 italic mb-2 text-sm">
           &quot;{girl.personality}&quot;
         </p>
 

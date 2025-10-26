@@ -7,7 +7,7 @@ export const dawnFirstMeeting: Dialogue = {
       speaker: null,
       text: "A familiar energetic voice calls out to you.",
     },
-    { speaker: "Dawn", text: "Frank! Hey!", expression: "happy" },
+    { speaker: "Dawn", text: "{playerName}! Hey!", expression: "happy" },
     {
       speaker: null,
       text: "Dawn - Iris's daughter. You've known her since she was a kid. She just turned 18.",
@@ -46,27 +46,26 @@ export const dawnFirstMeeting: Dialogue = {
     },
     {
       speaker: "Dawn",
-      text: "Why? are going to fuck today?"
+      text: "Why? are going to fuck today?",
     },
     {
       speaker: null,
       text: "She walks away motioning obscene gestures.",
       choices: [
-        {text: "follow her", affectionChange: 0, trustChange: 0},
-        {text: "ignore her", affectionChange: 0, trustChange: 0}
-      ]
+        { text: "follow her", affectionChange: 0, trustChange: 0 },
+        { text: "ignore her", affectionChange: 0, trustChange: 0 },
+      ],
     },
     {
       speaker: "Dawn",
       text: "Good, you came, 'Daddy'",
-      expression: "happy"
+      expression: "happy",
     },
     {
       speaker: null,
       text: "Fuck! I've missed this cock!",
       imageSlide: "/images/events/dawn_school_bj.png",
     },
-    
   ],
 };
 export const iWorkHere: Dialogue = {
@@ -107,7 +106,7 @@ export const checkingOutTheStudentBody: Dialogue = {
   lines: [
     {
       speaker: "Dawn",
-      text: "Eww Frank, don't be gross.",
+      text: "Eww {playerName}, don't be gross.",
       expression: "happy",
     },
     {
@@ -115,7 +114,7 @@ export const checkingOutTheStudentBody: Dialogue = {
       text: "She walks away from you.",
     },
   ],
-}
+};
 export const dawnSexEdJoke: Dialogue = {
   id: "dawn_sex_ed_joke",
   lines: [
@@ -153,13 +152,13 @@ export const dawnSexEdJoke: Dialogue = {
           text: "I gotta go, I have sex to teach.",
           affectionChange: -5,
           trustChange: -5,
-        }
-      ]
+        },
+      ],
     },
     {
       speaker: null,
       text: "You wave goodbye to Dawn.",
-    }
+    },
   ],
 };
 
@@ -203,73 +202,141 @@ export const toldTeachingProgramming: Dialogue = {
     {
       speaker: null,
       text: "She walks ahead of you towards the classroom.",
-    }
+    },
   ],
-}
+};
 
- export const fuckMe: Dialogue = {
-   id: "dawn_fuck_me",
-   lines: [
-     {
-       speaker: "Dawn",
-       text: "You're not supposed to touch me!",
-       expression: "angry",
-     },
-     { speaker: "You", text: "I'm sorry, I didn't mean to..." },
-     { speaker: "Dawn", text: "But I liked it!", expression: "happy" },
-   ],
- };
+export const fuckMe: Dialogue = {
+  id: "dawn_fuck_me",
+  lines: [
+    {
+      speaker: "Dawn",
+      text: "You're not supposed to touch me!",
+      expression: "angry",
+    },
+    { speaker: "You", text: "I'm sorry, I didn't mean to..." },
+    { speaker: "Dawn", text: "But I liked it!", expression: "happy" },
+  ],
+};
+export const dawnGrown: Dialogue = {
+  id: "dawn_grown_up",
+  requiresFirstTimeOnly: true,
+  lines: [
+    {
+      speaker: "Dawn",
+      text: "{playerName}! There you are!",
+      expression: "happy",
+    },
+    { speaker: "You", text: "Hey Dawn, what's up?" },
+    {
+      speaker: "Dawn",
+      text: "I... I wanted to ask you something...",
+      expression: "neutral",
+    },
+    {
+      speaker: "Dawn",
+      text: "Do you think I'm still just a kid to you?",
+      expression: "sad",
+    },
+    {
+      speaker: "You",
+      text: "How do you respond?",
+      choices: [
+        {
+          text: "Of course! You'll always be my little niece.",
+          affectionChange: -5,
+          moodChange: -10,
+          trustChange: -2,
+        },
+        {
+          text: "You've grown up a lot. I've noticed.",
+          affectionChange: 5,
+          moodChange: 5,
+          trustChange: 3,
+        },
+        {
+          text: "Why do you ask? Is something bothering you?",
+          affectionChange: 3,
+          moodChange: 3,
+          trustChange: 4,
+        },
+      ],
+    },
+    {
+      speaker: "Dawn",
+      text: "I... never mind. Thanks for talking with me.",
+      expression: "neutral",
+    },
+  ],
+};
+export const cocksucker: Dialogue = {
+  id: "cocksucker",
+  lines: [
+    {
+      speaker: "You",
+      text: "I-Is that... Dawn?",
+      imageSlide: "/images/events/dawn_school_bj.png",
+    },
+    {
+      speaker: "You",
+      text: "... HOT!!",
+      imageSlide: "/images/events/dawn_school_bj.png",
+    },
+  ],
+};
 
 export const dawnDialogues: Record<string, Dialogue> = {
   Chat: {
-    id: "dawn_chat",
+    id: "dawn_grown_up",
     requiresFirstTimeOnly: true,
+
     lines: [
       {
-        speaker: "Dawn",
-        text: "Uncle Frank! There you are!",
+        speaker: null,
+        text: "You enjoy a friendly chat with Dawn",
         expression: "happy",
+        imageSlide: "/images/events/dawn_school_chat.png",
       },
-      { speaker: "You", text: "Hey Dawn, what's up?" },
-      {
-        speaker: "Dawn",
-        text: "I... I wanted to ask you something...",
-        expression: "neutral",
-      },
-      {
-        speaker: "Dawn",
-        text: "Do you think I'm still just a kid to you?",
-        expression: "sad",
-      },
-      {
-        speaker: "You",
-        text: "How do you respond?",
-        choices: [
-          {
-            text: "Of course! You'll always be my little niece.",
-            affectionChange: -5,
-            moodChange: -10,
-            trustChange: -2,
-          },
-          {
-            text: "You've grown up a lot. I've noticed.",
-            affectionChange: 5,
-            moodChange: 5,
-            trustChange: 3,
-          },
-          {
-            text: "Why do you ask? Is something bothering you?",
-            affectionChange: 3,
-            moodChange: 3,
-            trustChange: 4,
-          },
-        ],
-      },
-      {
-        speaker: "Dawn",
-        text: "I... never mind. Thanks for talking with me.",
-        expression: "neutral",
-      },
+      // { speaker: "You", text: "Hey Dawn, what's up?" },
+      // {
+      //   speaker: "Dawn",
+      //   text: "I... I wanted to ask you something...",
+      //   expression: "neutral",
+      // },
+      // {
+      //   speaker: "Dawn",
+      //   text: "Do you think I'm still just a kid to you?",
+      //   expression: "sad",
+      // },
+      // {
+      //   speaker: "You",
+      //   text: "How do you respond?",
+      //   choices: [
+      //     {
+      //       text: "Of course! You'll always be my little niece.",
+      //       affectionChange: -5,
+      //       moodChange: -10,
+      //       trustChange: -2,
+      //     },
+      //     {
+      //       text: "You've grown up a lot. I've noticed.",
+      //       affectionChange: 5,
+      //       moodChange: 5,
+      //       trustChange: 3,
+      //     },
+      //     {
+      //       text: "Why do you ask? Is something bothering you?",
+      //       affectionChange: 3,
+      //       moodChange: 3,
+      //       trustChange: 4,
+      //     },
+      // ],
+      // },
+      // {
+      //   speaker: "Dawn",
+      //   text: "I... never mind. Thanks for talking with me.",
+      //   expression: "neutral",
+      // },
     ],
   },
   Hug: {
@@ -288,17 +355,18 @@ export const dawnDialogues: Record<string, Dialogue> = {
       },
       {
         speaker: "Dawn",
-        text: "Thanks, Uncle Frank... you're the best.",
-        expression: "love",
+        text: "Thanks, {playerName}... you're the best.",
+        expression: "happy",
       },
       { speaker: null, text: "You notice she's trembling slightly." },
     ],
-  }, 
+  },
 
   i_work_here: iWorkHere,
   dawn_fuck_me: fuckMe,
+  dawn_grown_up: dawnGrown,
   checking_out_the_student_body: checkingOutTheStudentBody,
   dawn_sex_ed_joke: dawnSexEdJoke,
   told_teaching_programming: toldTeachingProgramming,
-
+  cocksucker: cocksucker,
 };

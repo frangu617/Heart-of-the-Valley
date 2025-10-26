@@ -9,7 +9,7 @@ export const irisFirstMeeting: Dialogue = {
     },
     {
       speaker: "Iris",
-      text: "Oh! Frank... good morning.",
+      text: "Oh! {playerName}... good morning.",
       expression: "neutral",
     },
     {
@@ -34,7 +34,7 @@ export const irisFirstMeeting: Dialogue = {
             location: "Cafe",
             eventId: "iris_intro_coffee_yes",
             label: "Coffee Date",
-          }
+          },
         },
         {
           text: "Maybe another time. I have work to do.",
@@ -58,7 +58,7 @@ export const irisDialogues: Record<string, Dialogue> = {
     lines: [
       {
         speaker: "Iris",
-        text: "Oh, Frank! I didn't expect to see you here...",
+        text: "Oh, {playerName}! I didn't expect to see you here...",
         expression: "neutral",
       },
       {
@@ -120,7 +120,7 @@ export const irisDialogues: Record<string, Dialogue> = {
       },
       {
         speaker: "Iris",
-        text: "Thank you, Frank. That was... nice.",
+        text: "Thank you, {playerName}. That was... nice.",
         expression: "love",
       },
     ],
@@ -132,7 +132,7 @@ export const irisDialogues: Record<string, Dialogue> = {
       { speaker: null, text: "You lean in closer to Iris." },
       {
         speaker: "Iris",
-        text: "Frank, what are you...?",
+        text: "{playerName}, what are you...?",
         expression: "neutral",
       },
       {
@@ -191,7 +191,7 @@ export const irisIntroCoffeeDate: Dialogue = {
     },
     {
       speaker: "Iris",
-      text: "You know, Frank... we've worked together for a while now, but we rarely talk outside of work.",
+      text: "You know, {playerName}... we've worked together for a while now, but we rarely talk outside of work.",
       expression: "neutral",
     },
     {
@@ -209,14 +209,14 @@ export const irisIntroCoffeeDate: Dialogue = {
     },
     {
       speaker: "Iris",
-      text: "Thank you for this, Frank. It means a lot to me.",
+      text: "Thank you for this, {playerName}. It means a lot to me.",
       expression: "happy",
     },
     {
       speaker: null,
       text: "As you finish your coffee, you feel like this was the start of something special.",
-    },    
-  ]
+    },
+  ],
 };
 
 export const irisRegularCoffeeDate: Dialogue = {
@@ -232,7 +232,7 @@ export const irisRegularCoffeeDate: Dialogue = {
       text: "You enjoy a cup of coffee together",
       imageSlide: "/images/locations/cafe/afternoon.png",
     },
-  ]
+  ],
 };
 
 export const irisSexyCoffeeDate: Dialogue = {
@@ -250,8 +250,7 @@ export const irisSexyCoffeeDate: Dialogue = {
     },
     {
       speaker: "Iris",
-      text: "You're so sexy, Frank.",
-      
+      text: "You're so sexy, {playerName}.",
     },
     {
       speaker: "Iris",
@@ -261,19 +260,18 @@ export const irisSexyCoffeeDate: Dialogue = {
           text: "Lets get out of here.",
           affectionChange: 10,
           trustChange: 10,
-          moodChange: 10,        
+          moodChange: 10,
           nextDialogueId: "iris_after_coffee_sex",
           condition: {
             minLove: 75,
-          }
-          
+          },
         },
         {
           text: "Not today.",
           affectionChange: -10,
           trustChange: -10,
-          moodChange: -10
-        }        
+          moodChange: -10,
+        },
       ],
     },
   ],
@@ -290,17 +288,17 @@ export const irisAfterCoffeeSex: Dialogue = {
     {
       speaker: "Iris",
       text: "I want you to fuck me so bad!",
-      imageSlide: "images/events/Iris_living_room_sex.png"
+      imageSlide: "images/events/Iris_living_room_sex.png",
     },
     {
       speaker: "Iris",
       text: "You're so big, I still can't get used to it",
-      imageSlide: "images/events/Iris_living_room_sex.png"
+      imageSlide: "images/events/Iris_living_room_sex.png",
     },
     {
       speaker: null,
       text: "You have sex with Iris",
-      imageSlide: "images/events/Iris_living_room_sex.png"
-    }
-  ]
+      imageSlide: "images/events/Iris_living_room_sex.png",
+    },
+  ],
 };

@@ -1,7 +1,6 @@
 // src/data/events/iris.ts
 import { CharacterEvent } from "./types";
 
-
 export const irisEvents: CharacterEvent[] = [
   {
     id: "iris_intro_coffee_yes",
@@ -21,7 +20,7 @@ export const irisEvents: CharacterEvent[] = [
       lines: [
         {
           speaker: "Iris",
-          text: "Frank, I'm glad we could meet here...",
+          text: "{playerName}, I'm glad we could meet here...",
           expression: "neutral",
           midgroundImage: "/images/events/gwen_sex_show.png",
           midgroundOpacity: 1.0,
@@ -65,7 +64,7 @@ export const irisEvents: CharacterEvent[] = [
         },
         {
           speaker: "Iris",
-          text: "See you later, Frank.",
+          text: "See you later, {playerName}.",
           // expression: "happy",
           // foregroundVideo: "/images/characters/iris/casual/bj.mp4",
           // foregroundPosition: "right", // Shows on right side
@@ -96,7 +95,7 @@ export const irisEvents: CharacterEvent[] = [
       lines: [
         {
           speaker: "Iris",
-          text: "Frank, I'm glad we could meet here...",
+          text: "{playerName}, I'm glad we could meet here...",
           expression: "neutral",
         },
         {
@@ -144,7 +143,7 @@ export const irisEvents: CharacterEvent[] = [
         },
         {
           speaker: "Iris",
-          text: "Thank you for being honest with me, Frank.",
+          text: "Thank you for being honest with me, {playerName}.",
           expression: "love",
         },
       ],
@@ -170,7 +169,7 @@ export const irisEvents: CharacterEvent[] = [
       lines: [
         {
           speaker: "Iris",
-          text: "Frank, could you help me with something?",
+          text: "{playerName}, could you help me with something?",
           expression: "neutral",
         },
         {
@@ -228,7 +227,7 @@ export const irisEvents: CharacterEvent[] = [
         },
         {
           speaker: "Iris",
-          text: "Frank... I need to tell you something important.",
+          text: "{playerName}... I need to tell you something important.",
           expression: "nervous",
         },
         {
@@ -290,7 +289,7 @@ export const irisEvents: CharacterEvent[] = [
       lines: [
         {
           speaker: "Iris",
-          text: "Frank... can we talk?",
+          text: "{playerName}... can we talk?",
           expression: "sad",
         },
         {

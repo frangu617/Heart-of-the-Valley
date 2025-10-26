@@ -40,8 +40,6 @@ export type RandomEvent = {
 };
 
 export const randomEvents: RandomEvent[] = [
-  
-
   // === LUCK EVENTS ===
   {
     id: "find_money_street",
@@ -145,7 +143,7 @@ export const randomEvents: RandomEvent[] = [
         },
         {
           speaker: "Iris",
-          text: "Oh! Frank, what a coincidence!",
+          text: "Oh! {playerName}, what a coincidence!",
           expression: "happy",
         },
         {
@@ -168,7 +166,6 @@ export const randomEvents: RandomEvent[] = [
     },
   },
 
-  
   {
     id: "meet_yumi_mall",
     name: "Yumi Shopping Trip",
@@ -183,7 +180,7 @@ export const randomEvents: RandomEvent[] = [
       lines: [
         {
           speaker: "Yumi",
-          text: "Professor Frank! Wow, didn't expect to see you here!",
+          text: "Professor {playerName}! Wow, didn't expect to see you here!",
           expression: "happy",
         },
         {
@@ -223,7 +220,7 @@ export const randomEvents: RandomEvent[] = [
       lines: [
         {
           speaker: "Dawn",
-          text: "Uncle Frank! Perfect! I was hoping I'd run into you!",
+          text: "Uncle {playerName}! Perfect! I was hoping I'd run into you!",
           expression: "happy",
         },
         {
@@ -362,7 +359,7 @@ export const randomEvents: RandomEvent[] = [
       lines: [
         {
           speaker: "Gwen",
-          text: "Frank! Hey! Come join us!",
+          text: "{playerName}! Hey! Come join us!",
           expression: "happy",
         },
         {

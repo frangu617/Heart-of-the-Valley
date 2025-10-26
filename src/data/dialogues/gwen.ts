@@ -15,7 +15,7 @@ export const gwenFirstMeeting: Dialogue = {
     { speaker: null, text: "A woman with an energetic smile approaches you." },
     {
       speaker: "You",
-      text: "Not exactly new - I've been here about a year. Frank.",
+      text: "Not exactly new - I've been here about a year. {playerName}.",
     },
     {
       speaker: "Gwen",
@@ -40,7 +40,11 @@ export const gwenDialogues: Record<string, Dialogue> = {
     id: "gwen_chat",
     requiresFirstTimeOnly: true,
     lines: [
-      { speaker: "Gwen", text: "Frank! Perfect timing!", expression: "happy" },
+      {
+        speaker: "Gwen",
+        text: "{playerName}! Perfect timing!",
+        expression: "happy",
+      },
       { speaker: "You", text: "What's going on, Gwen?" },
       {
         speaker: "Gwen",

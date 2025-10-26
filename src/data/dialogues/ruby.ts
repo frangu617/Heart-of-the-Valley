@@ -9,7 +9,7 @@ export const rubyFirstMeeting: Dialogue = {
     },
     {
       speaker: "Ruby",
-      text: "Frank! Ready for today's session?",
+      text: "{playerName}! Ready for today's session?",
       expression: "happy",
     },
     {
@@ -28,7 +28,7 @@ export const rubyFirstMeeting: Dialogue = {
     },
     {
       speaker: "Ruby",
-      text: "You know, Frank... you're one of my favorite clients.",
+      text: "You know, {playerName}... you're one of my favorite clients.",
       expression: "neutral",
     },
     {
@@ -45,7 +45,7 @@ export const rubyDialogues: Record<string, Dialogue> = {
     lines: [
       {
         speaker: "Ruby",
-        text: "Frank! Time for your session!",
+        text: "{playerName}! Time for your session!",
         expression: "happy",
       },
       { speaker: "You", text: "Hey Ruby, ready to kick my ass today?" },

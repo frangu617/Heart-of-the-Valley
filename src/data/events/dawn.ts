@@ -1,29 +1,44 @@
+import { text } from "stream/consumers";
 import { CharacterEvent } from "./types";
 
 export const dawnEvents: CharacterEvent[] = [
   {
-    id: "checking_out_the_student_body",
-    name: "Checking out the student body",
-    description: "Frank is checking out the student body",
+    id: "A_noise",
+    name: "Dawn is getting down!",
+    description: "Dawn is getting down!",
     priority: 80,
     repeatable: false,
     conditions: {
       minAffection: 0,
       minTrust: 0,
       minHour: 0,
-      maxHour: 24,
+      maxHour: 20,
+      requiredLocation: "Classroom",
     },
     dialogue: {
-      id: "checking_out_the_student_body",
+      id: "cocksucker_prologue",
       lines: [
         {
-          speaker: "Dawn",
-          text: "Eww Frank, don't be gross.",
-          expression: "happy",
+          speaker: null,
+          text: "You hear something",
+          choices: [
+            {
+              text: "follow the noise",
+              affectionChange: 0,
+              trustChange: 0,
+              nextDialogueId: "cocksucker",
+            },
+            {
+              text: "ignore the noise",
+              affectionChange: 0,
+              trustChange: 0,
+            },
+          ],
         },
+
         {
           speaker: null,
-          text: "She walks away from you.",
+          text: "You ignore the noise",
         },
       ],
     },

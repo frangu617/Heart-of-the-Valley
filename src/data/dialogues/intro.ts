@@ -10,7 +10,7 @@ export const introDialogue: Dialogue = {
     },
     {
       speaker: null,
-      text: "You are Frank, 32 years old. Programming professor at the local university.",
+      text: "You are {playerName}, 32 years old. Programming professor at the local university.",
       imageSlide: "/images/locations/bathroom/afternoon.png",
     },
     {

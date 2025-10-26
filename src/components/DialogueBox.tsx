@@ -32,6 +32,7 @@ interface Props {
   currentDay?: string;
   playerStats?: PlayerStats;
   girlStats?: Partial<GirlStats>;
+  playerName?: string;
 }
 
 const checkChoiceCondition = (
@@ -127,6 +128,7 @@ export default function DialogueBox({
   currentDay,
   playerStats,
   girlStats,
+  playerName = "You",
 }: Props) {
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
@@ -153,6 +155,9 @@ export default function DialogueBox({
 
   const chosenOptionRef = useRef<DialogueChoice | undefined>(undefined);
 
+  const displaySpeaker =
+    currentLine.speaker === "You" ? playerName : currentLine.speaker;
+  
   const handleNext = useCallback(() => {
     if (!currentLine) return;
 
