@@ -155,8 +155,12 @@ export default function DialogueBox({
 
   const chosenOptionRef = useRef<DialogueChoice | undefined>(undefined);
 
-  const displaySpeaker =
-    currentLine.speaker === "You" ? playerName : currentLine.speaker;
+  // ✅ Move this after we know currentLine exists
+  const displaySpeaker = currentLine
+    ? currentLine.speaker === "You"
+      ? playerName
+      : currentLine.speaker
+    : "";
   
   const handleNext = useCallback(() => {
     if (!currentLine) return;
@@ -455,7 +459,7 @@ export default function DialogueBox({
                 {currentLine.speaker && (
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-pink-500 to-purple-500 py-3 px-4">
                     <h3 className="text-white text-xl font-bold text-center drop-shadow-lg">
-                      {currentLine.speaker}
+                      {displaySpeaker}
                     </h3>
                   </div>
                 )}
@@ -485,7 +489,7 @@ export default function DialogueBox({
                 {currentLine.speaker && (
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-pink-500 to-purple-500 py-2 px-3">
                     <h3 className="text-white text-lg font-bold text-center drop-shadow-lg">
-                      {currentLine.speaker}
+                      {displaySpeaker}
                     </h3>
                   </div>
                 )}
@@ -557,7 +561,7 @@ export default function DialogueBox({
                   darkMode ? "text-purple-300" : "text-purple-800"
                 }`}
               >
-                {currentLine.speaker}
+                {displaySpeaker}
               </h3>
             )}
           </div>
