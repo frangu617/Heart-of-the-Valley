@@ -19,6 +19,7 @@ import { getCharacterImage } from "../lib/characterImages";
 import { getLocationBackground } from "../lib/locationImages";
 import { checkRandomEvent } from "../lib/randomEventSystem";
 import { getCharacterEvents } from "../data/events/index";
+import { findTriggeredEvent } from "../lib/eventSystem";
 
 // Data / Types
 

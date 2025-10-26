@@ -26,7 +26,7 @@ interface Props {
     day?: string;
     hour?: number;
     activities?: string[];
-  };
+  }[];
 }
 
 export default function LocationCard({
