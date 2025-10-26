@@ -17,6 +17,16 @@ interface Props {
   girls: Girl[];
   darkMode?: boolean;
   scheduledEncounters?: ScheduledEncounter[]; // ✨ NEW
+  pendingEvents?: {
+    characterName: string;
+    eventId: string;
+    location: string;
+    priority: number;
+    label?: string;
+    day?: string;
+    hour?: number;
+    activities?: string[];
+  };
 }
 
 export default function LocationCard({
@@ -25,6 +35,7 @@ export default function LocationCard({
   girls,
   darkMode = false,
   scheduledEncounters = [],
+  pendingEvents = []
 }: Props) {
   // Find which girls are at this location
   const girlsHere = girls.filter((girl) => girl.location === location.name);
@@ -33,6 +44,8 @@ export default function LocationCard({
   const pendingEncounter = scheduledEncounters.find(
     (e) => e.location === location.name
   );
+
+  const pendingEvent = pendingEvents.find((e) => e.location === location.name);
 
   return (
     <div
@@ -44,6 +57,8 @@ export default function LocationCard({
       } ${
         pendingEncounter
           ? "ring-4 ring-pink-400 ring-opacity-50 animate-pulse"
+          : pendingEvent
+          ? "ring-4 ring-purple-400 ring-opacity-50"
           : ""
       }`}
     >
@@ -91,7 +106,15 @@ export default function LocationCard({
             )}
           </div>
         )}
-
+        {/* NEW: Pending event indicator */}
+        {!pendingEncounter && pendingEvent && (
+          <div className="absolute top-2 left-2">
+            <div className="bg-gradient-to-r from-purple-500 to-blue-500 text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg flex items-center gap-1 animate-pulse">
+              <span>✨</span>
+              <span>{pendingEvent.characterName}</span>
+            </div>
+          </div>
+        )}
         {/* Character indicators */}
         {girlsHere.length > 0 && !pendingEncounter && (
           <div className="absolute top-2 left-2">

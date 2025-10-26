@@ -747,9 +747,57 @@ export default function GamePage() {
     setCurrentDialogue(introDialogue);
   };
 
+  //pending Events tracker
+  const [pendingEvents, setPendingEvents] = useState<
+    {
+      characterName: string;
+      eventId: string;
+      location: string;
+      priority: number;
+    }[]
+  >([]);
+
   if (gameState == "nameInput") {
     return <NameInput onNameSubmit={handleNameSubmit} darkMode={darkMode} />;
   }
+
+  // Check what events are available but not yet triggered
+  const checkPendingEvents = useCallback(() => {
+    const pending: typeof pendingEvents = [];
+
+    girls.forEach((girl) => {
+      const events = getCharacterEvents(girl.name);
+      const triggerable = findTriggeredEvent(
+        events,
+        girl,
+        player,
+        girl.location, // Check at girl's current location
+        dayOfWeek,
+        hour,
+        characterEventStates[girl.name] ?? {
+          characterName: girl.name,
+          eventHistory: [],
+          lastInteractionTime: 0,
+        }
+      );
+
+      if (triggerable && triggerable.conditions.requiredLocation) {
+        pending.push({
+          characterName: girl.name,
+          eventId: triggerable.id,
+          location: triggerable.conditions.requiredLocation,
+          priority: triggerable.priority,
+        });
+      }
+    });
+
+    setPendingEvents(pending);
+  }, [girls, player, dayOfWeek, hour, characterEventStates]);
+
+  // Run this periodically
+  useEffect(() => {
+    checkPendingEvents();
+  }, [dayOfWeek, hour, checkPendingEvents]);
 
   // screens
   if (gameState === "mainMenu") {
