@@ -152,15 +152,12 @@ export default function DialogueBox({
   const hasVideoSlide = !!videoSlide;
   const hasEventMedia = hasImageSlide || hasVideoSlide;
   const isNarration = currentLine?.speaker === null;
+  const isPlayerSpeaking = currentLine?.speaker === "You";
 
   const chosenOptionRef = useRef<DialogueChoice | undefined>(undefined);
 
   // ✅ Move this after we know currentLine exists
-  const displaySpeaker = currentLine
-    ? currentLine.speaker === "You"
-      ? playerName
-      : currentLine.speaker
-    : "";
+ const displaySpeaker = characterName || (currentLine?.speaker !== "You" ? currentLine?.speaker : null) || "";
   
   const handleNext = useCallback(() => {
     if (!currentLine) return;
@@ -435,7 +432,7 @@ export default function DialogueBox({
       {/* (will be rendered in dialogue box section below) */}
 
       {/* ===== CHARACTER PORTRAIT CARD (z-20) ===== */}
-      {!isNarration && characterImage && (
+      {!isNarration && !isPlayerSpeaking && characterImage && (
         <div className="absolute bottom-62 left-0 right-0 flex justify-center items-end pointer-events-none z-20 px-4">
           {!isMobile && (
             <div className="relative animate-fadeIn">
@@ -459,7 +456,7 @@ export default function DialogueBox({
                 {currentLine.speaker && (
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-pink-500 to-purple-500 py-3 px-4">
                     <h3 className="text-white text-xl font-bold text-center drop-shadow-lg">
-                      {displaySpeaker}
+                      {characterName}
                     </h3>
                   </div>
                 )}
