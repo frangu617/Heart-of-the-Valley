@@ -453,14 +453,23 @@ export default function GamePage() {
   };
 
   const newGame = () => {
-    if (!hasSaveData) return resetGame();
+    // If there's save data, confirm before proceeding
+    if (hasSaveData) {
+      if (
+        !confirm(
+          "Starting a new game will overwrite your saved progress. Continue?"
+        )
+      ) {
+        return; // User cancelled
+      }
+    }
+
+    // Clear save data but don't reset game state yet
+    localStorage.removeItem("datingSimSave");
+    setHasSaveData(false);
+
+    // Go to name input screen
     setGameState("nameInput");
-    if (
-      confirm(
-        "Starting a new game will overwrite your saved progress. Continue?"
-      )
-    )
-      resetGame();
   };
 
   // dialogue helpers
@@ -716,18 +725,30 @@ export default function GamePage() {
   };
   //handler for name submission
   const handleNameSubmit = (playerName: string) => {
-    setPlayer((prev) => ({ ...prev, name: playerName }));
+    // Reset everything to initial state
+    setPlayer({ ...defaultPlayerStats, name: playerName });
+    setCurrentLocation("Bedroom");
+    setHour(START_HOUR);
+    setDayOfWeek(START_DAY);
+    setSelectedGirl(null);
+    setMetCharacters(new Set());
+    setGirlStatsOverrides({});
+    setCharacterEventStates({});
+    setCharacterUnlocks({
+      Yumi: false,
+      Gwen: false,
+      Dawn: false,
+      Ruby: false,
+    });
+    setScheduledEncounters([]);
+
+    // Now start the intro
     setGameState("intro");
     setCurrentDialogue(introDialogue);
   };
 
   if (gameState == "nameInput") {
-    return (
-      <NameInput
-        onNameSubmit={handleNameSubmit}
-        darkMode={darkMode}
-      />
-    )
+    return <NameInput onNameSubmit={handleNameSubmit} darkMode={darkMode} />;
   }
 
   // screens
@@ -759,6 +780,7 @@ export default function GamePage() {
           darkMode={darkMode}
           characterImage={dialogueCharacterImage}
           characterName={dialogueGirlName}
+          playerName={player.name}
           onSkip={
             gameState === "intro"
               ? () => {

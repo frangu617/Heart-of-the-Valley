@@ -208,12 +208,13 @@ export default function DialogueBox({
     setShowContinue(false);
 
     const text = currentLine.text ?? "";
+    const processedText = replaceTemplateVariables(text);
     const typingSpeed = 30;
     let index = 0;
 
     const interval = setInterval(() => {
-      if (index < text.length) {
-        setDisplayedText(text.slice(0, index + 1));
+      if (index < processedText.length) {
+        setDisplayedText(processedText.slice(0, index + 1));
         index++;
       } else {
         setIsTyping(false);
@@ -331,6 +332,12 @@ export default function DialogueBox({
   };
 
   const dynamicCharacterImage = getCurrentCharacterImage();
+
+  const replaceTemplateVariables = (text: string): string => {
+    return text
+      .replace(/\{playerName\}/g, playerName || "You")
+      .replace(/\{PlayerName\}/g, playerName || "You");
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-between pointer-events-none">
@@ -564,7 +571,7 @@ export default function DialogueBox({
               ${darkMode ? "text-gray-100" : "text-gray-800"}
             `}
             >
-              {displayedText}
+              {replaceTemplateVariables(displayedText)}
               {isTyping && (
                 <span className="inline-block w-2 h-5 bg-purple-500 ml-1 animate-pulse" />
               )}
