@@ -55,7 +55,7 @@ export type Dialogue = {
 
 // Import all character dialogues
 import { irisDialogues, irisFirstMeeting } from "./iris";
-import { dawnDialogues, dawnFirstMeeting } from "./dawn";
+import { dawnDialogues } from "./dawn";
 import { gwenDialogues, gwenFirstMeeting } from "./gwen";
 import { yumiDialogues, yumiFirstMeeting } from "./yumi";
 import { rubyDialogues, rubyFirstMeeting } from "./ruby";
@@ -67,7 +67,7 @@ export { introDialogue };
 // Combine first meetings
 export const firstMeetingDialogues: Record<string, Dialogue> = {
   Iris: irisFirstMeeting,
-  Dawn: dawnFirstMeeting,
+  // Dawn: dawnFirstMeeting,
   Gwen: gwenFirstMeeting,
   Yumi: yumiFirstMeeting,
   Ruby: rubyFirstMeeting,
