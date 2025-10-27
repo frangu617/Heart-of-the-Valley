@@ -46,17 +46,15 @@ import {
 import {
   introDialogue,
   characterDialogues,
-  getDefaultDialogue,
+  // getDefaultDialogue,
   type Dialogue,
-  firstMeetingDialogues,
+  // firstMeetingDialogues,
 } from "../data/dialogues/index";
 
 import type { RandomEvent } from "../data/events/randomEvents";
 import { randomEvents } from "../data/events/randomEvents";
 import type { CharacterEventState, EventHistory } from "../data/events/types";
 import { DialogueChoice } from "../data/dialogues";
-
-type GameState = "mainMenu" | "intro" | "playing" | "paused" | "dialogue";
 
 type ScheduledEncounter = {
   characterName: string;
@@ -430,28 +428,28 @@ export default function GamePage() {
     setGameState("playing");
   };
 
-  const resetGame = () => {
-    setPlayer(defaultPlayerStats);
-    setCurrentLocation("Bedroom");
-    setHour(START_HOUR);
-    setDayOfWeek(START_DAY);
-    setSelectedGirl(null);
-    setMetCharacters(new Set());
-    setGirlStatsOverrides({});
-    setCharacterEventStates({});
-    setCharacterUnlocks({
-      Yumi: false,
-      Gwen: false,
-      Dawn: false,
-      Ruby: false,
-    });
-    setScheduledEncounters([]);
-    localStorage.removeItem("datingSimSave");
-    setHasSaveData(false);
+  // const resetGame = () => {
+  //   setPlayer(defaultPlayerStats);
+  //   setCurrentLocation("Bedroom");
+  //   setHour(START_HOUR);
+  //   setDayOfWeek(START_DAY);
+  //   setSelectedGirl(null);
+  //   setMetCharacters(new Set());
+  //   setGirlStatsOverrides({});
+  //   setCharacterEventStates({});
+  //   setCharacterUnlocks({
+  //     Yumi: false,
+  //     Gwen: false,
+  //     Dawn: false,
+  //     Ruby: false,
+  //   });
+  //   setScheduledEncounters([]);
+  //   localStorage.removeItem("datingSimSave");
+  //   setHasSaveData(false);
 
-    setGameState("intro");
-    setCurrentDialogue(introDialogue);
-  };
+  //   setGameState("intro");
+  //   setCurrentDialogue(introDialogue);
+  // };
 
   const newGame = () => {
     // If there's save data, confirm before proceeding
@@ -749,18 +747,14 @@ export default function GamePage() {
   };
 
   //pending Events tracker
-  const [pendingEvents, setPendingEvents] = useState<
-    {
-      characterName: string;
-      eventId: string;
-      location: string;
-      priority: number;
-    }[]
-  >([]);
-
-  if (gameState == "nameInput") {
-    return <NameInput onNameSubmit={handleNameSubmit} darkMode={darkMode} />;
-  }
+  // const [pendingEvents, setPendingEvents] = useState<
+  //   {
+  //     characterName: string;
+  //     eventId: string;
+  //     location: string;
+  //     priority: number;
+  //   }[]
+  // >([]); 
 
   // Check what events are available but not yet triggered
   const checkPendingEvents = useCallback(() => {
@@ -798,7 +792,11 @@ export default function GamePage() {
   // Run this periodically
   useEffect(() => {
     checkPendingEvents();
-  }, [dayOfWeek, hour, checkPendingEvents]);
+  }, [checkPendingEvents]);
+
+  if (gameState == "nameInput") {
+    return <NameInput onNameSubmit={handleNameSubmit} darkMode={darkMode} />;
+  }
 
   // screens
   if (gameState === "mainMenu") {

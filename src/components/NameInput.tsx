@@ -38,7 +38,7 @@ export default function NameInput({ onNameSubmit, darkMode = false }: Props) {
               darkMode ? "text-gray-300" : "text-gray-600"
             }`}
           >
-            What's your name?
+            What&apos;s your name?
           </p>
         </div>
 

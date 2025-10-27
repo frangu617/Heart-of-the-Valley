@@ -1,4 +1,4 @@
-import { text } from "stream/consumers";
+// import { text } from "stream/consumers";
 import { CharacterEvent } from "./types";
 
 export const dawnEvents: CharacterEvent[] = [

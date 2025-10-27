@@ -48,7 +48,7 @@ const locationInfo: Record<
 export default function DatePlanner({
   girl,
   currentDay,
-  currentHour,
+  // currentHour,
   playerMoney,
   onCancel,
   onScheduleDate,
