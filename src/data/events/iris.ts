@@ -3,6 +3,104 @@ import { CharacterEvent } from "./types";
 
 export const irisEvents: CharacterEvent[] = [
   {
+    id: "iris_first_meeting",
+    name: "First Meeting with Iris",
+    description: "First Meeting with Iris",
+    priority: 100,
+    repeatable: false,
+    conditions: {
+      minAffection: 0,
+      minTrust: 0,
+      minHour: 18,
+      maxHour: 24,
+      requiredLocation: "University_Hallway",
+    },
+    dialogue: {
+      id: "iris_first_meeting",
+      lines: [
+        {
+          speaker: null,
+          text: "You're halfway to the parking lot when you hear it - your name, called softly from behind.",
+        },
+        {
+          speaker: null,
+          text: "You turn. For a moment, you don't recognize her. Then everything clicks into place.",
+        },
+        {
+          speaker: "Iris",
+          text: "{playerName}...? Is that really you?",
+          expression: "neutral",
+        },
+        {
+          speaker: null,
+          text: "Iris. Eight years melted away in an instant, but everything's changed. She looks... older, yes, but there's something else. A weariness in her eyes that wasn't there before. Or maybe you just never noticed.",
+        },
+        {
+          speaker: "Iris",
+          text: "I heard someone moved into 4B. I didn't think... I mean, I hoped it might be...",
+          expression: "shy",
+        },
+        {
+          speaker: null,
+          text: "She trails off, tucking a strand of hair behind her ear - the same nervous habit from years ago. Some things don't change.",
+        },
+        {
+          speaker: "You",
+          text: "Iris. Wow. I... yeah, I moved in about three weeks ago. I've been meaning to—",
+        },
+        {
+          speaker: "Iris",
+          text: "No, I get it. Moving is exhausting, and starting a new job on top of that...",
+          expression: "neutral",
+        },
+        {
+          speaker: null,
+          text: "There's an awkward pause. You were close once - really close. But time creates distance, even between people who matter.",
+        },
+        {
+          speaker: "Iris",
+          text: "I'm actually heading to grab coffee before my first class. Would you... want to join me? Unless you're busy, of course.",
+          expression: "shy",
+        },
+        {
+          speaker: null,
+          text: "She's trying to sound casual, but you catch the hopeful note in her voice. It's been a long time. Too long, maybe.",
+        },
+        {
+          speaker: "You",
+          text: "What do you say?",
+          choices: [
+            {
+              text: "I'd like that. It's been too long.",
+              affectionChange: 5,
+              moodChange: 5,
+              scheduleEncounter: {
+                characterName: "Iris",
+                location: "Cafe",
+                eventId: "iris_intro_coffee_yes",
+                label: "Coffee with Iris",
+              },
+            },
+            {
+              text: "I really should get to campus early. Rain check?",
+              affectionChange: -3,
+              moodChange: -5,
+            },
+          ],
+        },
+        {
+          speaker: "Iris",
+          text: "Great! I know this place just off campus. Their espresso is actually drinkable.",
+          expression: "happy",
+        },
+        {
+          speaker: null,
+          text: "She smiles - that same gentle smile you remembered. Maybe some things don't change after all.",
+        },
+      ],
+    },
+  },
+  {
     id: "iris_intro_coffee_yes",
     name: "Intro Coffee Date with Iris",
     description: "Iris invites you for coffee",

@@ -54,24 +54,24 @@ export type Dialogue = {
 };
 
 // Import all character dialogues
-import { irisDialogues, irisFirstMeeting } from "./iris";
+import { irisDialogues } from "./iris";
 import { dawnDialogues } from "./dawn";
-import { gwenDialogues, gwenFirstMeeting } from "./gwen";
-import { yumiDialogues, yumiFirstMeeting } from "./yumi";
-import { rubyDialogues, rubyFirstMeeting } from "./ruby";
+import { gwenDialogues } from "./gwen";
+import { yumiDialogues } from "./yumi";
+import { rubyDialogues } from "./ruby";
 import { introDialogue } from "./intro";
 
 // Export intro
 export { introDialogue };
 
 // Combine first meetings
-export const firstMeetingDialogues: Record<string, Dialogue> = {
-  Iris: irisFirstMeeting,
-  // Dawn: dawnFirstMeeting,
-  Gwen: gwenFirstMeeting,
-  Yumi: yumiFirstMeeting,
-  Ruby: rubyFirstMeeting,
-};
+// export const firstMeetingDialogues: Record<string, Dialogue> = {
+//   // Iris: irisFirstMeeting,
+//   // Dawn: dawnFirstMeeting,
+//   // Gwen: gwenFirstMeeting,
+//   // Yumi: yumiFirstMeeting,
+//   // Ruby: rubyFirstMeeting,
+// };
 
 // Combine character dialogues
 export const characterDialogues: Record<string, Record<string, Dialogue>> = {

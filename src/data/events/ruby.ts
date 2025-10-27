@@ -3,6 +3,57 @@ import { CharacterEvent } from "./types";
 
 export const rubyEvents: CharacterEvent[] = [
   {
+    id: "ruby_first_meeting",
+    name: "First Meeting with Ruby",
+    description: "First Meeting with Ruby",
+    priority: 100,
+    repeatable: false,
+    conditions: {
+      minAffection: 0,
+      minTrust: 0,
+      minHour: 18,
+      maxHour: 24,
+      requiredLocation: "Hallway",
+    },
+    dialogue: {
+      id: "ruby_first_meeting",
+      lines: [
+        {
+          speaker: null,
+          text: "Your personal trainer approaches with her usual confident stride.",
+        },
+        {
+          speaker: "Ruby",
+          text: "{playerName}! Ready for today's session?",
+          expression: "happy",
+        },
+        {
+          speaker: null,
+          text: "Ruby - your personal trainer for the past two years. Tough, dedicated, and surprisingly caring.",
+        },
+        { speaker: "You", text: "Ready to get destroyed, as usual." },
+        {
+          speaker: "Ruby",
+          text: "That's the spirit! Let's go!",
+          expression: "happy",
+        },
+        {
+          speaker: null,
+          text: "During your workout, she spots you on the bench press.",
+        },
+        {
+          speaker: "Ruby",
+          text: "You know, {playerName}... you're one of my favorite clients.",
+          expression: "neutral",
+        },
+        {
+          speaker: null,
+          text: "For a moment, something flickers in her expression before she quickly looks away.",
+        },
+      ],
+    },
+  },
+  {
     id: "ruby_gym_workout",
     name: "Workout with Ruby",
     description: "Ruby invites you to work out together",
