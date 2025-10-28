@@ -53,7 +53,7 @@ import {
 
 import type { RandomEvent } from "../data/events/randomEvents";
 import { randomEvents } from "../data/events/randomEvents";
-import type { CharacterEventState, EventHistory } from "../data/events/types";
+import type { CharacterEventState, EventHistory, GameplayFlag } from "../data/events/types";
 import { DialogueChoice } from "../data/dialogues";
 
 type ScheduledEncounter = {
@@ -1230,6 +1230,7 @@ export default function GamePage() {
                     }, 100);
                   }
                 }}
+                onSetFlag={setFlag}
               />
             </div>
           )}

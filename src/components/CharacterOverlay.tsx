@@ -139,7 +139,8 @@ export default function CharacterOverlay({
       location,
       dayOfWeek,
       hour,
-      eventState
+      eventState,
+      gameplayFlags
     );
 
     if (triggeredEvent) {

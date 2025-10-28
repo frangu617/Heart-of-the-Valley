@@ -14,6 +14,7 @@ export const rubyEvents: CharacterEvent[] = [
       minHour: 18,
       maxHour: 24,
       requiredLocation: "Hallway",
+      requiredFlags: ["firstWorkout"]
     },
     dialogue: {
       id: "ruby_first_meeting",

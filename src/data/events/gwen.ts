@@ -13,6 +13,7 @@ export const gwenEvents: CharacterEvent[] = [
       minHour: 18,
       maxHour: 24,
       requiredLocation: "Hallway",
+      requiredFlags: ["firstTimeWorked"],
     },
     dialogue: {
       id: "gwen_first_meeting",

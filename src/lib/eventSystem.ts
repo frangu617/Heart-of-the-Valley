@@ -4,6 +4,7 @@ import {
   EventConditions,
   EventHistory,
   CharacterEventState,
+  GameplayFlag,
 } from "@/data/events/types";
 import { Girl, PlayerStats } from "@/data/characters";
 import { DayOfWeek } from "@/data/gameConstants";
@@ -35,7 +36,8 @@ export function checkEventConditions(
   currentLocation: string,
   day: DayOfWeek,
   hour: number,
-  completedEvents: string[]
+  completedEvents: string[],
+  gameplayFlags?: Set<GameplayFlag>
 ): boolean {
   // Check girl stats
   if (
@@ -113,6 +115,25 @@ export function checkEventConditions(
     }
   }
 
+  // Check required flags
+  if (conditions.requiredFlags && gameplayFlags) {
+    for (const flag of conditions.requiredFlags) {
+      if (!gameplayFlags.has(flag)) {
+        console.log(`❌ Event blocked: missing flag '${flag}'`);
+        return false;
+      }
+    }
+  }
+
+  // Check blocked flags
+  if (conditions.blockedByFlags && gameplayFlags) {
+    for (const flag of conditions.blockedByFlags) {
+      if (gameplayFlags.has(flag)) {
+        console.log(`❌ Event blocked: has flag '${flag}'`);
+        return false;
+      }
+    }
+  }
   return true;
 }
 
@@ -141,7 +162,8 @@ export function findTriggeredEvent(
   currentLocation: string,
   day: DayOfWeek,
   hour: number,
-  eventState: CharacterEventState | undefined
+  eventState: CharacterEventState | undefined,
+  gameplayFlags?: Set<GameplayFlag>
 ): CharacterEvent | null {
   const currentGameTime = calculateGameTime(day, hour);
 
@@ -177,7 +199,8 @@ export function findTriggeredEvent(
         currentLocation,
         day,
         hour,
-        completedEvents
+        completedEvents,
+        gameplayFlags
       )
     ) {
       return event;
