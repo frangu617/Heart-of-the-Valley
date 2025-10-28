@@ -9,10 +9,10 @@ import {
   Dialogue,
 } from "../data/dialogues/index";
 import { DayOfWeek } from "@/data/gameConstants";
-import { CharacterEventState } from "@/data/events/types";
+import { CharacterEventState, GameplayFlag } from "@/data/events/types";
 import { findTriggeredEvent } from "@/lib/eventSystem";
 import { getCharacterEvents } from "@/data/events";
-import { firstMeetingDialogues } from "../data/dialogues/index";
+// import { firstMeetingDialogues } from "../data/dialogues/index";
 import  DatePlanner from "./DatePlanner";
 import { DateLocation } from "@/data/dates/types";
 import { useState } from "react";
@@ -24,6 +24,7 @@ interface Props {
   girl: Girl;
   location: string;
   player: PlayerStats;
+  gameplayFlags: Set<GameplayFlag>;
   setPlayer: Dispatch<SetStateAction<PlayerStats>>;
   spendTime: (amount: number) => void;
   onClose: () => void;
@@ -61,7 +62,8 @@ export default function CharacterOverlay({
   eventState,
   onEventTriggered,
   darkMode,
-  onScheduleDate
+  onScheduleDate,
+  gameplayFlags,
 }: Props) {
   const [showDatePlanner, setShowDatePlanner] = useState(false);
   // Check for triggered events when component mounts or dependencies change
@@ -110,25 +112,25 @@ export default function CharacterOverlay({
   };
   
   useEffect(() => {
-    // ✨ CHECK FOR FIRST MEETING FIRST
-    if (
-      !eventState.eventHistory.some(
-        (h) => h.eventId === `${girl.name}_first_meeting`
-      )
-    ) {
-      const firstMeeting = firstMeetingDialogues[girl.name];
-      if (firstMeeting) {
-        console.log(`👋 First time meeting ${girl.name}!`);
-        const characterImage = getCharacterImage(girl, location, hour);
+    // // ✨ CHECK FOR FIRST MEETING FIRST
+    // if (
+    //   !eventState.eventHistory.some(
+    //     (h) => h.eventId === `${girl.name}_first_meeting`
+    //   )
+    // ) {
+    //   const firstMeeting = firstMeetingDialogues[girl.name];
+    //   if (firstMeeting) {
+    //     console.log(`👋 First time meeting ${girl.name}!`);
+    //     const characterImage = getCharacterImage(girl, location, hour);
 
-        // Mark as met
-        onEventTriggered(`${girl.name}_first_meeting`);
+    //     // Mark as met
+    //     onEventTriggered(`${girl.name}_first_meeting`);
 
-        // Start dialogue
-        onStartDialogue(firstMeeting, characterImage, undefined);
-        return; // Stop here, don't check other events
-      }
-    }
+    //     // Start dialogue
+    //     onStartDialogue(firstMeeting, characterImage, undefined);
+    //     return; // Stop here, don't check other events
+    //   }
+    // }
 
     // Check for other triggered events
     const events = getCharacterEvents(girl.name);

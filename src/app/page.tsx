@@ -18,7 +18,7 @@ import { getScheduledLocation } from "../lib/schedule";
 import { getCharacterImage } from "../lib/characterImages";
 import { getLocationBackground } from "../lib/locationImages";
 import { checkRandomEvent } from "../lib/randomEventSystem";
-import { GameplayFlag, getCharacterEvents } from "../data/events/index";
+import { getCharacterEvents } from "../data/events/index";
 import { findTriggeredEvent } from "../lib/eventSystem";
 
 // Data / Types
@@ -620,26 +620,26 @@ export default function GamePage() {
       return;
     }
 
-    // Unlock Gwen when entering Hallway after 5 PM
-    console.log(
-      `📍 Moved to: ${location}, Hour: ${hour}, Gwen unlocked: ${characterUnlocks.Gwen}`
-    );
-    if (location === "Hallway" && hour >= 17 && !characterUnlocks.Gwen) {
-      setCharacterUnlocks((prev) => ({ ...prev, Gwen: true }));
+    // // Unlock Gwen when entering Hallway after 5 PM
+    // console.log(
+    //   `📍 Moved to: ${location}, Hour: ${hour}, Gwen unlocked: ${characterUnlocks.Gwen}`
+    // );
+    // if (location === "Hallway" && hour >= 17 && !characterUnlocks.Gwen) {
+    //   setCharacterUnlocks((prev) => ({ ...prev, Gwen: true }));
 
-      // Trigger Gwen's first meeting
-      const firstMeeting = firstMeetingDialogues["Gwen"];
-      if (firstMeeting) {
-        const characterImage = getCharacterImage(
-          girls.find((g) => g.name === "Gwen")!,
-          currentLocation,
-          hour
-        );
-        setMetCharacters(new Set([...metCharacters, "Gwen"]));
-        startDialogue(firstMeeting, characterImage, null);
-        return;
-      }
-    }
+    //   // Trigger Gwen's first meeting
+    //   const firstMeeting = firstMeetingDialogues["Gwen"];
+    //   if (firstMeeting) {
+    //     const characterImage = getCharacterImage(
+    //       girls.find((g) => g.name === "Gwen")!,
+    //       currentLocation,
+    //       hour
+    //     );
+    //     setMetCharacters(new Set([...metCharacters, "Gwen"]));
+    //     startDialogue(firstMeeting, characterImage, null);
+    //     return;
+    //   }
+    // }
 
     // random event roll
     const randomEvent = checkRandomEvent(location, hour, dayOfWeek, player);
@@ -1215,20 +1215,20 @@ export default function GamePage() {
                 onUnlockCharacter={(name) => {
                   setCharacterUnlocks((prev) => ({ ...prev, [name]: true }));
                   // triggers for character unlocks
-                  if (name === "Ruby") {
-                    // Small delay to let the unlock register
-                    setTimeout(() => {
-                      const firstMeeting = firstMeetingDialogues["Ruby"];
-                      if (firstMeeting) {
-                        const characterImage = getCharacterImage(
-                          girls.find((g) => g.name === "Ruby")!,
-                          currentLocation,
-                          hour
-                        );
-                        startDialogue(firstMeeting, characterImage, null);
-                      }
-                    }, 100);
-                  }
+                  // if (name === "Ruby") {
+                  //   // Small delay to let the unlock register
+                  //   setTimeout(() => {
+                  //     const firstMeeting = firstMeetingDialogues["Ruby"];
+                  //     if (firstMeeting) {
+                  //       const characterImage = getCharacterImage(
+                  //         girls.find((g) => g.name === "Ruby")!,
+                  //         currentLocation,
+                  //         hour
+                  //       );
+                  //       startDialogue(firstMeeting, characterImage, null);
+                  //     }
+                  //   }, 100);
+                  // }
                 }}
                 onSetFlag={setFlag}
               />
