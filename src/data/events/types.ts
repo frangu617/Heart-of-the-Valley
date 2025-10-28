@@ -2,6 +2,18 @@
 import { Dialogue } from "../dialogues";
 // import { GirlStats } from "../characters";
 
+export type GameplayFlag =
+  | "hasMetIris"
+  | "hasMetDawn"
+  | "hasMetGwen"
+  | "hasMetYumi"
+  | "hasMetRuby"
+  | "firstWorkout"
+  | "firstTimeWorked"
+  | "firstTimeCookedMeal"
+  | "firstTimeStudied"
+  | "firstDateCompleted";
+
 export type EventConditions = {
   // Minimum stat requirements
   minAffection?: number;
@@ -31,6 +43,10 @@ export type EventConditions = {
   // Story requirements
   requiredPreviousEvents?: string[]; // Must have completed these events first
   blockedByEvents?: string[]; // Cannot have completed these events
+
+  // Flag requirements
+  requiredFlags?: GameplayFlag[];
+  blockedByFlags?: GameplayFlag[];
 };
 
 export type CharacterEvent = {

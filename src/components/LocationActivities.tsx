@@ -5,6 +5,7 @@ import {
   locationActivities as activitiesMap,
   LocationActivity as ImportedActivity,
 } from "../data/LocationActivities";
+import { GameplayFlag } from "@/data/events";
 
 export type LocationActivity = {
   id?: string;
@@ -23,6 +24,7 @@ type Props = {
   darkMode?: boolean;
   dayOfWeek: DayOfWeek;
   onUnlockCharacter?: (characterName: string) => void;
+  onSetFlag?: (flag: GameplayFlag) => void;
 };
 
 export default function LocationActivitiesPanel({

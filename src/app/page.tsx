@@ -18,7 +18,7 @@ import { getScheduledLocation } from "../lib/schedule";
 import { getCharacterImage } from "../lib/characterImages";
 import { getLocationBackground } from "../lib/locationImages";
 import { checkRandomEvent } from "../lib/randomEventSystem";
-import { getCharacterEvents } from "../data/events/index";
+import { GameplayFlag, getCharacterEvents } from "../data/events/index";
 import { findTriggeredEvent } from "../lib/eventSystem";
 
 // Data / Types
@@ -67,6 +67,7 @@ type ScheduledEncounter = {
 };
 
 export default function GamePage() {
+  // States
   const [gameState, setGameState] = useState<GameState>("mainMenu");
   const [player, setPlayer] = useState<PlayerStats>(defaultPlayerStats);
   const [currentLocation, setCurrentLocation] = useState<string>("Bedroom");
@@ -94,6 +95,9 @@ export default function GamePage() {
   const [characterEventStates, setCharacterEventStates] = useState<
     Record<string, CharacterEventState>
   >({});
+  const [gameplayFlags, setGameplayFlags] = useState<Set<GameplayFlag>>(
+    new Set()
+  );
 
   // 🎲 Track active random event
   const [currentRandomEvent, setCurrentRandomEvent] =
@@ -385,6 +389,16 @@ export default function GamePage() {
     }
   }, [girls, selectedGirl, currentLocation]);
 
+  //function to set a flag
+  const setFlag = (flag: GameplayFlag) => {
+    setGameplayFlags((prev) => new Set([...prev, flag]));
+    console.log(`🚩 Flag set: ${flag}`);
+  };
+
+  // Helper function to check if a flag is set
+  const hasFlag = (flag: GameplayFlag): boolean => {
+    return gameplayFlags.has(flag);
+  };
   // save/load
   const saveGame = () => {
     const saveData = {
@@ -397,6 +411,7 @@ export default function GamePage() {
       characterEventStates,
       characterUnlocks,
       scheduledEncounters, // This now includes dates with activities
+      gameplayFlags: Array.from(gameplayFlags),
       timestamp: new Date().toISOString(),
     };
     localStorage.setItem("datingSimSave", JSON.stringify(saveData));
@@ -424,6 +439,7 @@ export default function GamePage() {
       }
     );
     setScheduledEncounters(data.scheduledEncounters ?? []); // This loads dates too
+    setGameplayFlags(new Set(data.gameplayFlags ?? []));
     setSelectedGirl(null);
     setGameState("playing");
   };
@@ -747,14 +763,14 @@ export default function GamePage() {
   };
 
   //pending Events tracker
-  // const [pendingEvents, setPendingEvents] = useState<
-  //   {
-  //     characterName: string;
-  //     eventId: string;
-  //     location: string;
-  //     priority: number;
-  //   }[]
-  // >([]); 
+  const [pendingEvents, setPendingEvents] = useState<
+    {
+      characterName: string;
+      eventId: string;
+      location: string;
+      priority: number;
+    }[]
+  >([]);
 
   // Check what events are available but not yet triggered
   const checkPendingEvents = useCallback(() => {
