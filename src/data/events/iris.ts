@@ -11,9 +11,9 @@ export const irisEvents: CharacterEvent[] = [
     conditions: {
       minAffection: 0,
       minTrust: 0,
-      minHour: 18,
+      minHour: 0,
       maxHour: 24,
-      requiredLocation: "University_Hallway",
+      requiredLocation: "University Hallway",
     },
     dialogue: {
       id: "iris_first_meeting",
