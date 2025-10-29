@@ -47,6 +47,8 @@ interface Props {
     eventId: string;
     label: string;
   }) => void;
+  onSetFlag?: (flag: GameplayFlag) => void
+  onUnlockCharacter?: (characterName: string) => void
 }
 
 export default function CharacterOverlay({
@@ -64,6 +66,8 @@ export default function CharacterOverlay({
   darkMode,
   onScheduleDate,
   gameplayFlags,
+  onSetFlag,
+  onUnlockCharacter,
 }: Props) {
   const [showDatePlanner, setShowDatePlanner] = useState(false);
   // Check for triggered events when component mounts or dependencies change

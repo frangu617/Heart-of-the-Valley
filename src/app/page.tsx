@@ -195,6 +195,10 @@ export default function GamePage() {
     return idx * MAX_HOUR + h;
   }, []);
 
+   const hasFlag = (flag: GameplayFlag): boolean => {
+     return gameplayFlags.has(flag);
+   };
+
   // ✅ Update the checkScheduledEncounters function to support day/hour + dates
   const checkScheduledEncounters = (location: string): boolean => {
     const encounter = scheduledEncounters.find((e) => {
@@ -404,9 +408,7 @@ export default function GamePage() {
   };
 
   // Helper function to check if a flag is set
-  const hasFlag = (flag: GameplayFlag): boolean => {
-    return gameplayFlags.has(flag);
-  };
+ 
   // save/load
   const saveGame = () => {
     const saveData = {
