@@ -1145,6 +1145,7 @@ export default function GamePage() {
                 girl={selectedGirl}
                 location={currentLocation}
                 player={player}
+                gameplayFlags={gameplayFlags}
                 setPlayer={setPlayer}
                 spendTime={spendTime}
                 onClose={() => setSelectedGirl(null)}
