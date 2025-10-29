@@ -112,26 +112,6 @@ export default function CharacterOverlay({
   };
   
   useEffect(() => {
-    // // ✨ CHECK FOR FIRST MEETING FIRST
-    // if (
-    //   !eventState.eventHistory.some(
-    //     (h) => h.eventId === `${girl.name}_first_meeting`
-    //   )
-    // ) {
-    //   const firstMeeting = firstMeetingDialogues[girl.name];
-    //   if (firstMeeting) {
-    //     console.log(`👋 First time meeting ${girl.name}!`);
-    //     const characterImage = getCharacterImage(girl, location, hour);
-
-    //     // Mark as met
-    //     onEventTriggered(`${girl.name}_first_meeting`);
-
-    //     // Start dialogue
-    //     onStartDialogue(firstMeeting, characterImage, undefined);
-    //     return; // Stop here, don't check other events
-    //   }
-    // }
-
     // Check for other triggered events
     const events = getCharacterEvents(girl.name);
     const triggeredEvent = findTriggeredEvent(
@@ -173,6 +153,24 @@ export default function CharacterOverlay({
         }
 
         setPlayer(updatedPlayer);
+        if (triggeredEvent.rewards.setFlags) {
+          triggeredEvent.rewards.setFlags.forEach((flag) => {
+            if (onSetFlag) {
+              onSetFlag(flag);
+              console.log(`🚩 Flag set: ${flag}`);
+            }
+          });
+        }
+
+        // ✨ NEW: Unlock characters from event rewards
+        if (triggeredEvent.rewards.unlockCharacters) {
+          triggeredEvent.rewards.unlockCharacters.forEach((characterName) => {
+            if (onUnlockCharacter) {
+              onUnlockCharacter(characterName);
+              console.log(`🔓 ${characterName} unlocked!`);
+            }
+          });
+        }
       }
     }
   }, []); // ✨ Only re-run when girl changes

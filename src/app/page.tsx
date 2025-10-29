@@ -348,6 +348,14 @@ export default function GamePage() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  useEffect(() => {
+    setCharacterUnlocks({
+      Yumi: hasFlag("hasMetYumi"),
+      Gwen: hasFlag("hasMetGwen"),
+      Dawn: hasFlag("hasMetDawn"),
+      Ruby: hasFlag("hasMetRuby"),
+    });
+  }, [gameplayFlags, hasFlag]);
   // girls with schedules + overrides
   const girls = useMemo(() => {
     return baseGirls
@@ -508,6 +516,8 @@ export default function GamePage() {
     setGameState("dialogue");
   };
 
+  // src/app/page.tsx
+
   const endDialogue = (
     statChanges?: Partial<GirlStats>,
     chosenOption?: DialogueChoice
@@ -517,6 +527,26 @@ export default function GamePage() {
       scheduleEncounter(chosenOption.scheduleEncounter);
     }
 
+    // ✨ Handle flags from dialogue choices
+    if (chosenOption?.setFlags) {
+      chosenOption.setFlags.forEach((flag) => {
+        setFlag(flag);
+        console.log(`🚩 Flag set from choice: ${flag}`);
+      });
+    }
+
+    // ✨ Handle character unlocks from dialogue choices
+    if (chosenOption?.unlockCharacters) {
+      chosenOption.unlockCharacters.forEach((characterName) => {
+        const name = characterName as keyof typeof characterUnlocks;
+        if (!characterUnlocks[name]) {
+          setCharacterUnlocks((prev) => ({ ...prev, [name]: true }));
+          alert(`✨ ${characterName} is now available!`);
+        }
+      });
+    }
+
+    // Handle girl stat changes
     if (dialogueGirlName) {
       const girl = girls.find(
         (g) => g.name.toLowerCase() === dialogueGirlName.toLowerCase()
@@ -539,13 +569,10 @@ export default function GamePage() {
           ...prev,
           [dialogueGirlName]: newStats,
         }));
-        // Unlock Dawn after first interaction with Iris
-        if (dialogueGirlName === "Iris" && !characterUnlocks.Dawn) {
-          setCharacterUnlocks((prev) => ({ ...prev, Dawn: true }));
-        }
       }
     }
 
+    // Clean up dialogue state
     setCurrentDialogue(null);
     setDialogueCharacterImage("");
     setDialogueGirlEffects(null);
