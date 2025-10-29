@@ -892,7 +892,19 @@ export default function GamePage() {
       >
         <div className="container mx-auto px-4 flex justify-between items-center">
           <h1 className="text-2xl md:text-4xl font-bold">
-            {isMobile ? "💖 HotV" : "💖 Heart of the Valley"}
+            {isMobile ? (
+              "💖 HotV"
+            ) : (
+              <span className="flex items-center gap-2">
+                <img
+                  src="/images/logo.png"
+                  alt="Heart of the Valley"
+                  width={50}
+                  height={50}
+                />
+                💖 Heart of the Valley
+              </span>
+            )}
           </h1>
           <div className="flex gap-2 items-center">
             <button

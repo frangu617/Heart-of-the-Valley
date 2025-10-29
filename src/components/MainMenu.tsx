@@ -41,9 +41,10 @@ export default function MainMenu({
       >
         {/* Title */}
         <div className="text-center mb-12">
-          <h1 className="text-6xl md:text-7xl font-bold mb-4 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-transparent bg-clip-text animate-pulse">
+          {/* <h1 className="text-6xl md:text-7xl font-bold mb-4 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-transparent bg-clip-text animate-pulse">
             💖 Heart of the Valley
-          </h1>
+          </h1> */}
+          <img src="/images/logo.png" alt="Heart of the Valley" className="justify-center" />
           <p
             className={`text-xl italic ${
               darkMode ? "text-gray-300" : "text-gray-600"

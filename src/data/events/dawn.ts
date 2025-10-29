@@ -14,6 +14,7 @@ export const dawnEvents: CharacterEvent[] = [
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Classroom",
+      requiredFlags: ["hasMetIris"],
     },
     dialogue: {
       id: "dawn_first_meeting",
@@ -100,6 +101,10 @@ export const dawnEvents: CharacterEvent[] = [
           text: "You force a professional smile and move to start the lecture. This year just got a lot more complicated.",
         },
       ],
+    },
+    rewards: {
+      setFlags: ["hasMetDawn"],
+      unlockCharacters: ["Dawn"],
     },
   },
   {

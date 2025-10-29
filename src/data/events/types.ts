@@ -77,6 +77,8 @@ export type CharacterEvent = {
       fitness?: number;
       style?: number;
     };
+    setFlags?: GameplayFlag[];
+    unlockCharacters?: string[];
   };
 };
 

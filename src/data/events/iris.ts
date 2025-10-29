@@ -99,6 +99,9 @@ export const irisEvents: CharacterEvent[] = [
         },
       ],
     },
+    rewards: {
+      setFlags: ["hasMetIris"],
+    },
   },
   {
     id: "iris_intro_coffee_yes",

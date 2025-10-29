@@ -30,9 +30,18 @@ export default function NameInput({ onNameSubmit, darkMode = false }: Props) {
         }`}
       >
         <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-transparent bg-clip-text">
+          {/* <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-transparent bg-clip-text">
             💖 Heart of the Valley
-          </h1>
+          </h1> */}
+          <span>
+          <img
+            src="/images/logo.png"
+            alt="Heart of the Valley"
+            className="justify-center h-32 w-32 mx-auto"
+
+          />
+          </span>
+          <span>
           <p
             className={`text-xl mb-8 ${
               darkMode ? "text-gray-300" : "text-gray-600"
@@ -40,6 +49,7 @@ export default function NameInput({ onNameSubmit, darkMode = false }: Props) {
           >
             What&apos;s your name?
           </p>
+          </span>
         </div>
 
         <div className="space-y-6">
@@ -67,9 +77,10 @@ export default function NameInput({ onNameSubmit, darkMode = false }: Props) {
                 : "bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 hover:scale-105 hover:shadow-2xl"
             } text-white`}
           >
-            ✨ Begin Your Journey
+             Begin Your Journey
           </button>
         </div>
+       
 
         <div
           className={`mt-8 text-center text-sm ${

@@ -13,6 +13,8 @@ export type DialogueChoice = {
     eventId: string;
     label?: string;
   }
+  setFlags?: GameplayFlag[];
+  unlockCharacters?: string[];
 };
 
 export type DialogueLine = {
@@ -45,6 +47,8 @@ export type DialogueLine = {
   foregroundSize?: "full" | "large" | "medium";
 
   nextDialogueId?: string;
+  setFlags?: GameplayFlag[];
+  unlockCharacters?: string[];
 };
 
 export type Dialogue = {
@@ -60,6 +64,7 @@ import { gwenDialogues } from "./gwen";
 import { yumiDialogues } from "./yumi";
 import { rubyDialogues } from "./ruby";
 import { introDialogue } from "./intro";
+import { GameplayFlag } from "../events";
 
 // Export intro
 export { introDialogue };
