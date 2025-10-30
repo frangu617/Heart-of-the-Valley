@@ -13,15 +13,6 @@ import { DayOfWeek, DAYS_OF_WEEK } from "@/data/gameConstants";
  * Calculate total game hours elapsed
  */
 export function calculateGameTime(day: DayOfWeek, hour: number): number {
-  // const DAYS_OF_WEEK = [
-  //   "Monday",
-  //   "Tuesday",
-  //   "Wednesday",
-  //   "Thursday",
-  //   "Friday",
-  //   "Saturday",
-  //   "Sunday",
-  // ];
   const dayIndex = DAYS_OF_WEEK.indexOf(day);
   return dayIndex * 24 + hour;
 }
