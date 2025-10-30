@@ -22,22 +22,7 @@ import { getCharacterEvents } from "../data/events/index";
 import type { CharacterEvent as LegacyCharacterEvent } from "../data/events/types";
 import type { CharacterEvent as GameCharacterEvent } from "../lib/game/characterEventSystem";
 // import { findTriggeredEvent } from "../lib/eventSystem";
-import { 
-  CharacterEventManager, 
-  calculateGameTime 
-} from "@/lib/game/characterEventSystem";
-import { 
-  applyStatChanges, 
-  meetsStatRequirements 
-} from "@/lib/utils/statManager";
-import { 
-  STAT_LIMITS, 
-  TIME_CONFIG, 
-  ACTIVITY_COSTS, 
-  ACTIVITY_REWARDS,
-  RELATIONSHIP_THRESHOLDS,
-  EVENT_PRIORITIES,
-} from "@/config/gameConfig";
+import { CharacterEventManager } from "@/lib/game/characterEventSystem";
 // Data / Types
 
 import { locationGraph } from "../data/locations";
@@ -211,6 +196,11 @@ export default function GamePage() {
   // };
 
   // ✅ helpers
+  const getGameTimeHours = useCallback((day: DayOfWeek, h: number) => {
+    const idx = Math.max(0, DAYS_OF_WEEK.indexOf(day));
+    return idx * MAX_HOUR + h;
+  }, []);
+
   const hasFlag = (flag: GameplayFlag): boolean => {
     return gameplayFlags.has(flag);
   };
@@ -380,21 +370,10 @@ export default function GamePage() {
     });
   }, [gameplayFlags, hasFlag]);
 
-  // 🎯 Create event manager (memoized)
-  const eventManager = useMemo(() => {
-    const manager = new CharacterEventManager();
-    
-    // Load all character events using the getCharacterEvents function
-    const characterNames = ['Dawn', 'Ruby', 'Yumi', 'Gwen', 'Iris'];
-    characterNames.forEach(name => {
-      const events = getCharacterEvents(name) as unknown as GameCharacterEvent[];
-      if (events && events.length > 0) {
-        manager.addEvents(events);
-      }
-    });
-    
-    return manager;
-  }, []); // Empty deps - events don't change
+  const eventManager = useMemo(
+    () => new CharacterEventManager(allCharacterEvents),
+    [allCharacterEvents]
+  );
 
   const event = eventManager.findCharacterEvent(selectedGirl?.name || "", {
     girl: selectedGirl!,
@@ -402,7 +381,7 @@ export default function GamePage() {
     currentLocation,
     day: dayOfWeek,
     hour,
-    currentTime: calculateGameTime(TIME_CONFIG.DAYS_OF_WEEK, dayOfWeek, hour),
+    currentTime: calculateGameTime(DAYS_OF_WEEK, dayOfWeek, hour),
     completedEvents:
       characterEventStates[selectedGirl?.name || ""]?.eventHistory.map(
         (h) => h.eventId
@@ -609,12 +588,14 @@ export default function GamePage() {
         const currentStats = { ...girl.stats, ...currentOverride };
         const combined = { ...dialogueGirlEffects, ...statChanges };
 
-        // Use new stat manager to apply changes
-        const newStats = applyStatChanges(
-          currentStats,
-          combined,
-          STAT_LIMITS.girl
-        );
+        const newStats: Partial<GirlStats> = { ...currentStats };
+        Object.entries(combined).forEach(([key, value]) => {
+          if (typeof value === "number") {
+            const k = key as keyof GirlStats;
+            const cur = (currentStats[k] as number) ?? 0;
+            newStats[k] = Math.max(0, Math.min(100, cur + value));
+          }
+        });
 
         setGirlStatsOverrides((prev) => ({
           ...prev,
@@ -745,13 +726,17 @@ export default function GamePage() {
     }
 
     if (rewards.playerStats) {
-      // Use stat manager for player stat changes
-      const statUpdated = applyStatChanges(
-        updated,
-        rewards.playerStats,
-        STAT_LIMITS.player
-      );
-      Object.assign(updated, statUpdated);
+      Object.entries(rewards.playerStats).forEach(([key, value]) => {
+        const statKey = key as keyof PlayerStats;
+        if (typeof value === "number" && typeof updated[statKey] === "number") {
+          const cur = updated[statKey] as number;
+          const bounded =
+            statKey === "energy" || statKey === "mood" || statKey === "hunger"
+              ? Math.max(0, Math.min(100, cur + value))
+              : Math.max(0, cur + value);
+          (updated[statKey] as number) = bounded;
+        }
+      });
     }
 
     if (rewards.girlAffection) {
@@ -761,17 +746,13 @@ export default function GamePage() {
         if (!girl) return;
 
         const currentStats = { ...girl.stats, ...override };
-        
-        // Use stat manager for girl affection changes
-        const newStats = applyStatChanges(
-          currentStats,
-          { affection: change },
-          STAT_LIMITS.girl
+        const newAffection = Math.max(
+          0,
+          Math.min(100, (currentStats.affection ?? 0) + change)
         );
-        
         setGirlStatsOverrides((prev) => ({
           ...prev,
-          [girlName]: newStats,
+          [girlName]: { ...currentStats, affection: newAffection },
         }));
         console.log(
           `💕 ${girlName} affection: ${change > 0 ? "+" : ""}${change}`
@@ -855,24 +836,22 @@ export default function GamePage() {
     const pending: typeof pendingEvents = [];
 
     girls.forEach((girl) => {
-      const eventState = characterEventStates[girl.name] ?? {
-        characterName: girl.name,
-        eventHistory: [],
-        lastInteractionTime: 0,
-      };
-
-      // Use new event manager to find triggered events
-      const triggerable = eventManager.findCharacterEvent(girl.name, {
+      const events = getCharacterEvents(
+        girl.name
+      ) as unknown as LegacyCharacterEvent[];
+      const triggerable = findTriggeredEvent(
+        events,
         girl,
         player,
-        currentLocation: girl.location, // Check at girl's current location
-        day: dayOfWeek,
+        girl.location, // Check at girl's current location
+        dayOfWeek,
         hour,
-        currentTime: calculateGameTime(TIME_CONFIG.DAYS_OF_WEEK, dayOfWeek, hour),
-        completedEvents: eventState.eventHistory.map(h => h.eventId) || [],
-        eventHistory: eventState.eventHistory || [],
-        flags: gameplayFlags,
-      });
+        characterEventStates[girl.name] ?? {
+          characterName: girl.name,
+          eventHistory: [],
+          lastInteractionTime: 0,
+        }
+      );
 
       if (triggerable && triggerable.conditions.requiredLocation) {
         pending.push({
@@ -1250,7 +1229,7 @@ export default function GamePage() {
                   characterEventStates[selectedGirl.name] ?? {
                     characterName: selectedGirl.name,
                     eventHistory: [] as EventHistory[],
-                    lastInteractionTime: calculateGameTime(TIME_CONFIG.DAYS_OF_WEEK, dayOfWeek, hour),
+                    lastInteractionTime: getGameTimeHours(dayOfWeek, hour),
                   }
                 }
                 onEventTriggered={(eventId) => {
@@ -1261,7 +1240,7 @@ export default function GamePage() {
                     lastInteractionTime: 0,
                   };
 
-                  const gameTime = calculateGameTime(TIME_CONFIG.DAYS_OF_WEEK, dayOfWeek, hour);
+                  const gameTime = getGameTimeHours(dayOfWeek, hour);
                   const lastTriggered = { day: dayOfWeek, hour, gameTime };
 
                   const idx = prevState.eventHistory.findIndex(

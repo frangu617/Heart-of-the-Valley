@@ -4,21 +4,16 @@
  * Eliminates redundancy while maintaining all game-specific functionality
  */
 
-import { BaseEvent, EventContext, EventManager, createEventFactory } from '../core/eventSystem';
-import { ConditionalRule, ConditionHelpers } from '../utils/conditionChecker';
+import {
+  BaseEvent,
+  EventContext,
+  EventManager,
+  createEventFactory,
+} from "../core/eventSystem";
+import { ConditionalRule, ConditionHelpers } from "../utils/conditionChecker";
+import type { GameplayFlag } from "../../data/events/types";
 
-// Game-specific types
-export type GameplayFlag =
-  | "hasMetIris"
-  | "hasMetDawn"
-  | "hasMetGwen"
-  | "hasMetYumi"
-  | "hasMetRuby"
-  | "firstWorkout"
-  | "firstTimeWorked"
-  | "firstTimeCookedMeal"
-  | "firstTimeStudied"
-  | "firstDateCompleted";
+// Game-specific types (reusing canonical flags from data types)
 
 export interface PlayerStats {
   name: string;
@@ -57,13 +52,14 @@ export interface Dialogue {
 // Character event-specific types
 export interface CharacterEventRewards {
   playerMoney?: number;
-  playerStats?: Partial<Omit<PlayerStats, 'name' | 'inventory'>>;
+  playerStats?: Partial<Omit<PlayerStats, "name" | "inventory">>;
   girlStats?: Partial<GirlStats>;
   setFlags?: GameplayFlag[];
   unlockCharacters?: string[];
 }
 
-export interface CharacterEvent extends BaseEvent<CharacterEventContext, CharacterEventRewards> {
+export interface CharacterEvent
+  extends BaseEvent<CharacterEventContext, CharacterEventRewards> {
   dialogue: Dialogue;
   characterName?: string; // The character this event belongs to
 }
@@ -81,13 +77,20 @@ export interface CharacterEventContext extends EventContext {
 /**
  * Character Event Manager with game-specific logic
  */
-export class CharacterEventManager extends EventManager<CharacterEvent, CharacterEventContext> {
+export class CharacterEventManager extends EventManager<
+  CharacterEvent,
+  CharacterEventContext
+> {
   /**
    * Find triggered event for a specific character
    */
-  findCharacterEvent(characterName: string, context: CharacterEventContext): CharacterEvent | null {
-    return this.findTriggeredEvent(context, event => 
-      event.characterName === characterName
+  findCharacterEvent(
+    characterName: string,
+    context: CharacterEventContext
+  ): CharacterEvent | null {
+    return this.findTriggeredEvent(
+      context,
+      (event) => event.characterName === characterName
     );
   }
 
@@ -95,19 +98,21 @@ export class CharacterEventManager extends EventManager<CharacterEvent, Characte
    * Get all events for a character
    */
   getCharacterEvents(characterName: string): CharacterEvent[] {
-    return this.getAllEvents().filter(e => e.characterName === characterName);
+    return this.getAllEvents().filter((e) => e.characterName === characterName);
   }
 
   /**
    * Get events by multiple characters
    */
-  getEventsByCharacters(characterNames: string[]): Record<string, CharacterEvent[]> {
+  getEventsByCharacters(
+    characterNames: string[]
+  ): Record<string, CharacterEvent[]> {
     const result: Record<string, CharacterEvent[]> = {};
-    
+
     for (const name of characterNames) {
       result[name] = this.getCharacterEvents(name);
     }
-    
+
     return result;
   }
 }
@@ -119,22 +124,28 @@ export const CharacterEventConditions = {
   /**
    * Minimum girl stat requirements
    */
-  minGirlStats(stats: Partial<GirlStats>): ConditionalRule<CharacterEventContext> {
+  minGirlStats(
+    stats: Partial<GirlStats>
+  ): ConditionalRule<CharacterEventContext> {
     const conditions = [];
     if (stats.affection !== undefined) {
-      conditions.push(ConditionHelpers.minStat('girl.stats.affection', stats.affection));
+      conditions.push(
+        ConditionHelpers.minStat("girl.stats.affection", stats.affection)
+      );
     }
     if (stats.lust !== undefined) {
-      conditions.push(ConditionHelpers.minStat('girl.stats.lust', stats.lust));
+      conditions.push(ConditionHelpers.minStat("girl.stats.lust", stats.lust));
     }
     if (stats.trust !== undefined) {
-      conditions.push(ConditionHelpers.minStat('girl.stats.trust', stats.trust));
+      conditions.push(
+        ConditionHelpers.minStat("girl.stats.trust", stats.trust)
+      );
     }
     if (stats.love !== undefined) {
-      conditions.push(ConditionHelpers.minStat('girl.stats.love', stats.love));
+      conditions.push(ConditionHelpers.minStat("girl.stats.love", stats.love));
     }
     if (stats.mood !== undefined) {
-      conditions.push(ConditionHelpers.minStat('girl.stats.mood', stats.mood));
+      conditions.push(ConditionHelpers.minStat("girl.stats.mood", stats.mood));
     }
     return { conditions };
   },
@@ -142,13 +153,17 @@ export const CharacterEventConditions = {
   /**
    * Maximum girl stat requirements
    */
-  maxGirlStats(stats: Partial<GirlStats>): ConditionalRule<CharacterEventContext> {
+  maxGirlStats(
+    stats: Partial<GirlStats>
+  ): ConditionalRule<CharacterEventContext> {
     const conditions = [];
     if (stats.affection !== undefined) {
-      conditions.push(ConditionHelpers.maxStat('girl.stats.affection', stats.affection));
+      conditions.push(
+        ConditionHelpers.maxStat("girl.stats.affection", stats.affection)
+      );
     }
     if (stats.lust !== undefined) {
-      conditions.push(ConditionHelpers.maxStat('girl.stats.lust', stats.lust));
+      conditions.push(ConditionHelpers.maxStat("girl.stats.lust", stats.lust));
     }
     return { conditions };
   },
@@ -156,19 +171,25 @@ export const CharacterEventConditions = {
   /**
    * Minimum player stat requirements
    */
-  minPlayerStats(stats: Partial<PlayerStats>): ConditionalRule<CharacterEventContext> {
+  minPlayerStats(
+    stats: Partial<PlayerStats>
+  ): ConditionalRule<CharacterEventContext> {
     const conditions = [];
     if (stats.intelligence !== undefined) {
-      conditions.push(ConditionHelpers.minStat('player.intelligence', stats.intelligence));
+      conditions.push(
+        ConditionHelpers.minStat("player.intelligence", stats.intelligence)
+      );
     }
     if (stats.fitness !== undefined) {
-      conditions.push(ConditionHelpers.minStat('player.fitness', stats.fitness));
+      conditions.push(
+        ConditionHelpers.minStat("player.fitness", stats.fitness)
+      );
     }
     if (stats.style !== undefined) {
-      conditions.push(ConditionHelpers.minStat('player.style', stats.style));
+      conditions.push(ConditionHelpers.minStat("player.style", stats.style));
     }
     if (stats.money !== undefined) {
-      conditions.push(ConditionHelpers.minStat('player.money', stats.money));
+      conditions.push(ConditionHelpers.minStat("player.money", stats.money));
     }
     return { conditions };
   },
@@ -176,14 +197,19 @@ export const CharacterEventConditions = {
   /**
    * Time range condition
    */
-  timeRange(minHour: number, maxHour: number): ConditionalRule<CharacterEventContext> {
+  timeRange(
+    minHour: number,
+    maxHour: number
+  ): ConditionalRule<CharacterEventContext> {
     return ConditionHelpers.timeRange(minHour, maxHour);
   },
 
   /**
    * Location condition
    */
-  atLocation(location: string | string[]): ConditionalRule<CharacterEventContext> {
+  atLocation(
+    location: string | string[]
+  ): ConditionalRule<CharacterEventContext> {
     return { conditions: [ConditionHelpers.inLocation(location)] };
   },
 
@@ -192,16 +218,18 @@ export const CharacterEventConditions = {
    */
   hasFlags(...flags: GameplayFlag[]): ConditionalRule<CharacterEventContext> {
     return {
-      conditions: flags.map(flag => ConditionHelpers.hasFlag([], flag)),
+      conditions: flags.map((flag) => ConditionHelpers.hasFlag([], flag)),
     };
   },
 
   /**
    * Blocked by flags
    */
-  blockedByFlags(...flags: GameplayFlag[]): ConditionalRule<CharacterEventContext> {
+  blockedByFlags(
+    ...flags: GameplayFlag[]
+  ): ConditionalRule<CharacterEventContext> {
     return {
-      noneOf: flags.map(flag => ({
+      noneOf: flags.map((flag) => ({
         conditions: [ConditionHelpers.hasFlag([], flag)],
       })),
     };
@@ -212,7 +240,7 @@ export const CharacterEventConditions = {
    */
   afterEvents(...eventIds: string[]): ConditionalRule<CharacterEventContext> {
     return {
-      conditions: eventIds.map(id => ConditionHelpers.hasCompletedEvent(id)),
+      conditions: eventIds.map((id) => ConditionHelpers.hasCompletedEvent(id)),
     };
   },
 
@@ -221,7 +249,9 @@ export const CharacterEventConditions = {
    */
   beforeEvents(...eventIds: string[]): ConditionalRule<CharacterEventContext> {
     return {
-      conditions: eventIds.map(id => ConditionHelpers.hasNotCompletedEvent(id)),
+      conditions: eventIds.map((id) =>
+        ConditionHelpers.hasNotCompletedEvent(id)
+      ),
     };
   },
 
@@ -242,6 +272,68 @@ export const CharacterEventConditions = {
     };
   },
 
+/** 
+ * Confession event pattern
+ * @param location - The location of the event
+ * @param requiredFlags - The flags that are required for the event
+ * @param minAffection - The minimum affection required for the event
+ * @param minTrust - The minimum trust required for the event
+ * @param minLove - The minimum love required for the event
+ * @param requiredPreviousEvents - The events that are required to be completed before this event
+ * @returns The conditional rule for the event
+*/
+  confession(
+    location: string,
+    requiredFlags: GameplayFlag[] = [],
+    minAffection: number,
+    minTrust: number,
+    minLove: number,
+    requiredPreviousEvents?: string[]
+  ): ConditionalRule<CharacterEventContext> {
+    return {
+      allOf: [
+        this.atLocation(location),
+        this.timeRange(0, 24),
+        this.minGirlStats({
+          affection: minAffection,
+          trust: minTrust,
+          love: minLove,
+        }),
+        ...(requiredFlags.length > 0 ? [this.hasFlags(...requiredFlags)] : []),
+        ...(requiredPreviousEvents
+          ? [this.afterEvents(...requiredPreviousEvents)]
+          : []),
+      ],
+    };
+  },
+
+  /**
+   * Jealous Event pattern
+   * @param location - The location of the event
+   * @param requiredFlags - The flags that are required for the event
+   * @param minAffection - The minimum affection required for the event
+   * @param minTrust - The minimum trust required for the event
+   * @param minLove - The minimum love required for the event
+   * @param requiredPreviousEvents - The events that are required to be completed before this event
+   * @returns The conditional rule for the event
+   */
+  jealousEvent(
+    location: string,
+    requiredFlags: GameplayFlag[] = [],
+    minAffection: number,
+    maxTrust: number,
+    minLove: number,
+    requiredPreviousEvents?: string[],
+  ): ConditionalRule<CharacterEventContext> {
+    return {
+      allOf: [
+        this.atLocation(location),
+        this.hasFlags(...requiredFlags),
+        this.timeRange(0, 24),
+        this.minGirlStats({ affection: minAffection, trust: maxTrust }),
+      ],
+    };
+  },
   /**
    * Repeatable encounter pattern
    */
@@ -268,8 +360,8 @@ export const CharacterEventConditions = {
 export const createCharacterEvent = createEventFactory<CharacterEvent>({
   priority: 50,
   repeatable: false,
-  tags: ['character'],
-  dialogue: { id: '', lines: [] },
+  tags: ["character"],
+  dialogue: { id: "", lines: [] },
 });
 
 /**
@@ -277,9 +369,11 @@ export const createCharacterEvent = createEventFactory<CharacterEvent>({
  */
 export function createCharacterEvents(
   characterName: string,
-  eventConfigs: Array<Partial<CharacterEvent> & Pick<CharacterEvent, 'id' | 'name' | 'dialogue'>>
+  eventConfigs: Array<
+    Partial<CharacterEvent> & Pick<CharacterEvent, "id" | "name" | "dialogue">
+  >
 ): CharacterEvent[] {
-  return eventConfigs.map(config =>
+  return eventConfigs.map((config) =>
     createCharacterEvent({
       ...config,
       characterName,
@@ -291,7 +385,11 @@ export function createCharacterEvents(
 /**
  * Calculate game time in hours
  */
-export function calculateGameTime(days: string[], currentDay: string, hour: number): number {
+export function calculateGameTime(
+  days: string[],
+  currentDay: string,
+  hour: number
+): number {
   const dayIndex = days.indexOf(currentDay);
   return (dayIndex >= 0 ? dayIndex : 0) * 24 + hour;
 }

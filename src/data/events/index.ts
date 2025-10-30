@@ -1,13 +1,13 @@
 // src/data/events/index.ts
-import { CharacterEvent } from "./types";
+import type { CharacterEvent } from "../../lib/game/characterEventSystem";
 import { irisEvents } from "./iris";
 // Import other character events as you create them
-import { dawnEvents } from "./dawn";
+import { dawnEvents } from "@/data/events/dawn";
 // import { gwenEvents } from "./gwen";
 // import { yumiEvents } from "./yumi";
 import { rubyEvents } from "./ruby";
 
-export * from "./types";
+export * from "../../lib/game/characterEventSystem";
 
 // Map character names to their events
 export const characterEvents: Record<string, CharacterEvent[]> = {

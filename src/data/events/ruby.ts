@@ -1,5 +1,5 @@
 // src/data/events/ruby.ts
-import { CharacterEvent } from "./types";
+import { CharacterEvent, CharacterEventConditions } from "../../lib/game/characterEventSystem";
 
 export const rubyEvents: CharacterEvent[] = [
   {
@@ -9,12 +9,11 @@ export const rubyEvents: CharacterEvent[] = [
     priority: 100,
     repeatable: false,
     conditions: {
-      minAffection: 0,
-      minTrust: 0,
-      minHour: 18,
-      maxHour: 24,
-      requiredLocation: "Hallway",
-      requiredFlags: ["firstWorkout"]
+      allOf: [
+        CharacterEventConditions.atLocation("Hallway"),
+        CharacterEventConditions.timeRange(18, 24),
+        CharacterEventConditions.hasFlags("firstWorkout"),
+      ],
     },
     dialogue: {
       id: "ruby_first_meeting",
@@ -61,13 +60,7 @@ export const rubyEvents: CharacterEvent[] = [
     priority: 80,
     repeatable: true,
     cooldownHours: 168, // Can happen again after a week
-    conditions: {
-      minAffection: 30,
-      minTrust: 20,
-      requiredLocation: "Gym",
-      minHour: 6,
-      maxHour: 20,
-    },
+    conditions: CharacterEventConditions.repeatableEncounter("Gym", 30, 20, 6, 20),
     dialogue: {
       id: "ruby_gym_workout_dialogue",
       lines: [

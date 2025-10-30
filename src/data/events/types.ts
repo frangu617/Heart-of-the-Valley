@@ -12,7 +12,11 @@ export type GameplayFlag =
   | "firstTimeWorked"
   | "firstTimeCookedMeal"
   | "firstTimeStudied"
-  | "firstDateCompleted";
+  | "firstDateCompleted"
+  | "iris_first_kiss"
+  | "iris_first_date"
+  | "iris_first_sex"
+  | "dawn_first_sex";
 
 export type EventConditions = {
   // Minimum stat requirements

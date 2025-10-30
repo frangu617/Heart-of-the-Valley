@@ -1,23 +1,29 @@
-// import { text } from "stream/consumers";
-import { CharacterEvent } from "./types";
+// data/events/dawn.refactored.ts
 
-export const dawnEvents: CharacterEvent[] = [
+
+import {
+  CharacterEvent,
+  createCharacterEvents,
+  CharacterEventConditions,
+} from '../../lib/game/characterEventSystem';
+
+/**
+ * All Dawn events defined in a clean, declarative way
+ */
+export const dawnEvents: CharacterEvent[] = createCharacterEvents('Dawn', [
+  // First Meeting Event
   {
-    id: "first_meeting",
-    name: "First Meeting with Dawn",
-    description: "First Meeting with Dawn",
+    id: 'dawn_first_meeting',
+    name: 'First Meeting with Dawn',
+    description: 'First Meeting with Dawn',
     priority: 100,
     repeatable: false,
-    conditions: {
-      minAffection: 0,
-      minTrust: 0,
-      minHour: 0,
-      maxHour: 24,
-      requiredLocation: "Classroom",
-      requiredFlags: ["hasMetIris"],
-    },
+    
+    // Using the reusable condition builders
+    conditions: CharacterEventConditions.firstMeeting('Classroom', ['hasMetIris']),
+    
     dialogue: {
-      id: "dawn_first_meeting",
+      id: 'dawn_first_meeting',
       lines: [
         {
           speaker: null,
@@ -102,26 +108,31 @@ export const dawnEvents: CharacterEvent[] = [
         },
       ],
     },
+    
     rewards: {
-      setFlags: ["hasMetDawn"],
-      unlockCharacters: ["Dawn"],
+      setFlags: ['hasMetDawn'],
+      unlockCharacters: ['Dawn'],
     },
   },
+
+  // A Noise Event
   {
-    id: "A_noise",
-    name: "Dawn is getting down!",
-    description: "Dawn is getting down!",
+    id: 'dawn_a_noise',
+    name: 'Dawn is getting down!',
+    description: 'Dawn is getting down!',
     priority: 80,
     repeatable: false,
+    
+    // Simple condition: just location and time
     conditions: {
-      minAffection: 0,
-      minTrust: 0,
-      minHour: 0,
-      maxHour: 20,
-      requiredLocation: "Classroom",
+      allOf: [
+        CharacterEventConditions.atLocation('Classroom'),
+        CharacterEventConditions.timeRange(0, 20),
+      ],
     },
+    
     dialogue: {
-      id: "cocksucker_prologue",
+      id: 'cocksucker_prologue',
       lines: [
         {
           speaker: null,
@@ -140,7 +151,6 @@ export const dawnEvents: CharacterEvent[] = [
             },
           ],
         },
-
         {
           speaker: null,
           text: "You ignore the noise",
@@ -148,4 +158,146 @@ export const dawnEvents: CharacterEvent[] = [
       ],
     },
   },
-];
+
+  // Example of a more complex repeatable event
+  {
+    id: 'dawn_study_session',
+    name: 'Study Session with Dawn',
+    description: 'Help Dawn with her coursework',
+    priority: 60,
+    repeatable: true,
+    cooldownHours: 48,
+    
+    // Using the reusable repeatable encounter pattern
+    conditions: CharacterEventConditions.repeatableEncounter(
+      'Library',
+      20, // min affection
+      15, // min trust
+      8,  // min hour
+      22  // max hour
+    ),
+    
+    dialogue: {
+      id: 'dawn_study_session',
+      lines: [
+        {
+          speaker: null,
+          text: "You find Dawn at a table surrounded by textbooks and notes.",
+        },
+        {
+          speaker: "Dawn",
+          text: "{playerName}! Perfect timing. Mind helping me with this concept?",
+          expression: "neutral",
+        },
+        {
+          speaker: "You",
+          text: "Of course. What are you working on?",
+        },
+        {
+          speaker: null,
+          text: "You spend the next hour going through the material together. Dawn is a quick learner.",
+        },
+        {
+          speaker: "Dawn",
+          text: "Thanks! You explain things so much better than the textbook.",
+          expression: "happy",
+        },
+      ],
+    },
+    
+    rewards: {
+      girlStats: {
+        affection: 3,
+        trust: 2,
+      },
+      playerStats: {
+        intelligence: 1,
+      },
+    },
+  },
+]);
+
+/**
+ * Alternative: If you want even more concise syntax for simple events
+ */
+export function createSimpleDawnEvent(
+  id: string,
+  name: string,
+  dialogueId: string,
+  dialogueLines: any[],
+  options: {
+    location: string;
+    minAffection?: number;
+    minTrust?: number;
+    minHour?: number;
+    maxHour?: number;
+    priority?: number;
+    repeatable?: boolean;
+    cooldownHours?: number;
+    rewards?: any;
+    requiredFlags?: any[];
+  }
+): CharacterEvent {
+  const {
+    location,
+    minAffection = 0,
+    minTrust = 0,
+    minHour = 6,
+    maxHour = 22,
+    priority = 50,
+    repeatable = false,
+    cooldownHours,
+    rewards,
+    requiredFlags = [],
+  } = options;
+
+  return {
+    id,
+    name,
+    description: name,
+    characterName: 'Dawn',
+    priority,
+    repeatable,
+    cooldownHours,
+    
+    conditions: {
+      allOf: [
+        CharacterEventConditions.atLocation(location),
+        CharacterEventConditions.timeRange(minHour, maxHour),
+        CharacterEventConditions.minGirlStats({ affection: minAffection, trust: minTrust }),
+        ...(requiredFlags.length > 0 ? [CharacterEventConditions.hasFlags(...requiredFlags)] : []),
+      ],
+    },
+    
+    dialogue: {
+      id: dialogueId,
+      lines: dialogueLines,
+    },
+    
+    rewards,
+    tags: ['dawn', 'character'],
+  };
+}
+
+// Usage example of the simple event creator
+export const dawnCoffeeDate = createSimpleDawnEvent(
+  'dawn_coffee_date',
+  'Coffee Date with Dawn',
+  'dawn_coffee_chat',
+  [
+    { speaker: null, text: "You meet Dawn at the campus cafe." },
+    { speaker: "Dawn", text: "Thanks for meeting me!", expression: "happy" },
+  ],
+  {
+    location: 'Cafe',
+    minAffection: 25,
+    minTrust: 20,
+    minHour: 9,
+    maxHour: 18,
+    repeatable: true,
+    cooldownHours: 168,
+    rewards: {
+      girlStats: { affection: 5, trust: 3 },
+    },
+  }
+);
