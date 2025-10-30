@@ -7,24 +7,26 @@ import {
   GameplayFlag,
 } from "@/data/events/types";
 import { Girl, PlayerStats } from "@/data/characters";
-import { DayOfWeek } from "@/data/gameConstants";
+import { DayOfWeek, DAYS_OF_WEEK } from "@/data/gameConstants";
 
 /**
  * Calculate total game hours elapsed
  */
 export function calculateGameTime(day: DayOfWeek, hour: number): number {
-  const DAYS_OF_WEEK = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
+  // const DAYS_OF_WEEK = [
+  //   "Monday",
+  //   "Tuesday",
+  //   "Wednesday",
+  //   "Thursday",
+  //   "Friday",
+  //   "Saturday",
+  //   "Sunday",
+  // ];
   const dayIndex = DAYS_OF_WEEK.indexOf(day);
   return dayIndex * 24 + hour;
 }
+
+
 
 /**
  * Check if an event's conditions are met
