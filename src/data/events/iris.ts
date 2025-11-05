@@ -3,19 +3,15 @@ import {
   CharacterEvent,
   CharacterEventConditions,
 } from "@/lib/game/characterEventSystem";
-import { CharacterEvent as LegacyCharacterEvent } from "./types";
 
-// Use new format for migrated events and legacy format for old ones
-export const irisEvents: (CharacterEvent | LegacyCharacterEvent)[] = [
+export const irisEvents: CharacterEvent[] = [
   {
     id: "iris_first_meeting",
     name: "First Meeting with Iris",
     description: "First Meeting with Iris",
     priority: 100,
     repeatable: false,
-
     conditions: CharacterEventConditions.firstMeeting("University Hallway"),
-
     dialogue: {
       id: "iris_first_meeting",
       lines: [
@@ -100,10 +96,9 @@ export const irisEvents: (CharacterEvent | LegacyCharacterEvent)[] = [
         },
       ],
     },
-    rewards: {
-      setFlags: ["hasMetIris"],
-    },
+    rewards: { setFlags: ["hasMetIris"] },
   },
+
   {
     id: "iris_intro_coffee_yes",
     name: "Intro Coffee Date with Iris",
@@ -145,11 +140,7 @@ export const irisEvents: (CharacterEvent | LegacyCharacterEvent)[] = [
           text: "Have you been avoiding me?",
           expression: "sad",
         },
-        {
-          speaker: "You",
-          text: "I... I'm sorry.",
-          expression: "sad",
-        },
+        { speaker: "You", text: "I... I'm sorry.", expression: "sad" },
         {
           speaker: "You",
           text: "I've just been getting used to the new place, and the new job...",
@@ -167,33 +158,38 @@ export const irisEvents: (CharacterEvent | LegacyCharacterEvent)[] = [
         {
           speaker: "Iris",
           text: "See you later, {playerName}.",
-          // expression: "happy",
-          // foregroundVideo: "/images/characters/iris/casual/bj.mp4",
-          // foregroundPosition: "right", // Shows on right side
-          // foregroundSize: "large", // Takes up 70% of screen
-          // imageSlide: "/images/events/gwen_sex_show.png",
-
           expression: "blowKiss",
         },
       ],
     },
   },
+
   {
     id: "iris_spontaneous_coffee",
     name: "Spontaneous Coffee Invite",
     priority: 70,
     repeatable: true,
-    triggerChance: 30, // Only 30% chance even when conditions met
-    ambientTrigger: true, // Can trigger without selecting Iris
+    // Converted to new ConditionalRule shape:
     conditions: {
-      minAffection: 25,
-      requiredLocation: "University Hallway",
-      minHour: 10,
-      maxHour: 14,
-    },
-    modifyNextEventChance: {
-      iris_confession: 10, // Increases confession chance by 10%
-      iris_jealous_dawn: -5, // Decreases jealousy chance
+      allOf: [
+        // affection ≥ 25
+        CharacterEventConditions.minGirlStats({ affection: 25 }),
+        // at hallway
+        CharacterEventConditions.atLocation("University Hallway"),
+        // time 10:00–14:00
+        CharacterEventConditions.timeRange(10, 14),
+        // 30% random chance gate
+        {
+          conditions: [
+            {
+              field: "__chance__", // dummy
+              operator: "gte",
+              value: 0,
+              customCheck: () => Math.random() * 100 < 30,
+            },
+          ],
+        },
+      ],
     },
     dialogue: {
       id: "spontaneous_coffee",
@@ -211,6 +207,7 @@ export const irisEvents: (CharacterEvent | LegacyCharacterEvent)[] = [
       ],
     },
   },
+
   {
     id: "iris_coffee_date",
     name: "Coffee Date with Iris",
@@ -238,10 +235,7 @@ export const irisEvents: (CharacterEvent | LegacyCharacterEvent)[] = [
           text: "I wanted to... talk to you about something.",
           expression: "shy",
         },
-        {
-          speaker: "You",
-          text: "Of course. What's on your mind?",
-        },
+        { speaker: "You", text: "Of course. What's on your mind?" },
         {
           speaker: "Iris",
           text: "I've been thinking... we've been spending time together and...",
@@ -307,10 +301,7 @@ export const irisEvents: (CharacterEvent | LegacyCharacterEvent)[] = [
           text: "{playerName}, could you help me with something?",
           expression: "neutral",
         },
-        {
-          speaker: "You",
-          text: "Sure, what do you need?",
-        },
+        { speaker: "You", text: "Sure, what do you need?" },
         {
           speaker: "Iris",
           text: "I'm working on a paper about the intersection of technology and literature...",
@@ -332,11 +323,7 @@ export const irisEvents: (CharacterEvent | LegacyCharacterEvent)[] = [
         },
       ],
     },
-    rewards: {
-      playerStats: {
-        intelligence: 2,
-      },
-    },
+    rewards: { playerStats: { intelligence: 2 } },
   },
 
   {
@@ -365,10 +352,7 @@ export const irisEvents: (CharacterEvent | LegacyCharacterEvent)[] = [
           text: "{playerName}... I need to tell you something important.",
           expression: "nervous",
         },
-        {
-          speaker: "You",
-          text: "What is it, Iris?",
-        },
+        { speaker: "You", text: "What is it, Iris?" },
         {
           speaker: "Iris",
           text: "I... I've developed feelings for you. Real feelings.",
@@ -427,10 +411,7 @@ export const irisEvents: (CharacterEvent | LegacyCharacterEvent)[] = [
           text: "{playerName}... can we talk?",
           expression: "sad",
         },
-        {
-          speaker: "You",
-          text: "Of course. What's wrong?",
-        },
+        { speaker: "You", text: "Of course. What's wrong?" },
         {
           speaker: "Iris",
           text: "I've noticed you and Dawn have been... close lately.",
