@@ -178,6 +178,39 @@ export const irisEvents: CharacterEvent[] = [
     },
   },
   {
+    id: "iris_spontaneous_coffee",
+    name: "Spontaneous Coffee Invite",
+    priority: 70,
+    repeatable: true,
+    triggerChance: 30, // Only 30% chance even when conditions met
+    ambientTrigger: true, // Can trigger without selecting Iris
+    conditions: {
+      minAffection: 25,
+      requiredLocation: "University Hallway",
+      minHour: 10,
+      maxHour: 14,
+    },
+    modifyNextEventChance: {
+      iris_confession: 10, // Increases confession chance by 10%
+      iris_jealous_dawn: -5, // Decreases jealousy chance
+    },
+    dialogue: {
+      id: "spontaneous_coffee",
+      lines: [
+        {
+          speaker: null,
+          text: "Iris appears from around the corner, looking pleasantly surprised.",
+        },
+        {
+          speaker: "Iris",
+          text: "Oh! Perfect timing. I was just heading to get coffee...",
+          expression: "shy",
+        },
+        // ...
+      ],
+    },
+  },
+  {
     id: "iris_coffee_date",
     name: "Coffee Date with Iris",
     description: "Iris invites you for coffee after building some affection",
@@ -379,7 +412,13 @@ export const irisEvents: CharacterEvent[] = [
     description: "Iris notices your interactions with Dawn",
     priority: 90,
     repeatable: false,
-    conditions: CharacterEventConditions.jealousEvent("Living Room", ["dawn_first_sex", ], 30, 20, 18,),
+    conditions: CharacterEventConditions.jealousEvent(
+      "Living Room",
+      ["dawn_first_sex"],
+      30,
+      20,
+      18
+    ),
     dialogue: {
       id: "iris_jealous_dialogue",
       lines: [

@@ -142,6 +142,8 @@ export default function GamePage() {
     ScheduledEncounter[]
   >([]);
 
+  const [eventManager] = useState(() => new EventManager());
+
   type GameState =
     | "mainMenu"
     | "nameInput"
@@ -718,6 +720,17 @@ export default function GamePage() {
     //     return;
     //   }
     // }
+    //check ambient character events
+     const ambientEvent = eventManager.checkAmbientCharacterEvents(
+       location,
+       hour,
+       girls,
+       player
+     );
+     if (ambientEvent) {
+       handleAmbientEvent(ambientEvent);
+       return;
+     }
 
     // random event roll
     const randomEvent = checkRandomEvent(location, hour, dayOfWeek, player);

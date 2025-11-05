@@ -64,7 +64,7 @@ import { gwenDialogues } from "./gwen";
 import { yumiDialogues } from "./yumi";
 import { rubyDialogues } from "./ruby";
 import { introDialogue } from "./intro";
-import { GameplayFlag } from "../events";
+import { GameplayFlag } from "@/data/events/types";
 
 // Export intro
 export { introDialogue };

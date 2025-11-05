@@ -56,7 +56,7 @@ export type EventConditions = {
 export type CharacterEvent = {
   id: string;
   name: string;
-  description: string; // For debugging/admin
+  description?: string; // For debugging/admin
 
   // Requirements to trigger
   conditions: EventConditions;
@@ -84,6 +84,11 @@ export type CharacterEvent = {
     setFlags?: GameplayFlag[];
     unlockCharacters?: string[];
   };
+  triggerChance?: number; // 0-100, default 100 for backwards compatibility
+  triggerLocations?: string[]; // Can trigger at multiple locations
+  ambientTrigger?: boolean; // Can trigger without selecting the girl
+  chainEvents?: string[]; // Events that can follow this one
+  modifyNextEventChance?: { [eventId: string]: number }; // Affect other events
 };
 
 export type EventHistory = {
