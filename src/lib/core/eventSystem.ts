@@ -4,9 +4,15 @@
  * Eliminates duplication across character events, random events, location events, etc.
  */
 
-import { ConditionalRule, checkConditionalRule } from '../utils/conditionChecker';
+import {
+  ConditionalRule,
+  checkConditionalRule,
+} from "../utils/conditionChecker";
 
-export interface BaseEvent<TContext = any, TRewards = any> {
+export interface BaseEvent<
+  TContext extends EventContext = EventContext,
+  TRewards = unknown
+> {
   id: string;
   name: string;
   description?: string;
@@ -22,7 +28,7 @@ export interface EventHistory {
   eventId: string;
   lastTriggered: {
     timestamp: number; // Game time or real timestamp
-    metadata?: Record<string, any>; // Additional context
+    metadata?: Record<string, unknown>; // Additional context
   };
   timesTriggered: number;
 }
@@ -30,13 +36,16 @@ export interface EventHistory {
 export interface EventContext {
   currentTime: number;
   eventHistory: EventHistory[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
  * Generic event manager that handles any type of event
  */
-export class EventManager<TEvent extends BaseEvent, TContext extends EventContext> {
+export class EventManager<
+  TEvent extends BaseEvent<TContext>,
+  TContext extends EventContext
+> {
   private events: TEvent[] = [];
 
   constructor(events?: TEvent[]) {
@@ -63,21 +72,21 @@ export class EventManager<TEvent extends BaseEvent, TContext extends EventContex
    * Remove an event by ID
    */
   removeEvent(eventId: string): void {
-    this.events = this.events.filter(e => e.id !== eventId);
+    this.events = this.events.filter((e) => e.id !== eventId);
   }
 
   /**
    * Get an event by ID
    */
   getEvent(eventId: string): TEvent | undefined {
-    return this.events.find(e => e.id === eventId);
+    return this.events.find((e) => e.id === eventId);
   }
 
   /**
    * Get events by tag
    */
   getEventsByTag(tag: string): TEvent[] {
-    return this.events.filter(e => e.tags?.includes(tag));
+    return this.events.filter((e) => e.tags?.includes(tag));
   }
 
   /**
@@ -86,10 +95,11 @@ export class EventManager<TEvent extends BaseEvent, TContext extends EventContex
   isOnCooldown(event: TEvent, context: TContext): boolean {
     if (!event.cooldownHours) return false;
 
-    const history = context.eventHistory.find(h => h.eventId === event.id);
+    const history = context.eventHistory.find((h) => h.eventId === event.id);
     if (!history) return false;
 
-    const hoursSinceLastTrigger = context.currentTime - history.lastTriggered.timestamp;
+    const hoursSinceLastTrigger =
+      context.currentTime - history.lastTriggered.timestamp;
     return hoursSinceLastTrigger < event.cooldownHours;
   }
 
@@ -97,7 +107,9 @@ export class EventManager<TEvent extends BaseEvent, TContext extends EventContex
    * Check if an event has been completed
    */
   hasBeenCompleted(eventId: string, context: TContext): boolean {
-    return context.eventHistory.some(h => h.eventId === eventId && h.timesTriggered > 0);
+    return context.eventHistory.some(
+      (h) => h.eventId === eventId && h.timesTriggered > 0
+    );
   }
 
   /**
@@ -125,9 +137,14 @@ export class EventManager<TEvent extends BaseEvent, TContext extends EventContex
   /**
    * Find the best event to trigger based on priority
    */
-  findTriggeredEvent(context: TContext, filter?: (event: TEvent) => boolean): TEvent | null {
+  findTriggeredEvent(
+    context: TContext,
+    filter?: (event: TEvent) => boolean
+  ): TEvent | null {
     // Sort by priority (highest first)
-    const sortedEvents = [...this.events].sort((a, b) => b.priority - a.priority);
+    const sortedEvents = [...this.events].sort(
+      (a, b) => b.priority - a.priority
+    );
 
     for (const event of sortedEvents) {
       // Apply custom filter if provided
@@ -146,9 +163,12 @@ export class EventManager<TEvent extends BaseEvent, TContext extends EventContex
   /**
    * Find all events that can trigger
    */
-  findAllTriggeredEvents(context: TContext, filter?: (event: TEvent) => boolean): TEvent[] {
+  findAllTriggeredEvents(
+    context: TContext,
+    filter?: (event: TEvent) => boolean
+  ): TEvent[] {
     return this.events
-      .filter(event => {
+      .filter((event) => {
         if (filter && !filter(event)) return false;
         return this.canTrigger(event, context);
       })
@@ -162,9 +182,9 @@ export class EventManager<TEvent extends BaseEvent, TContext extends EventContex
     eventId: string,
     eventHistory: EventHistory[],
     currentTime: number,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ): EventHistory[] {
-    const existingIndex = eventHistory.findIndex(h => h.eventId === eventId);
+    const existingIndex = eventHistory.findIndex((h) => h.eventId === eventId);
 
     if (existingIndex >= 0) {
       // Update existing history
@@ -192,7 +212,7 @@ export class EventManager<TEvent extends BaseEvent, TContext extends EventContex
    * Get statistics for an event
    */
   getEventStats(eventId: string, context: TContext) {
-    const history = context.eventHistory.find(h => h.eventId === eventId);
+    const history = context.eventHistory.find((h) => h.eventId === eventId);
     const event = this.getEvent(eventId);
 
     return {
@@ -222,19 +242,20 @@ export class EventManager<TEvent extends BaseEvent, TContext extends EventContex
 /**
  * Create a specialized event manager for a specific event type
  */
-export function createEventManager<TEvent extends BaseEvent, TContext extends EventContext>(
-  events?: TEvent[]
-): EventManager<TEvent, TContext> {
+export function createEventManager<
+  TEvent extends BaseEvent<TContext>,
+  TContext extends EventContext
+>(events?: TEvent[]): EventManager<TEvent, TContext> {
   return new EventManager<TEvent, TContext>(events);
 }
 
 /**
  * Helper to create event factory functions
  */
-export function createEventFactory<TEvent extends BaseEvent>(
+export function createEventFactory<TEvent extends BaseEvent<any>>(
   defaults: Partial<TEvent>
 ) {
-  return (overrides: Partial<TEvent> & Pick<TEvent, 'id' | 'name'>): TEvent => {
+  return (overrides: Partial<TEvent> & Pick<TEvent, "id" | "name">): TEvent => {
     return {
       ...defaults,
       ...overrides,

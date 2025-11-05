@@ -11,7 +11,9 @@ import {
   createEventFactory,
 } from "../core/eventSystem";
 import { ConditionalRule, ConditionHelpers } from "../utils/conditionChecker";
-import type { GameplayFlag } from "../../data/events/types";
+import type { GameplayFlag, EventConditions } from "../../data/events/types";
+import type { Dialogue } from "../../data/dialogues/index";
+
 
 // Game-specific types (reusing canonical flags from data types)
 
@@ -41,12 +43,6 @@ export interface Girl {
   location: string;
   relationship: "Single" | "DatingMC" | "DatingJohn" | "DatingRick";
   personality: string;
-}
-
-export interface Dialogue {
-  id: string;
-  lines: any[]; // Simplified for now
-  requiresFirstTimeOnly?: boolean;
 }
 
 // Character event-specific types
@@ -272,16 +268,16 @@ export const CharacterEventConditions = {
     };
   },
 
-/** 
- * Confession event pattern
- * @param location - The location of the event
- * @param requiredFlags - The flags that are required for the event
- * @param minAffection - The minimum affection required for the event
- * @param minTrust - The minimum trust required for the event
- * @param minLove - The minimum love required for the event
- * @param requiredPreviousEvents - The events that are required to be completed before this event
- * @returns The conditional rule for the event
-*/
+  /**
+   * Confession event pattern
+   * @param location - The location of the event
+   * @param requiredFlags - The flags that are required for the event
+   * @param minAffection - The minimum affection required for the event
+   * @param minTrust - The minimum trust required for the event
+   * @param minLove - The minimum love required for the event
+   * @param requiredPreviousEvents - The events that are required to be completed before this event
+   * @returns The conditional rule for the event
+   */
   confession(
     location: string,
     requiredFlags: GameplayFlag[] = [],
@@ -321,9 +317,7 @@ export const CharacterEventConditions = {
     location: string,
     requiredFlags: GameplayFlag[] = [],
     minAffection: number,
-    maxTrust: number,
-    minLove: number,
-    requiredPreviousEvents?: string[],
+    maxTrust: number
   ): ConditionalRule<CharacterEventContext> {
     return {
       allOf: [

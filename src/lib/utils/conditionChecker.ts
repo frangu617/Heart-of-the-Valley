@@ -4,16 +4,16 @@
  * Can be used for events, dialogues, choices, and any conditional logic
  */
 
-export type ComparisonOperator = 'gte' | 'lte' | 'gt' | 'lt' | 'eq' | 'neq';
+export type ComparisonOperator = "gte" | "lte" | "gt" | "lt" | "eq" | "neq";
 
-export interface Condition<T = any> {
+export interface Condition<T = unknown> {
   field: string;
   operator: ComparisonOperator;
-  value: any;
+  value: unknown;
   customCheck?: (context: T) => boolean;
 }
 
-export interface ConditionalRule<T = any> {
+export interface ConditionalRule<T = unknown> {
   conditions?: Condition<T>[];
   allOf?: ConditionalRule<T>[]; // All must be true (AND)
   anyOf?: ConditionalRule<T>[]; // At least one must be true (OR)
@@ -24,29 +24,64 @@ export interface ConditionalRule<T = any> {
 /**
  * Get nested property value using dot notation
  */
-export function getNestedValue(obj: any, path: string): any {
-  return path.split('.').reduce((current, key) => current?.[key], obj);
+export function getNestedValue(obj: unknown, path: string): unknown {
+  // Type guard to ensure obj is an object
+  if (!obj || typeof obj !== "object") {
+    return undefined;
+  }
+
+  return path.split(".").reduce<unknown>((current: unknown, key: string) => {
+    if (current && typeof current === "object" && key in current) {
+      return (current as Record<string, unknown>)[key];
+    }
+    return undefined;
+  }, obj);
 }
 
 /**
  * Compare two values based on operator
  */
-export function compareValues(actual: any, operator: ComparisonOperator, expected: any): boolean {
+export function compareValues(
+  actual: unknown,
+  operator: ComparisonOperator,
+  expected: unknown
+): boolean {
+  // Type guard for numeric comparisons
+  const isNumericComparison = (op: ComparisonOperator) =>
+    op === "gte" || op === "lte" || op === "gt" || op === "lt";
+
+  if (isNumericComparison(operator)) {
+    // Ensure both values are numbers for numeric comparisons
+    if (typeof actual !== "number" || typeof expected !== "number") {
+      return false;
+    }
+  }
+
   switch (operator) {
-    case 'gte': return actual >= expected;
-    case 'lte': return actual <= expected;
-    case 'gt': return actual > expected;
-    case 'lt': return actual < expected;
-    case 'eq': return actual === expected;
-    case 'neq': return actual !== expected;
-    default: return false;
+    case "gte":
+      return (actual as number) >= (expected as number);
+    case "lte":
+      return (actual as number) <= (expected as number);
+    case "gt":
+      return (actual as number) > (expected as number);
+    case "lt":
+      return (actual as number) < (expected as number);
+    case "eq":
+      return actual === expected;
+    case "neq":
+      return actual !== expected;
+    default:
+      return false;
   }
 }
 
 /**
  * Check if a single condition is met
  */
-export function checkCondition<T>(condition: Condition<T>, context: T): boolean {
+export function checkCondition<T>(
+  condition: Condition<T>,
+  context: T
+): boolean {
   // Custom check takes precedence
   if (condition.customCheck) {
     return condition.customCheck(context);
@@ -59,7 +94,10 @@ export function checkCondition<T>(condition: Condition<T>, context: T): boolean 
 /**
  * Check if all conditions in a rule are met
  */
-export function checkConditionalRule<T>(rule: ConditionalRule<T>, context: T): boolean {
+export function checkConditionalRule<T>(
+  rule: ConditionalRule<T>,
+  context: T
+): boolean {
   // Custom check takes precedence
   if (rule.customCheck) {
     return rule.customCheck(context);
@@ -67,7 +105,7 @@ export function checkConditionalRule<T>(rule: ConditionalRule<T>, context: T): b
 
   // Check basic conditions (implicit AND)
   if (rule.conditions) {
-    const allConditionsMet = rule.conditions.every(condition => 
+    const allConditionsMet = rule.conditions.every((condition) =>
       checkCondition(condition, context)
     );
     if (!allConditionsMet) return false;
@@ -75,7 +113,7 @@ export function checkConditionalRule<T>(rule: ConditionalRule<T>, context: T): b
 
   // Check allOf (AND)
   if (rule.allOf) {
-    const allMet = rule.allOf.every(subRule => 
+    const allMet = rule.allOf.every((subRule) =>
       checkConditionalRule(subRule, context)
     );
     if (!allMet) return false;
@@ -83,7 +121,7 @@ export function checkConditionalRule<T>(rule: ConditionalRule<T>, context: T): b
 
   // Check anyOf (OR)
   if (rule.anyOf) {
-    const anyMet = rule.anyOf.some(subRule => 
+    const anyMet = rule.anyOf.some((subRule) =>
       checkConditionalRule(subRule, context)
     );
     if (!anyMet) return false;
@@ -91,8 +129,8 @@ export function checkConditionalRule<T>(rule: ConditionalRule<T>, context: T): b
 
   // Check noneOf (NOT)
   if (rule.noneOf) {
-    const noneMet = rule.noneOf.every(subRule => 
-      !checkConditionalRule(subRule, context)
+    const noneMet = rule.noneOf.every(
+      (subRule) => !checkConditionalRule(subRule, context)
     );
     if (!noneMet) return false;
   }
@@ -106,61 +144,70 @@ export function checkConditionalRule<T>(rule: ConditionalRule<T>, context: T): b
 export const ConditionHelpers = {
   minStat: (field: string, value: number): Condition => ({
     field,
-    operator: 'gte',
+    operator: "gte",
     value,
   }),
 
   maxStat: (field: string, value: number): Condition => ({
     field,
-    operator: 'lte',
+    operator: "lte",
     value,
   }),
 
-  hasFlag: (flags: string[], flag: string): Condition => ({
-    field: 'flags',
-    operator: 'eq',
+  hasFlag: <T extends { flags?: Set<string> }>(
+    flags: string[],
+    flag: string
+  ): Condition<T> => ({
+    field: "flags",
+    operator: "eq",
     value: true,
-    customCheck: (context: any) => {
-      const flagSet = context.flags as Set<string>;
+    customCheck: (context: T) => {
+      const flagSet = context.flags as Set<string> | undefined;
       return flagSet?.has(flag) || flags.includes(flag);
     },
   }),
 
-  inLocation: (locations: string | string[]): Condition => ({
-    field: 'currentLocation',
-    operator: 'eq',
+  inLocation: <T extends { currentLocation?: string }>(
+    locations: string | string[]
+  ): Condition<T> => ({
+    field: "currentLocation",
+    operator: "eq",
     value: Array.isArray(locations) ? locations[0] : locations,
-    customCheck: (context: any) => {
+    customCheck: (context: T) => {
       const current = context.currentLocation;
-      return Array.isArray(locations) 
-        ? locations.includes(current)
+      return Array.isArray(locations)
+        ? locations.includes(current || "")
         : current === locations;
     },
   }),
 
   timeRange: (minHour: number, maxHour: number): ConditionalRule => ({
     conditions: [
-      { field: 'hour', operator: 'gte', value: minHour },
-      { field: 'hour', operator: 'lt', value: maxHour },
+      { field: "hour", operator: "gte", value: minHour },
+      { field: "hour", operator: "lt", value: maxHour },
     ],
   }),
 
-  hasCompletedEvent: (eventId: string): Condition => ({
-    field: 'completedEvents',
-    operator: 'eq',
+  hasCompletedEvent: <T extends { completedEvents?: string[] }>(
+    eventId: string
+  ): Condition<T> => ({
+    field: "completedEvents",
+    operator: "eq",
     value: true,
-    customCheck: (context: any) => {
-      const completed = context.completedEvents as string[];
+    customCheck: (context: T) => {
+      const completed = context.completedEvents as string[] | undefined;
       return completed?.includes(eventId) || false;
     },
   }),
 
-  hasNotCompletedEvent: (eventId: string): Condition => ({
-    field: 'completedEvents',
-    operator: 'eq',
+  hasNotCompletedEvent: <T extends { completedEvents?: string[] }>(
+    eventId: string
+  ): Condition<T> => ({
+    field: "completedEvents",
+    operator: "eq",
     value: false,
-    customCheck: (context: any) => {
-      const completed = context.completedEvents as string[];
+    customCheck: (context: T) => {
+      const completed = context.completedEvents as string[] | undefined;
       return !completed?.includes(eventId);
     },
   }),

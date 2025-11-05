@@ -19,25 +19,14 @@ import { getCharacterImage } from "../lib/characterImages";
 import { getLocationBackground } from "../lib/locationImages";
 import { checkRandomEvent } from "../lib/randomEventSystem";
 import { getCharacterEvents } from "../data/events/index";
-import type { CharacterEvent as LegacyCharacterEvent } from "../data/events/types";
 import type { CharacterEvent as GameCharacterEvent } from "../lib/game/characterEventSystem";
 // import { findTriggeredEvent } from "../lib/eventSystem";
-import { 
-  CharacterEventManager, 
-  calculateGameTime 
+import {
+  CharacterEventManager,
+  calculateGameTime,
 } from "@/lib/game/characterEventSystem";
-import { 
-  applyStatChanges, 
-  meetsStatRequirements 
-} from "@/lib/utils/statManager";
-import { 
-  STAT_LIMITS, 
-  TIME_CONFIG, 
-  ACTIVITY_COSTS, 
-  ACTIVITY_REWARDS,
-  RELATIONSHIP_THRESHOLDS,
-  EVENT_PRIORITIES,
-} from "@/config/gameConfig";
+import { applyStatChanges } from "@/lib/utils/statManager";
+import { STAT_LIMITS, TIME_CONFIG } from "@/config/gameConfig";
 // Data / Types
 
 import { locationGraph } from "../data/locations";
@@ -54,7 +43,6 @@ import {
   START_HOUR,
   MAX_HOUR,
   getNextDay,
-  DAYS_OF_WEEK,
 } from "../data/gameConstants";
 import {
   locationDescriptions,
@@ -141,8 +129,6 @@ export default function GamePage() {
   const [scheduledEncounters, setScheduledEncounters] = useState<
     ScheduledEncounter[]
   >([]);
-
-  const [eventManager] = useState(() => new EventManager());
 
   type GameState =
     | "mainMenu"
@@ -309,17 +295,13 @@ export default function GamePage() {
             updatedPlayer.money += characterEvent.rewards.playerMoney;
           }
           if (characterEvent.rewards.playerStats) {
-            Object.entries(
-              characterEvent.rewards.playerStats as Partial<PlayerStats>
-            ).forEach(([key, value]) => {
-              if (typeof value === "number") {
-                const k = key as keyof PlayerStats;
-                if (typeof updatedPlayer[k] === "number") {
-                  const currentVal = updatedPlayer[k] as number;
-                  (updatedPlayer as any)[k] = currentVal + value;
-                }
-              }
-            });
+            // Use stat manager for safe stat updates
+            const updated = applyStatChanges(
+              updatedPlayer,
+              characterEvent.rewards.playerStats,
+              STAT_LIMITS.player
+            );
+            Object.assign(updatedPlayer, updated);
           }
           setPlayer(updatedPlayer);
         }
@@ -385,34 +367,21 @@ export default function GamePage() {
   // 🎯 Create event manager (memoized)
   const eventManager = useMemo(() => {
     const manager = new CharacterEventManager();
-    
+
     // Load all character events using the getCharacterEvents function
-    const characterNames = ['Dawn', 'Ruby', 'Yumi', 'Gwen', 'Iris'];
-    characterNames.forEach(name => {
-      const events = getCharacterEvents(name) as unknown as GameCharacterEvent[];
+    const characterNames = ["Dawn", "Ruby", "Yumi", "Gwen", "Iris"];
+    characterNames.forEach((name) => {
+      const events = getCharacterEvents(
+        name
+      ) as unknown as GameCharacterEvent[];
       if (events && events.length > 0) {
         manager.addEvents(events);
       }
     });
-    
+
     return manager;
   }, []); // Empty deps - events don't change
 
-  const event = eventManager.findCharacterEvent(selectedGirl?.name || "", {
-    girl: selectedGirl!,
-    player,
-    currentLocation,
-    day: dayOfWeek,
-    hour,
-    currentTime: calculateGameTime(TIME_CONFIG.DAYS_OF_WEEK, dayOfWeek, hour),
-    completedEvents:
-      characterEventStates[selectedGirl?.name || ""]?.eventHistory.map(
-        (h) => h.eventId
-      ) || [],
-    eventHistory:
-      characterEventStates[selectedGirl?.name || ""]?.eventHistory || [],
-    flags: gameplayFlags,
-  });
   // girls with schedules + overrides
   const girls = useMemo(() => {
     return baseGirls
@@ -720,17 +689,18 @@ export default function GamePage() {
     //     return;
     //   }
     // }
-    //check ambient character events
-     const ambientEvent = eventManager.checkAmbientCharacterEvents(
-       location,
-       hour,
-       girls,
-       player
-     );
-     if (ambientEvent) {
-       handleAmbientEvent(ambientEvent);
-       return;
-     }
+
+    // TODO: Ambient character events - method not available in CharacterEventManager
+    // const ambientEvent = eventManager.checkAmbientCharacterEvents(
+    //   location,
+    //   hour,
+    //   girls,
+    //   player
+    // );
+    // if (ambientEvent) {
+    //   handleAmbientEvent(ambientEvent);
+    //   return;
+    // }
 
     // random event roll
     const randomEvent = checkRandomEvent(location, hour, dayOfWeek, player);
@@ -741,6 +711,62 @@ export default function GamePage() {
       if (randomEvent.rewards) applyRandomEventRewards(randomEvent.rewards);
     }
   };
+
+  // Handle ambient character events - DISABLED (method not available in CharacterEventManager)
+  /* 
+  const handleAmbientEvent = (event: CharacterEvent) => {
+    console.log(`✨ Ambient event triggered: ${event.name}`);
+
+    // Find the character who triggered the event
+    const characterName = event.dialogue.lines[0]?.speaker || "";
+    const character = girls.find((g) => g.name === characterName);
+
+    if (character) {
+      const characterImage = getCharacterImage(
+        character,
+        currentLocation,
+        hour
+      );
+      startDialogue(event.dialogue, characterImage, null, characterName);
+
+      // Apply rewards if any
+      const rewards = event.rewards;
+      if (rewards) {
+        if (rewards.playerMoney) {
+          setPlayer((prev) => ({
+            ...prev,
+            money: prev.money + rewards.playerMoney!,
+          }));
+        }
+
+        if (rewards.playerStats) {
+          setPlayer((prev) => {
+            const updated = applyStatChanges(
+              prev,
+              rewards.playerStats!,
+              STAT_LIMITS.player
+            );
+            return updated;
+          });
+        }
+
+        if (rewards.setFlags) {
+          rewards.setFlags.forEach((flag) => setFlag(flag));
+        }
+
+        if (rewards.unlockCharacters) {
+          rewards.unlockCharacters.forEach((name) => {
+            const charName = name as keyof typeof characterUnlocks;
+            setCharacterUnlocks((prev) => ({ ...prev, [charName]: true }));
+          });
+        }
+      }
+    } else {
+      // If no specific character, just show the dialogue
+      startDialogue(event.dialogue, "", null);
+    }
+  };
+  */
 
   // rewards
   const applyRandomEventRewards = (rewards: RandomEvent["rewards"]) => {
@@ -774,14 +800,14 @@ export default function GamePage() {
         if (!girl) return;
 
         const currentStats = { ...girl.stats, ...override };
-        
+
         // Use stat manager for girl affection changes
         const newStats = applyStatChanges(
           currentStats,
           { affection: change },
           STAT_LIMITS.girl
         );
-        
+
         setGirlStatsOverrides((prev) => ({
           ...prev,
           [girlName]: newStats,
@@ -881,17 +907,24 @@ export default function GamePage() {
         currentLocation: girl.location, // Check at girl's current location
         day: dayOfWeek,
         hour,
-        currentTime: calculateGameTime(TIME_CONFIG.DAYS_OF_WEEK, dayOfWeek, hour),
-        completedEvents: eventState.eventHistory.map(h => h.eventId) || [],
+        currentTime: calculateGameTime(
+          [...TIME_CONFIG.DAYS_OF_WEEK],
+          dayOfWeek,
+          hour
+        ),
+        completedEvents: eventState.eventHistory.map((h) => h.eventId) || [],
         eventHistory: eventState.eventHistory || [],
         flags: gameplayFlags,
       });
 
-      if (triggerable && triggerable.conditions.requiredLocation) {
+      // TODO: Location-based event filtering needs to be reimplemented
+      // The new event system uses ConditionalRule which doesn't have requiredLocation
+      // Location checking should be done through the context's currentLocation
+      if (triggerable) {
         pending.push({
           characterName: girl.name,
           eventId: triggerable.id,
-          location: triggerable.conditions.requiredLocation,
+          location: girl.location, // Use girl's current location
           priority: triggerable.priority,
         });
       }
@@ -1263,7 +1296,11 @@ export default function GamePage() {
                   characterEventStates[selectedGirl.name] ?? {
                     characterName: selectedGirl.name,
                     eventHistory: [] as EventHistory[],
-                    lastInteractionTime: calculateGameTime(TIME_CONFIG.DAYS_OF_WEEK, dayOfWeek, hour),
+                    lastInteractionTime: calculateGameTime(
+                      [...TIME_CONFIG.DAYS_OF_WEEK],
+                      dayOfWeek,
+                      hour
+                    ),
                   }
                 }
                 onEventTriggered={(eventId) => {
@@ -1274,8 +1311,15 @@ export default function GamePage() {
                     lastInteractionTime: 0,
                   };
 
-                  const gameTime = calculateGameTime(TIME_CONFIG.DAYS_OF_WEEK, dayOfWeek, hour);
-                  const lastTriggered = { day: dayOfWeek, hour, gameTime };
+                  const gameTime = calculateGameTime(
+                    [...TIME_CONFIG.DAYS_OF_WEEK],
+                    dayOfWeek,
+                    hour
+                  );
+                  const lastTriggered = {
+                    timestamp: gameTime,
+                    metadata: { day: dayOfWeek, hour },
+                  };
 
                   const idx = prevState.eventHistory.findIndex(
                     (e) => e.eventId === eventId

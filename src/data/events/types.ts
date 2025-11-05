@@ -94,9 +94,11 @@ export type CharacterEvent = {
 export type EventHistory = {
   eventId: string;
   lastTriggered: {
-    day: string;
-    hour: number;
-    gameTime: number; // Total game hours elapsed
+    timestamp: number; // Game time in hours
+    metadata?: {
+      day?: string;
+      hour?: number;
+    };
   };
   timesTriggered: number;
 };

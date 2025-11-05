@@ -1,11 +1,12 @@
 // src/data/events/iris.ts
 import {
   CharacterEvent,
-  createCharacterEvent,
   CharacterEventConditions,
 } from "@/lib/game/characterEventSystem";
+import { CharacterEvent as LegacyCharacterEvent } from "./types";
 
-export const irisEvents: CharacterEvent[] = [
+// Use new format for migrated events and legacy format for old ones
+export const irisEvents: (CharacterEvent | LegacyCharacterEvent)[] = [
   {
     id: "iris_first_meeting",
     name: "First Meeting with Iris",
@@ -416,8 +417,7 @@ export const irisEvents: CharacterEvent[] = [
       "Living Room",
       ["dawn_first_sex"],
       30,
-      20,
-      18
+      20
     ),
     dialogue: {
       id: "iris_jealous_dialogue",

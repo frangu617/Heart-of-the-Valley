@@ -19,7 +19,7 @@ export interface StatConfig {
 /**
  * Apply stat changes to an object, with optional limits
  */
-export function applyStatChanges<T extends Record<string, any>>(
+export function applyStatChanges<T extends Record<string, unknown>>(
   currentStats: T,
   changes: Partial<T>,
   config?: Partial<Record<keyof T, StatLimits>>
@@ -30,7 +30,8 @@ export function applyStatChanges<T extends Record<string, any>>(
     if (change === undefined) continue;
 
     const currentValue = newStats[key as keyof T];
-    if (typeof currentValue !== 'number' || typeof change !== 'number') continue;
+    if (typeof currentValue !== "number" || typeof change !== "number")
+      continue;
 
     let newValue = currentValue + change;
 
@@ -54,7 +55,7 @@ export function applyStatChanges<T extends Record<string, any>>(
 /**
  * Create a stat modifier function with preset limits
  */
-export function createStatModifier<T extends Record<string, any>>(
+export function createStatModifier<T extends Record<string, unknown>>(
   config: Partial<Record<keyof T, StatLimits>>
 ) {
   return (currentStats: T, changes: Partial<T>): T => {
@@ -65,7 +66,7 @@ export function createStatModifier<T extends Record<string, any>>(
 /**
  * Batch apply stat changes to multiple entities
  */
-export function batchApplyStats<T extends Record<string, any>>(
+export function batchApplyStats<T extends Record<string, unknown>>(
   entities: Record<string, T>,
   changes: Record<string, Partial<T>>,
   config?: Partial<Record<keyof T, StatLimits>>
@@ -85,7 +86,7 @@ export function batchApplyStats<T extends Record<string, any>>(
 /**
  * Calculate stat change preview (useful for UI)
  */
-export function previewStatChange<T extends Record<string, any>>(
+export function previewStatChange<T extends Record<string, unknown>>(
   currentStats: T,
   changes: Partial<T>,
   config?: Partial<Record<keyof T, StatLimits>>
@@ -101,8 +102,8 @@ export function previewStatChange<T extends Record<string, any>>(
     const typedKey = key as keyof T;
     const beforeValue = currentStats[typedKey];
     const afterValue = after[typedKey];
-    
-    if (typeof beforeValue === 'number' && typeof afterValue === 'number') {
+
+    if (typeof beforeValue === "number" && typeof afterValue === "number") {
       differences[typedKey] = afterValue - beforeValue;
     }
   }
@@ -117,14 +118,14 @@ export function previewStatChange<T extends Record<string, any>>(
 /**
  * Check if stats meet minimum requirements
  */
-export function meetsStatRequirements<T extends Record<string, any>>(
+export function meetsStatRequirements<T extends Record<string, unknown>>(
   currentStats: T,
   requirements: Partial<T>
 ): boolean {
   for (const [key, requiredValue] of Object.entries(requirements)) {
     const currentValue = currentStats[key as keyof T];
-    
-    if (typeof currentValue === 'number' && typeof requiredValue === 'number') {
+
+    if (typeof currentValue === "number" && typeof requiredValue === "number") {
       if (currentValue < requiredValue) return false;
     }
   }
@@ -135,7 +136,7 @@ export function meetsStatRequirements<T extends Record<string, any>>(
 /**
  * Get missing stat requirements
  */
-export function getMissingRequirements<T extends Record<string, any>>(
+export function getMissingRequirements<T extends Record<string, unknown>>(
   currentStats: T,
   requirements: Partial<T>
 ): Partial<Record<keyof T, number>> {
@@ -143,8 +144,8 @@ export function getMissingRequirements<T extends Record<string, any>>(
 
   for (const [key, requiredValue] of Object.entries(requirements)) {
     const currentValue = currentStats[key as keyof T];
-    
-    if (typeof currentValue === 'number' && typeof requiredValue === 'number') {
+
+    if (typeof currentValue === "number" && typeof requiredValue === "number") {
       if (currentValue < requiredValue) {
         missing[key as keyof T] = requiredValue - currentValue;
       }
@@ -167,7 +168,7 @@ export function clampValue(value: number, min?: number, max?: number): number {
 /**
  * Interpolate between two stat states
  */
-export function interpolateStats<T extends Record<string, any>>(
+export function interpolateStats<T extends Record<string, unknown>>(
   from: T,
   to: T,
   progress: number // 0 to 1
@@ -180,8 +181,9 @@ export function interpolateStats<T extends Record<string, any>>(
     const fromValue = from[typedKey];
     const toValue = to[typedKey];
 
-    if (typeof fromValue === 'number' && typeof toValue === 'number') {
-      result[typedKey] = (fromValue + (toValue - fromValue) * clampedProgress) as T[keyof T];
+    if (typeof fromValue === "number" && typeof toValue === "number") {
+      result[typedKey] = (fromValue +
+        (toValue - fromValue) * clampedProgress) as T[keyof T];
     }
   }
 
