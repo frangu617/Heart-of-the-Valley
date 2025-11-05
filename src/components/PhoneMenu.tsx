@@ -209,8 +209,8 @@ export default function PhoneMenu({
                   darkMode ? "text-gray-400" : "text-gray-600"
                 }`}
               >
-                Based on your current situation, here&apos;s what you might want to
-                do:
+                Based on your current situation, here&apos;s what you might want
+                to do:
               </p>
 
               {getQuickActions(currentLocation, hour, player).length > 0 ? (
@@ -235,7 +235,7 @@ export default function PhoneMenu({
                               ? "bg-gray-800 border-purple-700 hover:border-purple-500"
                               : "bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200 hover:border-purple-400"
                           }
-                          transform hover:scale-102 shadow-md hover:shadow-lg
+                          transform hover:scale-105 shadow-md hover:shadow-lg
                         `}
                       >
                         <div className="flex items-center gap-3 mb-2">

@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 interface Props {
   onNameSubmit: (name: string) => void;

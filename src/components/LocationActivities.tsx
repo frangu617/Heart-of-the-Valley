@@ -5,7 +5,7 @@ import {
   locationActivities as activitiesMap,
   LocationActivity as ImportedActivity,
 } from "../data/LocationActivities";
-import { GameplayFlag } from "@/data/events";
+import { GameplayFlag } from "@/data/events/types";
 
 export type LocationActivity = {
   id?: string;
@@ -138,10 +138,7 @@ export default function LocationActivitiesPanel({
     }
 
     //Unlock Yumi after teaching class
-    if (
-      location === "Classroom" &&
-      act.name === "Teach Class"
-    ) {
+    if (location === "Classroom" && act.name === "Teach Class") {
       // Notify parent component to unlock Yumi
       if (onUnlockCharacter) {
         onUnlockCharacter("Yumi");
@@ -222,8 +219,8 @@ export default function LocationActivitiesPanel({
                 isDisabled
                   ? "opacity-50 cursor-not-allowed"
                   : darkMode
-                  ? "bg-gray-700 hover:bg-gray-600 border-purple-700 transform hover:scale-102"
-                  : "bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 border-purple-200 transform hover:scale-102"
+                  ? "bg-gray-700 hover:bg-gray-600 border-purple-700 transform hover:scale-105"
+                  : "bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 border-purple-200 transform hover:scale-105"
               }`}
               title={act.desc ?? ""}
             >

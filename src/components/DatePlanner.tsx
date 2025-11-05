@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { Girl } from "@/data/characters";
 import { DateLocation } from "@/data/dates/types";
@@ -26,24 +28,70 @@ type LocationInfo = {
   icon: string;
 };
 
-const locationInfo: Record<
-  DateLocation,
-  LocationInfo
-> = {
+const locationInfo: Record<DateLocation, LocationInfo> = {
   // Example entries — you must include ALL DateLocation keys
-  Cafe:        { name: "Cafe",        cost: 20, description: "Quiet spot for conversation.",   icon: "☕" },
-  Beach:       { name: "Beach",       cost: 10, description: "Sun, waves, and boardwalk.",     icon: "🏖️" },
-  Mall:        { name: "Mall",        cost: 30, description: "Shops and window shopping.",     icon: "🛍️" },
-  City:        { name: "City",        cost: 25, description: "Downtown lights and strolls.",   icon: "🌆" },
-  Restaurant:  { name: "Restaurant",  cost: 50, description: "Sit-down dinner reservation.",   icon: "🍽️" },
-  Movies:      { name: "Movies",      cost: 35, description: "Shared laughs & popcorn.",       icon: "🎬" },
-  Park:        { name: "Park",        cost:  5, description: "Casual walk & benches.",         icon: "🌳" },
-  "Strip Club":{ name: "Strip Club",  cost: 60, description: "Adults-only evening.",           icon: "🪩" },
-  Gym:         { name: "Gym",         cost:  0, description: "Workout & spot each other.",     icon: "💪" },
-  "Living Room":{name: "Living Room", cost:  0, description: "At-home cozy date.",             icon: "🛋️" },
+  Cafe: {
+    name: "Cafe",
+    cost: 20,
+    description: "Quiet spot for conversation.",
+    icon: "☕",
+  },
+  Beach: {
+    name: "Beach",
+    cost: 10,
+    description: "Sun, waves, and boardwalk.",
+    icon: "🏖️",
+  },
+  Mall: {
+    name: "Mall",
+    cost: 30,
+    description: "Shops and window shopping.",
+    icon: "🛍️",
+  },
+  City: {
+    name: "City",
+    cost: 25,
+    description: "Downtown lights and strolls.",
+    icon: "🌆",
+  },
+  Restaurant: {
+    name: "Restaurant",
+    cost: 50,
+    description: "Sit-down dinner reservation.",
+    icon: "🍽️",
+  },
+  Movies: {
+    name: "Movies",
+    cost: 35,
+    description: "Shared laughs & popcorn.",
+    icon: "🎬",
+  },
+  Park: {
+    name: "Park",
+    cost: 5,
+    description: "Casual walk & benches.",
+    icon: "🌳",
+  },
+  "Strip Club": {
+    name: "Strip Club",
+    cost: 60,
+    description: "Adults-only evening.",
+    icon: "🪩",
+  },
+  Gym: {
+    name: "Gym",
+    cost: 0,
+    description: "Workout & spot each other.",
+    icon: "💪",
+  },
+  "Living Room": {
+    name: "Living Room",
+    cost: 0,
+    description: "At-home cozy date.",
+    icon: "🛋️",
+  },
   // Home:        { name: "Home",        cost:  0, description: "Quiet time at your place.",      icon: "🏠" },
 };
-
 
 export default function DatePlanner({
   girl,
@@ -297,8 +345,7 @@ export default function DatePlanner({
             >
               {[12, 13, 14, 15, 16, 17, 18, 19, 20].map((hour) => (
                 <option key={hour} value={hour}>
-                  {hour > 12 ? hour - 12 : hour}:00{" "}
-                  {hour >= 12 ? "PM" : "AM"}
+                  {hour > 12 ? hour - 12 : hour}:00 {hour >= 12 ? "PM" : "AM"}
                 </option>
               ))}
             </select>

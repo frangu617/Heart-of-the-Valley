@@ -35,7 +35,7 @@ export default function LocationCard({
   girls,
   darkMode = false,
   scheduledEncounters = [],
-  pendingEvents = []
+  pendingEvents = [],
 }: Props) {
   // Find which girls are at this location
   const girlsHere = girls.filter((girl) => girl.location === location.name);

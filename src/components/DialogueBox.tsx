@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Dialogue,
@@ -157,8 +159,11 @@ export default function DialogueBox({
   const chosenOptionRef = useRef<DialogueChoice | undefined>(undefined);
 
   // ✅ Move this after we know currentLine exists
- const displaySpeaker = characterName || (currentLine?.speaker !== "You" ? currentLine?.speaker : null) || "";
-  
+  const displaySpeaker =
+    characterName ||
+    (currentLine?.speaker !== "You" ? currentLine?.speaker : null) ||
+    "";
+
   const handleNext = useCallback(() => {
     if (!currentLine) return;
 
@@ -591,7 +596,7 @@ export default function DialogueBox({
                           ? "bg-purple-900/50 hover:bg-purple-800/70 border-2 border-purple-700 hover:border-purple-500"
                           : "bg-purple-50 hover:bg-purple-100 border-2 border-purple-300 hover:border-purple-500"
                       }
-                      transform hover:scale-102 hover:shadow-lg
+                      transform hover:scale-105 hover:shadow-lg
                     `}
                   >
                     <span

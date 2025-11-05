@@ -1,5 +1,5 @@
 // import { DateActivity, DateLocation } from "../src/data/dates/types";
-import { DateActivity, DateLocation } from "../dates/types";
+import { DateActivity, DateLocation } from "@/data/dates/types";
 
 export const dateActivitiesByLocation: Record<DateLocation, DateActivity[]> = {
   Cafe: [

@@ -1,8 +1,10 @@
 // src/components/CharacterOverlay.tsx - Updated with event system
+"use client";
+
 import { Girl, GirlStats } from "../data/characters";
 import { PlayerStats } from "../data/characters";
 import { Interaction, interactionMenu } from "../data/interactions";
-import { Dispatch, SetStateAction, useEffect } from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo } from "react";
 import {
   characterDialogues,
   getDefaultDialogue,
@@ -10,16 +12,20 @@ import {
 } from "../data/dialogues/index";
 import { DayOfWeek } from "@/data/gameConstants";
 import { CharacterEventState, GameplayFlag } from "@/data/events/types";
-import { findTriggeredEvent } from "@/lib/eventSystem";
 import { getCharacterEvents } from "@/data/events";
+import {
+  CharacterEventManager,
+  calculateGameTime,
+  CharacterEvent as GameCharacterEvent,
+} from "@/lib/game/characterEventSystem";
+import { TIME_CONFIG } from "@/config/gameConfig";
 // import { firstMeetingDialogues } from "../data/dialogues/index";
-import  DatePlanner from "./DatePlanner";
+import DatePlanner from "./DatePlanner";
 import { DateLocation } from "@/data/dates/types";
 import { useState } from "react";
 import { getCharacterImage } from "@/lib/characterImages";
 
 // import { get } from "http";
-
 
 interface Props {
   girl: Girl;
@@ -38,7 +44,7 @@ interface Props {
   hour: number;
   eventState: CharacterEventState;
   onEventTriggered: (eventId: string) => void;
-  darkMode?: boolean; 
+  darkMode?: boolean;
   onScheduleDate: (date: {
     characterName: string;
     location: string;
@@ -48,8 +54,8 @@ interface Props {
     eventId: string;
     label: string;
   }) => void;
-  onSetFlag?: (flag: GameplayFlag) => void
-  onUnlockCharacter?: (characterName: string) => void
+  onSetFlag?: (flag: GameplayFlag) => void;
+  onUnlockCharacter?: (characterName: string) => void;
 }
 
 export default function CharacterOverlay({
@@ -115,25 +121,46 @@ export default function CharacterOverlay({
     setShowDatePlanner(false);
     spendTime(1); // Planning takes time
   };
-  
+
+  // Create event manager for this character
+  const eventManager = useMemo(() => {
+    const manager = new CharacterEventManager();
+    const events = getCharacterEvents(
+      girl.name
+    ) as unknown as GameCharacterEvent[];
+    if (events && events.length > 0) {
+      manager.addEvents(events);
+    }
+    return manager;
+  }, [girl.name]);
+
   useEffect(() => {
-    // Check for other triggered events
-    const events = getCharacterEvents(girl.name);
-    const triggeredEvent = findTriggeredEvent(
-      events,
+    // Check for triggered events using new event system
+    const triggeredEvent = eventManager.findCharacterEvent(girl.name, {
       girl,
       player,
-      location,
-      dayOfWeek,
+      currentLocation: location,
+      day: dayOfWeek,
       hour,
-      eventState,
-      gameplayFlags
-    );
+      currentTime: calculateGameTime(
+        [...TIME_CONFIG.DAYS_OF_WEEK],
+        dayOfWeek,
+        hour
+      ),
+      completedEvents: eventState.eventHistory.map((h) => h.eventId) || [],
+      eventHistory: eventState.eventHistory || [],
+      flags: gameplayFlags,
+    });
 
     if (triggeredEvent) {
       console.log(`🎉 Event triggered: ${triggeredEvent.name}`);
 
-      const characterImage = getCharacterImage(girl, location, hour, getFacialExpression());
+      const characterImage = getCharacterImage(
+        girl,
+        location,
+        hour,
+        getFacialExpression()
+      );
       onEventTriggered(triggeredEvent.id);
       onStartDialogue(triggeredEvent.dialogue, characterImage, undefined);
 
@@ -178,7 +205,22 @@ export default function CharacterOverlay({
         }
       }
     }
-  }, []); // ✨ Only re-run when girl changes
+  }, [
+    eventManager,
+    girl,
+    player,
+    location,
+    dayOfWeek,
+    hour,
+    eventState,
+    gameplayFlags,
+    onEventTriggered,
+    onStartDialogue,
+    setPlayer,
+    onSetFlag,
+    onUnlockCharacter,
+  ]);
+
   const interact = (action: Interaction) => {
     // ... rest of your existing interact function stays the same
     // Check requirements
@@ -240,7 +282,12 @@ export default function CharacterOverlay({
     const dialogue =
       characterDialogues[girl.name]?.[action.label] ||
       getDefaultDialogue(girl.name, action.label);
-    const characterImage = getCharacterImage(girl, location, hour, getFacialExpression());
+    const characterImage = getCharacterImage(
+      girl,
+      location,
+      hour,
+      getFacialExpression()
+    );
 
     // Show what stats will change
     if (action.girlEffects) {
@@ -336,7 +383,7 @@ export default function CharacterOverlay({
       <div className="flex flex-col items-center mb-6">
         <div className="relative group mb-4">
           <div className="absolute inset-0 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full blur-lg group-hover:blur-xl transition-all"></div>
-          <div className="relative w-50 h-60 rounded-full border-4 border-white shadow-xl overflow-hidden">
+          <div className="relative w-56 h-60 rounded-full border-4 border-white shadow-xl overflow-hidden">
             <img
               src={`/images/characters/${girl.name.toLowerCase()}/casual/${expression}.webp`}
               alt={`${girl.name} - ${expression}`}
@@ -406,7 +453,7 @@ export default function CharacterOverlay({
         </h4>
         <button
           onClick={() => setShowDatePlanner(true)}
-          className="relative overflow-hidden group w-full bg-gradient-to-r from-red-400 to-pink-600 hover:from-red-500 hover:to-pink-700 shadow-md hover:shadow-lg transform hover:scale-102 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 text-sm"
+          className="relative overflow-hidden group w-full bg-gradient-to-r from-red-400 to-pink-600 hover:from-red-500 hover:to-pink-700 shadow-md hover:shadow-lg transform hover:scale-105 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 text-sm"
         >
           <div className="flex items-center justify-between relative z-10">
             <span className="flex items-center gap-2">
@@ -437,7 +484,7 @@ export default function CharacterOverlay({
                     ? "bg-gray-300 cursor-not-allowed opacity-50"
                     : `bg-gradient-to-r ${getActionColor(
                         action.type
-                      )} shadow-md hover:shadow-lg transform hover:scale-102`
+                      )} shadow-md hover:shadow-lg transform hover:scale-105`
                 }
                 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 text-sm
               `}
