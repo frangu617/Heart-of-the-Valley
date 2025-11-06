@@ -199,9 +199,10 @@ export default function GamePage() {
   // };
 
   // ✅ helpers
-  const hasFlag = (flag: GameplayFlag): boolean => {
-    return gameplayFlags.has(flag);
-  };
+  const hasFlag = useCallback(
+    (flag: GameplayFlag): boolean => gameplayFlags.has(flag),
+    [gameplayFlags]
+  );
 
   // ✅ Update the checkScheduledEncounters function to support day/hour + dates
   const checkScheduledEncounters = (location: string): boolean => {
@@ -880,18 +881,17 @@ export default function GamePage() {
   };
 
   //pending Events tracker
-  const [pendingEvents, setPendingEvents] = useState<
-    {
-      characterName: string;
-      eventId: string;
-      location: string;
-      priority: number;
-    }[]
-  >([]);
+  type PendingEvent = {
+    characterName: string;
+    eventId: string;
+    location: string;
+    priority: number;
+  };
+  const [pendingEvents, setPendingEvents] = useState<PendingEvent[]>([]);
 
   // Check what events are available but not yet triggered
   const checkPendingEvents = useCallback(() => {
-    const pending: typeof pendingEvents = [];
+    const pending: PendingEvent[] = [];
 
     girls.forEach((girl) => {
       const eventState = characterEventStates[girl.name] ?? {
@@ -931,7 +931,15 @@ export default function GamePage() {
     });
 
     setPendingEvents(pending);
-  }, [girls, player, dayOfWeek, hour, characterEventStates]);
+  }, [
+    girls,
+    player,
+    dayOfWeek,
+    hour,
+    characterEventStates,
+    eventManager,
+    gameplayFlags,
+  ]);
 
   // Run this periodically
   useEffect(() => {

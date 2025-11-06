@@ -4,7 +4,13 @@
 import { Girl, GirlStats } from "../data/characters";
 import { PlayerStats } from "../data/characters";
 import { Interaction, interactionMenu } from "../data/interactions";
-import { Dispatch, SetStateAction, useEffect, useMemo } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useMemo,
+  useCallback,
+} from "react";
 import {
   characterDialogues,
   getDefaultDialogue,
@@ -219,6 +225,7 @@ export default function CharacterOverlay({
     setPlayer,
     onSetFlag,
     onUnlockCharacter,
+    getFacialExpression,
   ]);
 
   const interact = (action: Interaction) => {
@@ -350,16 +357,15 @@ export default function CharacterOverlay({
     }
   };
 
-  const getFacialExpression = () => {
+  const getFacialExpression = useCallback(() => {
     const { affection, mood, love } = girl.stats;
     const totalPositive = affection + love;
-
     if (love >= 50 || totalPositive >= 80) return "love";
     if (affection >= 40 && mood >= 60) return "happy";
     if (mood < 30) return "sad";
     if (affection < 10) return "neutral";
     return "neutral";
-  };
+  }, [girl.stats]);
 
   const expression = getFacialExpression();
 

@@ -252,13 +252,12 @@ export function createEventManager<
 /**
  * Helper to create event factory functions
  */
-export function createEventFactory<TEvent extends BaseEvent<any>>(
-  defaults: Partial<TEvent>
-) {
+export function createEventFactory<
+  TEvent extends BaseEvent<TContext, TRewards>,
+  TContext extends EventContext = EventContext,
+  TRewards = unknown
+>(defaults: Partial<TEvent>) {
   return (overrides: Partial<TEvent> & Pick<TEvent, "id" | "name">): TEvent => {
-    return {
-      ...defaults,
-      ...overrides,
-    } as TEvent;
+    return { ...defaults, ...overrides } as TEvent;
   };
 }

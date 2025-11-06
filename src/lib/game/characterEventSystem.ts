@@ -11,7 +11,7 @@ import {
   createEventFactory,
 } from "../core/eventSystem";
 import { ConditionalRule, ConditionHelpers } from "../utils/conditionChecker";
-import type { GameplayFlag, EventConditions } from "../../data/events/types";
+import type { GameplayFlag } from "../../data/events/types";
 import type { Dialogue } from "../../data/dialogues/index";
 
 

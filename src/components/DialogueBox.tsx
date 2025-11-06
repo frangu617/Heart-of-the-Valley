@@ -6,9 +6,8 @@ import {
   DialogueChoice,
   DialogueChoiceCondition,
 } from "../data/dialogues";
-import { PlayerStats, GirlStats } from "@/data/characters";
+import { PlayerStats, GirlStats, Girl } from "@/data/characters";
 import { getCharacterImage } from "@/lib/characterImages";
-import { Girl } from "@/data/characters";
 
 interface Props {
   dialogue: Dialogue;
@@ -45,72 +44,57 @@ const checkChoiceCondition = (
   player?: PlayerStats,
   girl?: Partial<GirlStats>
 ): boolean => {
-  if (!condition) return true; // No condition means always show
+  if (!condition) return true;
 
-  // Check location - now supports both string and array
+  // Location (string or array)
   if (condition.location) {
     if (Array.isArray(condition.location)) {
-      // If it's an array, check if current location is in the array
-      if (!condition.location.includes(location || "")) {
-        return false;
-      }
-    } else {
-      // If it's a string, check for exact match
-      if (location !== condition.location) {
-        return false;
-      }
-    }
-  }
-
-  // Check time of day
-  if (condition.timeOfDay && hour !== undefined) {
-    const getTimeOfDay = (h: number) => {
-      if (h >= 6 && h < 12) return "morning";
-      if (h >= 12 && h < 17) return "afternoon";
-      if (h >= 17 && h < 21) return "evening";
-      return "night";
-    };
-    if (getTimeOfDay(hour) !== condition.timeOfDay) {
+      if (!condition.location.includes(location || "")) return false;
+    } else if (location !== condition.location) {
       return false;
     }
   }
 
-  // Check day of week
-  if (condition.dayOfWeek && day !== condition.dayOfWeek) {
-    return false;
+  // Time of day
+  if (condition.timeOfDay && hour !== undefined) {
+    const getTimeOfDay = (h: number) =>
+      h >= 6 && h < 12
+        ? "morning"
+        : h >= 12 && h < 17
+        ? "afternoon"
+        : h >= 17 && h < 21
+        ? "evening"
+        : "night";
+    if (getTimeOfDay(hour) !== condition.timeOfDay) return false;
   }
 
-  // Check girl stats
-  if (
-    condition.minAffection &&
-    (!girl || (girl.affection ?? 0) < condition.minAffection)
-  ) {
-    return false;
-  }
-  if (condition.minTrust && (!girl || (girl.trust ?? 0) < condition.minTrust)) {
-    return false;
-  }
-  if (condition.minLove && (!girl || (girl.love ?? 0) < condition.minLove)) {
-    return false;
-  }
+  // Day
+  if (condition.dayOfWeek && day !== condition.dayOfWeek) return false;
 
-  // Check player stats
+  // Girl stats
+  if (condition.minAffection && (girl?.affection ?? 0) < condition.minAffection)
+    return false;
+  if (condition.minTrust && (girl?.trust ?? 0) < condition.minTrust)
+    return false;
+  if (condition.minLove && (girl?.love ?? 0) < condition.minLove) return false;
+
+  // Player stat
   if (condition.minPlayerStat && player) {
     const statValue = player[condition.minPlayerStat.stat];
     if (
       typeof statValue === "number" &&
       statValue < condition.minPlayerStat.value
-    ) {
+    )
       return false;
-    }
   }
 
-  // Check inventory
-  if (condition.hasItem && player) {
-    if (!player.inventory.includes(condition.hasItem)) {
-      return false;
-    }
-  }
+  // Inventory
+  if (
+    condition.hasItem &&
+    player &&
+    !player.inventory.includes(condition.hasItem)
+  )
+    return false;
 
   return true;
 };
@@ -158,11 +142,21 @@ export default function DialogueBox({
 
   const chosenOptionRef = useRef<DialogueChoice | undefined>(undefined);
 
-  // ✅ Move this after we know currentLine exists
+  // Display speaker (after currentLine exists)
   const displaySpeaker =
     characterName ||
     (currentLine?.speaker !== "You" ? currentLine?.speaker : null) ||
     "";
+
+  const replaceTemplateVariables = useCallback(
+    (text: string): string => {
+      const name = playerName || "You";
+      return text
+        .replace(/\{playerName\}/g, name)
+        .replace(/\{PlayerName\}/g, name);
+    },
+    [playerName]
+  );
 
   const handleNext = useCallback(() => {
     if (!currentLine) return;
@@ -172,22 +166,21 @@ export default function DialogueBox({
       setIsTyping(false);
       setShowContinue(!currentLine.choices);
     } else if (isLastLine) {
-      console.log("🎬 DialogueBox: Completing dialogue");
-      console.log("📦 Chosen option from ref:", chosenOptionRef.current);
-      onComplete(accumulatedStatChanges, chosenOptionRef.current); // ✨ Use ref
+      onComplete(accumulatedStatChanges, chosenOptionRef.current);
     } else {
       setCurrentLineIndex((i) => i + 1);
     }
   }, [isTyping, isLastLine, currentLine, onComplete, accumulatedStatChanges]);
 
-  // Reset chosen option when dialogue changes
+  // Reset chosen option per dialogue
   useEffect(() => {
     chosenOptionRef.current = undefined;
   }, [dialogue.id]);
 
+  // Main typing + conditional-skip effect (✅ fixed deps)
   useEffect(() => {
     if (!currentLine) return;
-    // ✨ Check if current line meets conditions
+
     if (currentLine.condition) {
       const meetsCondition = checkChoiceCondition(
         currentLine.condition,
@@ -199,16 +192,15 @@ export default function DialogueBox({
       );
 
       if (!meetsCondition) {
-        // Skip this line and move to next
         if (currentLineIndex < dialogue.lines.length - 1) {
           setCurrentLineIndex((i) => i + 1);
         } else {
-          // If this was the last line, complete dialogue
           onComplete(accumulatedStatChanges, chosenOptionRef.current);
         }
         return;
       }
     }
+
     setDisplayedText("");
     setIsTyping(true);
     setShowContinue(false);
@@ -230,10 +222,21 @@ export default function DialogueBox({
     }, typingSpeed);
 
     return () => clearInterval(interval);
-  }, [currentLineIndex, currentLine]);
+  }, [
+    currentLine,
+    currentLineIndex,
+    currentLocation,
+    currentHour,
+    currentDay,
+    playerStats,
+    girlStats,
+    dialogue.lines.length,
+    onComplete,
+    accumulatedStatChanges,
+    replaceTemplateVariables,
+  ]);
 
   const handleChoice = (choice: DialogueChoice) => {
-    console.log("👆 DialogueBox: Choice selected:", choice);
     const newChanges = { ...accumulatedStatChanges };
     if (choice.affectionChange)
       newChanges.affection =
@@ -244,36 +247,29 @@ export default function DialogueBox({
       newChanges.trust = (newChanges.trust || 0) + choice.trustChange;
     setAccumulatedStatChanges(newChanges);
 
-    // ✨ Save to ref instead of state
     chosenOptionRef.current = choice;
-    console.log("💾 Saved choice to ref:", chosenOptionRef.current);
 
     if (choice.nextDialogueId && onNextDialogueId) {
-      console.log(
-        "↪️ DialogueBox: Redirecting to dialogue:",
-        choice.nextDialogueId
-      );
       onNextDialogueId(choice.nextDialogueId);
       return;
     }
 
     if (isLastLine) {
-      console.log("🎬 DialogueBox: Last line, completing with choice:", choice);
       onComplete(newChanges, choice);
     } else {
-      console.log("➡️ DialogueBox: Moving to next line");
       setCurrentLineIndex((i) => i + 1);
     }
   };
 
+  // Reset reading state whenever we switch dialogues
   useEffect(() => {
-    // Reset reading state whenever we switch to a new dialogue
     setCurrentLineIndex(0);
     setDisplayedText("");
     setIsTyping(true);
     setShowContinue(false);
   }, [dialogue.id]);
 
+  // Keyboard: space/enter to advance
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (currentLine?.choices) return;
@@ -282,7 +278,6 @@ export default function DialogueBox({
         handleNext();
       }
     };
-
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [handleNext, currentLine]);
@@ -301,21 +296,11 @@ export default function DialogueBox({
   );
 
   const getCurrentCharacterImage = () => {
-    if (!characterName || !currentLine?.expression) {
-      return characterImage; // fallback to original
-    }
+    if (!characterName || !currentLine?.expression) return characterImage;
+    if (!currentLocation || currentHour === undefined) return characterImage;
 
-    // If we don't have location/hour info, fall back to original
-    if (!currentLocation || currentHour === undefined) {
-      return characterImage;
-    }
-
-    const name = characterName;
-    const expression = currentLine.expression || "neutral";
-
-    // Create a minimal Girl object for the getCharacterImage function
     const mockGirl: Girl = {
-      name: name,
+      name: characterName,
       location: currentLocation,
       relationship: "Single",
       personality: "",
@@ -328,28 +313,24 @@ export default function DialogueBox({
       },
     };
 
-    // Use the existing location-aware image selection logic
     return getCharacterImage(
       mockGirl,
       currentLocation,
       currentHour,
-      expression
+      currentLine.expression || "neutral"
     );
   };
 
   const dynamicCharacterImage = getCurrentCharacterImage();
 
-  const replaceTemplateVariables = (text: string): string => {
-    return text
-      .replace(/\{playerName\}/g, playerName || "You")
-      .replace(/\{PlayerName\}/g, playerName || "You");
-  };
 
   return (
+    
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-between pointer-events-none">
-      {/* ===== BACKGROUND LAYER ===== */}
-      {/* Event Media - Full Screen Background */}
+      {/* Background */}
+      
       {hasImageSlide && (
+        
         <img
           src={imageSlide}
           alt="Background"
@@ -360,7 +341,6 @@ export default function DialogueBox({
           className="absolute inset-0 w-full h-full object-cover opacity-30 z-0"
         />
       )}
-
       {hasVideoSlide && (
         <video
           src={videoSlide}
@@ -371,9 +351,9 @@ export default function DialogueBox({
           className="absolute inset-0 w-full h-full object-cover opacity-30 z-0"
         />
       )}
-
       {/* Location Background - When NO Event */}
       {!hasEventMedia && locationImage && (
+        
         <img
           src={locationImage}
           alt="Location Background"
@@ -384,8 +364,7 @@ export default function DialogueBox({
           className="absolute inset-0 w-full h-full object-cover opacity-40 z-0"
         />
       )}
-
-      {/* Skip Button */}
+      {/* // Skip Button */}
       {onSkip && (
         <button
           onClick={onSkip}
@@ -403,12 +382,12 @@ export default function DialogueBox({
           ⏭️ Skip
         </button>
       )}
-
       {/* ===== DESKTOP + EVENT: Framed Image/Video in Middle ===== */}
       {!isMobile && hasEventMedia && (
         <div className="flex-1 flex items-center justify-center pointer-events-none z-30 pt-8">
           <div className="relative w-11/12 max-w-4xl aspect-[4/3] bg-gradient-to-b from-gray-100 to-white rounded-2xl shadow-2xl overflow-hidden border-4 border-purple-300">
             {hasImageSlide && (
+              
               <img
                 src={imageSlide}
                 alt="Scene"
@@ -432,10 +411,6 @@ export default function DialogueBox({
           </div>
         </div>
       )}
-
-      {/* ===== MOBILE + EVENT: Portrait Small in Dialogue Box ===== */}
-      {/* (will be rendered in dialogue box section below) */}
-
       {/* ===== CHARACTER PORTRAIT CARD (z-20) ===== */}
       {!isNarration && !isPlayerSpeaking && characterImage && (
         <div className="absolute bottom-62 left-0 right-0 flex justify-center items-end pointer-events-none z-20 px-4">
@@ -443,12 +418,12 @@ export default function DialogueBox({
             <div className="relative animate-fadeIn">
               <div className="relative w-[400px] h-[600px] rounded-2xl overflow-hidden shadow-2xl border-4 border-white/80">
                 <div className="absolute inset-0 bg-gradient-to-b from-purple-200/90 via-pink-200/90 to-blue-200/90" />
+                
                 <img
                   src={dynamicCharacterImage}
                   alt={currentLine.speaker || "Character"}
                   onError={(e) => {
-                    const el = e.currentTarget;
-                    el.src =
+                    e.currentTarget.src =
                       'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><rect fill="%23e879f9" width="400" height="600"/></svg>';
                   }}
                   className="absolute inset-0 w-full h-full object-cover"
@@ -473,12 +448,12 @@ export default function DialogueBox({
             <div className="relative animate-fadeIn">
               <div className="relative w-[280px] h-[420px] rounded-xl overflow-hidden shadow-2xl border-4 border-white/80">
                 <div className="absolute inset-0 bg-gradient-to-b from-purple-200/90 via-pink-200/90 to-blue-200/90" />
+                
                 <img
                   src={characterImage}
                   alt={currentLine.speaker || "Character"}
                   onError={(e) => {
-                    const el = e.currentTarget;
-                    el.src =
+                    e.currentTarget.src =
                       'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="280" height="420"><rect fill="%23e879f9" width="280" height="420"/></svg>';
                   }}
                   className="absolute inset-0 w-full h-full object-cover"
@@ -500,12 +475,12 @@ export default function DialogueBox({
           )}
         </div>
       )}
-
       {/* ===== MOBILE + EVENT: Framed Image/Video ===== */}
       {isMobile && hasEventMedia && (
         <div className="flex-1 flex items-center justify-center pointer-events-none z-30 pt-4">
           <div className="relative w-11/12 max-w-2xl aspect-[4/3] bg-gradient-to-b from-gray-100 to-white rounded-xl shadow-2xl overflow-hidden border-4 border-purple-300">
             {hasImageSlide && (
+             
               <img
                 src={imageSlide}
                 alt="Scene"
@@ -529,7 +504,6 @@ export default function DialogueBox({
           </div>
         </div>
       )}
-
       {/* ===== DIALOGUE BOX - Always at bottom ===== */}
       <div className="w-full max-w-5xl mx-4 mb-8 pointer-events-auto animate-slideUp mt-auto z-40">
         <div
