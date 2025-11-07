@@ -58,7 +58,17 @@ export interface CharacterEvent
   extends BaseEvent<CharacterEventContext, CharacterEventRewards> {
   dialogue: Dialogue;
   characterName?: string; // The character this event belongs to
+
+  // Ambient / probability-related options
+  triggerChance?: number; // 0–100, default 100
+  triggerLocations?: string[]; // Locations where it can fire
+  ambientTrigger?: boolean; // Can trigger passively when the girl is present
+
+  // Event chaining / influence
+  chainEvents?: string[]; // Events that can follow this one
+  modifyNextEventChance?: { [eventId: string]: number }; // Adjust chance of other events
 }
+
 
 export interface CharacterEventContext extends EventContext {
   girl: Girl;

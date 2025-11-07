@@ -887,7 +887,7 @@ export default function GamePage() {
     location: string;
     priority: number;
   };
-  const [pendingEvents, setPendingEvents] = useState<PendingEvent[]>([]);
+  const [/*pendingEvents,*/, setPendingEvents] = useState<PendingEvent[]>([]);
 
   // Check what events are available but not yet triggered
   const checkPendingEvents = useCallback(() => {

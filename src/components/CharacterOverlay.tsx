@@ -85,6 +85,20 @@ export default function CharacterOverlay({
   const [showDatePlanner, setShowDatePlanner] = useState(false);
   // Check for triggered events when component mounts or dependencies change
   // Check for first meeting or triggered events
+  
+  
+
+  const getFacialExpression = useCallback(() => {
+    const { affection, mood, love } = girl.stats;
+    const totalPositive = affection + love;
+    if (love >= 50 || totalPositive >= 80) return "love";
+    if (affection >= 40 && mood >= 60) return "happy";
+    if (mood < 30) return "sad";
+    if (affection < 10) return "neutral";
+    return "neutral";
+  }, [girl.stats]);
+
+  const expression = getFacialExpression();
   //Date handler
   const handleScheduleDate = (
     dateLocation: DateLocation,
@@ -357,17 +371,7 @@ export default function CharacterOverlay({
     }
   };
 
-  const getFacialExpression = useCallback(() => {
-    const { affection, mood, love } = girl.stats;
-    const totalPositive = affection + love;
-    if (love >= 50 || totalPositive >= 80) return "love";
-    if (affection >= 40 && mood >= 60) return "happy";
-    if (mood < 30) return "sad";
-    if (affection < 10) return "neutral";
-    return "neutral";
-  }, [girl.stats]);
-
-  const expression = getFacialExpression();
+  
 
   return (
     <div

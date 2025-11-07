@@ -252,11 +252,10 @@ export function createEventManager<
 /**
  * Helper to create event factory functions
  */
-export function createEventFactory<
-  TEvent extends BaseEvent<TContext, TRewards>,
-  TContext extends EventContext = EventContext,
-  TRewards = unknown
->(defaults: Partial<TEvent>) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function createEventFactory<TEvent extends BaseEvent<any, any>>(
+  defaults: Partial<TEvent>
+) {
   return (overrides: Partial<TEvent> & Pick<TEvent, "id" | "name">): TEvent => {
     return { ...defaults, ...overrides } as TEvent;
   };
