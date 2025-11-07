@@ -19,6 +19,7 @@ const locationToCategory: Record<string, LocationCategory> = {
   Gym: "gym",
   Classroom: "university",
   Office: "university",
+  "Iris' Office": "university",
   "University Hallway": "university",
   University: "university",
   Beach: "beach",
