@@ -1,12 +1,7 @@
 // src/data/events/ruby.ts
-import {
-  CharacterEvent,
-  CharacterEventConditions,
-  createCharacterEvents,
-} from "@/lib/game/characterEventSystem";
-import { create } from "domain";
+import { CharacterEvent, CharacterEventConditions } from "../../lib/game/characterEventSystem";
 
-export const rubyEvents: CharacterEvent[] = createCharacterEvents("Ruby", [
+export const rubyEvents: CharacterEvent[] = [
   {
     id: "ruby_first_meeting",
     name: "First Meeting with Ruby",
@@ -99,4 +94,4 @@ export const rubyEvents: CharacterEvent[] = createCharacterEvents("Ruby", [
       },
     },
   },
-]);
+];

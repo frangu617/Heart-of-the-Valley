@@ -1361,14 +1361,6 @@ export default function GamePage() {
                 }}
                 darkMode={darkMode}
                 onScheduleDate={handleScheduleDate}
-                onSetFlag={setFlag} // 👈 add this
-                onUnlockCharacter={(name) => {
-                  // 👈 and this
-                  setCharacterUnlocks((prev) => ({
-                    ...prev,
-                    [name]: true,
-                  }));
-                }}
               />
             </div>
           ) : (

@@ -1,42 +1,42 @@
 import { Dialogue } from "./index";
 
-// export const rubyFirstMeeting: Dialogue = {
-//   id: "ruby_first_meeting",
-//   lines: [
-//     {
-//       speaker: null,
-//       text: "Your personal trainer approaches with her usual confident stride.",
-//     },
-//     {
-//       speaker: "Ruby",
-//       text: "{playerName}! Ready for today's session?",
-//       expression: "happy",
-//     },
-//     {
-//       speaker: null,
-//       text: "Ruby - your personal trainer for the past two years. Tough, dedicated, and surprisingly caring.",
-//     },
-//     { speaker: "You", text: "Ready to get destroyed, as usual." },
-//     {
-//       speaker: "Ruby",
-//       text: "That's the spirit! Let's go!",
-//       expression: "happy",
-//     },
-//     {
-//       speaker: null,
-//       text: "During your workout, she spots you on the bench press.",
-//     },
-//     {
-//       speaker: "Ruby",
-//       text: "You know, {playerName}... you're one of my favorite clients.",
-//       expression: "neutral",
-//     },
-//     {
-//       speaker: null,
-//       text: "For a moment, something flickers in her expression before she quickly looks away.",
-//     },
-//   ],
-// };
+export const rubyFirstMeeting: Dialogue = {
+  id: "ruby_first_meeting",
+  lines: [
+    {
+      speaker: null,
+      text: "Your personal trainer approaches with her usual confident stride.",
+    },
+    {
+      speaker: "Ruby",
+      text: "{playerName}! Ready for today's session?",
+      expression: "happy",
+    },
+    {
+      speaker: null,
+      text: "Ruby - your personal trainer for the past two years. Tough, dedicated, and surprisingly caring.",
+    },
+    { speaker: "You", text: "Ready to get destroyed, as usual." },
+    {
+      speaker: "Ruby",
+      text: "That's the spirit! Let's go!",
+      expression: "happy",
+    },
+    {
+      speaker: null,
+      text: "During your workout, she spots you on the bench press.",
+    },
+    {
+      speaker: "Ruby",
+      text: "You know, {playerName}... you're one of my favorite clients.",
+      expression: "neutral",
+    },
+    {
+      speaker: null,
+      text: "For a moment, something flickers in her expression before she quickly looks away.",
+    },
+  ],
+};
 
 export const rubyDialogues: Record<string, Dialogue> = {
   Chat: {

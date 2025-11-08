@@ -326,7 +326,6 @@ export const randomEvents: RandomEvent[] = [
     conditions: {
       locations: ["Gym"],
       hourRange: { min: 6, max: 14 },
-      
     },
     dialogue: {
       id: "see_ruby_teaching_dialogue",

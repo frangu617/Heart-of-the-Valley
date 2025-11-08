@@ -2,15 +2,13 @@
 import {
   CharacterEvent,
   CharacterEventConditions,
-  createCharacterEvents,
 } from "@/lib/game/characterEventSystem";
 
-export const irisEvents: CharacterEvent[] = createCharacterEvents("Iris", [
+export const irisEvents: CharacterEvent[] = [
   {
     id: "iris_first_meeting",
     name: "First Meeting with Iris",
     description: "First Meeting with Iris",
-    // characterName: "Iris",
     priority: 100,
     repeatable: false,
     conditions: CharacterEventConditions.firstMeeting("University Hallway"),
@@ -98,9 +96,7 @@ export const irisEvents: CharacterEvent[] = createCharacterEvents("Iris", [
         },
       ],
     },
-    rewards: { setFlags: ["hasMetIris"],
-                unlockCharacters: ["Dawn"],
-     },
+    rewards: { setFlags: ["hasMetIris"] },
   },
 
   {
@@ -453,4 +449,4 @@ export const irisEvents: CharacterEvent[] = createCharacterEvents("Iris", [
       ],
     },
   },
-]);
+];

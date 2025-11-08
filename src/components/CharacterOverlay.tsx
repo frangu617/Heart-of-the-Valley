@@ -1,50 +1,43 @@
-// src/components/CharacterOverlay.tsx - Updated with event system
+// src/components/CharacterOverlay.tsx
+
 "use client";
 
-import { Girl, GirlStats } from "../data/characters";
-import { PlayerStats } from "../data/characters";
-import { Interaction, interactionMenu } from "../data/interactions";
-import {
-  Dispatch,
-  SetStateAction,
-  useEffect,
-  useMemo,
-  useCallback,
-} from "react";
+import React, { useMemo, useState, useEffect } from "react";
+
+import { Girl, GirlStats, PlayerStats } from "@/data/characters";
+import { Interaction, interactionMenu } from "@/data/interactions";
 import {
   characterDialogues,
   getDefaultDialogue,
-  Dialogue,
-} from "../data/dialogues/index";
+  type Dialogue,
+} from "@/data/dialogues";
 import { DayOfWeek } from "@/data/gameConstants";
 import { CharacterEventState, GameplayFlag } from "@/data/events/types";
 import { getCharacterEvents } from "@/data/events";
+import DatePlanner from "./DatePlanner";
+import { DateLocation } from "@/data/dates/types";
+
 import {
   CharacterEventManager,
   calculateGameTime,
-  CharacterEvent as GameCharacterEvent,
+  type CharacterEvent as GameCharacterEvent,
 } from "@/lib/game/characterEventSystem";
 import { TIME_CONFIG } from "@/config/gameConfig";
-// import { firstMeetingDialogues } from "../data/dialogues/index";
-import DatePlanner from "./DatePlanner";
-import { DateLocation } from "@/data/dates/types";
-import { useState } from "react";
 import { getCharacterImage } from "@/lib/characterImages";
-
-// import { get } from "http";
 
 interface Props {
   girl: Girl;
   location: string;
   player: PlayerStats;
   gameplayFlags: Set<GameplayFlag>;
-  setPlayer: Dispatch<SetStateAction<PlayerStats>>;
+  setPlayer: React.Dispatch<React.SetStateAction<PlayerStats>>;
   spendTime: (amount: number) => void;
   onClose: () => void;
   onStartDialogue: (
     dialogue: Dialogue,
     characterImage: string,
-    girlEffects?: Partial<GirlStats>
+    girlEffects?: Partial<GirlStats> | null,
+    characterName?: string
   ) => void;
   dayOfWeek: DayOfWeek;
   hour: number;
@@ -68,6 +61,7 @@ export default function CharacterOverlay({
   girl,
   location,
   player,
+  gameplayFlags,
   setPlayer,
   spendTime,
   onClose,
@@ -78,76 +72,15 @@ export default function CharacterOverlay({
   onEventTriggered,
   darkMode,
   onScheduleDate,
-  gameplayFlags,
   onSetFlag,
   onUnlockCharacter,
 }: Props) {
   const [showDatePlanner, setShowDatePlanner] = useState(false);
-  // Check for triggered events when component mounts or dependencies change
-  // Check for first meeting or triggered events
-  
-  
 
-  const getFacialExpression = useCallback(() => {
-    const { affection, mood, love } = girl.stats;
-    const totalPositive = affection + love;
-    if (love >= 50 || totalPositive >= 80) return "love";
-    if (affection >= 40 && mood >= 60) return "happy";
-    if (mood < 30) return "sad";
-    if (affection < 10) return "neutral";
-    return "neutral";
-  }, [girl.stats]);
-
-  const expression = getFacialExpression();
-  //Date handler
-  const handleScheduleDate = (
-    dateLocation: DateLocation,
-    day: DayOfWeek,
-    dateHour: number,
-    activities: string[]
-  ) => {
-    // Check if she accepts (random chance based on affection)
-    const acceptanceChance = Math.min(
-      95,
-      50 + girl.stats.affection / 2 + girl.stats.trust / 4
-    );
-    const roll = Math.random() * 100;
-
-    if (roll > acceptanceChance) {
-      alert(
-        `${girl.name} politely declines. Maybe try again when you're closer?`
-      );
-      setShowDatePlanner(false);
-      return;
-    }
-
-    // She accepted! Create the date event
-    const dateEvent = {
-      characterName: girl.name,
-      location: dateLocation,
-      day: day,
-      hour: dateHour,
-      activities: activities,
-      eventId: `date_${girl.name}_${dateLocation}_${Date.now()}`,
-      label: `Date at ${dateLocation}`,
-    };
-
-    // Call parent's schedule function
-    onScheduleDate(dateEvent);
-
-    alert(
-      `${girl.name} happily agrees! The date is set for ${day} at ${dateHour}:00!`
-    );
-    setShowDatePlanner(false);
-    spendTime(1); // Planning takes time
-  };
-
-  // Create event manager for this character
+  // Per-girl event manager using the new system
   const eventManager = useMemo(() => {
     const manager = new CharacterEventManager();
-    const events = getCharacterEvents(
-      girl.name
-    ) as unknown as GameCharacterEvent[];
+    const events = getCharacterEvents(girl.name) as GameCharacterEvent[];
     if (events && events.length > 0) {
       manager.addEvents(events);
     }
@@ -155,8 +88,7 @@ export default function CharacterOverlay({
   }, [girl.name]);
 
   useEffect(() => {
-    // Check for triggered events using new event system
-    const triggeredEvent = eventManager.findCharacterEvent(girl.name, {
+    const context = {
       girl,
       player,
       currentLocation: location,
@@ -170,81 +102,222 @@ export default function CharacterOverlay({
       completedEvents: eventState.eventHistory.map((h) => h.eventId) || [],
       eventHistory: eventState.eventHistory || [],
       flags: gameplayFlags,
-    });
+    };
 
-    if (triggeredEvent) {
-      console.log(`🎉 Event triggered: ${triggeredEvent.name}`);
+    const triggeredEvent = eventManager.findCharacterEvent(girl.name, context);
 
-      const characterImage = getCharacterImage(
-        girl,
-        location,
-        hour,
-        getFacialExpression()
-      );
-      onEventTriggered(triggeredEvent.id);
-      onStartDialogue(triggeredEvent.dialogue, characterImage, undefined);
+    if (!triggeredEvent) return;
 
-      if (triggeredEvent.rewards) {
-        const updatedPlayer = { ...player };
+    // prevent infinite loop: skip if already recorded
+    if (eventState.eventHistory.some((h) => h.eventId === triggeredEvent.id)) {
+      return;
+    }
 
-        if (triggeredEvent.rewards.playerMoney) {
-          updatedPlayer.money += triggeredEvent.rewards.playerMoney;
-        }
+    console.log(
+      `🎉 Character event triggered for ${girl.name}: ${triggeredEvent.id}`
+    );
 
-        if (triggeredEvent.rewards.playerStats) {
-          if (triggeredEvent.rewards.playerStats.intelligence) {
-            updatedPlayer.intelligence +=
-              triggeredEvent.rewards.playerStats.intelligence;
-          }
-          if (triggeredEvent.rewards.playerStats.fitness) {
-            updatedPlayer.fitness += triggeredEvent.rewards.playerStats.fitness;
-          }
-          if (triggeredEvent.rewards.playerStats.style) {
-            updatedPlayer.style += triggeredEvent.rewards.playerStats.style;
-          }
-        }
+    const eventImage = getCharacterImage(
+      girl,
+      location,
+      hour,
+      getFacialExpression()
+    );
 
-        setPlayer(updatedPlayer);
-        if (triggeredEvent.rewards.setFlags) {
-          triggeredEvent.rewards.setFlags.forEach((flag) => {
-            if (onSetFlag) {
-              onSetFlag(flag);
-              console.log(`🚩 Flag set: ${flag}`);
-            }
-          });
-        }
+    onEventTriggered(triggeredEvent.id);
+    onStartDialogue(triggeredEvent.dialogue, eventImage, undefined, girl.name);
 
-        // ✨ NEW: Unlock characters from event rewards
-        if (triggeredEvent.rewards.unlockCharacters) {
-          triggeredEvent.rewards.unlockCharacters.forEach((characterName) => {
-            if (onUnlockCharacter) {
-              onUnlockCharacter(characterName);
-              console.log(`🔓 ${characterName} unlocked!`);
-            }
-          });
-        }
+    if (triggeredEvent.rewards) {
+      const updatedPlayer: PlayerStats = { ...player };
+
+      if (triggeredEvent.rewards.playerMoney) {
+        updatedPlayer.money += triggeredEvent.rewards.playerMoney;
+      }
+
+      if (triggeredEvent.rewards.playerStats) {
+        const stats = triggeredEvent.rewards.playerStats;
+        if (stats.intelligence)
+          updatedPlayer.intelligence += stats.intelligence;
+        if (stats.fitness) updatedPlayer.fitness += stats.fitness;
+        if (stats.style) updatedPlayer.style += stats.style;
+      }
+
+      setPlayer(updatedPlayer);
+
+      if (triggeredEvent.rewards.setFlags) {
+        triggeredEvent.rewards.setFlags.forEach((flag) => {
+          onSetFlag?.(flag);
+          console.log(`🚩 Flag set: ${flag}`);
+        });
+      }
+
+      if (triggeredEvent.rewards.unlockCharacters) {
+        triggeredEvent.rewards.unlockCharacters.forEach((name) => {
+          onUnlockCharacter?.(name);
+          console.log(`🔓 ${name} unlocked!`);
+        });
       }
     }
   }, [
-    eventManager,
     girl,
     player,
     location,
     dayOfWeek,
     hour,
-    eventState,
+    eventState.eventHistory,
     gameplayFlags,
+    eventManager,
     onEventTriggered,
     onStartDialogue,
     setPlayer,
     onSetFlag,
     onUnlockCharacter,
-    getFacialExpression,
   ]);
+  // Helper to pick Iris/etc facial expression
+  const getFacialExpression = (): string => {
+    const { affection, mood, love } = girl.stats;
+    const totalPositive = affection + love;
 
+    if (love >= 50 || totalPositive >= 80) return "love";
+    if (affection >= 40 && mood >= 60) return "happy";
+    if (mood < 30) return "sad";
+    if (affection < 10) return "neutral";
+    return "neutral";
+  };
+
+  const expression = getFacialExpression();
+  const characterImage = getCharacterImage(girl, location, hour, expression);
+
+  // Date planner handler
+  const handleScheduleDate = (
+    dateLocation: DateLocation,
+    dateDay: DayOfWeek,
+    dateHour: number,
+    activities: string[]
+  ) => {
+    const acceptanceChance = Math.min(
+      95,
+      50 + girl.stats.affection / 2 + girl.stats.trust / 4
+    );
+    const roll = Math.random() * 100;
+
+    if (roll > acceptanceChance) {
+      alert(
+        `${girl.name} politely declines.\nMaybe try again when you're closer?`
+      );
+      setShowDatePlanner(false);
+      return;
+    }
+
+    const dateEvent = {
+      characterName: girl.name,
+      location: dateLocation,
+      day: dateDay,
+      hour: dateHour,
+      activities,
+      eventId: `date_${girl.name}_${dateLocation}_${Date.now()}`,
+      label: `Date at ${dateLocation}`,
+    };
+
+    onScheduleDate(dateEvent);
+    alert(
+      `${girl.name} happily agrees! The date is set for ${dateDay} at ${dateHour}:00!`
+    );
+    setShowDatePlanner(false);
+    spendTime(1); // planning time cost
+  };
+
+  // Main interaction handler – now also drives story events
   const interact = (action: Interaction) => {
-    // ... rest of your existing interact function stays the same
-    // Check requirements
+    // 1) For normal "Chat", check story events via new CharacterEventManager
+    if (action.type === "Chat") {
+      const context = {
+        girl,
+        player,
+        currentLocation: location,
+        day: dayOfWeek,
+        hour,
+        currentTime: calculateGameTime(
+          [...TIME_CONFIG.DAYS_OF_WEEK],
+          dayOfWeek,
+          hour
+        ),
+        completedEvents: eventState.eventHistory.map((h) => h.eventId) || [],
+        eventHistory: eventState.eventHistory || [],
+        flags: gameplayFlags,
+      };
+
+      const triggeredEvent = eventManager.findCharacterEvent(
+        girl.name,
+        context
+      );
+
+      if (triggeredEvent) {
+        console.log(
+          `🎉 Character event triggered for ${girl.name}: ${triggeredEvent.id}`
+        );
+
+        const eventImage = getCharacterImage(
+          girl,
+          location,
+          hour,
+          getFacialExpression()
+        );
+
+        onEventTriggered(triggeredEvent.id);
+        onStartDialogue(
+          triggeredEvent.dialogue,
+          eventImage,
+          undefined,
+          girl.name
+        );
+
+        // Apply rewards if any
+        if (triggeredEvent.rewards) {
+          const updatedPlayer: PlayerStats = { ...player };
+
+          if (triggeredEvent.rewards.playerMoney) {
+            updatedPlayer.money += triggeredEvent.rewards.playerMoney;
+          }
+
+          if (triggeredEvent.rewards.playerStats) {
+            const stats = triggeredEvent.rewards.playerStats;
+            if (stats.intelligence) {
+              updatedPlayer.intelligence += stats.intelligence;
+            }
+            if (stats.fitness) {
+              updatedPlayer.fitness += stats.fitness;
+            }
+            if (stats.style) {
+              updatedPlayer.style += stats.style;
+            }
+          }
+
+          setPlayer(updatedPlayer);
+
+          if (triggeredEvent.rewards.setFlags) {
+            triggeredEvent.rewards.setFlags.forEach((flag) => {
+              onSetFlag?.(flag);
+              console.log(`🚩 Flag set: ${flag}`);
+            });
+          }
+
+          if (triggeredEvent.rewards.unlockCharacters) {
+            triggeredEvent.rewards.unlockCharacters.forEach((name) => {
+              onUnlockCharacter?.(name);
+              console.log(`🔓 ${name} unlocked!`);
+            });
+          }
+        }
+
+        // Stop here – don't also run generic interaction logic
+        return;
+      }
+    }
+
+    // 2) Fallback: normal interaction logic (hug/kiss/chat/etc.)
+
+    // Item requirement
     if (
       action.requiresItem &&
       !player.inventory.includes(action.requiresItem)
@@ -253,12 +326,13 @@ export default function CharacterOverlay({
       return;
     }
 
+    // Location requirement
     if (action.locationContext && action.locationContext !== location) {
-      alert(`This action can only be done at ${action.locationContext}`);
+      alert(`This action can only be done at ${action.locationContext}.`);
       return;
     }
 
-    // Check affection requirements for intimate actions
+    // Affection gates
     if (action.label === "Hug") {
       if (girl.stats.affection < 20) {
         alert(`${girl.name} doesn't seem comfortable with that right now...`);
@@ -271,7 +345,7 @@ export default function CharacterOverlay({
 
     if (action.label === "Kiss") {
       if (girl.stats.affection < 40 || girl.stats.mood < 50) {
-        alert(`${girl.name} pulls away. The timing doesn't seem right...`);
+        alert(`${girl.name} pulls away.\nThe timing doesn't seem right...`);
         const updatedStats = { ...player };
         updatedStats.mood = Math.max(0, updatedStats.mood - 15);
         setPlayer(updatedStats);
@@ -279,7 +353,7 @@ export default function CharacterOverlay({
       }
     }
 
-    // Check mood requirements for positive interactions
+    // Mood requirement
     if (
       girl.stats.mood < 30 &&
       (action.label === "Hug" || action.label === "Kiss")
@@ -288,8 +362,8 @@ export default function CharacterOverlay({
       return;
     }
 
-    // Apply stat effects
-    const updatedStats = { ...player };
+    // Apply player stat effects
+    const updatedStats: PlayerStats = { ...player };
     Object.entries(action.statEffects || {}).forEach(([key, value]) => {
       const statKey = key as keyof PlayerStats;
       if (statKey !== "inventory" && typeof value === "number") {
@@ -297,24 +371,28 @@ export default function CharacterOverlay({
       }
     });
     setPlayer(updatedStats);
+
+    // Spend time
     spendTime(action.timeCost);
 
-    // Get dialogue for this interaction
+    // Dialogue for the interaction
     const dialogue =
       characterDialogues[girl.name]?.[action.label] ||
       getDefaultDialogue(girl.name, action.label);
-    const characterImage = getCharacterImage(
+
+    const interactionImage = getCharacterImage(
       girl,
       location,
       hour,
       getFacialExpression()
     );
 
-    // Show what stats will change
+    // Log girl stat changes for debugging
     if (action.girlEffects) {
       const changes = Object.entries(action.girlEffects)
-        .filter(([, value]) => value !== 0)
+        .filter(([, value]) => value !== 0 && value !== undefined)
         .map(([key, value]) => {
+          const v = value as number;
           const emoji =
             key === "affection"
               ? "💕"
@@ -324,18 +402,23 @@ export default function CharacterOverlay({
               ? "🤝"
               : key === "mood"
               ? "😊"
-              : "💖";
-          return `${emoji} ${value > 0 ? "+" : ""}${value}`;
+              : "✨";
+          return `${emoji} ${v > 0 ? "+" : ""}${v}`;
         })
         .join(", ");
 
-      console.log(`✨ ${action.label} with ${girl.name}: ${changes}`);
+      if (changes) {
+        console.log(`✨ ${action.label} with ${girl.name}: ${changes}`);
+      }
     }
 
-    onStartDialogue(dialogue, characterImage, action.girlEffects);
+    onStartDialogue(
+      dialogue,
+      interactionImage,
+      action.girlEffects ?? null,
+      girl.name
+    );
   };
-
-  // ... rest of your component (getActionIcon, getActionColor, getFacialExpression, etc.) stays the same
 
   const getActionIcon = (type: string) => {
     switch (type) {
@@ -346,11 +429,11 @@ export default function CharacterOverlay({
       case "Gift":
         return "🎁";
       case "Date":
-        return "🌹";
+        return "☕";
       case "Context":
         return "✨";
       default:
-        return "👋";
+        return "";
     }
   };
 
@@ -371,166 +454,170 @@ export default function CharacterOverlay({
     }
   };
 
-  
-
   return (
-    <div
-      className={`bg-gradient-to-br ${
-        darkMode
-          ? "from-gray-800 via-purple-900 to-gray-900"
-          : "from-pink-100 via-purple-100 to-blue-100"
-      } rounded-2xl shadow-xl p-6 border-4 ${
-        darkMode ? "border-purple-700" : "border-purple-200"
-      } sticky top-4 animate-slideUp`}
-    >
-      {" "}
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition-all z-10 shadow-lg"
+    <aside className="h-full">
+      <div
+        className={`relative h-full rounded-2xl shadow-xl border-2 p-4 flex flex-col gap-4 ${
+          darkMode
+            ? "bg-gray-900 border-purple-700 text-purple-100"
+            : "bg-white border-purple-200 text-gray-900"
+        }`}
       >
-        ✕
-      </button>
-      <div className="flex flex-col items-center mb-6">
-        <div className="relative group mb-4">
-          <div className="absolute inset-0 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full blur-lg group-hover:blur-xl transition-all"></div>
-          <div className="relative w-56 h-60 rounded-full border-4 border-white shadow-xl overflow-hidden">
-            <img
-              src={`/images/characters/${girl.name.toLowerCase()}/casual/${expression}.webp`}
-              alt={`${girl.name} - ${expression}`}
-              onError={(e) => {
-                e.currentTarget.src = `neutral.webp`;
-                e.currentTarget.onerror = () => {
-                  e.currentTarget.src =
-                    'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><circle cx="100" cy="100" r="100" fill="%23e879f9"/><circle cx="70" cy="80" r="10" fill="white"/><circle cx="130" cy="80" r="10" fill="white"/><path d="M 60 130 Q 100 150 140 130" stroke="white" stroke-width="5" fill="none"/></svg>';
-                };
-              }}
-              className="w-full h-full object-cover"
-              style={{
-                objectPosition: "center 20%", // Show top portion (face)
-                transform: "scale(2)", // Zoom in 1.8x
-                transformOrigin: "center 0%", // Zoom from top
-              }}
-            />
-          </div>
-        </div>
-
-        <h3 className="text-2xl font-bold text-purple-500 mb-1">{girl.name}</h3>
-        <p className="text-gray-500 italic mb-2 text-sm">
-          &quot;{girl.personality}&quot;
-        </p>
-
-        <div className="px-4 py-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full text-white font-semibold text-xs shadow-lg">
-          {girl.relationship}
-        </div>
-      </div>
-      <div className="bg-white rounded-xl p-4 mb-4 space-y-2 shadow-md">
-        <h4 className="font-bold text-purple-700 text-center mb-2 text-sm">
-          Relationship
-        </h4>
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="flex justify-between items-center px-2 py-1 bg-pink-50 rounded">
-            <span className="font-semibold text-gray-700">💕 Affection</span>
-            <span className="font-bold text-pink-600">
-              {girl.stats.affection}
-            </span>
-          </div>
-          <div className="flex justify-between items-center px-2 py-1 bg-red-50 rounded">
-            <span className="font-semibold text-gray-700">🔥 Lust</span>
-            <span className="font-bold text-red-600">{girl.stats.lust}</span>
-          </div>
-          <div className="flex justify-between items-center px-2 py-1 bg-yellow-50 rounded">
-            <span className="font-semibold text-gray-700">😊 Mood</span>
-            <span className="font-bold text-yellow-600">{girl.stats.mood}</span>
-          </div>
-          <div className="flex justify-between items-center px-2 py-1 bg-blue-50 rounded">
-            <span className="font-semibold text-gray-700">🤝 Trust</span>
-            <span className="font-bold text-blue-600">{girl.stats.trust}</span>
-          </div>
-          <div className="flex justify-between items-center px-2 py-1 bg-purple-50 rounded col-span-2">
-            <span className="font-semibold text-gray-700">💖 Love</span>
-            <span className="font-bold text-purple-600">{girl.stats.love}</span>
-          </div>
-        </div>
-      </div>
-      <div className="space-y-2">
-        <h4
-          className={`text-lg font-bold ${
-            darkMode ? "text-purple-300" : "text-purple-800"
-          } mb-3 text-center`}
-        >
-          {" "}
-          💝 Actions
-        </h4>
+        {/* Close button */}
         <button
-          onClick={() => setShowDatePlanner(true)}
-          className="relative overflow-hidden group w-full bg-gradient-to-r from-red-400 to-pink-600 hover:from-red-500 hover:to-pink-700 shadow-md hover:shadow-lg transform hover:scale-105 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 text-sm"
+          onClick={onClose}
+          className="absolute top-2 right-2 text-xl leading-none px-2 py-1 rounded-full bg-black/20 text-white hover:bg-black/40"
+          aria-label="Close"
         >
-          <div className="flex items-center justify-between relative z-10">
-            <span className="flex items-center gap-2">
-              <span className="text-lg">💕</span>
-              <span>Ask on Date</span>
-            </span>
-            <span className="text-xs opacity-75">Plan</span>
-          </div>
-          <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity"></div>
+          ×
         </button>
 
-        {interactionMenu.map((action) => {
-          const isDisabled = Boolean(
-            (action.requiresItem &&
-              !player.inventory.includes(action.requiresItem)) ||
-              (action.locationContext && action.locationContext !== location)
-          );
+        {/* Character image */}
+        <div className="w-full aspect-[3/4] rounded-xl overflow-hidden bg-gray-200 dark:bg-gray-800 shadow-inner">
+          <img
+            src={characterImage}
+            alt={girl.name}
+            className="w-full h-full object-cover"
+            style={{
+              objectPosition: "center 20%",
+            }}
+            onError={(e) => {
+              const img = e.currentTarget as HTMLImageElement;
+              img.onerror = null;
+              img.src =
+                "data:image/svg+xml," +
+                encodeURIComponent(
+                  `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="#e5e7eb" width="200" height="300"/><text x="50%" y="50%" font-size="20" text-anchor="middle" fill="#4b5563">No Image</text></svg>`
+                );
+            }}
+          />
+        </div>
 
-          return (
-            <button
-              key={action.label}
-              onClick={() => interact(action)}
-              disabled={isDisabled}
-              className={`
-                relative overflow-hidden group w-full
-                ${
-                  isDisabled
-                    ? "bg-gray-300 cursor-not-allowed opacity-50"
-                    : `bg-gradient-to-r ${getActionColor(
-                        action.type
-                      )} shadow-md hover:shadow-lg transform hover:scale-105`
-                }
-                text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 text-sm
-              `}
-            >
-              <div className="flex items-center justify-between relative z-10">
-                <span className="flex items-center gap-2">
-                  <span className="text-lg">{getActionIcon(action.type)}</span>
-                  <span>{action.label}</span>
-                </span>
-                <span className="text-xs opacity-75">{action.timeCost}h</span>
-              </div>
+        {/* Info */}
+        <div>
+          <h3 className="text-xl font-bold mb-1">{girl.name}</h3>
+          <p className="text-sm italic mb-1">"{girl.personality}"</p>
+          {girl.relationship && (
+            <p className="text-xs opacity-80 mb-2">{girl.relationship}</p>
+          )}
+        </div>
 
-              {!isDisabled && (
-                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity"></div>
-              )}
-            </button>
-          );
-        })}
+        {/* Relationship stats */}
+        <div>
+          <h4 className="text-sm font-semibold mb-1">Relationship</h4>
+          <div className="grid grid-cols-2 gap-1 text-xs">
+            <div>Affection: {girl.stats.affection}</div>
+            <div>Lust: {girl.stats.lust}</div>
+            <div>Mood: {girl.stats.mood}</div>
+            <div>Trust: {girl.stats.trust}</div>
+            <div>Love: {girl.stats.love}</div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div>
+          <h4 className="text-sm font-semibold mb-2">Actions</h4>
+
+          {/* Date planner button */}
+          <button
+            onClick={() => setShowDatePlanner(true)}
+            className="relative overflow-hidden group w-full bg-gradient-to-r from-red-400 to-pink-600 hover:from-red-500 hover:to-pink-700 shadow-md hover:shadow-lg transform hover:scale-[1.02] text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 text-sm mb-2"
+          >
+            <span className="mr-2">📅</span>
+            Ask on Date (Plan)
+          </button>
+
+          <div className="flex flex-col gap-2">
+            {interactionMenu.map((action) => {
+              const isDisabled = Boolean(
+                (action.requiresItem &&
+                  !player.inventory.includes(action.requiresItem)) ||
+                  (action.locationContext &&
+                    action.locationContext !== location)
+              );
+
+              return (
+                <button
+                  key={action.label}
+                  onClick={() => !isDisabled && interact(action)}
+                  disabled={isDisabled}
+                  className={`relative overflow-hidden group w-full text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 text-sm ${
+                    isDisabled
+                      ? "bg-gray-300 dark:bg-gray-700 cursor-not-allowed opacity-50"
+                      : `bg-gradient-to-r ${getActionColor(
+                          action.type
+                        )} shadow-md hover:shadow-lg transform hover:scale-[1.02]`
+                  }`}
+                >
+                  <span className="mr-2">{getActionIcon(action.type)}</span>
+                  {action.label}
+                  <span className="ml-auto text-xs opacity-80">
+                    {action.timeCost}h
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <p className="mt-2 text-[11px] opacity-80">
+            Different actions affect {girl.name}'s feelings toward you!
+          </p>
+        </div>
+
+        {/* DEBUG PANEL: seen events & flags */}
+        <div
+          className={`mt-2 text-[11px] rounded-lg border p-2 space-y-1 ${
+            darkMode
+              ? "bg-gray-900/80 border-pink-500/40 text-pink-200"
+              : "bg-pink-50 border-pink-300 text-pink-900"
+          }`}
+        >
+          <div className="font-semibold">
+            DEBUG – Events & Flags ({girl.name})
+          </div>
+
+          <div>
+            <span className="font-semibold">Seen events:</span>{" "}
+            {eventState.eventHistory.length === 0 ? (
+              <span>none</span>
+            ) : (
+              <ul className="list-disc list-inside">
+                {eventState.eventHistory.map((h) => (
+                  <li key={h.eventId}>
+                    {h.eventId}
+                    {typeof h.timesTriggered === "number" &&
+                      h.timesTriggered > 1 &&
+                      ` (x${h.timesTriggered})`}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div>
+            <span className="font-semibold">Active flags:</span>{" "}
+            {gameplayFlags.size === 0 ? (
+              <span>none</span>
+            ) : (
+              <ul className="list-disc list-inside">
+                {Array.from(gameplayFlags).map((flag) => (
+                  <li key={flag}>{flag}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+
+        {/* Date planner modal */}
+        {/* {showDatePlanner && (
+          <DatePlanner
+            girl={girl}
+            onClose={() => setShowDatePlanner(false)}
+            onScheduleDate={handleScheduleDate}
+            darkMode={darkMode}
+          />
+        )} */}
       </div>
-      <div className="mt-4 bg-white rounded-lg p-3 border-2 border-purple-200 shadow">
-        <p className="text-xs text-gray-600 text-center">
-          <span className="font-semibold text-purple-600">💡</span> Different
-          actions affect {girl.name}&apos;s feelings toward you!
-        </p>
-      </div>
-      {showDatePlanner && (
-        <DatePlanner
-          girl={girl}
-          currentDay={dayOfWeek}
-          currentHour={hour}
-          playerMoney={player.money}
-          onCancel={() => setShowDatePlanner(false)}
-          onScheduleDate={handleScheduleDate}
-          darkMode={darkMode}
-        />
-      )}
-    </div>
+    </aside>
   );
 }
