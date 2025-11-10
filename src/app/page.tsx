@@ -400,10 +400,13 @@ export default function GamePage() {
         return true; // Default: show character
       })
       .map((girl) => {
+        const hasMetChar =
+          girl.name === "Gwen" ? gameplayFlags.has("hasMetGwen") : false;
         const scheduledLocation = getScheduledLocation(
           girl.name,
           dayOfWeek,
-          hour
+          hour,
+          hasMetChar
         );
         const override = girlStatsOverrides[girl.name];
         return {
@@ -412,7 +415,7 @@ export default function GamePage() {
           stats: override ? { ...girl.stats, ...override } : girl.stats,
         };
       });
-  }, [dayOfWeek, hour, girlStatsOverrides, characterUnlocks]);
+  }, [dayOfWeek, hour, girlStatsOverrides, characterUnlocks, gameplayFlags]);
 
   useEffect(() => {
     if (selectedGirl) {
@@ -671,26 +674,23 @@ export default function GamePage() {
       return;
     }
 
-    // // Unlock Gwen when entering Hallway after 5 PM
-    // console.log(
-    //   `📍 Moved to: ${location}, Hour: ${hour}, Gwen unlocked: ${characterUnlocks.Gwen}`
-    // );
-    // if (location === "Hallway" && hour >= 17 && !characterUnlocks.Gwen) {
-    //   setCharacterUnlocks((prev) => ({ ...prev, Gwen: true }));
+    // Unlock Gwen when entering Hallway after working
+    if (
+      location === "Hallway" &&
+      hasFlag("firstTimeWorked") &&
+      !characterUnlocks.Gwen
+    ) {
+      setCharacterUnlocks((prev) => ({ ...prev, Gwen: true }));
+      console.log("🔓 Gwen unlocked!");
 
-    //   // Trigger Gwen's first meeting
-    //   const firstMeeting = firstMeetingDialogues["Gwen"];
-    //   if (firstMeeting) {
-    //     const characterImage = getCharacterImage(
-    //       girls.find((g) => g.name === "Gwen")!,
-    //       currentLocation,
-    //       hour
-    //     );
-    //     setMetCharacters(new Set([...metCharacters, "Gwen"]));
-    //     startDialogue(firstMeeting, characterImage, null);
-    //     return;
-    //   }
-    // }
+      // Show a simple notification
+      setTimeout(() => {
+        alert("You hear footsteps behind you in the hallway...");
+      }, 100);
+
+      // Don't return - let the location change complete normally
+      // Gwen will appear in the character list after the state updates
+    }
 
     // TODO: Ambient character events - method not available in CharacterEventManager
     // const ambientEvent = eventManager.checkAmbientCharacterEvents(
@@ -888,7 +888,7 @@ export default function GamePage() {
     location: string;
     priority: number;
   };
-  const [/*pendingEvents,*/, setPendingEvents] = useState<PendingEvent[]>([]);
+  const [, /*pendingEvents,*/ setPendingEvents] = useState<PendingEvent[]>([]);
 
   // Check what events are available but not yet triggered
   const checkPendingEvents = useCallback(() => {

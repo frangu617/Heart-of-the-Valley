@@ -35,6 +35,7 @@ export default function LocationActivitiesPanel({
   darkMode,
   dayOfWeek,
   onUnlockCharacter,
+  onSetFlag,
 }: Props) {
   const activities: LocationActivity[] = activitiesMap[location] ?? [];
 
@@ -142,6 +143,10 @@ export default function LocationActivitiesPanel({
       // Notify parent component to unlock Yumi
       if (onUnlockCharacter) {
         onUnlockCharacter("Yumi");
+      }
+      // Set flag for first time teaching
+      if (onSetFlag) {
+        onSetFlag("firstTimeWorked");
       }
     }
 

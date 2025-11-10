@@ -42,10 +42,16 @@ function nameKey(nameOrId: string): keyof typeof characterSchedules | null {
 export function getScheduledLocation(
   girlNameOrId: string,
   day: DayOfWeek,
-  hour: number
+  hour: number,
+  hasMetCharacter: boolean = false
 ): string | null {
   const key = nameKey(girlNameOrId);
   if (!key) return null;
+
+  // Special case for Gwen - always at Hallway until first meeting
+  if (girlNameOrId === "Gwen" && !hasMetCharacter) {
+    return "Hallway";
+  }
 
   const weekly = characterSchedules[key] as WeeklySchedule | undefined;
   if (!weekly) return null;

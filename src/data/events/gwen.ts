@@ -1,20 +1,20 @@
-import { CharacterEvent } from "./types";
+// import { CharacterEvent } from "./types";
+import {
+  CharacterEvent,
+  CharacterEventConditions,
+  createCharacterEvents,
+} from "@/lib/game/characterEventSystem";
 
-export const gwenEvents: CharacterEvent[] = [
+export const gwenEvents: CharacterEvent[] = createCharacterEvents("Gwen", [
   {
     id: "gwen_first_meeting",
     name: "First Meeting with Gwen",
     description: "First Meeting with Gwen",
     priority: 100,
     repeatable: false,
-    conditions: {
-      minAffection: 0,
-      minTrust: 0,
-      minHour: 18,
-      maxHour: 24,
-      requiredLocation: "Hallway",
-      requiredFlags: ["firstTimeWorked"],
-    },
+    conditions: CharacterEventConditions.firstMeeting("Hallway", [
+      "firstTimeWorked",
+    ]),
     dialogue: {
       id: "gwen_first_meeting",
 
@@ -53,5 +53,32 @@ export const gwenEvents: CharacterEvent[] = [
         },
       ],
     },
+    rewards: {
+      setFlags: ["hasMetGwen"],
+      unlockCharacters: ["Gwen"],
+    },
   },
-];
+  {
+    id: "gwen_flirting",
+    name: "Gwen Flirting with me",
+    description: "Gwen is Fucking flirting with me!",
+    priority: 100,
+    repeatable: true,
+    conditions: CharacterEventConditions.repeatableEncounter(
+      "Hallway",
+      0,
+      0,
+      0,
+      24
+    ),
+    dialogue: {
+      id: "gwen catcalling me",
+      lines: [
+        {
+          speaker: "Gwen",
+          text: "Nice ass neighbor!",
+        },
+      ],
+    },
+  },
+]);

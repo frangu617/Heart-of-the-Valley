@@ -1,19 +1,23 @@
-import { CharacterEvent } from "./types";
+import {
+  CharacterEvent,
+  CharacterEventConditions,
+  createCharacterEvents,
+} from "@/lib/game/characterEventSystem";
 
-export const yumiEvents: CharacterEvent[] = [
+export const yumiEvents: CharacterEvent[] = createCharacterEvents("Yumi", [
   {
     id: "yumi_first_meeting",
     name: "First Meeting with Yumi",
     description: "First Meeting with Yumi",
     priority: 100,
     repeatable: false,
-    conditions: {
-      minAffection: 0,
-      minTrust: 0,
-      minHour: 15,
-      maxHour: 20,
-      requiredLocation: "classroom",
-    },
+    conditions: CharacterEventConditions.repeatableEncounter(
+      "Classroom",
+      0,
+      0,
+      15,
+      20
+    ),
     dialogue: {
       id: "yumi_first_meeting",
       lines: [
@@ -60,5 +64,8 @@ export const yumiEvents: CharacterEvent[] = [
         },
       ],
     },
+    rewards: {
+      setFlags: ["hasMetYumi"],
+    },
   },
-];
+]);

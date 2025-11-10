@@ -3,7 +3,7 @@ export type TimeOfDay = "morning" | "afternoon" | "evening" | "night";
 export function getTimeOfDay(hour: number): TimeOfDay {
   if (hour >= 6 && hour < 12) return "morning";
   if (hour >= 12 && hour < 18) return "afternoon";
-  if (hour >= 18 && hour < 22) return "evening";
+  // if (hour >= 18 && hour < 22) return "night";
   return "night";
 }
 

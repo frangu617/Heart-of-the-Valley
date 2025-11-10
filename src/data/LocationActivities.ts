@@ -263,6 +263,15 @@ export const locationActivities: Record<string, LocationActivity[]> = {
       statEffects: { mood: 10, energy: -5 },
     },
   ],
+  Hallway: [
+    {
+      name: "Head Home",
+      icon: "🚶",
+      description: "Walk to your apartment",
+      timeCost: 0,
+      statEffects: { energy: -2 },
+    },
+  ],
   "Parking Lot": [
     {
       name: "Sit in Car",
