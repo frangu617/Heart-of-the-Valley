@@ -3,6 +3,7 @@ import { PlayerStats } from "../data/characters";
 import { Girl } from "../data/characters";
 import { DayOfWeek } from "../data/gameConstants";
 import { getQuickActions } from "../data/locationDescriptions";
+import Image from "next/image";
 
 interface Props {
   player: PlayerStats;
@@ -434,7 +435,7 @@ export default function PhoneMenu({
                       ${darkMode ? "border-purple-700" : "border-purple-300"}
                     `}
                     >
-                      <img
+                      <Image
                         src={`/images/characters/${girl.name.toLowerCase()}/casual/neutral.webp`}
                         alt={girl.name}
                         onError={(e) => {

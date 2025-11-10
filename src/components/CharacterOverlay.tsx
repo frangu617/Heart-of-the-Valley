@@ -2,7 +2,8 @@
 
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 
 import { Girl, GirlStats, PlayerStats } from "@/data/characters";
 import { Interaction, interactionMenu } from "@/data/interactions";
@@ -14,8 +15,8 @@ import {
 import { DayOfWeek } from "@/data/gameConstants";
 import { CharacterEventState, GameplayFlag } from "@/data/events/types";
 import { getCharacterEvents } from "@/data/events";
-import DatePlanner from "./DatePlanner";
-import { DateLocation } from "@/data/dates/types";
+// import DatePlanner from "./DatePlanner";
+// import { DateLocation } from "@/data/dates/types";
 
 import {
   CharacterEventManager,
@@ -71,11 +72,11 @@ export default function CharacterOverlay({
   eventState,
   onEventTriggered,
   darkMode,
-  onScheduleDate,
+  // onScheduleDate,
   onSetFlag,
   onUnlockCharacter,
 }: Props) {
-  const [showDatePlanner, setShowDatePlanner] = useState(false);
+  const [, /*showDatePlanner*/ setShowDatePlanner] = useState(false);
 
   // Per-girl event manager using the new system
   const eventManager = useMemo(() => {
@@ -86,6 +87,23 @@ export default function CharacterOverlay({
     }
     return manager;
   }, [girl.name]);
+
+  const { affection = 0, mood = 0, love = 0 } = girl.stats || {};
+
+  const getFacialExpression = useCallback((): string => {
+    const totalPositive = affection + love;
+    if (love >= 50 || totalPositive >= 80) return "love";
+    if (affection >= 40 && mood >= 60) return "happy";
+    if (mood < 30) return "sad";
+    if (affection < 10) return "neutral";
+    return "neutral";
+  }, [affection, love, mood]);
+
+  const expression = getFacialExpression();
+
+  useEffect(() => {
+    setPortraitSrc(getCharacterImage(girl, location, hour, expression));
+  }, [girl, location, hour, getFacialExpression, expression]);
 
   useEffect(() => {
     const context = {
@@ -172,60 +190,51 @@ export default function CharacterOverlay({
     setPlayer,
     onSetFlag,
     onUnlockCharacter,
+    getFacialExpression,
   ]);
   // Helper to pick Iris/etc facial expression
-  const getFacialExpression = (): string => {
-    const { affection, mood, love } = girl.stats;
-    const totalPositive = affection + love;
 
-    if (love >= 50 || totalPositive >= 80) return "love";
-    if (affection >= 40 && mood >= 60) return "happy";
-    if (mood < 30) return "sad";
-    if (affection < 10) return "neutral";
-    return "neutral";
-  };
-
-  const expression = getFacialExpression();
   const characterImage = getCharacterImage(girl, location, hour, expression);
+  const [portraitSrc, setPortraitSrc] = useState(characterImage);
 
   // Date planner handler
-  const handleScheduleDate = (
-    dateLocation: DateLocation,
-    dateDay: DayOfWeek,
-    dateHour: number,
-    activities: string[]
-  ) => {
-    const acceptanceChance = Math.min(
-      95,
-      50 + girl.stats.affection / 2 + girl.stats.trust / 4
-    );
-    const roll = Math.random() * 100;
+  // const _handleScheduleDate = (
+  //   dateLocation: DateLocation,
+  //   dateDay: DayOfWeek,
+  //   dateHour: number,
+  //   activities: string[]
+  // ) => {
+  //   const acceptanceChance = Math.min(
+  //     95,
+  //     50 + girl.stats.affection / 2 + girl.stats.trust / 4
+  //   );
+  //   const roll = Math.random() * 100;
 
-    if (roll > acceptanceChance) {
-      alert(
-        `${girl.name} politely declines.\nMaybe try again when you're closer?`
-      );
-      setShowDatePlanner(false);
-      return;
-    }
+  //   if (roll > acceptanceChance) {
+  //     alert(
+  //       `${girl.name} politely declines.\nMaybe try again when you're closer?`
+  //     );
+  //     setShowDatePlanner(false);
+  //     return;
+  //   }
 
-    const dateEvent = {
-      characterName: girl.name,
-      location: dateLocation,
-      day: dateDay,
-      hour: dateHour,
-      activities,
-      eventId: `date_${girl.name}_${dateLocation}_${Date.now()}`,
-      label: `Date at ${dateLocation}`,
-    };
+  //   const dateEvent = {
+  //     characterName: girl.name,
+  //     location: dateLocation,
+  //     day: dateDay,
+  //     hour: dateHour,
+  //     activities,
+  //     eventId: `date_${girl.name}_${dateLocation}_${Date.now()}`,
+  //     label: `Date at ${dateLocation}`,
+  //   };
 
-    onScheduleDate(dateEvent);
-    alert(
-      `${girl.name} happily agrees! The date is set for ${dateDay} at ${dateHour}:00!`
-    );
-    setShowDatePlanner(false);
-    spendTime(1); // planning time cost
-  };
+  //   onScheduleDate(dateEvent);
+  //   alert(
+  //     `${girl.name} happily agrees! The date is set for ${dateDay} at ${dateHour}:00!`
+  //   );
+  //   setShowDatePlanner(false);
+  //   spendTime(1); // planning time cost
+  // };
 
   // Main interaction handler – now also drives story events
   const interact = (action: Interaction) => {
@@ -473,30 +482,30 @@ export default function CharacterOverlay({
         </button>
 
         {/* Character image */}
-        <div className="w-full aspect-[3/4] rounded-xl overflow-hidden bg-gray-200 dark:bg-gray-800 shadow-inner">
-          <img
-            src={characterImage}
+        <div className="w-full aspect-[3/4] rounded-xl overflow-hidden bg-gray-200 dark:bg-gray-8 00 shadow-inner relative">
+          <Image
+            src={portraitSrc}
             alt={girl.name}
-            className="w-full h-full object-cover"
-            style={{
-              objectPosition: "center 20%",
+            fill
+            className="object-cover"
+            style={{ objectPosition: "center 20%" }}
+            onError={() => {
+              const svg =
+                `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300">` +
+                `<rect fill="#e5e7eb" width="200" height="300"/>` +
+                `<text x="50%" y="50%" font-size="20" text-anchor="middle" fill="#4b5563">No Image</text>` +
+                `</svg>`;
+              setPortraitSrc(`data:image/svg+xml,${encodeURIComponent(svg)}`);
             }}
-            onError={(e) => {
-              const img = e.currentTarget as HTMLImageElement;
-              img.onerror = null;
-              img.src =
-                "data:image/svg+xml," +
-                encodeURIComponent(
-                  `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="#e5e7eb" width="200" height="300"/><text x="50%" y="50%" font-size="20" text-anchor="middle" fill="#4b5563">No Image</text></svg>`
-                );
-            }}
+            // If your images are not under /public or are remote, set next.config images.domains or use unoptimized
+            // unoptimized
           />
         </div>
 
         {/* Info */}
         <div>
           <h3 className="text-xl font-bold mb-1">{girl.name}</h3>
-          <p className="text-sm italic mb-1">"{girl.personality}"</p>
+          <p className="text-sm italic mb-1">{girl.personality}</p>
           {girl.relationship && (
             <p className="text-xs opacity-80 mb-2">{girl.relationship}</p>
           )}
@@ -560,7 +569,7 @@ export default function CharacterOverlay({
           </div>
 
           <p className="mt-2 text-[11px] opacity-80">
-            Different actions affect {girl.name}'s feelings toward you!
+            Different actions affect {girl.name}&apos;s feelings toward you!
           </p>
         </div>
 

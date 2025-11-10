@@ -4,7 +4,6 @@ import {
   CharacterEventConditions,
   createCharacterEvents,
 } from "@/lib/game/characterEventSystem";
-import { create } from "domain";
 
 export const rubyEvents: CharacterEvent[] = createCharacterEvents("Ruby", [
   {
@@ -15,8 +14,8 @@ export const rubyEvents: CharacterEvent[] = createCharacterEvents("Ruby", [
     repeatable: false,
     conditions: {
       allOf: [
-        CharacterEventConditions.atLocation("Hallway"),
-        CharacterEventConditions.timeRange(18, 24),
+        CharacterEventConditions.atLocation("Gym"),
+        CharacterEventConditions.timeRange(6, 20),
         CharacterEventConditions.hasFlags("firstWorkout"),
       ],
     },

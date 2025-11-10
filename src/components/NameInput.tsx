@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Image from "next/image";
 interface Props {
   onNameSubmit: (name: string) => void;
   darkMode?: boolean;
@@ -35,7 +36,7 @@ export default function NameInput({ onNameSubmit, darkMode = false }: Props) {
             💖 Heart of the Valley
           </h1> */}
           <span>
-          <img
+          <Image
             src="/images/logo.png"
             alt="Heart of the Valley"
             className="justify-center h-32 w-32 mx-auto"

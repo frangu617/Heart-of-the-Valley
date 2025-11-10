@@ -1,5 +1,6 @@
 import { Location } from "../data/locations";
 import { Girl } from "../data/characters";
+import Image from "next/image";
 
 interface ScheduledEncounter {
   characterName: string;
@@ -69,7 +70,7 @@ export default function LocationCard({
             : "bg-gradient-to-b from-gray-100 to-white"
         }`}
       >
-        <img
+        <Image
           src={`/images/locations/${location.name
             .toLowerCase()
             .replace(/\s+/g, "_")

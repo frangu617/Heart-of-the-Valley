@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useCallback } from "react";
+import Image from "next/image";
 
 // Components
 import NameInput from "@/components/NameInput";
@@ -1032,11 +1033,12 @@ export default function GamePage() {
               "💖 HotV"
             ) : (
               <span className="flex items-center gap-2">
-                <img
+                <Image
                   src="/images/logo.png"
                   alt="Heart of the Valley"
                   width={50}
                   height={50}
+                  priority
                 />
                 💖 Heart of the Valley
               </span>
@@ -1118,22 +1120,17 @@ export default function GamePage() {
 
               <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-purple-100 to-white overflow-hidden">
                 {/* Background image with safe fallbacks */}
-                <img
+                <Image
                   src={getCurrentLocationImage()}
                   alt={currentLocation}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
                   onError={(e) => {
-                    const img = e.currentTarget as HTMLImageElement; // capture before synthetic event pooling
+                    const img = e.target as HTMLImageElement;
                     const locationKey = currentLocation
                       .toLowerCase()
                       .replace(/\s+/g, "_")
                       .replace(/'/g, "");
-
-                    img.onerror = () => {
-                      img.onerror = null;
-                      img.src =
-                        'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23ccc" width="1920" height="1080"/><text x="50%" y="50%" font-size="48" text-anchor="middle" fill="%23666">Location Image</text></svg>';
-                    };
 
                     img.src = `/images/locations/${locationKey}/afternoon.png`;
                   }}
@@ -1198,26 +1195,11 @@ export default function GamePage() {
 
                         {/* Character image */}
                         <div className="relative">
-                          <img
+                          <Image
                             src={imgPath}
                             alt={girl.name}
-                            onError={(e) => {
-                              const el = e.currentTarget;
-                              const girlName = girl.name.toLowerCase();
-                              const fallbacks = [
-                                imgPath,
-                                `/images/characters/${girlName}/casual/neutral.webp`,
-                                `/images/${girlName}.webp`,
-                                'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="%23e879f9" width="200" height="300"/><text x="50%" y="50%" font-size="60" text-anchor="middle" dy=".3em" fill="white">?</text></svg>',
-                              ];
-                              const cur = el.src;
-                              for (const fb of fallbacks) {
-                                if (!cur.endsWith(fb.split("/").pop() || "")) {
-                                  el.src = fb;
-                                  break;
-                                }
-                              }
-                            }}
+                            width={192}
+                            height={288}
                             className={`w-32 h-48 sm:w-40 sm:h-60 md:w-48 md:h-72 object-cover object-top rounded-3xl border-4 ${
                               selectedGirl?.name === girl.name
                                 ? "border-pink-400 shadow-2xl shadow-pink-500/50"
@@ -1227,6 +1209,10 @@ export default function GamePage() {
                                 ? "brightness-75"
                                 : ""
                             }`}
+                            onError={() => {
+                              const girlName = girl.name.toLowerCase();
+                              return `/images/characters/${girlName}/casual/neutral.webp`;
+                            }}
                           />
 
                           {/* Name tag */}

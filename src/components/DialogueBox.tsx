@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Image from "next/image";
 import {
   Dialogue,
   DialogueChoice,
@@ -323,15 +324,12 @@ export default function DialogueBox({
 
   const dynamicCharacterImage = getCurrentCharacterImage();
 
-
   return (
-    
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-between pointer-events-none">
       {/* Background */}
-      
+
       {hasImageSlide && (
-        
-        <img
+        <Image
           src={imageSlide}
           alt="Background"
           onError={(e) => {
@@ -353,8 +351,7 @@ export default function DialogueBox({
       )}
       {/* Location Background - When NO Event */}
       {!hasEventMedia && locationImage && (
-        
-        <img
+        <Image
           src={locationImage}
           alt="Location Background"
           onError={(e) => {
@@ -387,8 +384,7 @@ export default function DialogueBox({
         <div className="flex-1 flex items-center justify-center pointer-events-none z-30 pt-8">
           <div className="relative w-11/12 max-w-4xl aspect-[4/3] bg-gradient-to-b from-gray-100 to-white rounded-2xl shadow-2xl overflow-hidden border-4 border-purple-300">
             {hasImageSlide && (
-              
-              <img
+              <Image
                 src={imageSlide}
                 alt="Scene"
                 onError={(e) => {
@@ -418,9 +414,9 @@ export default function DialogueBox({
             <div className="relative animate-fadeIn">
               <div className="relative w-[400px] h-[600px] rounded-2xl overflow-hidden shadow-2xl border-4 border-white/80">
                 <div className="absolute inset-0 bg-gradient-to-b from-purple-200/90 via-pink-200/90 to-blue-200/90" />
-                
-                <img
-                  src={dynamicCharacterImage}
+
+                <Image
+                  src={dynamicCharacterImage || characterImage || ""}
                   alt={currentLine.speaker || "Character"}
                   onError={(e) => {
                     e.currentTarget.src =
@@ -448,8 +444,8 @@ export default function DialogueBox({
             <div className="relative animate-fadeIn">
               <div className="relative w-[280px] h-[420px] rounded-xl overflow-hidden shadow-2xl border-4 border-white/80">
                 <div className="absolute inset-0 bg-gradient-to-b from-purple-200/90 via-pink-200/90 to-blue-200/90" />
-                
-                <img
+
+                <Image
                   src={characterImage}
                   alt={currentLine.speaker || "Character"}
                   onError={(e) => {
@@ -480,8 +476,7 @@ export default function DialogueBox({
         <div className="flex-1 flex items-center justify-center pointer-events-none z-30 pt-4">
           <div className="relative w-11/12 max-w-2xl aspect-[4/3] bg-gradient-to-b from-gray-100 to-white rounded-xl shadow-2xl overflow-hidden border-4 border-purple-300">
             {hasImageSlide && (
-             
-              <img
+              <Image
                 src={imageSlide}
                 alt="Scene"
                 onError={(e) => {
