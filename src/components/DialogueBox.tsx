@@ -312,6 +312,7 @@ export default function DialogueBox({
         trust: girlStats?.trust ?? 0,
         love: girlStats?.love ?? 0,
       },
+      gradient: "from-pink-300 via-rose-400 to-red-500",
     };
 
     return getCharacterImage(
@@ -332,6 +333,8 @@ export default function DialogueBox({
         <Image
           src={imageSlide}
           alt="Background"
+          width={1920}
+          height={1080}
           onError={(e) => {
             e.currentTarget.src =
               'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23666" width="1920" height="1080"/></svg>';
@@ -354,6 +357,8 @@ export default function DialogueBox({
         <Image
           src={locationImage}
           alt="Location Background"
+          width={1920}
+          height={1080}
           onError={(e) => {
             e.currentTarget.src =
               'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23333" width="1920" height="1080"/></svg>';
@@ -387,6 +392,8 @@ export default function DialogueBox({
               <Image
                 src={imageSlide}
                 alt="Scene"
+                width={1920}
+                height={1080}
                 onError={(e) => {
                   e.currentTarget.src =
                     'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23666" width="1920" height="1080"/><text x="50%" y="50%" font-size="48" text-anchor="middle" fill="white">Image Coming Soon</text></svg>';
@@ -418,6 +425,8 @@ export default function DialogueBox({
                 <Image
                   src={dynamicCharacterImage || characterImage || ""}
                   alt={currentLine.speaker || "Character"}
+                  width={400}
+                  height={600}
                   onError={(e) => {
                     e.currentTarget.src =
                       'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><rect fill="%23e879f9" width="400" height="600"/></svg>';
@@ -448,6 +457,8 @@ export default function DialogueBox({
                 <Image
                   src={characterImage}
                   alt={currentLine.speaker || "Character"}
+                  width={280}
+                  height={420}
                   onError={(e) => {
                     e.currentTarget.src =
                       'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="280" height="420"><rect fill="%23e879f9" width="280" height="420"/></svg>';
@@ -479,6 +490,8 @@ export default function DialogueBox({
               <Image
                 src={imageSlide}
                 alt="Scene"
+                width={1920}
+                height={1080}
                 onError={(e) => {
                   e.currentTarget.src =
                     'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23666" width="1920" height="1080"/></svg>';

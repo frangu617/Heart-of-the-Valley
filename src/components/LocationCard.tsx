@@ -76,6 +76,8 @@ export default function LocationCard({
             .replace(/\s+/g, "_")
             .replace(/'/g, "")}/afternoon.png`}
           alt={location.name}
+          width={1920}
+          height={1080}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
         />
         {(location.cost > 0 || location.time > 0) && (

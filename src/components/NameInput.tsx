@@ -39,6 +39,8 @@ export default function NameInput({ onNameSubmit, darkMode = false }: Props) {
           <Image
             src="/images/logo.png"
             alt="Heart of the Valley"
+            width={128}
+            height={128}
             className="justify-center h-32 w-32 mx-auto"
 
           />

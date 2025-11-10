@@ -4,7 +4,7 @@
 
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-
+import { getLocationBackground } from "@/lib/locationImages";
 import { Girl, GirlStats, PlayerStats } from "@/data/characters";
 import { Interaction, interactionMenu } from "@/data/interactions";
 import {
@@ -482,13 +482,15 @@ export default function CharacterOverlay({
         </button>
 
         {/* Character image */}
-        <div className="w-full aspect-[3/4] rounded-xl overflow-hidden bg-gray-200 dark:bg-gray-8 00 shadow-inner relative">
+        <div className={`w-full aspect-[3/4] rounded-full overflow-hidden shadow-inner relative bg-gradient-to-b ${girl.gradient}`}>
           <Image
             src={portraitSrc}
             alt={girl.name}
-            fill
-            className="object-cover"
-            style={{ objectPosition: "center 20%" }}
+            width={300}
+            height={300}
+            // fill
+            // className="object-cover"
+            style={{ objectPosition: "center 60%", transform: "scale(1.8)", transformOrigin: "center top",}}
             onError={() => {
               const svg =
                 `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300">` +

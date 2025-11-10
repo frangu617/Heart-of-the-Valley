@@ -36,6 +36,7 @@ export type Girl = {
   location: string;
   relationship: "Single" | "DatingMC" | "DatingJohn" | "DatingRick";
   personality: string;
+  gradient: string;
 };
 
 export const girls: Girl[] = [
@@ -45,6 +46,7 @@ export const girls: Girl[] = [
     relationship: "Single",
     personality: "Shy",
     stats: { affection: 0, lust: 0, mood: 50, trust: 0, love: 0 },
+    gradient: "from-pink-300 via-rose-400 to-red-500",
   },
   {
     name: "Dawn",
@@ -52,6 +54,7 @@ export const girls: Girl[] = [
     relationship: "Single",
     personality: "Confident",
     stats: { affection: 0, lust: 0, mood: 50, trust: 0, love: 0 },
+    gradient: "from-yellow-200 via-orange-300 to-amber-400",
   },
   {
     name: "Ruby",
@@ -59,6 +62,7 @@ export const girls: Girl[] = [
     relationship: "Single",
     personality: "Jealous",
     stats: { affection: 0, lust: 0, mood: 50, trust: 0, love: 0 },
+    gradient: "from-red-200 via-orange-300 to-yellow-400",
   },
   {
     name: "Yumi",
@@ -66,6 +70,7 @@ export const girls: Girl[] = [
     relationship: "Single",
     personality: "Independent",
     stats: { affection: 0, lust: 0, mood: 50, trust: 0, love: 0 },
+    gradient: "from-teal-200 via-cyan-300 to-sky-400",
   },
   {
     name: "Gwen",
@@ -73,5 +78,6 @@ export const girls: Girl[] = [
     relationship: "Single",
     personality: "Bold",
     stats: { affection: 0, lust: 0, mood: 50, trust: 0, love: 0 },
+    gradient: "from-green-200 via-lime-300 to-emerald-400",
   },
 ];
