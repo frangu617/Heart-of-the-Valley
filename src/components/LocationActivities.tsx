@@ -25,6 +25,7 @@ type Props = {
   dayOfWeek: DayOfWeek;
   onUnlockCharacter?: (characterName: string) => void;
   onSetFlag?: (flag: GameplayFlag) => void;
+  onTriggerEvent?: (characterName: string, eventId: string) => void;
 };
 
 export default function LocationActivitiesPanel({
@@ -36,6 +37,7 @@ export default function LocationActivitiesPanel({
   dayOfWeek,
   onUnlockCharacter,
   onSetFlag,
+  onTriggerEvent,
 }: Props) {
   const activities: LocationActivity[] = activitiesMap[location] ?? [];
 
@@ -138,15 +140,16 @@ export default function LocationActivitiesPanel({
       alert("A Girl approaches you with a smile.");
     }
 
-    //Unlock Yumi after teaching class
+    //Trigger Yumi's first meeting event after teaching class
     if (location === "Classroom" && act.name === "Teach Class") {
-      // Notify parent component to unlock Yumi
-      if (onUnlockCharacter) {
-        onUnlockCharacter("Yumi");
-      }
       // Set flag for first time teaching
       if (onSetFlag) {
         onSetFlag("firstTimeWorked");
+      }
+
+      // Trigger Yumi's first meeting event dialogue
+      if (onTriggerEvent) {
+        onTriggerEvent("Yumi", "yumi_first_meeting");
       }
     }
 

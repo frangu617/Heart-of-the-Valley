@@ -1368,23 +1368,46 @@ export default function GamePage() {
                 dayOfWeek={dayOfWeek}
                 onUnlockCharacter={(name) => {
                   setCharacterUnlocks((prev) => ({ ...prev, [name]: true }));
-                  // triggers for character unlocks
-                  // if (name === "Ruby") {
-                  //   // Small delay to let the unlock register
-                  //   setTimeout(() => {
-                  //     const firstMeeting = firstMeetingDialogues["Ruby"];
-                  //     if (firstMeeting) {
-                  //       const characterImage = getCharacterImage(
-                  //         girls.find((g) => g.name === "Ruby")!,
-                  //         currentLocation,
-                  //         hour
-                  //       );
-                  //       startDialogue(firstMeeting, characterImage, null);
-                  //     }
-                  //   }, 100);
-                  // }
                 }}
                 onSetFlag={setFlag}
+                onTriggerEvent={(characterName, eventId) => {
+                  // Get the event data
+                  const characterEvents = getCharacterEvents(characterName);
+                  const event = characterEvents.find((e) => e.id === eventId);
+
+                  if (event) {
+                    console.log(`🎉 Triggering event: ${event.name}`);
+
+                    // Start the dialogue
+                    const characterImage = `/images/characters/${characterName.toLowerCase()}/casual/neutral.webp`;
+                    startDialogue(
+                      event.dialogue,
+                      characterImage,
+                      undefined,
+                      characterName
+                    );
+
+                    // Apply rewards (including unlocking the character)
+                    if (event.rewards) {
+                      if (event.rewards.unlockCharacters) {
+                        event.rewards.unlockCharacters.forEach((name) => {
+                          setCharacterUnlocks((prev) => ({
+                            ...prev,
+                            [name]: true,
+                          }));
+                          console.log(`🔓 ${name} unlocked via event!`);
+                        });
+                      }
+
+                      if (event.rewards.setFlags) {
+                        event.rewards.setFlags.forEach((flag) => {
+                          setFlag(flag);
+                          console.log(`🚩 Flag set: ${flag}`);
+                        });
+                      }
+                    }
+                  }
+                }}
               />
             </div>
           )}

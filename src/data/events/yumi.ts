@@ -66,6 +66,7 @@ export const yumiEvents: CharacterEvent[] = createCharacterEvents("Yumi", [
     },
     rewards: {
       setFlags: ["hasMetYumi"],
+      unlockCharacters: ["Yumi"],
     },
   },
 ]);
