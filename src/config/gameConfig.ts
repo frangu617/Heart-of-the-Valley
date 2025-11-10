@@ -210,6 +210,7 @@ export const LOCATION_CATEGORIES = {
   public: ['Mall', 'Cafe', 'Park', 'Cinema', 'Restaurant'],
   fitness: ['Gym'],
   nightlife: ['Club', 'Bar'],
+  girl_home: ['Iris Livingroom', 'Iris Kitchen', 'Iris Bedroom', 'Dawn Bedroom']
 };
 
 /**
