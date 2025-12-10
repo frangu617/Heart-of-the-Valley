@@ -109,8 +109,8 @@ export default function LocationCard({
         {/* NEW: Pending event indicator */}
         {!pendingEncounter && pendingEvent && (
           <div className="absolute top-2 left-2">
-            <div className="bg-gradient-to-r from-purple-500 to-blue-500 text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg flex items-center gap-1 animate-pulse">
-              <span>✨</span>
+            <div className="bg-yellow-300 text-yellow-900 text-xs px-3 py-1.5 rounded-full font-bold shadow-lg flex items-center gap-1 animate-pulse border border-yellow-500">
+              <span className="text-base">?</span>
               <span>{pendingEvent.characterName}</span>
             </div>
           </div>

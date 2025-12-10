@@ -7,6 +7,7 @@ import {
 import { PlayerStats, GirlStats } from "@/data/characters";
 import { getCharacterImage } from "@/lib/characterImages";
 import { Girl } from "@/data/characters";
+import { getTimeOfDay } from "@/lib/time";
 
 interface Props {
   dialogue: Dialogue;
@@ -62,12 +63,6 @@ const checkChoiceCondition = (
 
   // Check time of day
   if (condition.timeOfDay && hour !== undefined) {
-    const getTimeOfDay = (h: number) => {
-      if (h >= 6 && h < 12) return "morning";
-      if (h >= 12 && h < 17) return "afternoon";
-      if (h >= 17 && h < 21) return "evening";
-      return "night";
-    };
     if (getTimeOfDay(hour) !== condition.timeOfDay) {
       return false;
     }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { getTimeOfDay } from "@/lib/time";
 import { PlayerStats } from "../data/characters";
 import { Girl } from "../data/characters";
 import { DayOfWeek } from "../data/gameConstants";
@@ -33,12 +34,9 @@ export default function PhoneMenu({
 }: Props) {
   const [activeTab, setActiveTab] = useState<PhoneTab>("stats");
 
-  const getTimeOfDay = () => {
-    if (hour < 12) return "Morning";
-    if (hour < 17) return "Afternoon";
-    if (hour < 21) return "Evening";
-    return "Night";
-  };
+  const timeOfDay = getTimeOfDay(hour);
+  const timeOfDayLabel =
+    timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1);
 
   const getStatColor = (value: number, max: number = 100) => {
     const percentage = (value / max) * 100;
@@ -116,7 +114,7 @@ export default function PhoneMenu({
           <div>
             <h2 className="text-xl font-bold">My Phone</h2>
             <p className="text-xs opacity-90">
-              {dayOfWeek || "Monday"} - {hour}:00 {getTimeOfDay()}
+              {dayOfWeek || "Monday"} - {hour}:00 {timeOfDayLabel}
             </p>
           </div>
           <button

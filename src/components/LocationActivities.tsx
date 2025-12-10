@@ -25,6 +25,7 @@ type Props = {
   dayOfWeek: DayOfWeek;
   onUnlockCharacter?: (characterName: string) => void;
   onSetFlag?: (flag: GameplayFlag) => void;
+  gameplayFlags?: Set<GameplayFlag>;
 };
 
 export default function LocationActivitiesPanel({
@@ -35,6 +36,8 @@ export default function LocationActivitiesPanel({
   darkMode,
   dayOfWeek,
   onUnlockCharacter,
+  onSetFlag,
+  gameplayFlags,
 }: Props) {
   const activities: LocationActivity[] = activitiesMap[location] ?? [];
 
@@ -129,6 +132,8 @@ export default function LocationActivitiesPanel({
       location === "Gym" &&
       (act.name === "Workout" || act.name === "Light Exercise")
     ) {
+      onSetFlag?.("firstWorkout");
+      onSetFlag?.("hasMetRuby");
       // Notify parent component to unlock Ruby
       if (onUnlockCharacter) {
         onUnlockCharacter("Ruby");
@@ -142,10 +147,17 @@ export default function LocationActivitiesPanel({
       location === "Classroom" &&
       act.name === "Teach Class"
     ) {
+      onSetFlag?.("firstTimeWorked");
+      onSetFlag?.("hasMetYumi");
       // Notify parent component to unlock Yumi
       if (onUnlockCharacter) {
         onUnlockCharacter("Yumi");
       }
+    }
+
+    // Mark hallway neighbor encounter readiness after any paid work shift
+    if (act.name.toLowerCase().includes("work")) {
+      onSetFlag?.("firstTimeWorked");
     }
 
     showActivityFeedback(fullActivity);
@@ -228,7 +240,21 @@ export default function LocationActivitiesPanel({
               title={act.desc ?? ""}
             >
               <div className="flex items-center justify-between">
-                <span className="font-semibold">
+                <span className="font-semibold flex items-center gap-2">
+                  {location === "Gym" &&
+                    (act.name === "Workout" || act.name === "Light Exercise") &&
+                    !gameplayFlags?.has("hasMetRuby") && (
+                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-yellow-300 text-yellow-900 text-xs font-bold border border-yellow-500">
+                        ?
+                      </span>
+                    )}
+                  {location === "Classroom" &&
+                    act.name === "Teach Class" &&
+                    !gameplayFlags?.has("hasMetYumi") && (
+                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-yellow-300 text-yellow-900 text-xs font-bold border border-yellow-500">
+                      ?
+                    </span>
+                  )}
                   {act.icon ? <span className="mr-2">{act.icon}</span> : null}
                   {act.name}
                 </span>

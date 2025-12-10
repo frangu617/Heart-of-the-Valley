@@ -48,7 +48,7 @@ export const yumiDialogues: Record<string, Dialogue> = {
       {
         speaker: "Yumi",
         text: "Thank you so much, Professor! I really appreciate it.",
-        expression: "love",
+        expression: "shy",
       },
     ],
   },

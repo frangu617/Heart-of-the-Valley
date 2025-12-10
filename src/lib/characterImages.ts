@@ -76,9 +76,9 @@ export function getCharacterImage(
 
   // Special logic for home locations:
   // Before 6 PM, use casual clothes
-  // After 6 PM, use home/pajama outfits
+  // After 7 PM, use home/pajama outfits
   if (homeLocations.includes(location)) {
-    if (hour < 18) {
+    if (hour < 19) {
       category = "casual";
     } else {
       category = "home";

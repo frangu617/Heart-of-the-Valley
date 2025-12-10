@@ -1,3 +1,4 @@
+import { getTimeOfDay } from "@/lib/time";
 import { PlayerStats } from "../data/characters";
 import { DayOfWeek } from "../data/gameConstants";
 
@@ -16,12 +17,9 @@ export default function StatsPanel({
   darkMode = false,
   onSave,
 }: Props) {
-  const getTimeOfDay = () => {
-    if (hour < 12) return "Morning";
-    if (hour < 17) return "Afternoon";
-    if (hour < 21) return "Evening";
-    return "Night";
-  };
+  const timeOfDay = getTimeOfDay(hour);
+  const timeOfDayLabel =
+    timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1);
 
   const getStatColor = (value: number, max: number = 100) => {
     const percentage = (value / max) * 100;
@@ -86,7 +84,7 @@ export default function StatsPanel({
       <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-4 text-white text-center">
         <div className="text-sm font-semibold mb-1">{dayOfWeek}</div>
         <div className="text-3xl font-bold">{hour}:00</div>
-        <div className="text-sm opacity-90">{getTimeOfDay()}</div>
+        <div className="text-sm opacity-90">{timeOfDayLabel}</div>
       </div>
 
       {/* Stats */}

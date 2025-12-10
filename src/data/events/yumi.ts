@@ -10,9 +10,9 @@ export const yumiEvents: CharacterEvent[] = [
     conditions: {
       minAffection: 0,
       minTrust: 0,
-      minHour: 15,
-      maxHour: 20,
-      requiredLocation: "classroom",
+      minHour: 10,
+      maxHour: 14,
+      requiredLocation: "Classroom",
     },
     dialogue: {
       id: "yumi_first_meeting",
@@ -59,6 +59,10 @@ export const yumiEvents: CharacterEvent[] = [
           text: "There's genuine admiration in her eyes as she speaks.",
         },
       ],
+    },
+    rewards: {
+      setFlags: ["hasMetYumi"],
+      unlockCharacters: ["Yumi"],
     },
   },
 ];

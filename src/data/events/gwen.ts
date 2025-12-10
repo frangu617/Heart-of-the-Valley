@@ -53,5 +53,9 @@ export const gwenEvents: CharacterEvent[] = [
         },
       ],
     },
+    rewards: {
+      setFlags: ["hasMetGwen"],
+      unlockCharacters: ["Gwen"],
+    },
   },
 ];

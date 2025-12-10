@@ -20,6 +20,8 @@ import { getLocationBackground } from "../lib/locationImages";
 import { checkRandomEvent } from "../lib/randomEventSystem";
 import { getCharacterEvents } from "../data/events/index";
 import { findTriggeredEvent } from "../lib/eventSystem";
+import { calculateGameTime, getTimeOfDay } from "../lib/time";
+import { applyCharacterEventRewards } from "../lib/rewards";
 
 // Data / Types
 
@@ -39,10 +41,7 @@ import {
   getNextDay,
   DAYS_OF_WEEK,
 } from "../data/gameConstants";
-import {
-  locationDescriptions,
-  getTimeOfDay,
-} from "../data/locationDescriptions";
+import { locationDescriptions } from "../data/locationDescriptions";
 import {
   introDialogue,
   characterDialogues,
@@ -120,6 +119,9 @@ export default function GamePage() {
   const [scheduledEncounters, setScheduledEncounters] = useState<
     ScheduledEncounter[]
   >([]);
+  const [interactionHistory, setInteractionHistory] = useState<
+    Record<string, Set<string>>
+  >({});
 
   type GameState =
     | "mainMenu"
@@ -190,11 +192,6 @@ export default function GamePage() {
   // };
 
   // ✅ helpers
-  const getGameTimeHours = useCallback((day: DayOfWeek, h: number) => {
-    const idx = Math.max(0, DAYS_OF_WEEK.indexOf(day));
-    return idx * MAX_HOUR + h;
-  }, []);
-
    const hasFlag = (flag: GameplayFlag): boolean => {
      return gameplayFlags.has(flag);
    };
@@ -283,23 +280,20 @@ export default function GamePage() {
         );
         startDialogue(characterEvent.dialogue, characterImage, null);
 
-        if (characterEvent.rewards) {
-          const updatedPlayer = { ...player };
-          if (characterEvent.rewards.playerMoney) {
-            updatedPlayer.money += characterEvent.rewards.playerMoney;
+        const updatedPlayer = applyCharacterEventRewards(
+          player,
+          characterEvent.rewards,
+          {
+            onSetFlag: setFlag,
+            onUnlockCharacter: (characterName) => {
+              const name = characterName as keyof typeof characterUnlocks;
+              setCharacterUnlocks((prev) =>
+                prev[name] ? prev : { ...prev, [name]: true }
+              );
+            },
           }
-          if (characterEvent.rewards.playerStats) {
-            Object.entries(characterEvent.rewards.playerStats).forEach(
-              ([key, value]) => {
-                if (
-                  value &&
-                  typeof updatedPlayer[key as keyof PlayerStats] === "number"
-                ) {
-                  (updatedPlayer[key as keyof PlayerStats] as number) += value;
-                }
-              }
-            );
-          }
+        );
+        if (updatedPlayer !== player) {
           setPlayer(updatedPlayer);
         }
 
@@ -353,13 +347,26 @@ export default function GamePage() {
   }, []);
 
   useEffect(() => {
-    setCharacterUnlocks({
-      Yumi: hasFlag("hasMetYumi"),
-      Gwen: hasFlag("hasMetGwen"),
-      Dawn: hasFlag("hasMetDawn"),
-      Ruby: hasFlag("hasMetRuby"),
+    setCharacterUnlocks((prev) => {
+      const next = {
+        Yumi: gameplayFlags.has("hasMetYumi"),
+        Gwen: gameplayFlags.has("hasMetGwen"),
+        Dawn: gameplayFlags.has("hasMetDawn"),
+        Ruby: gameplayFlags.has("hasMetRuby"),
+      };
+
+      // Avoid unnecessary re-renders
+      if (
+        prev.Yumi === next.Yumi &&
+        prev.Gwen === next.Gwen &&
+        prev.Dawn === next.Dawn &&
+        prev.Ruby === next.Ruby
+      ) {
+        return prev;
+      }
+      return next;
     });
-  }, [gameplayFlags, hasFlag]);
+  }, [gameplayFlags]);
   // girls with schedules + overrides
   const girls = useMemo(() => {
     return baseGirls
@@ -734,7 +741,7 @@ export default function GamePage() {
   };
 
   // time
-  const spendTime = (amount: number) => {
+const spendTime = (amount: number) => {
     const newHour = hour + amount;
 
     if (newHour >= MAX_HOUR) {
@@ -750,6 +757,7 @@ export default function GamePage() {
 
       // Clear selected girl when day changes
       setSelectedGirl(null);
+      setInteractionHistory({});
 
       alert(`A new day begins! It's ${nextDay} morning.`);
     } else {
@@ -785,6 +793,7 @@ export default function GamePage() {
       Ruby: false,
     });
     setScheduledEncounters([]);
+    setInteractionHistory({});
 
     // Now start the intro
     setGameState("intro");
@@ -838,6 +847,37 @@ export default function GamePage() {
   useEffect(() => {
     checkPendingEvents();
   }, [checkPendingEvents]);
+
+  const eventReadyByGirl = useMemo(
+    () =>
+      new Set(
+        pendingEvents
+          .filter((e) => e.location === currentLocation)
+          .map((e) => e.characterName)
+      ),
+    [pendingEvents, currentLocation]
+  );
+
+  const hasInteractedToday = useCallback(
+    (girlName: string, actionLabel: string) => {
+      const key = `${dayOfWeek}:${girlName}`;
+      const set = interactionHistory[key];
+      return set ? set.has(actionLabel) : false;
+    },
+    [dayOfWeek, interactionHistory]
+  );
+
+  const recordInteraction = useCallback(
+    (girlName: string, actionLabel: string) => {
+      const key = `${dayOfWeek}:${girlName}`;
+      setInteractionHistory((prev) => {
+        const current = prev[key] ? new Set(prev[key]) : new Set<string>();
+        current.add(actionLabel);
+        return { ...prev, [key]: current };
+      });
+    },
+    [dayOfWeek]
+  );
 
   if (gameState == "nameInput") {
     return <NameInput onNameSubmit={handleNameSubmit} darkMode={darkMode} />;
@@ -1081,6 +1121,13 @@ export default function GamePage() {
                         } animate-fadeIn`}
                         style={{ animationDelay: `${index * 0.2}s` }}
                       >
+                        {eventReadyByGirl.has(girl.name) && (
+                          <div className="absolute -top-2 -right-2 z-30">
+                            <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-yellow-300 text-yellow-900 font-bold border-2 border-yellow-500 shadow">
+                              ?
+                            </span>
+                          </div>
+                        )}
                         {/* Shadow */}
                         <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-24 sm:w-32 h-3 sm:h-4 bg-black/30 rounded-full blur-md" />
 
@@ -1165,15 +1212,16 @@ export default function GamePage() {
               <div className="mt-4 overflow-x-auto [-webkit-overflow-scrolling:touch]">
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                   {locationGraph[currentLocation]?.map((loc) => (
-                    <LocationCard
-                      key={loc.name}
-                      location={loc}
-                      onMove={moveTo}
-                      girls={girls}
-                      darkMode={darkMode}
-                      scheduledEncounters={scheduledEncounters}
-                    />
-                  ))}
+                  <LocationCard
+                    key={loc.name}
+                    location={loc}
+                    onMove={moveTo}
+                    girls={girls}
+                    darkMode={darkMode}
+                    scheduledEncounters={scheduledEncounters}
+                    pendingEvents={pendingEvents}
+                  />
+                ))}
                 </div>
               </div>
             </div>
@@ -1196,20 +1244,20 @@ export default function GamePage() {
                 eventState={
                   characterEventStates[selectedGirl.name] ?? {
                     characterName: selectedGirl.name,
-                    eventHistory: [] as EventHistory[],
-                    lastInteractionTime: getGameTimeHours(dayOfWeek, hour),
-                  }
-                }
-                onEventTriggered={(eventId) => {
-                  const name = selectedGirl.name;
-                  const prevState = characterEventStates[name] ?? {
-                    characterName: name,
-                    eventHistory: [] as EventHistory[],
-                    lastInteractionTime: 0,
-                  };
+                eventHistory: [] as EventHistory[],
+                lastInteractionTime: calculateGameTime(dayOfWeek, hour),
+              }
+            }
+            onEventTriggered={(eventId) => {
+              const name = selectedGirl.name;
+              const prevState = characterEventStates[name] ?? {
+                characterName: name,
+                eventHistory: [] as EventHistory[],
+                lastInteractionTime: 0,
+              };
 
-                  const gameTime = getGameTimeHours(dayOfWeek, hour);
-                  const lastTriggered = { day: dayOfWeek, hour, gameTime };
+              const gameTime = calculateGameTime(dayOfWeek, hour);
+              const lastTriggered = { day: dayOfWeek, hour, gameTime };
 
                   const idx = prevState.eventHistory.findIndex(
                     (e) => e.eventId === eventId
@@ -1243,6 +1291,8 @@ export default function GamePage() {
                 }}
                 darkMode={darkMode}
                 onScheduleDate={handleScheduleDate}
+                hasInteractedToday={hasInteractedToday}
+                onInteractionLogged={recordInteraction}
               />
             </div>
           ) : (
@@ -1254,6 +1304,7 @@ export default function GamePage() {
                 spendTime={spendTime}
                 darkMode={darkMode}
                 dayOfWeek={dayOfWeek}
+                gameplayFlags={gameplayFlags}
                 onUnlockCharacter={(name) => {
                   setCharacterUnlocks((prev) => ({ ...prev, [name]: true }));
                   // triggers for character unlocks

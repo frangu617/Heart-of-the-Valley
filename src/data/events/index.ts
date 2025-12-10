@@ -3,8 +3,8 @@ import { CharacterEvent } from "./types";
 import { irisEvents } from "./iris";
 // Import other character events as you create them
 import { dawnEvents } from "./dawn";
-// import { gwenEvents } from "./gwen";
-// import { yumiEvents } from "./yumi";
+import { gwenEvents } from "./gwen";
+import { yumiEvents } from "./yumi";
 import { rubyEvents } from "./ruby";
 
 export * from "./types";
@@ -13,8 +13,8 @@ export * from "./types";
 export const characterEvents: Record<string, CharacterEvent[]> = {
   Iris: irisEvents,
   Dawn: dawnEvents,
-  // Gwen: gwenEvents,
-  // Yumi: yumiEvents,
+  Gwen: gwenEvents,
+  Yumi: yumiEvents,
   Ruby: rubyEvents,
 };
 

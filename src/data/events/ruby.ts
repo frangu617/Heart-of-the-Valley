@@ -14,7 +14,7 @@ export const rubyEvents: CharacterEvent[] = [
       minHour: 18,
       maxHour: 24,
       requiredLocation: "Hallway",
-      requiredFlags: ["firstWorkout"]
+      requiredFlags: ["firstWorkout"],
     },
     dialogue: {
       id: "ruby_first_meeting",
@@ -52,6 +52,10 @@ export const rubyEvents: CharacterEvent[] = [
           text: "For a moment, something flickers in her expression before she quickly looks away.",
         },
       ],
+    },
+    rewards: {
+      setFlags: ["hasMetRuby"],
+      unlockCharacters: ["Ruby"],
     },
   },
   {

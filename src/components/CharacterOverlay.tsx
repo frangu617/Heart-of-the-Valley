@@ -12,8 +12,9 @@ import { DayOfWeek } from "@/data/gameConstants";
 import { CharacterEventState, GameplayFlag } from "@/data/events/types";
 import { findTriggeredEvent } from "@/lib/eventSystem";
 import { getCharacterEvents } from "@/data/events";
+import { applyCharacterEventRewards } from "@/lib/rewards";
 // import { firstMeetingDialogues } from "../data/dialogues/index";
-import  DatePlanner from "./DatePlanner";
+import DatePlanner from "./DatePlanner";
 import { DateLocation } from "@/data/dates/types";
 import { useState } from "react";
 import { getCharacterImage } from "@/lib/characterImages";
@@ -49,6 +50,8 @@ interface Props {
   }) => void;
   onSetFlag?: (flag: GameplayFlag) => void
   onUnlockCharacter?: (characterName: string) => void
+  hasInteractedToday?: (girlName: string, actionLabel: string) => boolean;
+  onInteractionLogged?: (girlName: string, actionLabel: string) => void;
 }
 
 export default function CharacterOverlay({
@@ -68,6 +71,8 @@ export default function CharacterOverlay({
   gameplayFlags,
   onSetFlag,
   onUnlockCharacter,
+  hasInteractedToday,
+  onInteractionLogged,
 }: Props) {
   const [showDatePlanner, setShowDatePlanner] = useState(false);
   // Check for triggered events when component mounts or dependencies change
@@ -136,50 +141,35 @@ export default function CharacterOverlay({
       onEventTriggered(triggeredEvent.id);
       onStartDialogue(triggeredEvent.dialogue, characterImage, undefined);
 
-      if (triggeredEvent.rewards) {
-        const updatedPlayer = { ...player };
-
-        if (triggeredEvent.rewards.playerMoney) {
-          updatedPlayer.money += triggeredEvent.rewards.playerMoney;
-        }
-
-        if (triggeredEvent.rewards.playerStats) {
-          if (triggeredEvent.rewards.playerStats.intelligence) {
-            updatedPlayer.intelligence +=
-              triggeredEvent.rewards.playerStats.intelligence;
-          }
-          if (triggeredEvent.rewards.playerStats.fitness) {
-            updatedPlayer.fitness += triggeredEvent.rewards.playerStats.fitness;
-          }
-          if (triggeredEvent.rewards.playerStats.style) {
-            updatedPlayer.style += triggeredEvent.rewards.playerStats.style;
-          }
-        }
-
-        setPlayer(updatedPlayer);
-        if (triggeredEvent.rewards.setFlags) {
-          triggeredEvent.rewards.setFlags.forEach((flag) => {
+      const updatedPlayer = applyCharacterEventRewards(
+        player,
+        triggeredEvent.rewards,
+        {
+          onSetFlag: (flag) => {
             if (onSetFlag) {
               onSetFlag(flag);
               console.log(`🚩 Flag set: ${flag}`);
             }
-          });
-        }
-
-        // ✨ NEW: Unlock characters from event rewards
-        if (triggeredEvent.rewards.unlockCharacters) {
-          triggeredEvent.rewards.unlockCharacters.forEach((characterName) => {
+          },
+          onUnlockCharacter: (characterName) => {
             if (onUnlockCharacter) {
               onUnlockCharacter(characterName);
               console.log(`🔓 ${characterName} unlocked!`);
             }
-          });
+          },
         }
+      );
+      if (updatedPlayer !== player) {
+        setPlayer(updatedPlayer);
       }
     }
   }, []); // ✨ Only re-run when girl changes
   const interact = (action: Interaction) => {
     // ... rest of your existing interact function stays the same
+    if (hasInteractedToday && hasInteractedToday(girl.name, action.label)) {
+      alert(`You've already done "${action.label}" with ${girl.name} today. Try again tomorrow.`);
+      return;
+    }
     // Check requirements
     if (
       action.requiresItem &&
@@ -264,6 +254,9 @@ export default function CharacterOverlay({
     }
 
     onStartDialogue(dialogue, characterImage, action.girlEffects);
+    if (onInteractionLogged) {
+      onInteractionLogged(girl.name, action.label);
+    }
   };
 
   // ... rest of your component (getActionIcon, getActionColor, getFacialExpression, etc.) stays the same
@@ -421,8 +414,13 @@ export default function CharacterOverlay({
           const isDisabled = Boolean(
             (action.requiresItem &&
               !player.inventory.includes(action.requiresItem)) ||
-              (action.locationContext && action.locationContext !== location)
+              (action.locationContext && action.locationContext !== location) ||
+              (hasInteractedToday &&
+                hasInteractedToday(girl.name, action.label))
           );
+          const usedToday =
+            hasInteractedToday &&
+            hasInteractedToday(girl.name, action.label);
 
           return (
             <button
@@ -446,7 +444,14 @@ export default function CharacterOverlay({
                   <span className="text-lg">{getActionIcon(action.type)}</span>
                   <span>{action.label}</span>
                 </span>
-                <span className="text-xs opacity-75">{action.timeCost}h</span>
+                <span className="text-xs opacity-75 flex items-center gap-1">
+                  {usedToday && (
+                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-yellow-300 text-yellow-900 text-[10px] font-bold border border-yellow-500">
+                      ✓
+                    </span>
+                  )}
+                  {action.timeCost}h
+                </span>
               </div>
 
               {!isDisabled && (
