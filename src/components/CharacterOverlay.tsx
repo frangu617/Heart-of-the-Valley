@@ -1,8 +1,8 @@
+import Image from "next/image";
 // src/components/CharacterOverlay.tsx - Updated with event system
-import { Girl, GirlStats } from "../data/characters";
-import { PlayerStats } from "../data/characters";
+import { Girl, GirlStats, PlayerStats } from "../data/characters";
 import { Interaction, interactionMenu } from "../data/interactions";
-import { Dispatch, SetStateAction, useEffect } from "react";
+import { Dispatch, SetStateAction, useEffect, useState, useCallback } from "react";
 import {
   characterDialogues,
   getDefaultDialogue,
@@ -16,7 +16,6 @@ import { applyCharacterEventRewards } from "@/lib/rewards";
 // import { firstMeetingDialogues } from "../data/dialogues/index";
 import DatePlanner from "./DatePlanner";
 import { DateLocation } from "@/data/dates/types";
-import { useState } from "react";
 import { getCharacterImage } from "@/lib/characterImages";
 // import { get } from "http";
 
@@ -119,6 +118,17 @@ export default function CharacterOverlay({
     setShowDatePlanner(false);
     spendTime(1); // Planning takes time
   };
+
+  const getFacialExpression = useCallback(() => {
+    const { affection, mood, love } = girl.stats;
+    const totalPositive = affection + love;
+
+    if (love >= 50 || totalPositive >= 80) return "love";
+    if (affection >= 40 && mood >= 60) return "happy";
+    if (mood < 30) return "sad";
+    if (affection < 10) return "neutral";
+    return "neutral";
+  }, [girl.stats]);
   
   useEffect(() => {
     // Check for other triggered events
@@ -163,7 +173,7 @@ export default function CharacterOverlay({
         setPlayer(updatedPlayer);
       }
     }
-  }, []); // ✨ Only re-run when girl changes
+  }, [girl, player, location, dayOfWeek, hour, eventState, gameplayFlags, getFacialExpression, onEventTriggered, onStartDialogue, onSetFlag, onUnlockCharacter, setPlayer]);
   const interact = (action: Interaction) => {
     // ... rest of your existing interact function stays the same
     if (hasInteractedToday && hasInteractedToday(girl.name, action.label)) {
@@ -295,17 +305,6 @@ export default function CharacterOverlay({
     }
   };
 
-  const getFacialExpression = () => {
-    const { affection, mood, love } = girl.stats;
-    const totalPositive = affection + love;
-
-    if (love >= 50 || totalPositive >= 80) return "love";
-    if (affection >= 40 && mood >= 60) return "happy";
-    if (mood < 30) return "sad";
-    if (affection < 10) return "neutral";
-    return "neutral";
-  };
-
   const expression = getFacialExpression();
 
   return (
@@ -329,17 +328,11 @@ export default function CharacterOverlay({
         <div className="relative group mb-4">
           <div className="absolute inset-0 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full blur-lg group-hover:blur-xl transition-all"></div>
           <div className="relative w-50 h-60 rounded-full border-4 border-white shadow-xl overflow-hidden">
-            <img
+            <Image
               src={`/images/characters/${girl.name.toLowerCase()}/casual/${expression}.webp`}
               alt={`${girl.name} - ${expression}`}
-              onError={(e) => {
-                e.currentTarget.src = `neutral.webp`;
-                e.currentTarget.onerror = () => {
-                  e.currentTarget.src =
-                    'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><circle cx="100" cy="100" r="100" fill="%23e879f9"/><circle cx="70" cy="80" r="10" fill="white"/><circle cx="130" cy="80" r="10" fill="white"/><path d="M 60 130 Q 100 150 140 130" stroke="white" stroke-width="5" fill="none"/></svg>';
-                };
-              }}
-              className="w-full h-full object-cover"
+              layout="fill"
+              objectFit="cover"
               style={{
                 objectPosition: "center 20%", // Show top portion (face)
                 transform: "scale(2)", // Zoom in 1.8x

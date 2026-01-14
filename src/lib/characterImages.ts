@@ -37,18 +37,11 @@ const locationToCategory: Record<string, LocationCategory> = {
 };
 
 // Check if location is a home location
-const homeLocations = [
-  "Bedroom",
-  "Living Room",
-  "Kitchen",
-  "Bathroom",
-  "Hallway",
-  "Iris' Living Room",
-  "Iris' Bedroom",
-  "Iris' Kitchen",
-  "Iris' Bathroom",
-  "Dawn's bedroom",
-];
+const homeLocations = new Set(
+  Object.entries(locationToCategory)
+    .filter(([, category]) => category === "home")
+    .map(([name]) => name)
+);
 
 // Determine relationship stance based on stats
 export function getRelationshipStance(girl: Girl): RelationshipStance {
@@ -77,7 +70,7 @@ export function getCharacterImage(
   // Special logic for home locations:
   // Before 6 PM, use casual clothes
   // After 7 PM, use home/pajama outfits
-  if (homeLocations.includes(location)) {
+  if (homeLocations.has(location)) {
     if (hour < 19) {
       category = "casual";
     } else {
@@ -85,27 +78,15 @@ export function getCharacterImage(
     }
   }
 
-  // Try specific combination first
   const specificImage = `/images/characters/${girlName}/${category}/${stance}.webp`;
-
-  // Fallback hierarchy
-  const fallbacks = [
-    specificImage,
-    `/images/characters/${girlName}/casual/${stance}.webp`,
-    `/images/characters/${girlName}/${category}_neutral.webp`,
-    `/images/characters/${girlName}/casual_${stance}.webp`,
-    `/images/characters/${girlName}/casual_neutral.webp`,
-    `/images/${girlName}.webp`,
-  ];
-
-  return fallbacks[0];
+  return specificImage;
 }
 
 // Get outfit description for image naming reference
 export function getOutfitDescription(location: string, hour: number): string {
   let category = locationToCategory[location] || "casual";
 
-  if (homeLocations.includes(location)) {
+  if (homeLocations.has(location)) {
     category = hour < 18 ? "casual" : "home";
   }
 

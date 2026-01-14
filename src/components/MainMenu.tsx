@@ -1,17 +1,17 @@
+import Image from "next/image";
+
 interface Props {
   onNewGame: () => void;
   onContinue: () => void;
   hasSaveData: boolean;
   darkMode?: boolean;
-  onToggleDarkMode?: () => void;
 }
 
 export default function MainMenu({
   onNewGame,
   onContinue,
   hasSaveData,
-  darkMode = false,
-  onToggleDarkMode,
+  darkMode = true,
 }: Props) {
   return (
     <div
@@ -21,17 +21,6 @@ export default function MainMenu({
           : "bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200"
       }`}
     >
-      {/* Dark Mode Toggle */}
-      {onToggleDarkMode && (
-        <button
-          onClick={onToggleDarkMode}
-          className="fixed top-4 right-4 bg-white/20 hover:bg-white/30 backdrop-blur-sm px-4 py-2 rounded-lg font-semibold transition-all text-white text-xl"
-          title="Toggle dark mode"
-        >
-          {darkMode ? "☀️" : "🌙"}
-        </button>
-      )}
-
       <div
         className={`backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 max-w-2xl w-full border-4 transition-colors duration-300 ${
           darkMode
@@ -44,7 +33,7 @@ export default function MainMenu({
           {/* <h1 className="text-6xl md:text-7xl font-bold mb-4 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-transparent bg-clip-text animate-pulse">
             💖 Heart of the Valley
           </h1> */}
-          <img src="/images/logo.png" alt="Heart of the Valley" className="justify-center" />
+          <Image width={400} height={400} src="/images/logo.png" alt="Heart of the Valley" className="mx-auto" />
           <p
             className={`text-xl italic ${
               darkMode ? "text-gray-300" : "text-gray-600"

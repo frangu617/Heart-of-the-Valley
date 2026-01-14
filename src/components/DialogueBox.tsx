@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Dialogue,
@@ -111,7 +112,7 @@ const checkChoiceCondition = (
 export default function DialogueBox({
   dialogue,
   onComplete,
-  darkMode = false,
+  darkMode = true,
   characterImage,
   characterName,
   onSkip,
@@ -150,6 +151,12 @@ export default function DialogueBox({
   const isPlayerSpeaking = currentLine?.speaker === "You";
 
   const chosenOptionRef = useRef<DialogueChoice | undefined>(undefined);
+
+  const replaceTemplateVariables = useCallback((text: string): string => {
+    return text
+      .replace(/\{playerName\}/g, playerName || "You")
+      .replace(/\{PlayerName\}/g, playerName || "You");
+  }, [playerName]);
 
   // ✅ Move this after we know currentLine exists
  const displaySpeaker = characterName || (currentLine?.speaker !== "You" ? currentLine?.speaker : null) || "";
@@ -220,7 +227,7 @@ export default function DialogueBox({
     }, typingSpeed);
 
     return () => clearInterval(interval);
-  }, [currentLineIndex, currentLine]);
+  }, [currentLineIndex, currentLine, dialogue.lines.length, onComplete, accumulatedStatChanges, currentLocation, currentHour, currentDay, playerStats, girlStats, replaceTemplateVariables]);
 
   const handleChoice = (choice: DialogueChoice) => {
     console.log("👆 DialogueBox: Choice selected:", choice);
@@ -329,25 +336,17 @@ export default function DialogueBox({
 
   const dynamicCharacterImage = getCurrentCharacterImage();
 
-  const replaceTemplateVariables = (text: string): string => {
-    return text
-      .replace(/\{playerName\}/g, playerName || "You")
-      .replace(/\{PlayerName\}/g, playerName || "You");
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-between pointer-events-none">
       {/* ===== BACKGROUND LAYER ===== */}
       {/* Event Media - Full Screen Background */}
       {hasImageSlide && (
-        <img
+        <Image
           src={imageSlide}
           alt="Background"
-          onError={(e) => {
-            e.currentTarget.src =
-              'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23666" width="1920" height="1080"/></svg>';
-          }}
-          className="absolute inset-0 w-full h-full object-cover opacity-30 z-0"
+          layout="fill"
+          objectFit="cover"
+          className="absolute inset-0 opacity-30 z-0"
         />
       )}
 
@@ -364,14 +363,12 @@ export default function DialogueBox({
 
       {/* Location Background - When NO Event */}
       {!hasEventMedia && locationImage && (
-        <img
+        <Image
           src={locationImage}
           alt="Location Background"
-          onError={(e) => {
-            e.currentTarget.src =
-              'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23333" width="1920" height="1080"/></svg>';
-          }}
-          className="absolute inset-0 w-full h-full object-cover opacity-40 z-0"
+          layout="fill"
+          objectFit="cover"
+          className="absolute inset-0 opacity-40 z-0"
         />
       )}
 
@@ -399,14 +396,11 @@ export default function DialogueBox({
         <div className="flex-1 flex items-center justify-center pointer-events-none z-30 pt-8">
           <div className="relative w-11/12 max-w-4xl aspect-[4/3] bg-gradient-to-b from-gray-100 to-white rounded-2xl shadow-2xl overflow-hidden border-4 border-purple-300">
             {hasImageSlide && (
-              <img
+              <Image
                 src={imageSlide}
                 alt="Scene"
-                onError={(e) => {
-                  e.currentTarget.src =
-                    'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23666" width="1920" height="1080"/><text x="50%" y="50%" font-size="48" text-anchor="middle" fill="white">Image Coming Soon</text></svg>';
-                }}
-                className="w-full h-full object-cover"
+                layout="fill"
+                objectFit="cover"
               />
             )}
             {hasVideoSlide && (
@@ -433,15 +427,12 @@ export default function DialogueBox({
             <div className="relative animate-fadeIn">
               <div className="relative w-[400px] h-[600px] rounded-2xl overflow-hidden shadow-2xl border-4 border-white/80">
                 <div className="absolute inset-0 bg-gradient-to-b from-purple-200/90 via-pink-200/90 to-blue-200/90" />
-                <img
-                  src={dynamicCharacterImage}
+                <Image
+                  src={dynamicCharacterImage!}
                   alt={currentLine.speaker || "Character"}
-                  onError={(e) => {
-                    const el = e.currentTarget;
-                    el.src =
-                      'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><rect fill="%23e879f9" width="400" height="600"/></svg>';
-                  }}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  layout="fill"
+                  objectFit="cover"
+                  className="absolute inset-0"
                   style={{
                     objectPosition: "center 20%",
                     transform: "scale(1.9)",
@@ -463,15 +454,12 @@ export default function DialogueBox({
             <div className="relative animate-fadeIn">
               <div className="relative w-[280px] h-[420px] rounded-xl overflow-hidden shadow-2xl border-4 border-white/80">
                 <div className="absolute inset-0 bg-gradient-to-b from-purple-200/90 via-pink-200/90 to-blue-200/90" />
-                <img
-                  src={characterImage}
+                <Image
+                  src={characterImage!}
                   alt={currentLine.speaker || "Character"}
-                  onError={(e) => {
-                    const el = e.currentTarget;
-                    el.src =
-                      'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="280" height="420"><rect fill="%23e879f9" width="280" height="420"/></svg>';
-                  }}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  layout="fill"
+                  objectFit="cover"
+                  className="absolute inset-0"
                   style={{
                     objectPosition: "center 20%",
                     transform: "scale(1.8)",
@@ -496,14 +484,11 @@ export default function DialogueBox({
         <div className="flex-1 flex items-center justify-center pointer-events-none z-30 pt-4">
           <div className="relative w-11/12 max-w-2xl aspect-[4/3] bg-gradient-to-b from-gray-100 to-white rounded-xl shadow-2xl overflow-hidden border-4 border-purple-300">
             {hasImageSlide && (
-              <img
+              <Image
                 src={imageSlide}
                 alt="Scene"
-                onError={(e) => {
-                  e.currentTarget.src =
-                    'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23666" width="1920" height="1080"/></svg>';
-                }}
-                className="w-full h-full object-cover"
+                layout="fill"
+                objectFit="cover"
               />
             )}
             {hasVideoSlide && (

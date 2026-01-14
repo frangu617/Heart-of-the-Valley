@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Location } from "../data/locations";
 import { Girl } from "../data/characters";
 
@@ -33,7 +34,7 @@ export default function LocationCard({
   location,
   onMove,
   girls,
-  darkMode = false,
+  darkMode = true,
   scheduledEncounters = [],
   pendingEvents = []
 }: Props) {
@@ -69,13 +70,15 @@ export default function LocationCard({
             : "bg-gradient-to-b from-gray-100 to-white"
         }`}
       >
-        <img
+        <Image
           src={`/images/locations/${location.name
             .toLowerCase()
             .replace(/\s+/g, "_")
             .replace(/'/g, "")}/afternoon.png`}
           alt={location.name}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+          layout="fill"
+          objectFit="cover"
+          className="group-hover:scale-110 transition-transform duration-300"
         />
         {(location.cost > 0 || location.time > 0) && (
           <div className="absolute top-2 right-2 flex gap-1">

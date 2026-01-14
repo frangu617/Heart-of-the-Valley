@@ -1,4 +1,3 @@
-import React from "react";
 import { PlayerStats } from "../data/characters";
 import { DayOfWeek } from "../data/gameConstants";
 import {
@@ -6,14 +5,17 @@ import {
   LocationActivity as ImportedActivity,
 } from "../data/LocationActivities";
 import { GameplayFlag } from "@/data/events";
+import { applyPlayerStatDelta } from "@/lib/playerStats";
 
-export type LocationActivity = {
+type Activity = ImportedActivity & {
   id?: string;
-  name: string;
   desc?: string;
-  timeCost?: number;
-  icon?: string;
   perform?: (player: PlayerStats, ctx: { dayOfWeek: DayOfWeek }) => PlayerStats;
+};
+
+type RequirementFailure = {
+  alert: string;
+  inline: string;
 };
 
 type Props = {
@@ -39,9 +41,48 @@ export default function LocationActivitiesPanel({
   onSetFlag,
   gameplayFlags,
 }: Props) {
-  const activities: LocationActivity[] = activitiesMap[location] ?? [];
+  const activities: Activity[] = activitiesMap[location] ?? [];
 
-  if (!activities || activities.length === 0) {
+  const isRubyUnlockActivity = (activity: Activity) =>
+    location === "Gym" &&
+    (activity.name === "Workout" || activity.name === "Light Exercise");
+
+  const isYumiUnlockActivity = (activity: Activity) =>
+    location === "Classroom" && activity.name === "Teach Class";
+
+  const getRequirementFailures = (activity: Activity): RequirementFailure[] => {
+    const failures: RequirementFailure[] = [];
+    const requirements = activity.requirements;
+
+    if (!requirements) return failures;
+
+    const { minEnergy, minMoney, requiredItem } = requirements;
+
+    if (minEnergy && player.energy < minEnergy) {
+      failures.push({
+        alert: `You need at least ${minEnergy} energy for this activity!`,
+        inline: `⚡ Need ${minEnergy} energy`,
+      });
+    }
+
+    if (minMoney && player.money < minMoney) {
+      failures.push({
+        alert: `You need at least $${minMoney} for this activity!`,
+        inline: `💰 Need $${minMoney}`,
+      });
+    }
+
+    if (requiredItem && !player.inventory.includes(requiredItem)) {
+      failures.push({
+        alert: `You need a ${requiredItem} for this activity!`,
+        inline: `📦 Need ${requiredItem}`,
+      });
+    }
+
+    return failures;
+  };
+
+  if (activities.length === 0) {
     return (
       <div
         className={`rounded-2xl shadow-xl p-4 border-2 ${
@@ -62,62 +103,19 @@ export default function LocationActivitiesPanel({
     );
   }
 
-  const doActivity = (act: LocationActivity) => {
-    const fullActivity = activitiesMap[location]?.find(
-      (a: ImportedActivity) => a.name === act.name
-    ) as ImportedActivity | undefined;
-
-    // Check requirements
-    if (fullActivity?.requirements) {
-      const { minEnergy, minMoney, requiredItem } = fullActivity.requirements;
-
-      if (minEnergy && player.energy < minEnergy) {
-        alert(`You need at least ${minEnergy} energy for this activity!`);
-        return;
-      }
-
-      if (minMoney && player.money < minMoney) {
-        alert(`You need at least $${minMoney} for this activity!`);
-        return;
-      }
-
-      if (requiredItem && !player.inventory.includes(requiredItem)) {
-        alert(`You need a ${requiredItem} for this activity!`);
-        return;
-      }
+  const doActivity = (act: Activity) => {
+    const failures = getRequirementFailures(act);
+    if (failures.length > 0) {
+      alert(failures[0].alert);
+      return;
     }
 
     let next: PlayerStats;
 
     if (typeof act.perform === "function") {
       next = act.perform(player, { dayOfWeek });
-    } else if (fullActivity?.statEffects) {
-      next = { ...player };
-
-      Object.entries(fullActivity.statEffects).forEach(([key, value]) => {
-        const statKey = key as keyof PlayerStats;
-
-        if (statKey === "inventory") {
-          return;
-        }
-
-        if (typeof value === "number" && typeof next[statKey] === "number") {
-          const currentValue = next[statKey] as number;
-          const newValue = currentValue + value;
-
-          if (
-            statKey === "energy" ||
-            statKey === "mood" ||
-            statKey === "hunger"
-          ) {
-            (next[statKey] as number) = Math.max(0, Math.min(100, newValue));
-          } else if (statKey === "money") {
-            (next[statKey] as number) = Math.max(0, newValue);
-          } else {
-            (next[statKey] as number) = Math.max(0, newValue);
-          }
-        }
-      });
+    } else if (act.statEffects) {
+      next = applyPlayerStatDelta(player, act.statEffects);
     } else {
       next = {
         ...player,
@@ -128,10 +126,7 @@ export default function LocationActivitiesPanel({
     setPlayer(next);
     spendTime(act.timeCost ?? 1);
     //Unlock Ruby when working out at Gym
-    if (
-      location === "Gym" &&
-      (act.name === "Workout" || act.name === "Light Exercise")
-    ) {
+    if (isRubyUnlockActivity(act)) {
       onSetFlag?.("firstWorkout");
       onSetFlag?.("hasMetRuby");
       // Notify parent component to unlock Ruby
@@ -143,10 +138,7 @@ export default function LocationActivitiesPanel({
     }
 
     //Unlock Yumi after teaching class
-    if (
-      location === "Classroom" &&
-      act.name === "Teach Class"
-    ) {
+    if (isYumiUnlockActivity(act)) {
       onSetFlag?.("firstTimeWorked");
       onSetFlag?.("hasMetYumi");
       // Notify parent component to unlock Yumi
@@ -160,10 +152,10 @@ export default function LocationActivitiesPanel({
       onSetFlag?.("firstTimeWorked");
     }
 
-    showActivityFeedback(fullActivity);
+    showActivityFeedback(act);
   };
 
-  const showActivityFeedback = (activity: ImportedActivity | undefined) => {
+  const showActivityFeedback = (activity: Activity) => {
     if (!activity?.statEffects) return;
 
     const changes: string[] = [];
@@ -210,26 +202,18 @@ export default function LocationActivitiesPanel({
 
       <div className="grid grid-cols-1 gap-2">
         {activities.map((act) => {
-          const fullActivity = activitiesMap[location]?.find(
-            (a: ImportedActivity) => a.name === act.name
-          ) as ImportedActivity | undefined;
-
-          const isDisabled =
-            fullActivity?.requirements &&
-            ((fullActivity.requirements.minEnergy &&
-              player.energy < fullActivity.requirements.minEnergy) ||
-              (fullActivity.requirements.minMoney &&
-                player.money < fullActivity.requirements.minMoney) ||
-              (fullActivity.requirements.requiredItem &&
-                !player.inventory.includes(
-                  fullActivity.requirements.requiredItem
-                )));
+          const failures = getRequirementFailures(act);
+          const isDisabled = failures.length > 0;
+          const showRubyIndicator =
+            isRubyUnlockActivity(act) && !gameplayFlags?.has("hasMetRuby");
+          const showYumiIndicator =
+            isYumiUnlockActivity(act) && !gameplayFlags?.has("hasMetYumi");
 
           return (
             <button
               key={act.id ?? act.name}
               onClick={() => doActivity(act)}
-              disabled={!!isDisabled}
+              disabled={isDisabled}
               className={`w-full text-left px-3 py-2 rounded-xl border transition ${
                 isDisabled
                   ? "opacity-50 cursor-not-allowed"
@@ -241,16 +225,12 @@ export default function LocationActivitiesPanel({
             >
               <div className="flex items-center justify-between">
                 <span className="font-semibold flex items-center gap-2">
-                  {location === "Gym" &&
-                    (act.name === "Workout" || act.name === "Light Exercise") &&
-                    !gameplayFlags?.has("hasMetRuby") && (
-                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-yellow-300 text-yellow-900 text-xs font-bold border border-yellow-500">
-                        ?
-                      </span>
-                    )}
-                  {location === "Classroom" &&
-                    act.name === "Teach Class" &&
-                    !gameplayFlags?.has("hasMetYumi") && (
+                  {showRubyIndicator && (
+                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-yellow-300 text-yellow-900 text-xs font-bold border border-yellow-500">
+                      ?
+                    </span>
+                  )}
+                  {showYumiIndicator && (
                     <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-yellow-300 text-yellow-900 text-xs font-bold border border-yellow-500">
                       ?
                     </span>
@@ -259,36 +239,36 @@ export default function LocationActivitiesPanel({
                   {act.name}
                 </span>
                 <div className="flex items-center gap-2">
-                  {fullActivity?.statEffects && (
+                  {act.statEffects && (
                     <div className="flex gap-1 text-xs">
-                      {fullActivity.statEffects.intelligence &&
-                        fullActivity.statEffects.intelligence > 0 && (
+                      {act.statEffects.intelligence &&
+                        act.statEffects.intelligence > 0 && (
                           <span className="text-blue-500">
-                            🧠+{fullActivity.statEffects.intelligence}
+                            🧠+{act.statEffects.intelligence}
                           </span>
                         )}
-                      {fullActivity.statEffects.fitness &&
-                        fullActivity.statEffects.fitness > 0 && (
+                      {act.statEffects.fitness &&
+                        act.statEffects.fitness > 0 && (
                           <span className="text-green-500">
-                            🏋️+{fullActivity.statEffects.fitness}
+                            🏋️+{act.statEffects.fitness}
                           </span>
                         )}
-                      {fullActivity.statEffects.style &&
-                        fullActivity.statEffects.style > 0 && (
+                      {act.statEffects.style &&
+                        act.statEffects.style > 0 && (
                           <span className="text-pink-500">
-                            💅+{fullActivity.statEffects.style}
+                            💅+{act.statEffects.style}
                           </span>
                         )}
-                      {fullActivity.statEffects.money &&
-                        fullActivity.statEffects.money > 0 && (
+                      {act.statEffects.money &&
+                        act.statEffects.money > 0 && (
                           <span className="text-yellow-600">
-                            💰+${fullActivity.statEffects.money}
+                            💰+${act.statEffects.money}
                           </span>
                         )}
-                      {fullActivity.statEffects.money &&
-                        fullActivity.statEffects.money < 0 && (
+                      {act.statEffects.money &&
+                        act.statEffects.money < 0 && (
                           <span className="text-red-500">
-                            💸${Math.abs(fullActivity.statEffects.money)}
+                            💸${Math.abs(act.statEffects.money)}
                           </span>
                         )}
                     </div>
@@ -301,19 +281,9 @@ export default function LocationActivitiesPanel({
               {act.desc && (
                 <div className="text-xs opacity-70 mt-0.5">{act.desc}</div>
               )}
-              {isDisabled && fullActivity?.requirements && (
+              {isDisabled && (
                 <div className="text-xs text-red-500 mt-1">
-                  {fullActivity.requirements.minEnergy &&
-                    player.energy < fullActivity.requirements.minEnergy &&
-                    `⚡ Need ${fullActivity.requirements.minEnergy} energy`}
-                  {fullActivity.requirements.minMoney &&
-                    player.money < fullActivity.requirements.minMoney &&
-                    `💰 Need $${fullActivity.requirements.minMoney}`}
-                  {fullActivity.requirements.requiredItem &&
-                    !player.inventory.includes(
-                      fullActivity.requirements.requiredItem
-                    ) &&
-                    `📦 Need ${fullActivity.requirements.requiredItem}`}
+                  {failures.map((failure) => failure.inline).join(" ")}
                 </div>
               )}
             </button>

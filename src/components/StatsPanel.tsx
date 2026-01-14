@@ -14,7 +14,7 @@ export default function StatsPanel({
   stats,
   hour,
   dayOfWeek,
-  darkMode = false,
+  darkMode = true,
   onSave,
 }: Props) {
   const timeOfDay = getTimeOfDay(hour);

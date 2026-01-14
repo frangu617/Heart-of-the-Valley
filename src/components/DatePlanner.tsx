@@ -52,7 +52,7 @@ export default function DatePlanner({
   playerMoney,
   onCancel,
   onScheduleDate,
-  darkMode = false,
+  darkMode = true,
 }: Props) {
   const [selectedLocation, setSelectedLocation] =
     useState<DateLocation>("Cafe");

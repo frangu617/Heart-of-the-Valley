@@ -6,17 +6,8 @@ export function getLocationBackground(location: string, hour: number): string {
     .toLowerCase()
     .replace(/\s+/g, "_")
     .replace(/'/g, "");
-  // Try time-specific image first
-  const timeSpecific = `/images/locations/${locationKey}/${timeOfDay}.png`;
-
-  // Fallback to default
-  const fallbacks = [
-    timeSpecific,
-    `/images/locations/${locationKey}/afternoon.png`, // Default to afternoon
-    `/images/locations/${locationKey}.png`, // Your current images
-  ];
-
-  return fallbacks[0];
+  const imageTimeOfDay = timeOfDay === "evening" ? "afternoon" : timeOfDay;
+  return `/images/locations/${locationKey}/${imageTimeOfDay}.png`;
 }
 
 // Optional: Get atmosphere overlay color

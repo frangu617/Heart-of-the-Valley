@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Image from "next/image";
 import { getTimeOfDay } from "@/lib/time";
 import { PlayerStats } from "../data/characters";
 import { Girl } from "../data/characters";
@@ -24,7 +25,7 @@ export default function PhoneMenu({
   player,
   hour,
   girls,
-  darkMode = false,
+  darkMode = true,
   onClose,
   onSave,
   isMobile = false,
@@ -432,14 +433,11 @@ export default function PhoneMenu({
                       ${darkMode ? "border-purple-700" : "border-purple-300"}
                     `}
                     >
-                      <img
+                      <Image
                         src={`/images/characters/${girl.name.toLowerCase()}/casual/neutral.webp`}
                         alt={girl.name}
-                        onError={(e) => {
-                          e.currentTarget.src =
-                            'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect fill="%23e879f9" width="200" height="200"/><text x="50%" y="50%" font-size="60" text-anchor="middle" dy=".3em" fill="white">?</text></svg>';
-                        }}
-                        className="w-full h-full object-cover"
+                        layout="fill"
+                        objectFit="cover"
                       />
                     </div>
                     <p

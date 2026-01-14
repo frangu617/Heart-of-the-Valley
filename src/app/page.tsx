@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState, useCallback } from "react";
 
 // Components
@@ -22,6 +23,7 @@ import { getCharacterEvents } from "../data/events/index";
 import { findTriggeredEvent } from "../lib/eventSystem";
 import { calculateGameTime, getTimeOfDay } from "../lib/time";
 import { applyCharacterEventRewards } from "../lib/rewards";
+import { applyPlayerStatDelta } from "../lib/playerStats";
 
 // Data / Types
 
@@ -39,7 +41,6 @@ import {
   START_HOUR,
   MAX_HOUR,
   getNextDay,
-  DAYS_OF_WEEK,
 } from "../data/gameConstants";
 import { locationDescriptions } from "../data/locationDescriptions";
 import {
@@ -75,7 +76,7 @@ export default function GamePage() {
 
   const [selectedGirl, setSelectedGirl] = useState<Girl | null>(null);
   const [hasSaveData, setHasSaveData] = useState<boolean>(false);
-  const [darkMode, setDarkMode] = useState<boolean>(false);
+  const darkMode = true;
 
   const [currentDialogue, setCurrentDialogue] = useState<Dialogue | null>(null);
   const [dialogueCharacterImage, setDialogueCharacterImage] =
@@ -191,11 +192,6 @@ export default function GamePage() {
   //   );
   // };
 
-  // ✅ helpers
-   const hasFlag = (flag: GameplayFlag): boolean => {
-     return gameplayFlags.has(flag);
-   };
-
   // ✅ Update the checkScheduledEncounters function to support day/hour + dates
   const checkScheduledEncounters = (location: string): boolean => {
     const encounter = scheduledEncounters.find((e) => {
@@ -307,7 +303,7 @@ export default function GamePage() {
       );
       setCurrentRandomEvent(event);
       startDialogue(event.dialogue, "", null);
-      if (event.rewards) applyRandomEventRewards(event.rewards);
+      applyRandomEventRewards(event.rewards);
       return true;
     } else {
       console.error(`❌ Event not found: ${encounter.eventId}`);
@@ -321,9 +317,6 @@ export default function GamePage() {
     const savedGame = localStorage.getItem("datingSimSave");
     setHasSaveData(!!savedGame);
 
-    const savedDarkMode = localStorage.getItem("darkMode");
-    if (savedDarkMode !== null) setDarkMode(savedDarkMode === "true");
-
     const onResize = () => setIsMobile(window.innerWidth < 768);
     onResize();
     window.addEventListener("resize", onResize);
@@ -331,9 +324,9 @@ export default function GamePage() {
   }, []);
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
-    localStorage.setItem("darkMode", String(darkMode));
-  }, [darkMode]);
+    document.documentElement.classList.add("dark");
+    localStorage.setItem("darkMode", "true");
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -409,13 +402,18 @@ export default function GamePage() {
   }, [girls, selectedGirl, currentLocation]);
 
   //function to set a flag
-  const setFlag = (flag: GameplayFlag) => {
+  const setFlag = useCallback((flag: GameplayFlag) => {
     setGameplayFlags((prev) => new Set([...prev, flag]));
     console.log(`🚩 Flag set: ${flag}`);
-  };
+  }, []);
 
-  // Helper function to check if a flag is set
- 
+  const unlockCharacter = useCallback((characterName: string) => {
+    const name = characterName as keyof typeof characterUnlocks;
+    setCharacterUnlocks((prev) =>
+      prev[name] ? prev : { ...prev, [name]: true }
+    );
+  }, []);
+
   // save/load
   const saveGame = () => {
     const saveData = {
@@ -505,7 +503,7 @@ export default function GamePage() {
   };
 
   // dialogue helpers
-  const startDialogue = (
+  const startDialogue = useCallback((
     dialogue: Dialogue,
     characterImage: string = "",
     girlEffects: Partial<GirlStats> | null = null,
@@ -521,9 +519,7 @@ export default function GamePage() {
       const m = characterImage.match(/\/characters\/([^/]+)\//);
       if (m) setDialogueGirlName(m[1].charAt(0).toUpperCase() + m[1].slice(1));
     }
-
-    setGameState("dialogue");
-  };
+  }, []);
 
   // src/app/page.tsx
 
@@ -683,14 +679,14 @@ export default function GamePage() {
       console.log(`🎲 Random event: ${randomEvent.name}`);
       setCurrentRandomEvent(randomEvent);
       startDialogue(randomEvent.dialogue, "", null);
-      if (randomEvent.rewards) applyRandomEventRewards(randomEvent.rewards);
+      applyRandomEventRewards(randomEvent.rewards);
     }
   };
 
   // rewards
   const applyRandomEventRewards = (rewards: RandomEvent["rewards"]) => {
     if (!rewards) return;
-    const updated = { ...player };
+    let updated = { ...player };
 
     if (typeof rewards.money === "number") {
       updated.money += rewards.money;
@@ -703,17 +699,7 @@ export default function GamePage() {
     }
 
     if (rewards.playerStats) {
-      Object.entries(rewards.playerStats).forEach(([key, value]) => {
-        const statKey = key as keyof PlayerStats;
-        if (typeof value === "number" && typeof updated[statKey] === "number") {
-          const cur = updated[statKey] as number;
-          const bounded =
-            statKey === "energy" || statKey === "mood" || statKey === "hunger"
-              ? Math.max(0, Math.min(100, cur + value))
-              : Math.max(0, cur + value);
-          (updated[statKey] as number) = bounded;
-        }
-      });
+      updated = applyPlayerStatDelta(updated, rewards.playerStats);
     }
 
     if (rewards.girlAffection) {
@@ -767,6 +753,7 @@ const spendTime = (amount: number) => {
 
   const getCurrentLocationImage = () =>
     getLocationBackground(currentLocation, hour);
+  const timeOfDay = getTimeOfDay(hour);
   const presentGirls = girls.filter((g) => g.location === currentLocation);
 
   const returnToMainMenu = () => {
@@ -848,6 +835,49 @@ const spendTime = (amount: number) => {
     checkPendingEvents();
   }, [checkPendingEvents]);
 
+  const onEventTriggered = useCallback((eventId: string) => {
+    if (!selectedGirl) return;
+    const name = selectedGirl.name;
+    const prevState = characterEventStates[name] ?? {
+      characterName: name,
+      eventHistory: [] as EventHistory[],
+      lastInteractionTime: 0,
+    };
+
+    const gameTime = calculateGameTime(dayOfWeek, hour);
+    const lastTriggered = { day: dayOfWeek, hour, gameTime };
+
+    const idx = prevState.eventHistory.findIndex(
+      (e) => e.eventId === eventId
+    );
+    let updatedHistory: EventHistory[];
+    if (idx >= 0) {
+      const existing = prevState.eventHistory[idx];
+      updatedHistory = [...prevState.eventHistory];
+      updatedHistory[idx] = {
+        ...existing,
+        lastTriggered,
+        timesTriggered: (existing.timesTriggered ?? 0) + 1,
+      };
+    } else {
+      updatedHistory = [
+        ...prevState.eventHistory,
+        { eventId, lastTriggered, timesTriggered: 1 },
+      ];
+    }
+
+    const newState: CharacterEventState = {
+      ...prevState,
+      eventHistory: updatedHistory,
+      lastInteractionTime: gameTime,
+    };
+
+    setCharacterEventStates((prev) => ({
+      ...prev,
+      [name]: newState,
+    }));
+  }, [selectedGirl, characterEventStates, dayOfWeek, hour]);
+
   const eventReadyByGirl = useMemo(
     () =>
       new Set(
@@ -891,7 +921,6 @@ const spendTime = (amount: number) => {
         onContinue={loadGame}
         hasSaveData={hasSaveData}
         darkMode={darkMode}
-        onToggleDarkMode={() => setDarkMode((d) => !d)}
       />
     );
   }
@@ -965,7 +994,7 @@ const spendTime = (amount: number) => {
               "💖 HotV"
             ) : (
               <span className="flex items-center gap-2">
-                <img
+                <Image
                   src="/images/logo.png"
                   alt="Heart of the Valley"
                   width={50}
@@ -985,13 +1014,6 @@ const spendTime = (amount: number) => {
             >
               <span className="text-xl">📱</span>
               <span className="hidden sm:inline">Phone</span>
-            </button>
-            <button
-              onClick={() => setDarkMode((d) => !d)}
-              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2"
-              title="Toggle dark mode"
-            >
-              <span className="text-xl">{darkMode ? "☀️" : "🌙"}</span>
             </button>
             <button
               onClick={() => setGameState("paused")}
@@ -1044,42 +1066,28 @@ const spendTime = (amount: number) => {
                   }`}
                 >
                   {locationDescriptions[currentLocation]?.[
-                    getTimeOfDay(hour)
+                    timeOfDay
                   ] || locationDescriptions[currentLocation]?.default}
                 </p>
               </div>
 
               <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-purple-100 to-white overflow-hidden">
                 {/* Background image with safe fallbacks */}
-                <img
+                <Image
                   src={getCurrentLocationImage()}
                   alt={currentLocation}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const img = e.currentTarget as HTMLImageElement; // capture before synthetic event pooling
-                    const locationKey = currentLocation
-                      .toLowerCase()
-                      .replace(/\s+/g, "_")
-                      .replace(/'/g, "");
-
-                    img.onerror = () => {
-                      img.onerror = null;
-                      img.src =
-                        'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23ccc" width="1920" height="1080"/><text x="50%" y="50%" font-size="48" text-anchor="middle" fill="%23666">Location Image</text></svg>';
-                    };
-
-                    img.src = `/images/locations/${locationKey}/afternoon.png`;
-                  }}
+                  layout="fill"
+                  objectFit="cover"
                 />
 
                 {/* Atmosphere overlay */}
                 <div
                   className={`absolute inset-0 pointer-events-none transition-all duration-1000 ${
-                    getTimeOfDay(hour) === "morning"
+                    timeOfDay === "morning"
                       ? "bg-gradient-to-b from-orange-300/30 via-transparent to-transparent"
-                      : getTimeOfDay(hour) === "afternoon"
+                      : timeOfDay === "afternoon"
                       ? "bg-gradient-to-b from-yellow-200/20 via-transparent to-transparent"
-                      : getTimeOfDay(hour) === "evening"
+                      : timeOfDay === "evening"
                       ? "bg-gradient-to-b from-purple-400/40 via-pink-300/20 to-transparent"
                       : "bg-gradient-to-b from-indigo-900/60 via-purple-900/30 to-black/40"
                   }`}
@@ -1096,7 +1104,7 @@ const spendTime = (amount: number) => {
                     </h2>
                     <p className="text-xs md:text-sm text-white/90 italic">
                       {locationDescriptions[currentLocation]?.[
-                        getTimeOfDay(hour)
+                        timeOfDay
                       ] || locationDescriptions[currentLocation]?.default}
                     </p>
                   </div>
@@ -1138,26 +1146,11 @@ const spendTime = (amount: number) => {
 
                         {/* Character image */}
                         <div className="relative">
-                          <img
+                          <Image
                             src={imgPath}
                             alt={girl.name}
-                            onError={(e) => {
-                              const el = e.currentTarget;
-                              const girlName = girl.name.toLowerCase();
-                              const fallbacks = [
-                                imgPath,
-                                `/images/characters/${girlName}/casual/neutral.webp`,
-                                `/images/${girlName}.webp`,
-                                'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="%23e879f9" width="200" height="300"/><text x="50%" y="50%" font-size="60" text-anchor="middle" dy=".3em" fill="white">?</text></svg>',
-                              ];
-                              const cur = el.src;
-                              for (const fb of fallbacks) {
-                                if (!cur.endsWith(fb.split("/").pop() || "")) {
-                                  el.src = fb;
-                                  break;
-                                }
-                              }
-                            }}
+                            width={192}
+                            height={288}
                             className={`w-32 h-48 sm:w-40 sm:h-60 md:w-48 md:h-72 object-cover object-top rounded-3xl border-4 ${
                               selectedGirl?.name === girl.name
                                 ? "border-pink-400 shadow-2xl shadow-pink-500/50"
@@ -1248,51 +1241,12 @@ const spendTime = (amount: number) => {
                 lastInteractionTime: calculateGameTime(dayOfWeek, hour),
               }
             }
-            onEventTriggered={(eventId) => {
-              const name = selectedGirl.name;
-              const prevState = characterEventStates[name] ?? {
-                characterName: name,
-                eventHistory: [] as EventHistory[],
-                lastInteractionTime: 0,
-              };
-
-              const gameTime = calculateGameTime(dayOfWeek, hour);
-              const lastTriggered = { day: dayOfWeek, hour, gameTime };
-
-                  const idx = prevState.eventHistory.findIndex(
-                    (e) => e.eventId === eventId
-                  );
-                  let updatedHistory: EventHistory[];
-                  if (idx >= 0) {
-                    const existing = prevState.eventHistory[idx];
-                    updatedHistory = [...prevState.eventHistory];
-                    updatedHistory[idx] = {
-                      ...existing,
-                      lastTriggered,
-                      timesTriggered: (existing.timesTriggered ?? 0) + 1,
-                    };
-                  } else {
-                    updatedHistory = [
-                      ...prevState.eventHistory,
-                      { eventId, lastTriggered, timesTriggered: 1 },
-                    ];
-                  }
-
-                  const newState: CharacterEventState = {
-                    ...prevState,
-                    eventHistory: updatedHistory,
-                    lastInteractionTime: gameTime,
-                  };
-
-                  setCharacterEventStates((prev) => ({
-                    ...prev,
-                    [name]: newState,
-                  }));
-                }}
-                darkMode={darkMode}
+                            onEventTriggered={onEventTriggered}                darkMode={darkMode}
                 onScheduleDate={handleScheduleDate}
                 hasInteractedToday={hasInteractedToday}
                 onInteractionLogged={recordInteraction}
+                onSetFlag={setFlag}
+                onUnlockCharacter={unlockCharacter}
               />
             </div>
           ) : (
