@@ -4,7 +4,7 @@ import {
   locationActivities as activitiesMap,
   LocationActivity as ImportedActivity,
 } from "../data/LocationActivities";
-import { GameplayFlag } from "@/data/events";
+import { GameplayFlag } from "@/data/events/chapter1";
 import { applyPlayerStatDelta } from "@/lib/playerStats";
 
 type Activity = ImportedActivity & {

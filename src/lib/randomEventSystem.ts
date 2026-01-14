@@ -1,5 +1,5 @@
 // src/lib/randomEventSystem.ts
-import { RandomEvent, randomEvents } from "@/data/events/randomEvents";
+import { RandomEvent, randomEvents } from "@/data/events/chapter1/randomEvents";
 import { PlayerStats } from "@/data/characters";
 import { DayOfWeek } from "@/data/gameConstants";
 

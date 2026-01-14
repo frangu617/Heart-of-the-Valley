@@ -9,9 +9,9 @@ import {
   Dialogue,
 } from "../data/dialogues/index";
 import { DayOfWeek } from "@/data/gameConstants";
-import { CharacterEventState, GameplayFlag } from "@/data/events/types";
+import { CharacterEventState, GameplayFlag } from "@/data/events/chapter1/types";
 import { findTriggeredEvent } from "@/lib/eventSystem";
-import { getCharacterEvents } from "@/data/events";
+import { getCharacterEvents } from "@/data/events/chapter1";
 import { applyCharacterEventRewards } from "@/lib/rewards";
 // import { firstMeetingDialogues } from "../data/dialogues/index";
 import DatePlanner from "./DatePlanner";

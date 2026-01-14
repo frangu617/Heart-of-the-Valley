@@ -19,7 +19,7 @@ import { getScheduledLocation } from "../lib/schedule";
 import { getCharacterImage } from "../lib/characterImages";
 import { getLocationBackground } from "../lib/locationImages";
 import { checkRandomEvent } from "../lib/randomEventSystem";
-import { getCharacterEvents } from "../data/events/index";
+import { getCharacterEvents } from "../data/events/chapter1/index";
 import { findTriggeredEvent } from "../lib/eventSystem";
 import { calculateGameTime, getTimeOfDay } from "../lib/time";
 import { applyCharacterEventRewards } from "../lib/rewards";
@@ -51,9 +51,9 @@ import {
   // firstMeetingDialogues,
 } from "../data/dialogues/index";
 
-import type { RandomEvent } from "../data/events/randomEvents";
-import { randomEvents } from "../data/events/randomEvents";
-import type { CharacterEventState, EventHistory, GameplayFlag } from "../data/events/types";
+import type { RandomEvent } from "../data/events/chapter1/randomEvents";
+import { randomEvents } from "../data/events/chapter1/randomEvents";
+import type { CharacterEventState, EventHistory, GameplayFlag } from "../data/events/chapter1/types";
 import { DialogueChoice } from "../data/dialogues";
 
 type ScheduledEncounter = {

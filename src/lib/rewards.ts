@@ -1,5 +1,5 @@
 import { PlayerStats } from "@/data/characters";
-import { CharacterEvent, GameplayFlag } from "@/data/events/types";
+import { CharacterEvent, GameplayFlag } from "@/data/events/chapter1/types";
 
 type RewardHandlers = {
   onSetFlag?: (flag: GameplayFlag) => void;
