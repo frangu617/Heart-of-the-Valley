@@ -18,7 +18,13 @@ export type GameplayFlag =
   | "irisCoffeeDeclined"
   | "irisCoffeeMet"
   | "irisDomPath"
-  | "irisSubPath";
+  | "irisSubPath"
+  | "gwenDomPath"
+  | "gwenSubPath"
+  | "rubyTrainerAccepted"
+  | "rubyTrainerDeclined"
+  | "yumiDomPath"
+  | "yumiSubPath";
 
 export type EventConditions = {
   // Minimum stat requirements

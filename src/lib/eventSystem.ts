@@ -159,6 +159,15 @@ export function findTriggeredEvent(
     eventState?.eventHistory
       .filter((h) => h.timesTriggered > 0)
       .map((h) => h.eventId) || [];
+  const storyEventIds = new Set(
+    events.filter((event) => !event.repeatable).map((event) => event.id)
+  );
+  const storyHistory =
+    eventState?.eventHistory.filter((h) => storyEventIds.has(h.eventId)) || [];
+  const completedStoryCount = storyHistory.filter(
+    (h) => h.timesTriggered > 0
+  ).length;
+  const storyTriggeredToday = storyHistory.some((h) => h.lastTriggered.day === day);
 
   // Sort by priority (highest first)
   const sortedEvents = [...events].sort((a, b) => b.priority - a.priority);
@@ -167,6 +176,17 @@ export function findTriggeredEvent(
     // Skip if not repeatable and already completed
     if (!event.repeatable && completedEvents.includes(event.id)) {
       continue;
+    }
+    if (!event.repeatable) {
+      if (storyTriggeredToday) {
+        continue;
+      }
+      if (completedStoryCount > 0) {
+        const requiredAffection = completedStoryCount * 5;
+        if (girl.stats.affection < requiredAffection) {
+          continue;
+        }
+      }
     }
 
     // Check cooldown

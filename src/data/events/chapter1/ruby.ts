@@ -1,55 +1,77 @@
-// src/data/events/ruby.ts
 import { CharacterEvent } from "./types";
 
 export const rubyEvents: CharacterEvent[] = [
   {
-    id: "ruby_first_meeting",
-    name: "First Meeting with Ruby",
-    description: "First Meeting with Ruby",
-    priority: 100,
+    id: "ruby_trainer_offer_event",
+    name: "Trainer Offer",
+    description: "Ruby offers to train you after spotting your form.",
+    priority: 240,
     repeatable: false,
     conditions: {
       minAffection: 0,
       minTrust: 0,
-      minHour: 18,
+      minHour: 0,
       maxHour: 24,
-      requiredLocation: "Hallway",
-      requiredFlags: ["firstWorkout"],
+      requiredLocation: "Gym",
     },
     dialogue: {
-      id: "ruby_first_meeting",
+      id: "ruby_trainer_offer_event",
       lines: [
         {
           speaker: null,
-          text: "Your personal trainer approaches with her usual confident stride.",
-        },
-        {
-          speaker: "Ruby",
-          text: "{playerName}! Ready for today's session?",
-          expression: "happy",
+          text: "The gym hums with low music and the steady rhythm of clanking metal.",
         },
         {
           speaker: null,
-          text: "Ruby - your personal trainer for the past two years. Tough, dedicated, and surprisingly caring.",
+          text: "Sweat runs down your neck as you rack the weights and shake out your arms.",
         },
-        { speaker: "You", text: "Ready to get destroyed, as usual." },
-        {
-          speaker: "Ruby",
-          text: "That's the spirit! Let's go!",
-          expression: "happy",
-        },
+        { speaker: "Ruby", text: "Hey.", expression: "annoyed" },
         {
           speaker: null,
-          text: "During your workout, she spots you on the bench press.",
+          text: "You turn to see a toned woman watching you with arms crossed, gaze sharp and unbothered.",
+        },
+        { speaker: "Ruby", text: "I've been watching you for a bit.", expression: "neutral" },
+        { speaker: "Ruby", text: "You're working hard, I'll give you that.", expression: "neutral" },
+        {
+          speaker: "Ruby",
+          text: "But your form's all over the place. My shoulders hurt just looking at you.",
+          expression: "annoyed",
+        },
+        { speaker: "You", text: "Ouch. That bad, huh?" },
+        { speaker: "Ruby", text: "Relax, rookie. I'm not roasting you for fun.", expression: "happy" },
+        { speaker: "Ruby", text: "Well. Maybe a little.", expression: "happy" },
+        { speaker: "Ruby", text: "Name's Ruby. I'm here pretty much every day.", expression: "neutral" },
+        {
+          speaker: null,
+          text: "She looks you up and down, appraising more like a coach than anything else.",
         },
         {
           speaker: "Ruby",
-          text: "You know, {playerName}... you're one of my favorite clients.",
-          expression: "neutral",
+          text: "You've got decent potential. Just no idea what you're doing.",
+          expression: "excited",
         },
         {
-          speaker: null,
-          text: "For a moment, something flickers in her expression before she quickly looks away.",
+          speaker: "Ruby",
+          text: "You want a real trainer so you don't blow out your knees or your back?",
+          expression: "excited",
+        },
+        {
+          speaker: "You",
+          text: "What do you say?",
+          choices: [
+            {
+              text: "Accept Ruby's help",
+              affectionChange: 1,
+              setFlags: ["rubyTrainerAccepted"],
+              nextDialogueId: "ruby_trainer_offer_accept",
+            },
+            {
+              text: "Decline politely",
+              affectionChange: 0,
+              setFlags: ["rubyTrainerDeclined"],
+              nextDialogueId: "ruby_trainer_offer_decline",
+            },
+          ],
         },
       ],
     },
@@ -59,50 +81,262 @@ export const rubyEvents: CharacterEvent[] = [
     },
   },
   {
-    id: "ruby_gym_workout",
-    name: "Workout with Ruby",
-    description: "Ruby invites you to work out together",
-    priority: 80,
-    repeatable: true,
-    cooldownHours: 168, // Can happen again after a week
+    id: "ruby_hire_trainer_event",
+    name: "Hire Ruby",
+    description: "Come back and accept Ruby's training offer.",
+    priority: 235,
+    repeatable: false,
     conditions: {
-      minAffection: 30,
-      minTrust: 20,
+      minAffection: 0,
+      minTrust: 0,
+      minHour: 0,
+      maxHour: 24,
       requiredLocation: "Gym",
-      minHour: 6,
-      maxHour: 20,
+      requiredFlags: ["rubyTrainerDeclined"],
+      blockedByFlags: ["rubyTrainerAccepted"],
     },
     dialogue: {
-      id: "ruby_gym_workout_dialogue",
+      id: "ruby_hire_trainer_event",
+      lines: [
+        { speaker: "You", text: "Hey, Ruby. About that offer..." },
+        { speaker: "Ruby", text: "Realized you couldn't do it alone?", expression: "annoyed" },
+        { speaker: "You", text: "Yeah. I hit a wall. I need your help." },
+        {
+          speaker: "Ruby",
+          text: "Thought so. Alright, same deal as before. You listen, I lead.",
+          expression: "happy",
+        },
+        { speaker: "Ruby", text: "Let's get to work.", expression: "happy" },
+      ],
+    },
+    rewards: {
+      setFlags: ["rubyTrainerAccepted"],
+    },
+  },
+  {
+    id: "ruby_event_2_routine",
+    name: "The Routine",
+    description: "Ruby pushes you through a tough circuit.",
+    priority: 230,
+    repeatable: false,
+    conditions: {
+      minAffection: 5,
+      minTrust: 0,
+      minHour: 0,
+      maxHour: 24,
+      requiredLocation: "Gym",
+      requiredPreviousEvents: ["ruby_trainer_offer_event"],
+      requiredFlags: ["rubyTrainerAccepted"],
+    },
+    dialogue: {
+      id: "ruby_event_2_routine",
       lines: [
         {
           speaker: null,
-          text: "Ruby spots you entering the gym.",
+          text: "The gym is sweltering today. Ruby has you running circuits, and she isn't showing any mercy.",
         },
         {
           speaker: "Ruby",
-          text: "{playerName}! Perfect timing! Want to do some cardio with me?",
+          text: "Come on! Two more reps! Don't you dare quit on me now!",
+          expression: "annoyed",
+        },
+        {
+          speaker: null,
+          text: "Her voice cuts through the noise of the gym. She's standing over you, arms crossed, looking like a drill sergeant.",
+        },
+        {
+          speaker: "You",
+          text: "What do you do?",
+          choices: [
+            {
+              text: "Push through the pain (Dominant/Determined)",
+              affectionChange: 1,
+              nextDialogueId: "ruby_event_2_push",
+            },
+            {
+              text: "Ask for a break (Submissive/Weak)",
+              affectionChange: 0,
+              nextDialogueId: "ruby_event_2_break",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "ruby_event_3_playful",
+    name: "The Playful Shift",
+    description: "A playful moment after training.",
+    priority: 220,
+    repeatable: false,
+    conditions: {
+      minAffection: 10,
+      minTrust: 0,
+      minHour: 0,
+      maxHour: 24,
+      requiredLocation: "Gym",
+      requiredPreviousEvents: ["ruby_event_2_routine"],
+      requiredFlags: ["rubyTrainerAccepted"],
+    },
+    dialogue: {
+      id: "ruby_event_3_playful",
+      lines: [
+        {
+          speaker: null,
+          text: "The workout is over. You're both sitting on a bench, catching your breath. Ruby is wiping sweat from her neck with a towel.",
+        },
+        {
+          speaker: "Ruby",
+          text: "Not bad today. You're actually starting to keep up with me.",
+          expression: "happy",
+        },
+        {
+          speaker: null,
+          text: "She stretches her arms over her head, her shirt riding up slightly to reveal toned abs. She catches you looking and doesn't pull it down.",
+        },
+        {
+          speaker: "Ruby",
+          text: "See something you like? Or just jealous of the core strength?",
           expression: "happy",
         },
         {
           speaker: "You",
-          text: "Sure, let's go.",
-        },
-        {
-          speaker: null,
-          text: "You work out together. Ruby pushes you hard, but it feels good.",
-        },
-        {
-          speaker: "Ruby",
-          text: "You're getting stronger! I can tell.",
-          expression: "love",
+          text: "What do you say?",
+          choices: [
+            {
+              text: "Jealous? I'm just admiring the view. (Flirt/Lust Hint)",
+              affectionChange: 2,
+              moodChange: 1,
+              nextDialogueId: "ruby_event_3_flirt",
+            },
+            {
+              text: "You're a great teacher. (Sincere/Affectionate)",
+              affectionChange: 2,
+              moodChange: 1,
+              nextDialogueId: "ruby_event_3_sincere",
+            },
+          ],
         },
       ],
     },
-    rewards: {
-      playerStats: {
-        fitness: 3,
-      },
+  },
+  {
+    id: "ruby_event_4_tension",
+    name: "High Tension",
+    description: "A close moment while spotting.",
+    priority: 210,
+    repeatable: false,
+    conditions: {
+      minAffection: 15,
+      minTrust: 0,
+      minHour: 0,
+      maxHour: 24,
+      requiredLocation: "Gym",
+      requiredPreviousEvents: ["ruby_event_3_playful"],
+      requiredFlags: ["rubyTrainerAccepted"],
+    },
+    dialogue: {
+      id: "ruby_event_4_tension",
+      lines: [
+        {
+          speaker: null,
+          text: "Ruby is spotting you on the bench press. It's a heavy set, heavier than you're used to.",
+        },
+        {
+          speaker: "Ruby",
+          text: "Control it. Down slow... and up!",
+          expression: "neutral",
+        },
+        { speaker: null, text: "You struggle with the last rep. The bar stalls halfway up." },
+        { speaker: "Ruby", text: "I got you.", expression: "neutral" },
+        {
+          speaker: null,
+          text: "She leans over, grabbing the bar. Her chest brushes against your arm, her face inches from yours as she helps you rack the weight.",
+        },
+        {
+          speaker: null,
+          text: "She doesn't pull back immediately after the bar clicks into place. She stays hovering over you, her breathing heavy, her eyes locked onto yours.",
+        },
+        {
+          speaker: null,
+          text: "The gym noise fades into the background. It's just the two of you, sweating and close.",
+        },
+        {
+          speaker: "Ruby",
+          text: "You okay? You stopped breathing for a second there.",
+          expression: "neutral",
+        },
+        { speaker: "You", text: "Yeah. Just... heavy." },
+        { speaker: "Ruby", text: "Yeah.", expression: "neutral" },
+        {
+          speaker: null,
+          text: "She licks her lips, her gaze dropping to your mouth for a split second before she straightens up.",
+        },
+        {
+          speaker: "Ruby",
+          text: "Good set. Let's... let's call it a day.",
+          expression: "shy",
+        },
+      ],
+    },
+  },
+  {
+    id: "ruby_chapter_1_finale",
+    name: "Chapter 1 Finale",
+    description: "Ruby breaks the tension with a kiss, then panics.",
+    priority: 200,
+    repeatable: false,
+    conditions: {
+      minAffection: 20,
+      minTrust: 0,
+      minHour: 0,
+      maxHour: 24,
+      requiredLocation: "Gym",
+      requiredPreviousEvents: ["ruby_event_4_tension"],
+      requiredFlags: ["rubyTrainerAccepted"],
+    },
+    dialogue: {
+      id: "ruby_chapter_1_finale",
+      lines: [
+        {
+          speaker: null,
+          text: "The gym is nearly empty. You're packing up your bag in the locker area when Ruby walks in.",
+        },
+        {
+          speaker: null,
+          text: "She walks straight up to you, no hesitation, no jokes.",
+        },
+        { speaker: "Ruby", text: "I can't focus.", expression: "neutral" },
+        { speaker: "You", text: "What?" },
+        {
+          speaker: "Ruby",
+          text: "I can't focus on my workout. I can't focus on my other clients. Because I keep thinking about earlier.",
+          expression: "neutral",
+        },
+        { speaker: null, text: "She grabs the front of your shirt, yanking you forward." },
+        { speaker: "Ruby", text: "I need to get this out of my system.", expression: "annoyed" },
+        {
+          speaker: null,
+          text: "She kisses you hard, pushing you back against the lockers. It tastes like sports drink and adrenaline.",
+        },
+        {
+          speaker: null,
+          text: "Her hands roam over your shoulders, testing the muscles she helped build.",
+        },
+        { speaker: null, text: "Just as you start to respond, she shoves you away." },
+        { speaker: "Ruby", text: "Damn it.", expression: "surprised" },
+        {
+          speaker: "Ruby",
+          text: "I can't do this. I'm your trainer. This is... this is against the rules.",
+          expression: "surprised",
+        },
+        { speaker: null, text: "She looks furious with herself." },
+        { speaker: "Ruby", text: "Forget this happened. Seriously.", expression: "annoyed" },
+        {
+          speaker: null,
+          text: "She storms out of the locker room, leaving you leaning against the cold metal lockers.",
+        },
+      ],
     },
   },
 ];

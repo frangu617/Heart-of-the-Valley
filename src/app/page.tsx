@@ -66,6 +66,26 @@ type ScheduledEncounter = {
   activities?: string[];
 };
 
+const clampValue = (value: number, min: number, max: number) =>
+  Math.max(min, Math.min(max, value));
+
+const getMetFlagForGirl = (girlName: string): GameplayFlag | null => {
+  switch (girlName.toLowerCase()) {
+    case "iris":
+      return "hasMetIris";
+    case "dawn":
+      return "hasMetDawn";
+    case "gwen":
+      return "hasMetGwen";
+    case "yumi":
+      return "hasMetYumi";
+    case "ruby":
+      return "hasMetRuby";
+    default:
+      return null;
+  }
+};
+
 export default function GamePage() {
   // States
   const [gameState, setGameState] = useState<GameState>("mainMenu");
@@ -97,6 +117,39 @@ export default function GamePage() {
   >({});
   const [gameplayFlags, setGameplayFlags] = useState<Set<GameplayFlag>>(
     new Set()
+  );
+
+  const getProgressionCount = useCallback(
+    (girlName: string) => {
+      const state = characterEventStates[girlName];
+      const historyCount = state?.eventHistory?.length ?? 0;
+      const metFlag = getMetFlagForGirl(girlName);
+      const hasMet = metFlag ? gameplayFlags.has(metFlag) : false;
+      return Math.max(historyCount, hasMet ? 1 : 0);
+    },
+    [characterEventStates, gameplayFlags]
+  );
+
+  const getRelationshipCaps = useCallback(
+    (girlName: string) => {
+      const progressionCount = getProgressionCount(girlName);
+      const affectionCap = clampValue(progressionCount * 5, 0, 100);
+      const lustCap = clampValue(Math.floor(affectionCap * 1.25), 0, 100);
+      return { affectionCap, lustCap };
+    },
+    [getProgressionCount]
+  );
+
+  const clampGirlStatsToCaps = useCallback(
+    (girlName: string, stats: GirlStats) => {
+      const { affectionCap, lustCap } = getRelationshipCaps(girlName);
+      return {
+        ...stats,
+        affection: clampValue(stats.affection ?? 0, 0, affectionCap),
+        lust: clampValue(stats.lust ?? 0, 0, lustCap),
+      };
+    },
+    [getRelationshipCaps]
   );
 
   // 🎲 Track active random event
@@ -382,13 +435,14 @@ export default function GamePage() {
           hour
         );
         const override = girlStatsOverrides[girl.name];
+        const mergedStats = override ? { ...girl.stats, ...override } : girl.stats;
         return {
           ...girl,
           location: scheduledLocation || girl.location,
-          stats: override ? { ...girl.stats, ...override } : girl.stats,
+          stats: clampGirlStatsToCaps(girl.name, mergedStats),
         };
       });
-  }, [dayOfWeek, hour, girlStatsOverrides, characterUnlocks]);
+  }, [dayOfWeek, hour, girlStatsOverrides, characterUnlocks, clampGirlStatsToCaps]);
 
   useEffect(() => {
     if (selectedGirl) {
@@ -566,9 +620,12 @@ export default function GamePage() {
           if (typeof value === "number") {
             const k = key as keyof GirlStats;
             const cur = (currentStats[k] as number) ?? 0;
-            newStats[k] = Math.max(0, Math.min(100, cur + value));
+            newStats[k] = clampValue(cur + value, 0, 100);
           }
         });
+        const { affectionCap, lustCap } = getRelationshipCaps(girl.name);
+        newStats.affection = clampValue(newStats.affection ?? 0, 0, affectionCap);
+        newStats.lust = clampValue(newStats.lust ?? 0, 0, lustCap);
 
         setGirlStatsOverrides((prev) => ({
           ...prev,
@@ -709,13 +766,14 @@ export default function GamePage() {
         if (!girl) return;
 
         const currentStats = { ...girl.stats, ...override };
-        const newAffection = Math.max(
-          0,
-          Math.min(100, (currentStats.affection ?? 0) + change)
-        );
+        const newAffection = (currentStats.affection ?? 0) + change;
+        const cappedStats = clampGirlStatsToCaps(girlName, {
+          ...currentStats,
+          affection: newAffection,
+        });
         setGirlStatsOverrides((prev) => ({
           ...prev,
-          [girlName]: { ...currentStats, affection: newAffection },
+          [girlName]: cappedStats,
         }));
         console.log(
           `💕 ${girlName} affection: ${change > 0 ? "+" : ""}${change}`
