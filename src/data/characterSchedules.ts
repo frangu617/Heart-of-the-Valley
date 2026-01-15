@@ -53,7 +53,8 @@ export const characterSchedules: Record<string, CharacterSchedule> = {
       { location: "Iris' Office", startHour: 10, endHour: 13 },
       { location: "Classroom", startHour: 13, endHour: 17 },
       { location: "Iris' Office", startHour: 17, endHour: 18 },
-      { location: "Iris' Living Room", startHour: 18, endHour: 24 },
+      { location: "Hallway", startHour: 18, endHour: 22 },
+      { location: "Iris' Living Room", startHour: 22, endHour: 24 },
     ],
     Tuesday: [
       { location: "Iris' Bedroom", startHour: 0, endHour: 8 },
@@ -61,7 +62,8 @@ export const characterSchedules: Record<string, CharacterSchedule> = {
       { location: "Iris' Office", startHour: 10, endHour: 13 },
       { location: "Classroom", startHour: 13, endHour: 17 },
       { location: "Iris' Office", startHour: 17, endHour: 18 },
-      { location: "Iris' Living Room", startHour: 18, endHour: 24 },
+      { location: "Hallway", startHour: 18, endHour: 22 },
+      { location: "Iris' Living Room", startHour: 22, endHour: 24 },
     ],
     Wednesday: [
       { location: "Iris' Bedroom", startHour: 0, endHour: 8 },
@@ -69,7 +71,8 @@ export const characterSchedules: Record<string, CharacterSchedule> = {
       { location: "Iris' Office", startHour: 10, endHour: 13 },
       { location: "Classroom", startHour: 13, endHour: 17 },
       { location: "Iris' Office", startHour: 17, endHour: 18 },
-      { location: "Iris' Living Room", startHour: 18, endHour: 24 },
+      { location: "Hallway", startHour: 18, endHour: 22 },
+      { location: "Iris' Living Room", startHour: 22, endHour: 24 },
     ],
     Thursday: [
       { location: "Iris' Bedroom", startHour: 0, endHour: 8 },
@@ -77,7 +80,8 @@ export const characterSchedules: Record<string, CharacterSchedule> = {
       { location: "Iris' Office", startHour: 10, endHour: 13 },
       { location: "Classroom", startHour: 13, endHour: 17 },
       { location: "Iris' Office", startHour: 17, endHour: 18 },
-      { location: "Iris' Living Room", startHour: 18, endHour: 24 },
+      { location: "Hallway", startHour: 18, endHour: 22 },
+      { location: "Iris' Living Room", startHour: 22, endHour: 24 },
     ],
     Friday: [
       { location: "Iris' Bedroom", startHour: 0, endHour: 8 },
@@ -85,7 +89,8 @@ export const characterSchedules: Record<string, CharacterSchedule> = {
       { location: "Iris' Office", startHour: 10, endHour: 13 },
       { location: "Classroom", startHour: 13, endHour: 17 },
       { location: "Iris' Office", startHour: 17, endHour: 18 },
-      { location: "Iris' Living Room", startHour: 18, endHour: 24 },
+      { location: "Hallway", startHour: 18, endHour: 22 },
+      { location: "Iris' Living Room", startHour: 22, endHour: 24 },
     ],
     Saturday: [
       { location: "Iris' Bedroom", startHour: 0, endHour: 9 },
@@ -97,7 +102,7 @@ export const characterSchedules: Record<string, CharacterSchedule> = {
       { location: "Iris' Bedroom", startHour: 0, endHour: 10 },
       { location: "Iris' Living Room", startHour: 10, endHour: 11 },
       { location: "Gym", startHour: 11, endHour: 13 },
-      { location: "City", startHour: 13, endHour: 18 },
+      { location: "Mall", startHour: 13, endHour: 18 },
       { location: "Iris' Bathroom", startHour: 18, endHour: 19 },
       { location: "Iris' Bedroom", startHour: 19, endHour: 24 },
     ],

@@ -12,7 +12,13 @@ export type GameplayFlag =
   | "firstTimeWorked"
   | "firstTimeCookedMeal"
   | "firstTimeStudied"
-  | "firstDateCompleted";
+  | "firstDateCompleted"
+  | "irisNeedsNewShirt"
+  | "irisCoffeeAccepted"
+  | "irisCoffeeDeclined"
+  | "irisCoffeeMet"
+  | "irisDomPath"
+  | "irisSubPath";
 
 export type EventConditions = {
   // Minimum stat requirements
