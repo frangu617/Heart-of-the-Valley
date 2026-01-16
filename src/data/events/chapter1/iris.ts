@@ -5,6 +5,10 @@ export const irisEvents: CharacterEvent[] = [
     id: "iris_university_intro",
     name: "Coffee Collision",
     description: "Iris spills coffee on you in the university hallway.",
+    quest: {
+      title: "Go to work at the university",
+      description: "Head to the University Hallway to start your first day.",
+    },
     priority: 300,
     repeatable: false,
     conditions: {
@@ -71,6 +75,11 @@ export const irisEvents: CharacterEvent[] = [
     id: "iris_coffee_meetup_event",
     name: "Coffee Meetup",
     description: "Meet Iris at the cafe after accepting her offer.",
+    quest: {
+      title: "Meet Iris for Coffee",
+      description:
+        "You agreed to meet Iris at the Cafe. She's waiting to make up for the coffee incident.",
+    },
     priority: 250,
     repeatable: false,
     conditions: {
@@ -184,6 +193,10 @@ export const irisEvents: CharacterEvent[] = [
     id: "iris_coffee_forced_meet_event",
     name: "Unexpected Cafe Run-In",
     description: "Run into Iris at the cafe after turning her down.",
+    quest: {
+      title: "Cafe Run-In",
+      description: "Stop by the Cafe. You might run into Iris again.",
+    },
     priority: 240,
     repeatable: false,
     conditions: {
@@ -249,6 +262,11 @@ export const irisEvents: CharacterEvent[] = [
     id: "iris_hallway_invite_event",
     name: "Hallway Invite",
     description: "Iris invites you inside to meet Dawn.",
+    quest: {
+      title: "Neighborly Introduction",
+      description:
+        "You've gotten to know Iris a little. Maybe you'll see her around the apartment building.",
+    },
     priority: 230,
     repeatable: false,
     conditions: {
@@ -313,6 +331,11 @@ export const irisEvents: CharacterEvent[] = [
     id: "iris_mall_bump_dom",
     name: "Mall Bump (Confident Iris)",
     description: "Run into Iris at the mall when she's feeling bold.",
+    quest: {
+      title: "A Day Out",
+      description:
+        "It's a good day to get out of the apartment. You never know who you might run into at the Mall.",
+    },
     priority: 220,
     repeatable: false,
     conditions: {
@@ -401,6 +424,11 @@ export const irisEvents: CharacterEvent[] = [
     id: "iris_mall_bump_sub",
     name: "Mall Bump (Shy Iris)",
     description: "Run into Iris at the mall when she's flustered.",
+    quest: {
+      title: "A Day Out",
+      description:
+        "It's a good day to get out of the apartment. You never know who you might run into at the Mall.",
+    },
     priority: 220,
     repeatable: false,
     conditions: {
@@ -497,6 +525,11 @@ export const irisEvents: CharacterEvent[] = [
     id: "iris_chapter_1_finale_dom",
     name: "Chapter 1 Finale (Confident Iris)",
     description: "Iris confronts you in the hallway late at night.",
+    quest: {
+      title: "Late Night Encounters",
+      description:
+        "After a long day, it's time to head home. The apartment building is usually quiet at night...",
+    },
     priority: 210,
     repeatable: false,
     conditions: {
@@ -562,6 +595,11 @@ export const irisEvents: CharacterEvent[] = [
     id: "iris_chapter_1_finale_sub",
     name: "Chapter 1 Finale (Shy Iris)",
     description: "Iris hesitates in the hallway late at night.",
+    quest: {
+      title: "Late Night Encounters",
+      description:
+        "After a long day, it's time to head home. The apartment building is usually quiet at night...",
+    },
     priority: 210,
     repeatable: false,
     conditions: {

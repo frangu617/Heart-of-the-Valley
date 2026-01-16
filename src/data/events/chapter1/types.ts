@@ -65,6 +65,10 @@ export type CharacterEvent = {
   id: string;
   name: string;
   description: string; // For debugging/admin
+  quest?: {
+    title: string;
+    description?: string;
+  };
 
   // Requirements to trigger
   conditions: EventConditions;

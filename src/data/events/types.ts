@@ -19,6 +19,10 @@ export type GameplayFlag =
   | "irisCoffeeMet"
   | "irisDomPath"
   | "irisSubPath"
+  | "iris_intro_done"
+  | "iris_coffee_done"
+  | "iris_hallway_invite_done"
+  | "iris_mall_bump_done"
   | "gwenDomPath"
   | "gwenSubPath"
   | "rubyTrainerAccepted"
@@ -65,6 +69,10 @@ export type CharacterEvent = {
   id: string;
   name: string;
   description: string; // For debugging/admin
+  quest?: {
+    title: string;
+    description?: string;
+  };
 
   // Requirements to trigger
   conditions: EventConditions;

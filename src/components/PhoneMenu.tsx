@@ -4,7 +4,14 @@ import { getTimeOfDay } from "@/lib/time";
 import { PlayerStats } from "../data/characters";
 import { Girl } from "../data/characters";
 import { DayOfWeek } from "../data/gameConstants";
-import { getQuickActions } from "../data/locationDescriptions";
+
+type QuestItem = {
+  id: string;
+  title: string;
+  description?: string;
+  location?: string;
+  characterName?: string;
+};
 
 interface Props {
   player: PlayerStats;
@@ -15,11 +22,10 @@ interface Props {
   onSave?: () => void;
   isMobile?: boolean;
   dayOfWeek?: DayOfWeek;
-  currentLocation?: string;
-  onNavigate?: (location: string) => void;
+  quests?: QuestItem[];
 }
 
-type PhoneTab = "stats" | "contacts" | "gallery" | "messages" | "suggestions";
+type PhoneTab = "stats" | "contacts" | "gallery" | "messages" | "todo";
 
 export default function PhoneMenu({
   player,
@@ -30,8 +36,7 @@ export default function PhoneMenu({
   onSave,
   isMobile = false,
   dayOfWeek,
-  currentLocation = "Bedroom",
-  onNavigate,
+  quests = [],
 }: Props) {
   const [activeTab, setActiveTab] = useState<PhoneTab>("stats");
 
@@ -192,15 +197,15 @@ export default function PhoneMenu({
             </div>
           )}
 
-          {/* Suggestions Tab */}
-          {activeTab === "suggestions" && (
+          {/* To-Do Tab */}
+          {activeTab === "todo" && (
             <div className="space-y-4 animate-slideUp">
               <h3
                 className={`text-lg font-bold ${
                   darkMode ? "text-gray-200" : "text-gray-800"
                 }`}
               >
-                💡 Suggestions
+                To-Do
               </h3>
 
               <p
@@ -208,58 +213,64 @@ export default function PhoneMenu({
                   darkMode ? "text-gray-400" : "text-gray-600"
                 }`}
               >
-                Based on your current situation, here&apos;s what you might want to
-                do:
+                Your current objectives:
               </p>
 
-              {getQuickActions(currentLocation, hour, player).length > 0 ? (
+              {quests.length > 0 ? (
                 <div className="space-y-3">
-                  {getQuickActions(currentLocation, hour, player).map(
-                    (action, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => {
-                          if (
-                            onNavigate &&
-                            action.location !== currentLocation
-                          ) {
-                            onNavigate(action.location);
-                            onClose();
-                          }
-                        }}
-                        className={`
-                          w-full text-left p-4 rounded-xl transition-all duration-200 border-2
-                          ${
-                            darkMode
-                              ? "bg-gray-800 border-purple-700 hover:border-purple-500"
-                              : "bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200 hover:border-purple-400"
-                          }
-                          transform hover:scale-102 shadow-md hover:shadow-lg
-                        `}
-                      >
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="text-3xl">{action.icon}</div>
-                          <div className="flex-1">
+                  {quests.map((quest) => (
+                    <div
+                      key={quest.id}
+                      className={`
+                        w-full text-left p-4 rounded-xl transition-all duration-200 border-2
+                        ${
+                          darkMode
+                            ? "bg-gray-800 border-purple-700"
+                            : "bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200"
+                        }
+                        shadow-md
+                      `}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="text-2xl">TODO</div>
+                        <div className="flex-1">
+                          <div
+                            className={`font-bold ${
+                              darkMode ? "text-gray-200" : "text-gray-800"
+                            }`}
+                          >
+                            {quest.title}
+                          </div>
+                          {quest.description && (
                             <div
-                              className={`font-bold ${
-                                darkMode ? "text-gray-200" : "text-gray-800"
-                              }`}
-                            >
-                              {action.label}
-                            </div>
-                            <div
-                              className={`text-xs ${
+                              className={`text-xs mt-1 ${
                                 darkMode ? "text-gray-400" : "text-gray-600"
                               }`}
                             >
-                              📍 {action.location}
+                              {quest.description}
                             </div>
-                          </div>
-                          <div className="text-purple-500">→</div>
+                          )}
+                          {(quest.location || quest.characterName) && (
+                            <div
+                              className={`text-xs mt-2 ${
+                                darkMode ? "text-gray-400" : "text-gray-600"
+                              }`}
+                            >
+                              {quest.location && (
+                                <span>Location: {quest.location}</span>
+                              )}
+                              {quest.location && quest.characterName && (
+                                <span> - </span>
+                              )}
+                              {quest.characterName && (
+                                <span>Character: {quest.characterName}</span>
+                              )}
+                            </div>
+                          )}
                         </div>
-                      </button>
-                    )
-                  )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div
@@ -268,10 +279,10 @@ export default function PhoneMenu({
                     ${darkMode ? "text-gray-500" : "text-gray-400"}
                   `}
                 >
-                  <div className="text-6xl mb-4">✨</div>
-                  <p>You&apos;re doing great!</p>
+                  <div className="text-6xl mb-4">TODO</div>
+                  <p>No active to-dos right now</p>
                   <p className="text-sm mt-2">
-                    No urgent suggestions right now
+                    Check back after you meet new conditions
                   </p>
                 </div>
               )}
@@ -510,11 +521,11 @@ export default function PhoneMenu({
           </button>
 
           <button
-            onClick={() => setActiveTab("suggestions")}
+            onClick={() => setActiveTab("todo")}
             className={`
               flex-1 py-3 px-1 rounded-lg transition-all
               ${
-                activeTab === "suggestions"
+                activeTab === "todo"
                   ? darkMode
                     ? "bg-purple-700 text-white"
                     : "bg-purple-500 text-white"
@@ -525,7 +536,7 @@ export default function PhoneMenu({
             `}
           >
             <div className="text-xl">💡</div>
-            <div className="text-[10px]">Tips</div>
+            <div className="text-[10px]">To-Do</div>
           </button>
 
           <button

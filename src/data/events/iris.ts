@@ -5,6 +5,10 @@ export const irisEvents: CharacterEvent[] = [
     id: "iris_university_intro",
     name: "Coffee Collision",
     description: "Iris spills coffee on you in the university hallway.",
+    quest: {
+      title: "Go to work at the university",
+      description: "Head to the University Hallway to start your first day.",
+    },
     priority: 300,
     repeatable: false,
     conditions: {
@@ -63,7 +67,7 @@ export const irisEvents: CharacterEvent[] = [
       ],
     },
     rewards: {
-      setFlags: ["hasMetIris", "irisNeedsNewShirt"],
+      setFlags: ["hasMetIris", "irisNeedsNewShirt", "iris_intro_done"],
     },
   },
 
@@ -71,15 +75,20 @@ export const irisEvents: CharacterEvent[] = [
     id: "iris_coffee_meetup_event",
     name: "Coffee Meetup",
     description: "Meet Iris at the cafe after accepting her offer.",
+    quest: {
+      title: "Meet Iris for Coffee",
+      description:
+        "You agreed to meet Iris at the Cafe. She's waiting to make up for the coffee incident.",
+    },
     priority: 250,
     repeatable: false,
     conditions: {
-      minAffection: 0,
+      minAffection: 5,
       minTrust: 0,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Cafe",
-      requiredFlags: ["hasMetIris", "irisCoffeeAccepted"],
+      requiredFlags: ["iris_intro_done", "irisCoffeeAccepted"],
     },
     dialogue: {
       id: "iris_coffee_meetup_event",
@@ -176,7 +185,7 @@ export const irisEvents: CharacterEvent[] = [
       ],
     },
     rewards: {
-      setFlags: ["irisCoffeeMet"],
+      setFlags: ["irisCoffeeMet", "iris_coffee_done"],
     },
   },
 
@@ -184,15 +193,19 @@ export const irisEvents: CharacterEvent[] = [
     id: "iris_coffee_forced_meet_event",
     name: "Unexpected Cafe Run-In",
     description: "Run into Iris at the cafe after turning her down.",
+    quest: {
+      title: "Cafe Run-In",
+      description: "Stop by the Cafe. You might run into Iris again.",
+    },
     priority: 240,
     repeatable: false,
     conditions: {
-      minAffection: 0,
+      minAffection: 5,
       minTrust: 0,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Cafe",
-      requiredFlags: ["hasMetIris", "irisCoffeeDeclined"],
+      requiredFlags: ["iris_intro_done", "irisCoffeeDeclined"],
     },
     dialogue: {
       id: "iris_coffee_forced_meet_event",
@@ -241,7 +254,7 @@ export const irisEvents: CharacterEvent[] = [
       ],
     },
     rewards: {
-      setFlags: ["irisCoffeeMet"],
+      setFlags: ["irisCoffeeMet", "iris_coffee_done"],
     },
   },
 
@@ -249,15 +262,20 @@ export const irisEvents: CharacterEvent[] = [
     id: "iris_hallway_invite_event",
     name: "Hallway Invite",
     description: "Iris invites you inside to meet Dawn.",
+    quest: {
+      title: "Neighborly Introduction",
+      description:
+        "You've gotten to know Iris a little. Maybe you'll see her around the apartment building.",
+    },
     priority: 230,
     repeatable: false,
     conditions: {
-      minAffection: 0,
+      minAffection: 10,
       minTrust: 0,
       minHour: 18,
       maxHour: 24,
       requiredLocation: "Hallway",
-      requiredFlags: ["irisCoffeeMet"],
+      requiredFlags: ["iris_coffee_done"],
     },
     dialogue: {
       id: "iris_hallway_invite_event",
@@ -275,9 +293,19 @@ export const irisEvents: CharacterEvent[] = [
           text: "Oh! {playerName}. I keep forgetting we're neighbors.",
           expression: "happy",
         },
-        { speaker: "You", text: "Hard to miss me. I'm the one making noise at 2 AM." },
-        { speaker: "Iris", text: "Actually, that's usually me. Grading papers.", expression: "happy" },
-        { speaker: null, text: "She tosses the bag into the chute and wipes her hands." },
+        {
+          speaker: "You",
+          text: "Hard to miss me. I'm the one making noise at 2 AM.",
+        },
+        {
+          speaker: "Iris",
+          text: "Actually, that's usually me. Grading papers.",
+          expression: "happy",
+        },
+        {
+          speaker: null,
+          text: "She tosses the bag into the chute and wipes her hands.",
+        },
         {
           speaker: "Iris",
           text: "You know, you should come in for a second. I've been meaning to introduce you to my daughter, Dawn.",
@@ -307,22 +335,34 @@ export const irisEvents: CharacterEvent[] = [
         },
       ],
     },
+    rewards: {
+      setFlags: ["iris_hallway_invite_done"],
+    },
   },
 
   {
     id: "iris_mall_bump_dom",
     name: "Mall Bump (Confident Iris)",
     description: "Run into Iris at the mall when she's feeling bold.",
+    quest: {
+      title: "A Day Out",
+      description:
+        "It's a good day to get out of the apartment. You never know who you might run into at the Mall.",
+    },
     priority: 220,
     repeatable: false,
     conditions: {
-      minAffection: 0,
+      minAffection: 10,
+      minLust: 5,
       minTrust: 0,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Mall",
-      requiredPreviousEvents: ["iris_hallway_invite_event"],
-      requiredFlags: ["irisNeedsNewShirt", "irisDomPath"],
+      requiredFlags: [
+        "iris_hallway_invite_done",
+        "irisNeedsNewShirt",
+        "irisDomPath",
+      ],
     },
     dialogue: {
       id: "iris_mall_bump_dom",
@@ -355,12 +395,20 @@ export const irisEvents: CharacterEvent[] = [
           expression: "happy",
         },
         { speaker: "You", text: "So this was a trap?" },
-        { speaker: "Iris", text: "Let's call it a strategy. I bought way too much.", expression: "happy" },
+        {
+          speaker: "Iris",
+          text: "Let's call it a strategy. I bought way too much.",
+          expression: "happy",
+        },
         {
           speaker: null,
           text: "She glances at the bag you caught. It has a distinct lace pattern on the packaging.",
         },
-        { speaker: "Iris", text: "Especially that one. You have good reflexes.", expression: "happy" },
+        {
+          speaker: "Iris",
+          text: "Especially that one. You have good reflexes.",
+          expression: "happy",
+        },
         {
           speaker: "You",
           text: "How do you respond?",
@@ -380,7 +428,11 @@ export const irisEvents: CharacterEvent[] = [
           speaker: null,
           text: "You walk together towards the exit. She walks close to you, her shoulder brushing yours intentionally.",
         },
-        { speaker: "Iris", text: "You know... since you've already handled the merchandise...", expression: "seductive" },
+        {
+          speaker: "Iris",
+          text: "You know... since you've already handled the merchandise...",
+          expression: "seductive",
+        },
         {
           speaker: "Iris",
           text: "I bought a new outfit in there. Very little fabric. Very expensive.",
@@ -395,22 +447,34 @@ export const irisEvents: CharacterEvent[] = [
         { speaker: "Iris", text: "I'll bet you are.", expression: "seductive" },
       ],
     },
+    rewards: {
+      setFlags: ["iris_mall_bump_done"],
+    },
   },
 
   {
     id: "iris_mall_bump_sub",
     name: "Mall Bump (Shy Iris)",
     description: "Run into Iris at the mall when she's flustered.",
+    quest: {
+      title: "A Day Out",
+      description:
+        "It's a good day to get out of the apartment. You never know who you might run into at the Mall.",
+    },
     priority: 220,
     repeatable: false,
     conditions: {
-      minAffection: 0,
+      minAffection: 10,
+      minLust: 5,
       minTrust: 0,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Mall",
-      requiredPreviousEvents: ["iris_hallway_invite_event"],
-      requiredFlags: ["irisNeedsNewShirt", "irisSubPath"],
+      requiredFlags: [
+        "iris_hallway_invite_done",
+        "irisNeedsNewShirt",
+        "irisSubPath",
+      ],
     },
     dialogue: {
       id: "iris_mall_bump_sub",
@@ -447,12 +511,20 @@ export const irisEvents: CharacterEvent[] = [
           expression: "shy",
         },
         { speaker: "You", text: "What did you buy? The whole store?" },
-        { speaker: "Iris", text: "Just... things. Retail therapy got out of hand.", expression: "shy" },
+        {
+          speaker: "Iris",
+          text: "Just... things. Retail therapy got out of hand.",
+          expression: "shy",
+        },
         {
           speaker: null,
           text: "She notices you holding the bag you caught--the one with the lingerie logo--and her eyes go wide. She quickly tries to snatch it back.",
         },
-        { speaker: "Iris", text: "That one isn't... it's just socks! Boring socks!", expression: "shy" },
+        {
+          speaker: "Iris",
+          text: "That one isn't... it's just socks! Boring socks!",
+          expression: "shy",
+        },
         {
           speaker: "You",
           text: "How do you respond?",
@@ -472,7 +544,11 @@ export const irisEvents: CharacterEvent[] = [
           speaker: null,
           text: "You walk towards the exit. She stays close to your side, seemingly grateful for the protection from the crowd.",
         },
-        { speaker: "Iris", text: "Thanks for the rescue. Again.", expression: "shy" },
+        {
+          speaker: "Iris",
+          text: "Thanks for the rescue. Again.",
+          expression: "shy",
+        },
         {
           speaker: "Iris",
           text: "Um... about that bag you caught...",
@@ -491,22 +567,30 @@ export const irisEvents: CharacterEvent[] = [
         },
       ],
     },
+    rewards: {
+      setFlags: ["iris_mall_bump_done"],
+    },
   },
 
   {
     id: "iris_chapter_1_finale_dom",
     name: "Chapter 1 Finale (Confident Iris)",
     description: "Iris confronts you in the hallway late at night.",
+    quest: {
+      title: "Late Night Encounters",
+      description:
+        "After a long day, it's time to head home. The apartment building is usually quiet at night...",
+    },
     priority: 210,
     repeatable: false,
     conditions: {
-      minAffection: 0,
+      minAffection: 10,
+      minLust: 10,
       minTrust: 0,
       minHour: 20,
       maxHour: 24,
       requiredLocation: "Hallway",
-      requiredPreviousEvents: ["iris_hallway_invite_event", "iris_mall_bump_dom"],
-      requiredFlags: ["irisDomPath"],
+      requiredFlags: ["iris_mall_bump_done", "irisDomPath"],
     },
     dialogue: {
       id: "iris_chapter_1_finale_dom",
@@ -537,7 +621,11 @@ export const irisEvents: CharacterEvent[] = [
           speaker: null,
           text: "She stops right in front of you, blocking your path to your door. She doesn't move aside.",
         },
-        { speaker: "Iris", text: "Are you? You look restless.", expression: "neutral" },
+        {
+          speaker: "Iris",
+          text: "Are you? You look restless.",
+          expression: "neutral",
+        },
         {
           speaker: "You",
           text: "How do you answer?",
@@ -562,16 +650,21 @@ export const irisEvents: CharacterEvent[] = [
     id: "iris_chapter_1_finale_sub",
     name: "Chapter 1 Finale (Shy Iris)",
     description: "Iris hesitates in the hallway late at night.",
+    quest: {
+      title: "Late Night Encounters",
+      description:
+        "After a long day, it's time to head home. The apartment building is usually quiet at night...",
+    },
     priority: 210,
     repeatable: false,
     conditions: {
-      minAffection: 0,
+      minAffection: 10,
+      minLust: 10,
       minTrust: 0,
       minHour: 20,
       maxHour: 24,
       requiredLocation: "Hallway",
-      requiredPreviousEvents: ["iris_hallway_invite_event", "iris_mall_bump_sub"],
-      requiredFlags: ["irisSubPath"],
+      requiredFlags: ["iris_mall_bump_done", "irisSubPath"],
     },
     dialogue: {
       id: "iris_chapter_1_finale_sub",
@@ -607,7 +700,11 @@ export const irisEvents: CharacterEvent[] = [
           speaker: null,
           text: "She hesitates, looking at you with a softness that catches you off guard.",
         },
-        { speaker: "Iris", text: "I'm... actually glad I ran into you.", expression: "shy" },
+        {
+          speaker: "Iris",
+          text: "I'm... actually glad I ran into you.",
+          expression: "shy",
+        },
         {
           speaker: "You",
           text: "How do you respond?",
@@ -627,5 +724,4 @@ export const irisEvents: CharacterEvent[] = [
       ],
     },
   },
-
 ];

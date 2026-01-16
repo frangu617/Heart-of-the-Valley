@@ -66,6 +66,15 @@ type ScheduledEncounter = {
   activities?: string[];
 };
 
+type QuestItem = {
+  id: string;
+  title: string;
+  description?: string;
+  location?: string;
+  characterName?: string;
+  priority: number;
+};
+
 const clampValue = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
 
@@ -872,7 +881,8 @@ const spendTime = (amount: number) => {
           characterName: girl.name,
           eventHistory: [],
           lastInteractionTime: 0,
-        }
+        },
+        gameplayFlags
       );
 
       if (triggerable && triggerable.conditions.requiredLocation) {
@@ -886,7 +896,7 @@ const spendTime = (amount: number) => {
     });
 
     setPendingEvents(pending);
-  }, [girls, player, dayOfWeek, hour, characterEventStates]);
+  }, [girls, player, dayOfWeek, hour, characterEventStates, gameplayFlags]);
 
   // Run this periodically
   useEffect(() => {
@@ -945,6 +955,27 @@ const spendTime = (amount: number) => {
       ),
     [pendingEvents, currentLocation]
   );
+
+  const questItems = useMemo<QuestItem[]>(() => {
+    const items: QuestItem[] = [];
+
+    pendingEvents.forEach((pending) => {
+      const events = getCharacterEvents(pending.characterName);
+      const event = events.find((candidate) => candidate.id === pending.eventId);
+      if (!event) return;
+
+      items.push({
+        id: pending.eventId,
+        title: event.quest?.title ?? event.name,
+        description: event.quest?.description,
+        location: pending.location ?? event.conditions.requiredLocation,
+        characterName: pending.characterName,
+        priority: pending.priority,
+      });
+    });
+
+    return items.sort((a, b) => b.priority - a.priority);
+  }, [pendingEvents]);
 
   const hasInteractedToday = useCallback(
     (girlName: string, actionLabel: string) => {
@@ -1388,6 +1419,7 @@ const spendTime = (amount: number) => {
           onSave={saveGame}
           isMobile={isMobile}
           dayOfWeek={dayOfWeek}
+          quests={questItems}
         />
       )}
     </div>
