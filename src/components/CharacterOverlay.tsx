@@ -36,7 +36,7 @@ interface Props {
   dayOfWeek: DayOfWeek;
   hour: number;
   eventState: CharacterEventState;
-  onEventTriggered: (eventId: string) => void;
+  onEventTriggered: (eventId: string, girlName?: string) => void;
   darkMode?: boolean; 
   onScheduleDate: (date: {
     characterName: string;
@@ -148,7 +148,7 @@ export default function CharacterOverlay({
       console.log(`🎉 Event triggered: ${triggeredEvent.name}`);
 
       const characterImage = getCharacterImage(girl, location, hour, getFacialExpression());
-      onEventTriggered(triggeredEvent.id);
+      onEventTriggered(triggeredEvent.id, girl.name);
       onStartDialogue(triggeredEvent.dialogue, characterImage, undefined);
 
       const updatedPlayer = applyCharacterEventRewards(
