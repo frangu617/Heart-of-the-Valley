@@ -8,6 +8,8 @@ export type GameplayFlag =
   | "hasMetGwen"
   | "hasMetYumi"
   | "hasMetRuby"
+  | "hasCar"
+  | "irisApartmentUnlocked"
   | "firstWorkout"
   | "firstTimeWorked"
   | "firstTimeCookedMeal"

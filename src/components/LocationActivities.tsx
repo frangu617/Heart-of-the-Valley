@@ -27,6 +27,7 @@ type Props = {
   dayOfWeek: DayOfWeek;
   onUnlockCharacter?: (characterName: string) => void;
   onSetFlag?: (flag: GameplayFlag) => void;
+  onTriggerEvent?: (characterName: string, eventId: string) => void;
   gameplayFlags?: Set<GameplayFlag>;
 };
 
@@ -39,6 +40,7 @@ export default function LocationActivitiesPanel({
   dayOfWeek,
   onUnlockCharacter,
   onSetFlag,
+  onTriggerEvent,
   gameplayFlags,
 }: Props) {
   const activities: Activity[] = activitiesMap[location] ?? [];
@@ -76,6 +78,17 @@ export default function LocationActivitiesPanel({
       failures.push({
         alert: `You need a ${requiredItem} for this activity!`,
         inline: `📦 Need ${requiredItem}`,
+      });
+    }
+
+    if (
+      location === "Car Store" &&
+      activity.name === "Buy Car" &&
+      gameplayFlags?.has("hasCar")
+    ) {
+      failures.push({
+        alert: "You already own a car.",
+        inline: "Already own a car",
       });
     }
 
@@ -140,16 +153,32 @@ export default function LocationActivitiesPanel({
     //Unlock Yumi after teaching class
     if (isYumiUnlockActivity(act)) {
       onSetFlag?.("firstTimeWorked");
-      onSetFlag?.("hasMetYumi");
-      // Notify parent component to unlock Yumi
-      if (onUnlockCharacter) {
-        onUnlockCharacter("Yumi");
+      const yumiAlreadyMet = gameplayFlags?.has("hasMetYumi");
+      if (!yumiAlreadyMet) {
+        if (onTriggerEvent) {
+          onTriggerEvent("Yumi", "yumi_first_meeting");
+        } else {
+          onSetFlag?.("hasMetYumi");
+          if (onUnlockCharacter) {
+            onUnlockCharacter("Yumi");
+          }
+        }
+      } else {
+        onSetFlag?.("hasMetYumi");
+        if (onUnlockCharacter) {
+          onUnlockCharacter("Yumi");
+        }
       }
     }
 
     // Mark hallway neighbor encounter readiness after any paid work shift
     if (act.name.toLowerCase().includes("work")) {
       onSetFlag?.("firstTimeWorked");
+    }
+
+    if (location === "Car Store" && act.name === "Buy Car") {
+      onSetFlag?.("hasCar");
+      alert("You bought a car.");
     }
 
     showActivityFeedback(act);

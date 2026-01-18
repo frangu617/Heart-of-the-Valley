@@ -336,7 +336,7 @@ export const irisEvents: CharacterEvent[] = [
       ],
     },
     rewards: {
-      setFlags: ["iris_hallway_invite_done"],
+      setFlags: ["iris_hallway_invite_done", "irisApartmentUnlocked"],
     },
   },
 

@@ -1402,17 +1402,41 @@ const spendTime = (amount: number) => {
               </h3>
               <div className="mt-4 overflow-x-auto [-webkit-overflow-scrolling:touch]">
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-                  {locationGraph[currentLocation]?.map((loc) => (
-                  <LocationCard
-                    key={loc.name}
-                    location={loc}
-                    onMove={moveTo}
-                    girls={girls}
-                    darkMode={darkMode}
-                    scheduledEncounters={scheduledEncounters}
-                    pendingEvents={pendingEvents}
-                  />
-                ))}
+                  {locationGraph[currentLocation]
+                    ?.filter((loc) => {
+                      const requiresCar =
+                        loc.name === "Beach" || loc.name === "Mountains";
+                      if (requiresCar && !gameplayFlags.has("hasCar")) {
+                        return false;
+                      }
+
+                      const irisApartmentLocations = [
+                        "Iris' Living Room",
+                        "Iris' Bedroom",
+                        "Iris' Bathroom",
+                        "Iris' Kitchen",
+                        "Dawn's bedroom",
+                      ];
+                      if (
+                        irisApartmentLocations.includes(loc.name) &&
+                        !gameplayFlags.has("irisApartmentUnlocked")
+                      ) {
+                        return false;
+                      }
+
+                      return true;
+                    })
+                    .map((loc) => (
+                      <LocationCard
+                        key={loc.name}
+                        location={loc}
+                        onMove={moveTo}
+                        girls={girls}
+                        darkMode={darkMode}
+                        scheduledEncounters={scheduledEncounters}
+                        pendingEvents={pendingEvents}
+                      />
+                    ))}
                 </div>
               </div>
             </div>

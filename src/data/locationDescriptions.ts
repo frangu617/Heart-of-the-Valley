@@ -83,6 +83,11 @@ export const locationDescriptions: Record<string, LocationDescription> = {
     afternoon: "The mall is bustling with weekend shoppers.",
     evening: "The evening crowd browses as stores prepare to close.",
   },
+  "Car Store": {
+    default: "A small showroom of clean, polished vehicles.",
+    afternoon: "Sales staff hover nearby, ready to make a pitch.",
+    evening: "The floor is quiet, just you and the rows of cars.",
+  },
   "Strip Club": {
     default: "Dim lights and pulsing music create an electric atmosphere.",
     evening: "The evening show is starting to draw a crowd.",

@@ -95,36 +95,33 @@ export default function LocationCard({
           </div>
         )}
 
-        {/* Scheduled encounter indicator */}
-        {pendingEncounter && (
-          <div className="absolute top-2 left-2">
-            <div className="bg-gradient-to-r from-pink-500 to-red-500 text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg flex items-center gap-1 animate-bounce">
-              <span>💝</span>
-              <span>{pendingEncounter.label || "Date"}</span>
-            </div>
-            {pendingEncounter.day && pendingEncounter.hour !== undefined && (
-              <div className="mt-1 bg-purple-600 text-white text-xs px-2 py-1 rounded-full text-center">
-                {pendingEncounter.day} {pendingEncounter.hour}:00
+        {/* Indicators stack */}
+        {(pendingEncounter || pendingEvent || girlsHere.length > 0) && (
+          <div className="absolute top-2 left-2 flex flex-col gap-1">
+            {pendingEncounter && (
+              <>
+                <div className="bg-gradient-to-r from-pink-500 to-red-500 text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg flex items-center gap-1 animate-bounce">
+                  <span>dY'?</span>
+                  <span>{pendingEncounter.label || "Date"}</span>
+                </div>
+                {pendingEncounter.day && pendingEncounter.hour !== undefined && (
+                  <div className="bg-purple-600 text-white text-xs px-2 py-1 rounded-full text-center">
+                    {pendingEncounter.day} {pendingEncounter.hour}:00
+                  </div>
+                )}
+              </>
+            )}
+            {pendingEvent && (
+              <div className="bg-yellow-300 text-yellow-900 text-xs w-6 h-6 rounded-full font-bold shadow-lg flex items-center justify-center animate-pulse border border-yellow-500">
+                <span>!</span>
               </div>
             )}
-          </div>
-        )}
-        {/* NEW: Pending event indicator */}
-        {!pendingEncounter && pendingEvent && (
-          <div className="absolute top-2 left-2">
-            <div className="bg-yellow-300 text-yellow-900 text-xs px-3 py-1.5 rounded-full font-bold shadow-lg flex items-center gap-1 animate-pulse border border-yellow-500">
-              <span className="text-base">?</span>
-              <span>{pendingEvent.characterName}</span>
-            </div>
-          </div>
-        )}
-        {/* Character indicators */}
-        {girlsHere.length > 0 && !pendingEncounter && (
-          <div className="absolute top-2 left-2">
-            <div className="bg-pink-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg flex items-center gap-1 animate-pulse">
-              <span>👥</span>
-              <span>{girlsHere.length}</span>
-            </div>
+            {girlsHere.length > 0 && (
+              <div className="bg-pink-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg flex items-center gap-1 animate-pulse">
+                <span>👥</span>
+                <span>{girlsHere.length}</span>
+              </div>
+            )}
           </div>
         )}
       </div>

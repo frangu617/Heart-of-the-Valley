@@ -21,6 +21,7 @@ const locationToCategory: Record<string, LocationCategory> = {
   Office: "university",
   "University Hallway": "university",
   University: "university",
+  "Iris' Office": "university",
   Beach: "beach",
   Cafe: "casual",
   Mall: "casual",
@@ -70,7 +71,9 @@ export function getCharacterImage(
   // Special logic for home locations:
   // Before 6 PM, use casual clothes
   // After 7 PM, use home/pajama outfits
-  if (homeLocations.has(location)) {
+  if (girl.name === "Iris" && location === "Hallway") {
+    category = "casual";
+  } else if (homeLocations.has(location)) {
     if (hour < 19) {
       category = "casual";
     } else {

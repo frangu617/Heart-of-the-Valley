@@ -178,6 +178,16 @@ export const locationActivities: Record<string, LocationActivity[]> = {
       requirements: { minMoney: 30 },
     },
   ],
+  "Car Store": [
+    {
+      name: "Buy Car",
+      icon: "CAR",
+      description: "Purchase a reliable car",
+      timeCost: 1,
+      statEffects: { money: -2000 },
+      requirements: { minMoney: 2000 },
+    },
+  ],
   Beach: [
     {
       name: "Swim",
