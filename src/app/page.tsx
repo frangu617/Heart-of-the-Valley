@@ -121,6 +121,9 @@ export default function GamePage() {
 
   const [metCharacters, setMetCharacters] = useState<Set<string>>(new Set());
   const [showPhone, setShowPhone] = useState<boolean>(false);
+  const [showWhereMenu, setShowWhereMenu] = useState<boolean>(false);
+  const [showActivitiesMenu, setShowActivitiesMenu] =
+    useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
   const [girlStatsOverrides, setGirlStatsOverrides] = useState<
@@ -1021,6 +1024,31 @@ const spendTime = (amount: number) => {
     getLocationBackground(currentLocation, hour);
   const timeOfDay = getTimeOfDay(hour);
   const presentGirls = girls.filter((g) => g.location === currentLocation);
+  const availableLocations = useMemo(() => {
+    const options = locationGraph[currentLocation] ?? [];
+    return options.filter((loc) => {
+      const requiresCar = loc.name === "Beach" || loc.name === "Mountains";
+      if (requiresCar && !gameplayFlags.has("hasCar")) {
+        return false;
+      }
+
+      const irisApartmentLocations = [
+        "Iris' Living Room",
+        "Iris' Bedroom",
+        "Iris' Bathroom",
+        "Iris' Kitchen",
+        "Dawn's bedroom",
+      ];
+      if (
+        irisApartmentLocations.includes(loc.name) &&
+        !gameplayFlags.has("irisApartmentUnlocked")
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [currentLocation, gameplayFlags]);
 
   const returnToMainMenu = () => {
     if (!confirm("Return to main menu? Any unsaved progress will be lost."))
@@ -1293,42 +1321,137 @@ const spendTime = (amount: number) => {
             : "bg-gradient-to-r from-pink-500 to-purple-600"
         } text-white py-4 md:py-6 shadow-lg transition-colors duration-300`}
       >
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <h1 className="text-2xl md:text-4xl font-bold">
-            {isMobile ? (
-              "💖 HotV"
-            ) : (
-              <span className="flex items-center gap-2">
-                <Image
-                  src="/images/logo.png"
-                  alt="Heart of the Valley"
-                  width={50}
-                  height={50}
-                />
-                💖 Heart of the Valley
-              </span>
-            )}
-          </h1>
-          <div className="flex gap-2 items-center">
+        <div className="container mx-auto px-4 flex justify-center items-center">
+          <span className="sr-only">Heart of the Valley</span>
+          <div className="flex gap-2 md:gap-3 items-center">
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowWhereMenu((prev) => !prev)}
+                className="bg-white/30 hover:bg-white/40 ring-2 ring-white/60 backdrop-blur-sm px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 shadow-lg"
+                aria-haspopup="menu"
+                aria-expanded={showWhereMenu}
+                aria-label={`Where to. Current location: ${currentLocation}`}
+                title="Where to"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 21s-6-4.4-6-10a6 6 0 1 1 12 0c0 5.6-6 10-6 10z" />
+                  <circle cx="12" cy="11" r="2.5" />
+                </svg>
+                <svg
+                  viewBox="0 0 20 20"
+                  className={`h-4 w-4 transition-transform ${
+                    showWhereMenu ? "rotate-180" : ""
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 7l5 5 5-5" />
+                </svg>
+              </button>
+            </div>
             <button
+              type="button"
               onClick={() => setShowPhone(true)}
-              className={`bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${
+              className={`bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center ${
                 isMobile ? "animate-pulse" : ""
               }`}
+              aria-label="Open phone"
               title="Open phone"
             >
-              <span className="text-xl">📱</span>
-              <span className="hidden sm:inline">Phone</span>
+              <svg
+                viewBox="0 0 24 24"
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="7" y="2" width="10" height="20" rx="2" ry="2" />
+                <path d="M11 18h2" />
+              </svg>
             </button>
             <button
+              type="button"
               onClick={() => setGameState("paused")}
-              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2"
+              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center"
+              aria-label="Open menu"
+              title="Open menu"
             >
-              <span>⏸️</span>
-              <span className="hidden md:inline">Menu</span>
+              <svg
+                viewBox="0 0 24 24"
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M4 6h16" />
+                <path d="M4 12h16" />
+                <path d="M4 18h16" />
+              </svg>
             </button>
           </div>
         </div>
+        {showWhereMenu && (
+          <div className="container mx-auto px-4 pb-4">
+            <div
+              className={`rounded-2xl shadow-xl p-3 md:p-4 border-2 ${
+                darkMode
+                  ? "bg-gray-800 border-purple-700"
+                  : "bg-white border-purple-100"
+              } transition-colors duration-300`}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h2
+                  className={`text-sm font-semibold ${
+                    darkMode ? "text-purple-200" : "text-purple-800"
+                  }`}
+                >
+                  Where to
+                </h2>
+                <span className="text-xs opacity-80">
+                  Current: {currentLocation}
+                </span>
+              </div>
+              {availableLocations.length === 0 ? (
+                <div className="text-sm opacity-80">No nearby locations.</div>
+              ) : (
+                <div className="max-h-[70vh] overflow-y-auto">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+                    {availableLocations.map((loc) => (
+                      <LocationCard
+                        key={loc.name}
+                        location={loc}
+                        onMove={(name) => {
+                          setShowWhereMenu(false);
+                          moveTo(name);
+                        }}
+                        girls={girls}
+                        darkMode={darkMode}
+                        scheduledEncounters={scheduledEncounters}
+                        pendingEvents={pendingEvents}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </header>
 
       <div className="container mx-auto px-2 md:px-4 py-4 md:py-8">
@@ -1492,48 +1615,85 @@ const spendTime = (amount: number) => {
               </div>
             </div>
 
+            {isMobile && (
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => setShowActivitiesMenu((prev) => !prev)}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 shadow-md transition-colors ${
+                    darkMode
+                      ? "bg-gray-800 border-purple-700 text-purple-200"
+                      : "bg-white border-purple-200 text-purple-800"
+                  }`}
+                  aria-expanded={showActivitiesMenu}
+                  aria-label={`Activities for ${currentLocation}`}
+                >
+                  <span className="flex items-center gap-2">
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12 2l1.8 5.5H19l-4.3 3.1L16.5 16 12 12.7 7.5 16l1.8-5.4L5 7.5h5.2L12 2z" />
+                    </svg>
+                    <span className="text-sm font-semibold">Activities</span>
+                  </span>
+                  <span className="flex items-center gap-2 text-xs opacity-80">
+                    <span>{currentLocation}</span>
+                    <svg
+                      viewBox="0 0 20 20"
+                      className={`h-4 w-4 transition-transform ${
+                        showActivitiesMenu ? "rotate-180" : ""
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M5 7l5 5 5-5" />
+                    </svg>
+                  </span>
+                </button>
+                {showActivitiesMenu && (
+                  <LocationActivities
+                    location={currentLocation}
+                    player={player}
+                    setPlayer={setPlayer}
+                    spendTime={spendTime}
+                    darkMode={darkMode}
+                    dayOfWeek={dayOfWeek}
+                    gameplayFlags={gameplayFlags}
+                    onTriggerEvent={triggerSpecificEvent}
+                    onSetFlag={setFlag}
+                  />
+                )}
+              </div>
+            )}
+
             {/* Available locations */}
-            <div
-              className={`flex flex-col gap-3 md:gap-4 rounded-2xl shadow-xl p-4 md:p-6 border-2  ${
-                darkMode
-                  ? "bg-gray-800 border-purple-700"
-                  : "bg-white border-purple-100"
-              } transition-colors duration-300`}
-            >
-              <h3
-                className={`text-xl text-center md:text-2xl font-bold mb-3 md:mb-4 ${
-                  darkMode ? "text-purple-300" : "text-purple-800"
-                }`}
+            {!isMobile && (
+              <div
+                className={`flex flex-col gap-3 md:gap-4 rounded-2xl shadow-xl p-4 md:p-6 border-2  ${
+                  darkMode
+                    ? "bg-gray-800 border-purple-700"
+                    : "bg-white border-purple-100"
+                } transition-colors duration-300`}
               >
-                🗺️ Where to go?
-              </h3>
-              <div className="mt-4 overflow-x-auto [-webkit-overflow-scrolling:touch]">
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-                  {locationGraph[currentLocation]
-                    ?.filter((loc) => {
-                      const requiresCar =
-                        loc.name === "Beach" || loc.name === "Mountains";
-                      if (requiresCar && !gameplayFlags.has("hasCar")) {
-                        return false;
-                      }
-
-                      const irisApartmentLocations = [
-                        "Iris' Living Room",
-                        "Iris' Bedroom",
-                        "Iris' Bathroom",
-                        "Iris' Kitchen",
-                        "Dawn's bedroom",
-                      ];
-                      if (
-                        irisApartmentLocations.includes(loc.name) &&
-                        !gameplayFlags.has("irisApartmentUnlocked")
-                      ) {
-                        return false;
-                      }
-
-                      return true;
-                    })
-                    .map((loc) => (
+                <h3
+                  className={`text-xl text-center md:text-2xl font-bold mb-3 md:mb-4 ${
+                    darkMode ? "text-purple-300" : "text-purple-800"
+                  }`}
+                >
+                  Where to go?
+                </h3>
+                <div className="mt-4 overflow-x-auto [-webkit-overflow-scrolling:touch]">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+                    {availableLocations.map((loc) => (
                       <LocationCard
                         key={loc.name}
                         location={loc}
@@ -1544,9 +1704,11 @@ const spendTime = (amount: number) => {
                         pendingEvents={pendingEvents}
                       />
                     ))}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
+
           </div>
 
           {/* Right Sidebar */}
