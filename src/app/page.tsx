@@ -713,6 +713,142 @@ export default function GamePage() {
   startDialogue(foundDialogue, characterImage, null);
   };
 
+  const onEventTriggered = useCallback((eventId: string, girlName?: string) => {
+    const name = girlName ?? selectedGirl?.name;
+    if (!name) return;
+    const prevState = characterEventStates[name] ?? {
+      characterName: name,
+      eventHistory: [] as EventHistory[],
+      lastInteractionTime: 0,
+    };
+
+    const gameTime = calculateGameTime(dayOfWeek, hour);
+    const lastTriggered = { day: dayOfWeek, hour, gameTime };
+
+    const idx = prevState.eventHistory.findIndex(
+      (e) => e.eventId === eventId
+    );
+    let updatedHistory: EventHistory[];
+    if (idx >= 0) {
+      const existing = prevState.eventHistory[idx];
+      updatedHistory = [...prevState.eventHistory];
+      updatedHistory[idx] = {
+        ...existing,
+        lastTriggered,
+        timesTriggered: (existing.timesTriggered ?? 0) + 1,
+      };
+    } else {
+      updatedHistory = [
+        ...prevState.eventHistory,
+        { eventId, lastTriggered, timesTriggered: 1 },
+      ];
+    }
+
+    const newState: CharacterEventState = {
+      ...prevState,
+      eventHistory: updatedHistory,
+      lastInteractionTime: gameTime,
+    };
+
+    setCharacterEventStates((prev) => ({
+      ...prev,
+      [name]: newState,
+    }));
+  }, [selectedGirl, characterEventStates, dayOfWeek, hour]);
+
+  const triggerSpecificEvent = useCallback(
+    (characterName: string, eventId: string, locationOverride?: string) => {
+      const events = getCharacterEvents(characterName);
+      const triggerable = events.find((event) => event.id === eventId);
+      if (!triggerable) {
+        console.error(`❌ Event not found: ${eventId}`);
+        return;
+      }
+
+      const baseGirl = baseGirls.find((g) => g.name === characterName);
+      if (!baseGirl) {
+        console.error(`❌ Character not found: ${characterName}`);
+        return;
+      }
+
+      const scheduledLocation = getScheduledLocation(
+        characterName,
+        dayOfWeek,
+        hour
+      );
+      const override = girlStatsOverrides[characterName];
+      const mergedStats = override
+        ? { ...baseGirl.stats, ...override }
+        : baseGirl.stats;
+      const girl = {
+        ...baseGirl,
+        location: scheduledLocation || baseGirl.location,
+        stats: clampGirlStatsToCaps(characterName, mergedStats),
+      };
+
+      const eventState = characterEventStates[characterName] ?? {
+        characterName,
+        eventHistory: [],
+        lastInteractionTime: 0,
+      };
+      const completedEvents =
+        eventState.eventHistory
+          .filter((h) => h.timesTriggered > 0)
+          .map((h) => h.eventId) || [];
+
+      const locationToCheck = locationOverride ?? currentLocation;
+
+      if (
+        !checkEventConditions(
+          triggerable.conditions,
+          girl,
+          player,
+          locationToCheck,
+          dayOfWeek,
+          hour,
+          completedEvents,
+          gameplayFlags
+        )
+      ) {
+        return;
+      }
+
+      setCurrentRandomEvent(null);
+      const characterImage = getCharacterImage(girl, locationToCheck, hour);
+      onEventTriggered(triggerable.id, characterName);
+      startDialogue(triggerable.dialogue, characterImage, null, characterName);
+
+      setPlayer((prev) =>
+        applyCharacterEventRewards(prev, triggerable.rewards, {
+          onSetFlag: setFlag,
+          onUnlockCharacter: (name) => {
+            const key = name as keyof typeof characterUnlocks;
+            setCharacterUnlocks((prevState) =>
+              prevState[key] ? prevState : { ...prevState, [key]: true }
+            );
+          },
+        })
+      );
+    },
+    [
+      characterEventStates,
+      characterUnlocks,
+      clampGirlStatsToCaps,
+      currentLocation,
+      dayOfWeek,
+      gameplayFlags,
+      girlStatsOverrides,
+      hour,
+      onEventTriggered,
+      player,
+      setCharacterUnlocks,
+      setCurrentRandomEvent,
+      setFlag,
+      setPlayer,
+      startDialogue,
+    ]
+  );
+
   const triggerLocationEvent = (location: string) => {
     const availableEvents = pendingEvents
       .filter((event) => event.location === location)
@@ -755,8 +891,23 @@ export default function GamePage() {
 
   // location change + random events
   const moveTo = (location: string) => {
+    if (location !== currentLocation && triggerLocationEvent(currentLocation)) {
+      return;
+    }
+
     setCurrentLocation(location);
     setSelectedGirl(null);
+
+    if (
+      location === "Hallway" &&
+      !gameplayFlags.has("hasMetGwen") &&
+      gameplayFlags.has("hasMetIris") &&
+      gameplayFlags.has("hasMetYumi") &&
+      gameplayFlags.has("hasMetRuby")
+    ) {
+      triggerSpecificEvent("Gwen", "gwen_hallway_intro_event", location);
+      return;
+    }
 
     // ☕ Trigger pending scheduled encounters (incl. dates)
     if (checkScheduledEncounters(location)) {
@@ -1011,49 +1162,6 @@ const spendTime = (amount: number) => {
   useEffect(() => {
     checkPendingEvents();
   }, [checkPendingEvents]);
-
-  const onEventTriggered = useCallback((eventId: string, girlName?: string) => {
-    const name = girlName ?? selectedGirl?.name;
-    if (!name) return;
-    const prevState = characterEventStates[name] ?? {
-      characterName: name,
-      eventHistory: [] as EventHistory[],
-      lastInteractionTime: 0,
-    };
-
-    const gameTime = calculateGameTime(dayOfWeek, hour);
-    const lastTriggered = { day: dayOfWeek, hour, gameTime };
-
-    const idx = prevState.eventHistory.findIndex(
-      (e) => e.eventId === eventId
-    );
-    let updatedHistory: EventHistory[];
-    if (idx >= 0) {
-      const existing = prevState.eventHistory[idx];
-      updatedHistory = [...prevState.eventHistory];
-      updatedHistory[idx] = {
-        ...existing,
-        lastTriggered,
-        timesTriggered: (existing.timesTriggered ?? 0) + 1,
-      };
-    } else {
-      updatedHistory = [
-        ...prevState.eventHistory,
-        { eventId, lastTriggered, timesTriggered: 1 },
-      ];
-    }
-
-    const newState: CharacterEventState = {
-      ...prevState,
-      eventHistory: updatedHistory,
-      lastInteractionTime: gameTime,
-    };
-
-    setCharacterEventStates((prev) => ({
-      ...prev,
-      [name]: newState,
-    }));
-  }, [selectedGirl, characterEventStates, dayOfWeek, hour]);
 
   const eventReadyByGirl = useMemo(
     () =>
@@ -1481,6 +1589,7 @@ const spendTime = (amount: number) => {
                 darkMode={darkMode}
                 dayOfWeek={dayOfWeek}
                 gameplayFlags={gameplayFlags}
+                onTriggerEvent={triggerSpecificEvent}
                 onUnlockCharacter={(name) => {
                   setCharacterUnlocks((prev) => ({ ...prev, [name]: true }));
                   // triggers for character unlocks

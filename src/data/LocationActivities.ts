@@ -155,6 +155,13 @@ export const locationActivities: Record<string, LocationActivity[]> = {
   ],
   Mall: [
     {
+      name: "Gift Store",
+      icon: "GIFT",
+      description: "Browse gifts for someone special",
+      timeCost: 1,
+      statEffects: {},
+    },
+    {
       name: "Shop for Clothes",
       icon: "👔",
       description: "Buy new clothes",

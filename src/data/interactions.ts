@@ -28,10 +28,10 @@ export const interactionMenu: Interaction[] = [
   },
   {
     type: "Romance",
-    label: "Hug",
+    label: "Flirt",
     timeCost: 1,
     statEffects: { style: +1 },
-    girlEffects: { affection: +5, trust: +3 },
+    girlEffects: { lust: +5, trust: +3 },
   },
   {
     type: "Romance",
@@ -44,8 +44,6 @@ export const interactionMenu: Interaction[] = [
     type: "Gift",
     label: "Give Gift",
     timeCost: 1,
-    requiresItem: "GiftBox",
-    girlEffects: { affection: +10, trust: +5 },
   },
   {
     type: "Date",

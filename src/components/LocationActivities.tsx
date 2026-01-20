@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { PlayerStats } from "../data/characters";
 import { DayOfWeek } from "../data/gameConstants";
 import {
@@ -6,6 +7,8 @@ import {
 } from "../data/LocationActivities";
 import { GameplayFlag } from "@/data/events/chapter1";
 import { applyPlayerStatDelta } from "@/lib/playerStats";
+import GiftModal from "./GiftModal";
+import { Gift, gifts } from "@/data/gifts";
 
 type Activity = ImportedActivity & {
   id?: string;
@@ -44,6 +47,10 @@ export default function LocationActivitiesPanel({
   gameplayFlags,
 }: Props) {
   const activities: Activity[] = activitiesMap[location] ?? [];
+  const [showGiftShop, setShowGiftShop] = useState(false);
+  const giftStoreTimeCost =
+    activities.find((act) => act.name === "Gift Store")?.timeCost ?? 1;
+  const giftStoreEntries = gifts.map((gift) => ({ gift, count: 0 }));
 
   const isRubyUnlockActivity = (activity: Activity) =>
     location === "Gym" &&
@@ -117,6 +124,11 @@ export default function LocationActivitiesPanel({
   }
 
   const doActivity = (act: Activity) => {
+    if (location === "Mall" && act.name === "Gift Store") {
+      setShowGiftShop(true);
+      return;
+    }
+
     const failures = getRequirementFailures(act);
     if (failures.length > 0) {
       alert(failures[0].alert);
@@ -141,13 +153,10 @@ export default function LocationActivitiesPanel({
     //Unlock Ruby when working out at Gym
     if (isRubyUnlockActivity(act)) {
       onSetFlag?.("firstWorkout");
-      onSetFlag?.("hasMetRuby");
-      // Notify parent component to unlock Ruby
-      if (onUnlockCharacter) {
-        onUnlockCharacter("Ruby");
+      const rubyAlreadyMet = gameplayFlags?.has("hasMetRuby");
+      if (!rubyAlreadyMet) {
+        onTriggerEvent?.("Ruby", "ruby_trainer_offer_event");
       }
-      // show success message
-      alert("A Girl approaches you with a smile.");
     }
 
     //Unlock Yumi after teaching class
@@ -155,19 +164,7 @@ export default function LocationActivitiesPanel({
       onSetFlag?.("firstTimeWorked");
       const yumiAlreadyMet = gameplayFlags?.has("hasMetYumi");
       if (!yumiAlreadyMet) {
-        if (onTriggerEvent) {
-          onTriggerEvent("Yumi", "yumi_first_meeting");
-        } else {
-          onSetFlag?.("hasMetYumi");
-          if (onUnlockCharacter) {
-            onUnlockCharacter("Yumi");
-          }
-        }
-      } else {
-        onSetFlag?.("hasMetYumi");
-        if (onUnlockCharacter) {
-          onUnlockCharacter("Yumi");
-        }
+        onTriggerEvent?.("Yumi", "yumi_tutor_request_event");
       }
     }
 
@@ -319,6 +316,30 @@ export default function LocationActivitiesPanel({
           );
         })}
       </div>
+      {showGiftShop && (
+        <GiftModal
+          title="Gift Store"
+          mode="buy"
+          entries={giftStoreEntries}
+          playerMoney={player.money}
+          onCancel={() => setShowGiftShop(false)}
+          onSelect={(gift: Gift) => {
+            if (player.money < gift.cost) {
+              alert(`You need $${gift.cost} for that gift.`);
+              return;
+            }
+            const next = {
+              ...player,
+              money: player.money - gift.cost,
+              inventory: [...player.inventory, gift.id],
+            };
+            setPlayer(next);
+            spendTime(giftStoreTimeCost);
+            setShowGiftShop(false);
+          }}
+          darkMode={darkMode}
+        />
+      )}
     </div>
   );
 }

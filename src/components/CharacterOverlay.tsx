@@ -17,6 +17,8 @@ import { applyCharacterEventRewards } from "@/lib/rewards";
 import DatePlanner from "./DatePlanner";
 import { DateLocation } from "@/data/dates/types";
 import { getCharacterImage } from "@/lib/characterImages";
+import GiftModal from "./GiftModal";
+import { Gift, getGiftEntriesFromInventory } from "@/data/gifts";
 // import { get } from "http";
 
 
@@ -74,6 +76,12 @@ export default function CharacterOverlay({
   onInteractionLogged,
 }: Props) {
   const [showDatePlanner, setShowDatePlanner] = useState(false);
+  const [showGiftMenu, setShowGiftMenu] = useState(false);
+  const [pendingGiftAction, setPendingGiftAction] = useState<Interaction | null>(
+    null
+  );
+  const giftEntries = getGiftEntriesFromInventory(player.inventory);
+  const hasGifts = giftEntries.length > 0;
   // Check for triggered events when component mounts or dependencies change
   // Check for first meeting or triggered events
   //Date handler
@@ -117,6 +125,49 @@ export default function CharacterOverlay({
     );
     setShowDatePlanner(false);
     spendTime(1); // Planning takes time
+  };
+
+  const handleGiveGift = (gift: Gift) => {
+    const giftIndex = player.inventory.findIndex((item) => item === gift.id);
+    if (giftIndex === -1) {
+      alert("You do not have that gift.");
+      return;
+    }
+
+    const nextInventory = [...player.inventory];
+    nextInventory.splice(giftIndex, 1);
+    setPlayer({ ...player, inventory: nextInventory });
+    spendTime(pendingGiftAction?.timeCost ?? 1);
+
+    const dialogue: Dialogue = {
+      id: `give_gift_${gift.id.replace(/\s+/g, "_").toLowerCase()}`,
+      lines: [
+        {
+          speaker: null,
+          text: `You give ${girl.name} a ${gift.name}.`,
+        },
+        {
+          speaker: girl.name,
+          text: "Thank you!",
+          expression: "happy",
+        },
+      ],
+    };
+
+    const characterImage = getCharacterImage(
+      girl,
+      location,
+      hour,
+      getFacialExpression()
+    );
+    onStartDialogue(dialogue, characterImage, gift.effects);
+
+    if (onInteractionLogged) {
+      onInteractionLogged(girl.name, pendingGiftAction?.label ?? "Give Gift");
+    }
+
+    setShowGiftMenu(false);
+    setPendingGiftAction(null);
   };
 
   const getFacialExpression = useCallback(() => {
@@ -180,6 +231,16 @@ export default function CharacterOverlay({
       alert(`You've already done "${action.label}" with ${girl.name} today. Try again tomorrow.`);
       return;
     }
+
+    if (action.label === "Give Gift") {
+      if (!hasGifts) {
+        alert("You do not have any gifts to give.");
+        return;
+      }
+      setPendingGiftAction(action);
+      setShowGiftMenu(true);
+      return;
+    }
     // Check requirements
     if (
       action.requiresItem &&
@@ -195,8 +256,8 @@ export default function CharacterOverlay({
     }
 
     // Check affection requirements for intimate actions
-    if (action.label === "Hug") {
-      if (girl.stats.affection < 20) {
+    if (action.label === "Flirt") {
+      if (girl.stats.affection < 10) {
         alert(`${girl.name} doesn't seem comfortable with that right now...`);
         const updatedStats = { ...player };
         updatedStats.mood = Math.max(0, updatedStats.mood - 10);
@@ -218,7 +279,7 @@ export default function CharacterOverlay({
     // Check mood requirements for positive interactions
     if (
       girl.stats.mood < 30 &&
-      (action.label === "Hug" || action.label === "Kiss")
+      (action.label === "Flirt" || action.label === "Kiss")
     ) {
       alert(`${girl.name} doesn't seem in the mood for that right now...`);
       return;
@@ -404,12 +465,14 @@ export default function CharacterOverlay({
         </button>
 
         {interactionMenu.map((action) => {
+          const giftDisabled = action.label === "Give Gift" && !hasGifts;
           const isDisabled = Boolean(
             (action.requiresItem &&
               !player.inventory.includes(action.requiresItem)) ||
               (action.locationContext && action.locationContext !== location) ||
               (hasInteractedToday &&
-                hasInteractedToday(girl.name, action.label))
+                hasInteractedToday(girl.name, action.label)) ||
+              giftDisabled
           );
           const usedToday =
             hasInteractedToday &&
@@ -468,6 +531,19 @@ export default function CharacterOverlay({
           playerMoney={player.money}
           onCancel={() => setShowDatePlanner(false)}
           onScheduleDate={handleScheduleDate}
+          darkMode={darkMode}
+        />
+      )}
+      {showGiftMenu && (
+        <GiftModal
+          title={`Give a Gift to ${girl.name}`}
+          mode="give"
+          entries={giftEntries}
+          onCancel={() => {
+            setShowGiftMenu(false);
+            setPendingGiftAction(null);
+          }}
+          onSelect={handleGiveGift}
           darkMode={darkMode}
         />
       )}
