@@ -832,7 +832,6 @@ export default function GamePage() {
     },
     [
       characterEventStates,
-      characterUnlocks,
       clampGirlStatsToCaps,
       currentLocation,
       dayOfWeek,
@@ -1590,24 +1589,6 @@ const spendTime = (amount: number) => {
                 dayOfWeek={dayOfWeek}
                 gameplayFlags={gameplayFlags}
                 onTriggerEvent={triggerSpecificEvent}
-                onUnlockCharacter={(name) => {
-                  setCharacterUnlocks((prev) => ({ ...prev, [name]: true }));
-                  // triggers for character unlocks
-                  // if (name === "Ruby") {
-                  //   // Small delay to let the unlock register
-                  //   setTimeout(() => {
-                  //     const firstMeeting = firstMeetingDialogues["Ruby"];
-                  //     if (firstMeeting) {
-                  //       const characterImage = getCharacterImage(
-                  //         girls.find((g) => g.name === "Ruby")!,
-                  //         currentLocation,
-                  //         hour
-                  //       );
-                  //       startDialogue(firstMeeting, characterImage, null);
-                  //     }
-                  //   }, 100);
-                  // }
-                }}
                 onSetFlag={setFlag}
               />
             </div>

@@ -28,7 +28,6 @@ type Props = {
   spendTime: (amount: number) => void;
   darkMode?: boolean;
   dayOfWeek: DayOfWeek;
-  onUnlockCharacter?: (characterName: string) => void;
   onSetFlag?: (flag: GameplayFlag) => void;
   onTriggerEvent?: (characterName: string, eventId: string) => void;
   gameplayFlags?: Set<GameplayFlag>;
@@ -41,7 +40,6 @@ export default function LocationActivitiesPanel({
   spendTime,
   darkMode,
   dayOfWeek,
-  onUnlockCharacter,
   onSetFlag,
   onTriggerEvent,
   gameplayFlags,

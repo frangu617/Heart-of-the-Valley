@@ -101,7 +101,7 @@ export default function LocationCard({
             {pendingEncounter && (
               <>
                 <div className="bg-gradient-to-r from-pink-500 to-red-500 text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg flex items-center gap-1 animate-bounce">
-                  <span>dY'?</span>
+                  <span>dY&apos;?</span>
                   <span>{pendingEncounter.label || "Date"}</span>
                 </div>
                 {pendingEncounter.day && pendingEncounter.hour !== undefined && (
