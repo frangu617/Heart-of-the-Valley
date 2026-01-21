@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 interface Props {
   onResume: () => void;
   onSave: () => void;
@@ -5,9 +7,26 @@ interface Props {
 }
 
 export default function PauseMenu({ onResume, onSave, onMainMenu }: Props) {
+  const [isClosing, setIsClosing] = useState(false);
+  const closeDelayMs = 200;
+
+  const handleClose = (action: () => void) => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(action, closeDelayMs);
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-      <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full border-4 border-purple-300 transform animate-slideUp">
+    <div
+      className={`fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 ${
+        isClosing ? "animate-fadeOut" : "animate-fadeIn"
+      }`}
+    >
+      <div
+        className={`bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full border-4 border-purple-300 transform ${
+          isClosing ? "animate-slideDown" : "animate-slideUp"
+        }`}
+      >
         {/* Title */}
         <div className="text-center mb-8">
           <h2 className="text-4xl font-bold bg-gradient-to-r from-pink-500 to-purple-500 text-transparent bg-clip-text mb-2">
@@ -19,7 +38,7 @@ export default function PauseMenu({ onResume, onSave, onMainMenu }: Props) {
         {/* Menu Options */}
         <div className="space-y-3">
           <button
-            onClick={onResume}
+            onClick={() => handleClose(onResume)}
             className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold text-xl py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
           >
             <span>▶️</span>
@@ -27,7 +46,7 @@ export default function PauseMenu({ onResume, onSave, onMainMenu }: Props) {
           </button>
 
           <button
-            onClick={onSave}
+            onClick={() => handleClose(onSave)}
             className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold text-xl py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
           >
             <span>💾</span>
@@ -35,7 +54,7 @@ export default function PauseMenu({ onResume, onSave, onMainMenu }: Props) {
           </button>
 
           <button
-            onClick={onMainMenu}
+            onClick={() => handleClose(onMainMenu)}
             className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold text-xl py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
           >
             <span>🏠</span>

@@ -100,12 +100,42 @@ img {
   }
 }
 
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
 .animate-fadeIn {
   animation: fadeIn 0.5s ease-out both;
 }
 
+.animate-fadeOut {
+  animation: fadeOut 0.2s ease-in both;
+}
+
 .animate-slideUp {
   animation: slideUp 0.3s ease-out;
+}
+
+.animate-slideDown {
+  animation: slideDown 0.2s ease-in both;
 }
 
 /* Add this to your src/app/globals.css file */

@@ -39,6 +39,14 @@ export default function PhoneMenu({
   quests = [],
 }: Props) {
   const [activeTab, setActiveTab] = useState<PhoneTab>("stats");
+  const [isClosing, setIsClosing] = useState(false);
+  const closeDelayMs = 200;
+
+  const handleClose = () => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(onClose, closeDelayMs);
+  };
 
   const timeOfDay = getTimeOfDay(hour);
   const timeOfDayLabel =
@@ -96,7 +104,11 @@ export default function PhoneMenu({
   );
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+    <div
+      className={`fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 ${
+        isClosing ? "animate-fadeOut" : "animate-fadeIn"
+      }`}
+    >
       {/* Phone Frame */}
       <div
         className={`
@@ -104,6 +116,7 @@ export default function PhoneMenu({
         ${darkMode ? "bg-gray-900" : "bg-white"}
         rounded-3xl shadow-2xl overflow-hidden flex flex-col
         ${!isMobile && "border-8 border-gray-800"}
+        ${isClosing ? "animate-slideDown" : "animate-slideUp"}
       `}
       >
         {/* Phone Header */}
@@ -124,7 +137,7 @@ export default function PhoneMenu({
             </p>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="bg-white/20 hover:bg-white/30 rounded-full w-10 h-10 flex items-center justify-center transition-all"
           >
             ✕

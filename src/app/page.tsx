@@ -125,6 +125,10 @@ export default function GamePage() {
   const [showActivitiesMenu, setShowActivitiesMenu] =
     useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [isDialogueClosing, setIsDialogueClosing] = useState<boolean>(false);
+  const [isLocationTransitioning, setIsLocationTransitioning] =
+    useState<boolean>(false);
+  const transitionDurationMs = 200;
 
   const [girlStatsOverrides, setGirlStatsOverrides] = useState<
     Record<string, Partial<GirlStats>>
@@ -580,6 +584,7 @@ export default function GamePage() {
     girlEffects: Partial<GirlStats> | null = null,
     characterName?: string
   ) => {
+    setIsDialogueClosing(false);
     setCurrentDialogue(dialogue);
     setDialogueCharacterImage(characterImage);
     setDialogueGirlEffects(girlEffects);
@@ -592,86 +597,98 @@ export default function GamePage() {
     }
   }, []);
 
-  // src/app/page.tsx
+  const closeDialogue = (afterClose: () => void) => {
+    if (isDialogueClosing) return;
+    setIsDialogueClosing(true);
+    setTimeout(() => {
+      afterClose();
+      setIsDialogueClosing(false);
+    }, transitionDurationMs);
+  };
 
   const endDialogue = (
     statChanges?: Partial<GirlStats>,
     chosenOption?: DialogueChoice
   ) => {
-    // ☕ If dialogue option scheduled an encounter, queue it
-    if (chosenOption?.scheduleEncounter) {
-      scheduleEncounter(chosenOption.scheduleEncounter);
-    }
+    closeDialogue(() => {
+      // ☕ If dialogue option scheduled an encounter, queue it
+      if (chosenOption?.scheduleEncounter) {
+        scheduleEncounter(chosenOption.scheduleEncounter);
+      }
 
-    // ✨ Handle flags from dialogue choices
-    if (chosenOption?.setFlags) {
-      chosenOption.setFlags.forEach((flag) => {
-        setFlag(flag);
-        console.log(`🚩 Flag set from choice: ${flag}`);
-      });
-    }
+      // ✨ Handle flags from dialogue choices
+      if (chosenOption?.setFlags) {
+        chosenOption.setFlags.forEach((flag) => {
+          setFlag(flag);
+          console.log(`🚩 Flag set from choice: ${flag}`);
+        });
+      }
 
-    // ✨ Handle character unlocks from dialogue choices
-    if (chosenOption?.unlockCharacters) {
-      chosenOption.unlockCharacters.forEach((characterName) => {
-        const name = characterName as keyof typeof characterUnlocks;
-        if (!characterUnlocks[name]) {
-          setCharacterUnlocks((prev) => ({ ...prev, [name]: true }));
-          alert(`✨ ${characterName} is now available!`);
-        }
-      });
-    }
-
-    // Handle girl stat changes
-    if (dialogueGirlName) {
-      const girl = girls.find(
-        (g) => g.name.toLowerCase() === dialogueGirlName.toLowerCase()
-      );
-      if (girl) {
-        const currentOverride = girlStatsOverrides[dialogueGirlName] || {};
-        const currentStats = { ...girl.stats, ...currentOverride };
-        const combined = { ...dialogueGirlEffects, ...statChanges };
-
-        const newStats: Partial<GirlStats> = { ...currentStats };
-        Object.entries(combined).forEach(([key, value]) => {
-          if (typeof value === "number") {
-            const k = key as keyof GirlStats;
-            const cur = (currentStats[k] as number) ?? 0;
-            newStats[k] = clampValue(cur + value, 0, 100);
+      // ✨ Handle character unlocks from dialogue choices
+      if (chosenOption?.unlockCharacters) {
+        chosenOption.unlockCharacters.forEach((characterName) => {
+          const name = characterName as keyof typeof characterUnlocks;
+          if (!characterUnlocks[name]) {
+            setCharacterUnlocks((prev) => ({ ...prev, [name]: true }));
+            alert(`✨ ${characterName} is now available!`);
           }
         });
-        const { affectionCap, lustCap } = getRelationshipCaps(girl.name);
-        newStats.affection = clampValue(newStats.affection ?? 0, 0, affectionCap);
-        newStats.lust = clampValue(newStats.lust ?? 0, 0, lustCap);
-
-        setGirlStatsOverrides((prev) => ({
-          ...prev,
-          [dialogueGirlName]: newStats,
-        }));
       }
-    }
 
-    // Clean up dialogue state
-    setCurrentDialogue(null);
-    setDialogueCharacterImage("");
-    setDialogueGirlEffects(null);
-    setDialogueGirlName("");
-    setSelectedGirl(null);
-    setGameState("playing");
+      // Handle girl stat changes
+      if (dialogueGirlName) {
+        const girl = girls.find(
+          (g) => g.name.toLowerCase() === dialogueGirlName.toLowerCase()
+        );
+        if (girl) {
+          const currentOverride = girlStatsOverrides[dialogueGirlName] || {};
+          const currentStats = { ...girl.stats, ...currentOverride };
+          const combined = { ...dialogueGirlEffects, ...statChanges };
+
+          const newStats: Partial<GirlStats> = { ...currentStats };
+          Object.entries(combined).forEach(([key, value]) => {
+            if (typeof value === "number") {
+              const k = key as keyof GirlStats;
+              const cur = (currentStats[k] as number) ?? 0;
+              newStats[k] = clampValue(cur + value, 0, 100);
+            }
+          });
+          const { affectionCap, lustCap } = getRelationshipCaps(girl.name);
+          newStats.affection = clampValue(newStats.affection ?? 0, 0, affectionCap);
+          newStats.lust = clampValue(newStats.lust ?? 0, 0, lustCap);
+
+          setGirlStatsOverrides((prev) => ({
+            ...prev,
+            [dialogueGirlName]: newStats,
+          }));
+        }
+      }
+
+      // Clean up dialogue state
+      setCurrentDialogue(null);
+      setDialogueCharacterImage("");
+      setDialogueGirlEffects(null);
+      setDialogueGirlName("");
+      setSelectedGirl(null);
+      setGameState("playing");
+    });
   };
 
   const endRandomEventDialogue = () => {
-    // Spend time if the event has a timeCost
-    if (currentRandomEvent?.timeCost) {
-      spendTime(currentRandomEvent.timeCost);
-    }
+    const finalize = () => {
+      // Spend time if the event has a timeCost
+      if (currentRandomEvent?.timeCost) {
+        spendTime(currentRandomEvent.timeCost);
+      }
 
-    setCurrentRandomEvent(null);
-    setCurrentDialogue(null);
-    setDialogueCharacterImage("");
-    setDialogueGirlEffects(null);
-    setDialogueGirlName("");
-    setGameState("playing");
+      setCurrentRandomEvent(null);
+      setCurrentDialogue(null);
+      setDialogueCharacterImage("");
+      setDialogueGirlEffects(null);
+      setDialogueGirlName("");
+      setGameState("playing");
+    };
+    closeDialogue(finalize);
   };
 
   // ✅ Router for nextDialogueId coming from DialogueBox
@@ -712,8 +729,8 @@ export default function GamePage() {
       return;
     }
 
-  // Start the dialogue
-  startDialogue(foundDialogue, characterImage, null);
+    // Start the dialogue
+    startDialogue(foundDialogue, characterImage, null);
   };
 
   const onEventTriggered = useCallback((eventId: string, girlName?: string) => {
@@ -892,64 +909,85 @@ export default function GamePage() {
   };
 
   // location change + random events
+  
+  // location change + random events
   const moveTo = (location: string) => {
-    if (location !== currentLocation && triggerLocationEvent(currentLocation)) {
+    if (isLocationTransitioning || location === currentLocation) {
       return;
     }
 
-    setCurrentLocation(location);
-    setSelectedGirl(null);
+    setIsLocationTransitioning(true);
 
-    if (
-      location === "Hallway" &&
-      !gameplayFlags.has("hasMetGwen") &&
-      gameplayFlags.has("hasMetIris") &&
-      gameplayFlags.has("hasMetYumi") &&
-      gameplayFlags.has("hasMetRuby")
-    ) {
-      triggerSpecificEvent("Gwen", "gwen_hallway_intro_event", location);
-      return;
-    }
+    setTimeout(() => {
+      const finishTransition = () => setIsLocationTransitioning(false);
 
-    // ☕ Trigger pending scheduled encounters (incl. dates)
-    if (checkScheduledEncounters(location)) {
-      return;
-    }
+      if (
+        location !== currentLocation &&
+        triggerLocationEvent(currentLocation)
+      ) {
+        finishTransition();
+        return;
+      }
 
-    if (triggerLocationEvent(location)) {
-      return;
-    }
+      setCurrentLocation(location);
+      setSelectedGirl(null);
 
-    // // Unlock Gwen when entering Hallway after 5 PM
-    // console.log(
-    //   `📍 Moved to: ${location}, Hour: ${hour}, Gwen unlocked: ${characterUnlocks.Gwen}`
-    // );
-    // if (location === "Hallway" && hour >= 17 && !characterUnlocks.Gwen) {
-    //   setCharacterUnlocks((prev) => ({ ...prev, Gwen: true }));
+      if (
+        location === "Hallway" &&
+        !gameplayFlags.has("hasMetGwen") &&
+        gameplayFlags.has("hasMetIris") &&
+        gameplayFlags.has("hasMetYumi") &&
+        gameplayFlags.has("hasMetRuby")
+      ) {
+        triggerSpecificEvent("Gwen", "gwen_hallway_intro_event", location);
+        finishTransition();
+        return;
+      }
+      // Trigger pending scheduled encounters (incl. dates)
+      if (checkScheduledEncounters(location)) {
+        finishTransition();
+        return;
+      }
 
-    //   // Trigger Gwen's first meeting
-    //   const firstMeeting = firstMeetingDialogues["Gwen"];
-    //   if (firstMeeting) {
-    //     const characterImage = getCharacterImage(
-    //       girls.find((g) => g.name === "Gwen")!,
-    //       currentLocation,
-    //       hour
-    //     );
-    //     setMetCharacters(new Set([...metCharacters, "Gwen"]));
-    //     startDialogue(firstMeeting, characterImage, null);
-    //     return;
-    //   }
-    // }
+      if (triggerLocationEvent(location)) {
+        finishTransition();
+        return;
+      }
 
-    // random event roll
-    const randomEvent = checkRandomEvent(location, hour, dayOfWeek, player);
-    if (randomEvent) {
-      console.log(`🎲 Random event: ${randomEvent.name}`);
-      setCurrentRandomEvent(randomEvent);
-      startDialogue(randomEvent.dialogue, "", null);
-      applyRandomEventRewards(randomEvent.rewards);
-    }
+      // // Unlock Gwen when entering Hallway after 5 PM
+      // console.log(
+      //   `dY"? Moved to: ${location}, Hour: ${hour}, Gwen unlocked: ${characterUnlocks.Gwen}`
+      // );
+      // if (location === "Hallway" && hour >= 17 && !characterUnlocks.Gwen) {
+      //   setCharacterUnlocks((prev) => ({ ...prev, Gwen: true }));
+
+      //   // Trigger Gwen's first meeting
+      //   const firstMeeting = firstMeetingDialogues["Gwen"];
+      //   if (firstMeeting) {
+      //     const characterImage = getCharacterImage(
+      //       girls.find((g) => g.name === "Gwen")!,
+      //       currentLocation,
+      //       hour
+      //     );
+      //     setMetCharacters(new Set([...metCharacters, "Gwen"]));
+      //     startDialogue(firstMeeting, characterImage, null);
+      //     return;
+      //   }
+      // }
+
+      // random event roll
+      const randomEvent = checkRandomEvent(location, hour, dayOfWeek, player);
+      if (randomEvent) {
+        console.log(`Random event: ${randomEvent.name}`);
+        setCurrentRandomEvent(randomEvent);
+        startDialogue(randomEvent.dialogue, "", null);
+        applyRandomEventRewards(randomEvent.rewards);
+      }
+
+      finishTransition();
+    }, transitionDurationMs);
   };
+
 
   // rewards
   const applyRandomEventRewards = (rewards: RandomEvent["rewards"]) => {
@@ -1272,14 +1310,21 @@ const spendTime = (amount: number) => {
           dialogue={currentDialogue}
           onComplete={currentRandomEvent ? endRandomEventDialogue : endDialogue}
           darkMode={darkMode}
+          isClosing={isDialogueClosing}
           characterImage={dialogueCharacterImage}
           characterName={dialogueGirlName}
           playerName={player.name}
           onSkip={
             gameState === "intro"
               ? () => {
-                  setGameState("playing");
-                  setCurrentDialogue(null);
+                  closeDialogue(() => {
+                    setGameState("playing");
+                    setCurrentDialogue(null);
+                    setDialogueCharacterImage("");
+                    setDialogueGirlEffects(null);
+                    setDialogueGirlName("");
+                    setSelectedGirl(null);
+                  });
                 }
               : undefined
           }
@@ -1313,6 +1358,11 @@ const spendTime = (amount: number) => {
           : "bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50"
       }`}
     >
+      <div
+        className={`fixed inset-0 bg-black/60 pointer-events-none z-40 transition-opacity duration-200 ${
+          isLocationTransitioning ? "opacity-100" : "opacity-0"
+        }`}
+      />
       {/* Header */}
       <header
         className={`${
@@ -1321,18 +1371,160 @@ const spendTime = (amount: number) => {
             : "bg-gradient-to-r from-pink-500 to-purple-600"
         } text-white py-4 md:py-6 shadow-lg transition-colors duration-300`}
       >
-        <div className="container mx-auto px-4 flex justify-center items-center">
-          <span className="sr-only">Heart of the Valley</span>
-          <div className="flex gap-2 md:gap-3 items-center">
-            <div className="relative">
+        {isMobile ? (
+          <>
+            <div className="container mx-auto px-4 flex justify-center items-center">
+              <span className="sr-only">Heart of the Valley</span>
+              <div className="flex gap-2 md:gap-3 items-center">
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowWhereMenu((prev) => !prev)}
+                    className="bg-white/30 hover:bg-white/40 ring-2 ring-white/60 backdrop-blur-sm px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 shadow-lg"
+                    aria-haspopup="menu"
+                    aria-expanded={showWhereMenu}
+                    aria-label={`Where to. Current location: ${currentLocation}`}
+                    title="Where to"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12 21s-6-4.4-6-10a6 6 0 1 1 12 0c0 5.6-6 10-6 10z" />
+                      <circle cx="12" cy="11" r="2.5" />
+                    </svg>
+                    <svg
+                      viewBox="0 0 20 20"
+                      className={`h-4 w-4 transition-transform ${
+                        showWhereMenu ? "rotate-180" : ""
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M5 7l5 5 5-5" />
+                    </svg>
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPhone(true)}
+                  className={`bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center ${
+                    isMobile ? "animate-pulse" : ""
+                  }`}
+                  aria-label="Open phone"
+                  title="Open phone"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="7" y="2" width="10" height="20" rx="2" ry="2" />
+                    <path d="M11 18h2" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGameState("paused")}
+                  className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center"
+                  aria-label="Open menu"
+                  title="Open menu"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M4 6h16" />
+                    <path d="M4 12h16" />
+                    <path d="M4 18h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            {showWhereMenu && (
+              <div className="container mx-auto px-4 pb-4">
+                <div
+                  className={`rounded-2xl shadow-xl p-3 md:p-4 border-2 ${
+                    darkMode
+                      ? "bg-gray-800 border-purple-700"
+                      : "bg-white border-purple-100"
+                  } transition-colors duration-300`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h2
+                      className={`text-sm font-semibold ${
+                        darkMode ? "text-purple-200" : "text-purple-800"
+                      }`}
+                    >
+                      Where to
+                    </h2>
+                    <span className="text-xs opacity-80">
+                      Current: {currentLocation}
+                    </span>
+                  </div>
+                  {availableLocations.length === 0 ? (
+                    <div className="text-sm opacity-80">No nearby locations.</div>
+                  ) : (
+                    <div className="max-h-[70vh] overflow-y-auto">
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+                        {availableLocations.map((loc) => (
+                          <LocationCard
+                            key={loc.name}
+                            location={loc}
+                            onMove={(name) => {
+                              setShowWhereMenu(false);
+                              moveTo(name);
+                            }}
+                            girls={girls}
+                            darkMode={darkMode}
+                            scheduledEncounters={scheduledEncounters}
+                            pendingEvents={pendingEvents}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="container mx-auto px-4 flex justify-between items-center">
+            <h1 className="text-2xl md:text-4xl font-bold">
+              <span className="flex items-center gap-2">
+                <Image
+                  src="/images/logo.png"
+                  alt="Heart of the Valley"
+                  width={50}
+                  height={50}
+                />
+                dY&apos;- Heart of the Valley
+              </span>
+            </h1>
+            <div className="flex gap-2 items-center">
               <button
-                type="button"
-                onClick={() => setShowWhereMenu((prev) => !prev)}
-                className="bg-white/30 hover:bg-white/40 ring-2 ring-white/60 backdrop-blur-sm px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 shadow-lg"
-                aria-haspopup="menu"
-                aria-expanded={showWhereMenu}
-                aria-label={`Where to. Current location: ${currentLocation}`}
-                title="Where to"
+                onClick={() => setShowPhone(true)}
+                className={`bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${
+                  isMobile ? "animate-pulse" : ""
+                }`}
+                title="Open phone"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -1343,116 +1535,35 @@ const spendTime = (amount: number) => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <path d="M12 21s-6-4.4-6-10a6 6 0 1 1 12 0c0 5.6-6 10-6 10z" />
-                  <circle cx="12" cy="11" r="2.5" />
+                  <rect x="7" y="2" width="10" height="20" rx="2" ry="2" />
+                  <path d="M11 18h2" />
                 </svg>
+                <span className="hidden sm:inline">Phone</span>
+              </button>
+              <button
+                onClick={() => setGameState("paused")}
+                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2"
+              >
                 <svg
-                  viewBox="0 0 20 20"
-                  className={`h-4 w-4 transition-transform ${
-                    showWhereMenu ? "rotate-180" : ""
-                  }`}
+                  viewBox="0 0 24 24"
+                  className="h-5 w-5"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <path d="M5 7l5 5 5-5" />
+                  <path d="M4 6h16" />
+                  <path d="M4 12h16" />
+                  <path d="M4 18h16" />
                 </svg>
+                <span className="hidden md:inline">Menu</span>
               </button>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowPhone(true)}
-              className={`bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center ${
-                isMobile ? "animate-pulse" : ""
-              }`}
-              aria-label="Open phone"
-              title="Open phone"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect x="7" y="2" width="10" height="20" rx="2" ry="2" />
-                <path d="M11 18h2" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              onClick={() => setGameState("paused")}
-              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center"
-              aria-label="Open menu"
-              title="Open menu"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M4 6h16" />
-                <path d="M4 12h16" />
-                <path d="M4 18h16" />
-              </svg>
-            </button>
-          </div>
-        </div>
-        {showWhereMenu && (
-          <div className="container mx-auto px-4 pb-4">
-            <div
-              className={`rounded-2xl shadow-xl p-3 md:p-4 border-2 ${
-                darkMode
-                  ? "bg-gray-800 border-purple-700"
-                  : "bg-white border-purple-100"
-              } transition-colors duration-300`}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <h2
-                  className={`text-sm font-semibold ${
-                    darkMode ? "text-purple-200" : "text-purple-800"
-                  }`}
-                >
-                  Where to
-                </h2>
-                <span className="text-xs opacity-80">
-                  Current: {currentLocation}
-                </span>
-              </div>
-              {availableLocations.length === 0 ? (
-                <div className="text-sm opacity-80">No nearby locations.</div>
-              ) : (
-                <div className="max-h-[70vh] overflow-y-auto">
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-                    {availableLocations.map((loc) => (
-                      <LocationCard
-                        key={loc.name}
-                        location={loc}
-                        onMove={(name) => {
-                          setShowWhereMenu(false);
-                          moveTo(name);
-                        }}
-                        girls={girls}
-                        darkMode={darkMode}
-                        scheduledEncounters={scheduledEncounters}
-                        pendingEvents={pendingEvents}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         )}
       </header>
+
 
       <div className="container mx-auto px-2 md:px-4 py-4 md:py-8">
         <div className="grid grid-cols-1 lg:[grid-template-columns:240px_minmax(0,1fr)_320px] gap-6">
@@ -1776,6 +1887,7 @@ const spendTime = (amount: number) => {
           dialogue={currentDialogue}
           onComplete={currentRandomEvent ? endRandomEventDialogue : endDialogue}
           darkMode={darkMode}
+          isClosing={isDialogueClosing}
           characterImage={currentRandomEvent ? "" : dialogueCharacterImage}
           onNextDialogueId={goToDialogueByEventId}
           isMobile={isMobile}

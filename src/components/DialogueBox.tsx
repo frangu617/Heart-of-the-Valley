@@ -35,6 +35,7 @@ interface Props {
   playerStats?: PlayerStats;
   girlStats?: Partial<GirlStats>;
   playerName?: string;
+  isClosing?: boolean;
 }
 
 const checkChoiceCondition = (
@@ -125,6 +126,7 @@ export default function DialogueBox({
   playerStats,
   girlStats,
   playerName = "You",
+  isClosing = false,
 }: Props) {
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
@@ -148,7 +150,8 @@ export default function DialogueBox({
   const hasVideoSlide = !!videoSlide;
   const hasEventMedia = hasImageSlide || hasVideoSlide;
   const isNarration = currentLine?.speaker === null;
-  const isPlayerSpeaking = currentLine?.speaker === "You";
+  const isPlayerSpeaking =
+    currentLine?.speaker === "You" || currentLine?.speaker === playerName;
 
   const chosenOptionRef = useRef<DialogueChoice | undefined>(undefined);
 
@@ -158,11 +161,16 @@ export default function DialogueBox({
       .replace(/\{PlayerName\}/g, playerName || "You");
   }, [playerName]);
 
-  // ✅ Move this after we know currentLine exists
- const displaySpeaker = characterName || (currentLine?.speaker !== "You" ? currentLine?.speaker : null) || "";
+  // Prefer the line speaker, falling back to the active character when absent.
+  const displaySpeaker = currentLine?.speaker
+    ? currentLine.speaker === "You"
+      ? playerName || "You"
+      : currentLine.speaker
+    : characterName || "";
   
   const handleNext = useCallback(() => {
     if (!currentLine) return;
+    if (isClosing) return;
 
     if (isTyping) {
       setDisplayedText(currentLine.text ?? "");
@@ -175,7 +183,7 @@ export default function DialogueBox({
     } else {
       setCurrentLineIndex((i) => i + 1);
     }
-  }, [isTyping, isLastLine, currentLine, onComplete, accumulatedStatChanges]);
+  }, [isTyping, isLastLine, currentLine, onComplete, accumulatedStatChanges, isClosing]);
 
   // Reset chosen option when dialogue changes
   useEffect(() => {
@@ -230,6 +238,7 @@ export default function DialogueBox({
   }, [currentLineIndex, currentLine, dialogue.lines.length, onComplete, accumulatedStatChanges, currentLocation, currentHour, currentDay, playerStats, girlStats, replaceTemplateVariables]);
 
   const handleChoice = (choice: DialogueChoice) => {
+    if (isClosing) return;
     console.log("👆 DialogueBox: Choice selected:", choice);
     const newChanges = { ...accumulatedStatChanges };
     if (choice.affectionChange)
@@ -273,6 +282,7 @@ export default function DialogueBox({
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
+      if (isClosing) return;
       if (currentLine?.choices) return;
       if (e.key === " " || e.key === "Enter") {
         e.preventDefault();
@@ -282,7 +292,7 @@ export default function DialogueBox({
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [handleNext, currentLine]);
+  }, [handleNext, currentLine, isClosing]);
 
   if (!currentLine) return null;
 
@@ -337,7 +347,11 @@ export default function DialogueBox({
   const dynamicCharacterImage = getCurrentCharacterImage();
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-between pointer-events-none">
+    <div
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-between pointer-events-none ${
+        isClosing ? "animate-fadeOut" : "animate-fadeIn"
+      }`}
+    >
       {/* ===== BACKGROUND LAYER ===== */}
       {/* Event Media - Full Screen Background */}
       {hasImageSlide && (
@@ -506,7 +520,13 @@ export default function DialogueBox({
       )}
 
       {/* ===== DIALOGUE BOX - Always at bottom ===== */}
-      <div className="w-full max-w-5xl mx-4 mb-8 pointer-events-auto animate-slideUp mt-auto z-40">
+      <div
+        className={`w-full max-w-5xl mx-4 mb-8 mt-auto z-40 ${
+          isClosing
+            ? "pointer-events-none animate-slideDown"
+            : "pointer-events-auto animate-slideUp"
+        }`}
+      >
         <div
           onClick={currentLine.choices ? undefined : handleNext}
           className={`
