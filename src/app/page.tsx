@@ -1358,11 +1358,6 @@ const spendTime = (amount: number) => {
           : "bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50"
       }`}
     >
-      <div
-        className={`fixed inset-0 bg-black/60 pointer-events-none z-40 transition-opacity duration-200 ${
-          isLocationTransitioning ? "opacity-100" : "opacity-0"
-        }`}
-      />
       {/* Header */}
       <header
         className={`${
@@ -1461,12 +1456,17 @@ const spendTime = (amount: number) => {
             {showWhereMenu && (
               <div className="container mx-auto px-4 pb-4">
                 <div
-                  className={`rounded-2xl shadow-xl p-3 md:p-4 border-2 ${
+                  className={`relative rounded-2xl shadow-xl p-3 md:p-4 border-2 ${
                     darkMode
                       ? "bg-gray-800 border-purple-700"
                       : "bg-white border-purple-100"
                   } transition-colors duration-300`}
                 >
+                  <div
+                    className={`absolute inset-0 rounded-2xl bg-black/60 pointer-events-none transition-opacity duration-200 z-10 ${
+                      isLocationTransitioning ? "opacity-100" : "opacity-0"
+                    }`}
+                  />
                   <div className="flex items-center justify-between mb-3">
                     <h2
                       className={`text-sm font-semibold ${
@@ -1584,7 +1584,7 @@ const spendTime = (amount: number) => {
           <div className="space-y-6 min-w-0">
             {/* Scene */}
             <div
-              className={`rounded-2xl shadow-xl overflow-hidden border-4 w-full ${
+              className={`relative rounded-2xl shadow-xl overflow-hidden border-4 w-full ${
                 darkMode
                   ? "bg-gray-800 border-purple-700"
                   : "bg-white border-purple-200"
@@ -1724,6 +1724,11 @@ const spendTime = (amount: number) => {
                   </div>
                 )} */}
               </div>
+              <div
+                className={`absolute inset-0 bg-black/60 pointer-events-none transition-opacity duration-200 z-30 ${
+                  isLocationTransitioning ? "opacity-100" : "opacity-0"
+                }`}
+              />
             </div>
 
             {isMobile && (
@@ -1789,12 +1794,17 @@ const spendTime = (amount: number) => {
             {/* Available locations */}
             {!isMobile && (
               <div
-                className={`flex flex-col gap-3 md:gap-4 rounded-2xl shadow-xl p-4 md:p-6 border-2  ${
+                className={`relative flex flex-col gap-3 md:gap-4 rounded-2xl shadow-xl p-4 md:p-6 border-2  ${
                   darkMode
                     ? "bg-gray-800 border-purple-700"
                     : "bg-white border-purple-100"
                 } transition-colors duration-300`}
               >
+                <div
+                  className={`absolute inset-0 rounded-2xl bg-black/60 pointer-events-none transition-opacity duration-200 z-10 ${
+                    isLocationTransitioning ? "opacity-100" : "opacity-0"
+                  }`}
+                />
                 <h3
                   className={`text-xl text-center md:text-2xl font-bold mb-3 md:mb-4 ${
                     darkMode ? "text-purple-300" : "text-purple-800"

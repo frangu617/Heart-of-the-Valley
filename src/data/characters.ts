@@ -62,14 +62,14 @@ export const girls: Girl[] = [
   },
   {
     name: "Yumi",
-    location: "Kitchen",
+    location: "Yumi's Bedroom",
     relationship: "Single",
     personality: "Independent",
     stats: { affection: 0, lust: 0, mood: 50, trust: 0, love: 0 },
   },
   {
     name: "Gwen",
-    location: "Living Room",
+    location: "Gwen's Bedroom",
     relationship: "Single",
     personality: "Bold",
     stats: { affection: 0, lust: 0, mood: 50, trust: 0, love: 0 },
