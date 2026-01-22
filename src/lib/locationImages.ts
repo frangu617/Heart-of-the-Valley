@@ -1,13 +1,43 @@
 import { getTimeOfDay, type TimeOfDay } from "./time";
 
+const LOCATION_TIME_OVERRIDES: Record<string, TimeOfDay[]> = {
+  bar: ["afternoon"],
+  dawns_bedroom: ["morning", "afternoon"],
+  gift_shop: ["afternoon"],
+};
+
+const LOCATION_IMAGE_EXTENSIONS: Record<
+  string,
+  Partial<Record<TimeOfDay, "png" | "jpg">>
+> = {
+  bar: { afternoon: "jpg" },
+};
+
+const normalizeLocationKey = (location: string) =>
+  location.toLowerCase().replace(/\s+/g, "_").replace(/'/g, "");
+
+export function getLocationImagePath(
+  location: string,
+  timeOfDay: TimeOfDay
+): string {
+  const locationKey = normalizeLocationKey(location);
+  const preferredTime = timeOfDay === "evening" ? "afternoon" : timeOfDay;
+  const availableTimes = LOCATION_TIME_OVERRIDES[locationKey];
+  const resolvedTime = availableTimes
+    ? availableTimes.includes(preferredTime)
+      ? preferredTime
+      : availableTimes.includes("afternoon")
+      ? "afternoon"
+      : availableTimes[0]
+    : preferredTime;
+  const extension =
+    LOCATION_IMAGE_EXTENSIONS[locationKey]?.[resolvedTime] ?? "png";
+  return `/images/locations/${locationKey}/${resolvedTime}.${extension}`;
+}
+
 export function getLocationBackground(location: string, hour: number): string {
   const timeOfDay = getTimeOfDay(hour);
-  const locationKey = location
-    .toLowerCase()
-    .replace(/\s+/g, "_")
-    .replace(/'/g, "");
-  const imageTimeOfDay = timeOfDay === "evening" ? "afternoon" : timeOfDay;
-  return `/images/locations/${locationKey}/${imageTimeOfDay}.png`;
+  return getLocationImagePath(location, timeOfDay);
 }
 
 // Optional: Get atmosphere overlay color

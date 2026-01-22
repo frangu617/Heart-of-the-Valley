@@ -72,6 +72,12 @@ export const locationDescriptions: Record<string, LocationDescription> = {
     afternoon: "The café buzzes with lunch crowd conversation.",
     evening: "A quieter atmosphere, perfect for studying or dates.",
   },
+  Bar: {
+    default: "Low lights, clinking glasses, and quiet conversations.",
+    afternoon: "The bar is calm, with a few early regulars.",
+    evening: "The bar starts to fill as the sun goes down.",
+    night: "The room hums with laughter and late-night energy.",
+  },
   Gym: {
     default: "The clang of weights and hum of machines fills the air.",
     morning: "Early birds are getting their workout in before work.",
@@ -92,6 +98,11 @@ export const locationDescriptions: Record<string, LocationDescription> = {
     default: "Dim lights and pulsing music create an electric atmosphere.",
     evening: "The evening show is starting to draw a crowd.",
     night: "The club is in full swing, energy at its peak.",
+  },
+  Nightclub: {
+    default: "Bass thumps through the floor and neon lights glow.",
+    evening: "The DJ warms up the room with a steady beat.",
+    night: "The dance floor is packed and the music is loud.",
   },
   University: {
     default: "The halls of higher learning. Knowledge awaits.",

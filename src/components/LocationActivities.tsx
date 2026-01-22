@@ -71,6 +71,8 @@ export default function LocationActivitiesPanel({
   const rubyAtGym =
     getScheduledLocation("Ruby", dayOfWeek, hour) === "Gym" &&
     !gameplayFlags?.has("rubyIsHiding");
+  const rubyUnlocked = gameplayFlags?.has("hasMetRuby") ?? false;
+  const rubyAvailableForWorkout = rubyUnlocked && rubyAtGym;
   const workoutActivityNames = new Set(["Workout", "Light Exercise"]);
 
   const isWorkoutActivity = (activity: Activity) =>
@@ -79,7 +81,7 @@ export default function LocationActivitiesPanel({
   const isRubyUnlockActivity = (activity: Activity) => isWorkoutActivity(activity);
 
   const isRubyWorkoutActivity = (activity: Activity) =>
-    isWorkoutActivity(activity) && rubyAtGym;
+    isWorkoutActivity(activity) && rubyAvailableForWorkout;
 
   const isYumiUnlockActivity = (activity: Activity) =>
     location === "Classroom" && activity.name === "Teach Class";
@@ -94,7 +96,7 @@ export default function LocationActivitiesPanel({
     const withRuby = isToday ? dailyWorkoutState.withRuby : 0;
     const withoutRuby = isToday ? dailyWorkoutState.withoutRuby : 0;
 
-    if (!rubyAtGym) {
+    if (!rubyAvailableForWorkout) {
       if (total >= 1) {
         return {
           alert: "You already worked out today.",
@@ -218,7 +220,7 @@ export default function LocationActivitiesPanel({
     setPlayer(next);
 
     const workoutActivity = isWorkoutActivity(act);
-    const rubyWorkout = workoutActivity && rubyAtGym;
+    const rubyWorkout = workoutActivity && rubyAvailableForWorkout;
     if (workoutActivity) {
       onLogWorkout?.(rubyWorkout);
     }

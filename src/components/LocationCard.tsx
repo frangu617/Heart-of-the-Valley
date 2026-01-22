@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Location } from "../data/locations";
 import { Girl } from "../data/characters";
+import { getLocationImagePath } from "../lib/locationImages";
 
 interface ScheduledEncounter {
   characterName: string;
@@ -71,10 +72,7 @@ export default function LocationCard({
         }`}
       >
         <Image
-          src={`/images/locations/${location.name
-            .toLowerCase()
-            .replace(/\s+/g, "_")
-            .replace(/'/g, "")}/afternoon.png`}
+          src={getLocationImagePath(location.name, "afternoon")}
           alt={location.name}
           layout="fill"
           objectFit="cover"

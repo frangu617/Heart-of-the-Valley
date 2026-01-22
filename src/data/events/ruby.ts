@@ -114,7 +114,7 @@ export const rubyEvents: CharacterEvent[] = [
     "setFlags": ["hasMetRuby"],
     "unlockCharacters": ["Ruby"]
   }
-}
+},
   {
     id: "ruby_hire_trainer_event",
     name: "Hire Ruby",

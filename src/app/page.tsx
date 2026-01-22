@@ -1144,6 +1144,19 @@ const spendTime = (amount: number) => {
   const availableLocations = useMemo(() => {
     const options = locationGraph[currentLocation] ?? [];
     return options.filter((loc) => {
+      const isNightLife = ["Bar", "Nightclub", "Strip Club"].includes(loc.name);
+      const isDaytimeOnly = ["Cafe", "Gym", "Mall", "Car Store"].includes(
+        loc.name
+      );
+      const isNightTime = hour >= 21;
+
+      if (!isNightTime && isNightLife) {
+        return false;
+      }
+      if (isNightTime && isDaytimeOnly) {
+        return false;
+      }
+
       const requiresCar = loc.name === "Beach" || loc.name === "Mountains";
       if (requiresCar && !gameplayFlags.has("hasCar")) {
         return false;
@@ -1165,7 +1178,7 @@ const spendTime = (amount: number) => {
 
       return true;
     });
-  }, [currentLocation, gameplayFlags]);
+  }, [currentLocation, gameplayFlags, hour]);
 
   const returnToMainMenu = () => {
     if (!confirm("Return to main menu? Any unsaved progress will be lost."))

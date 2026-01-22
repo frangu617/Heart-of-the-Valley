@@ -20,6 +20,7 @@ export type DialogueChoice = {
 export type DialogueLine = {
   speaker: string | null;
   text: string;
+  isThought?: boolean;
   expression?: string;
   imageSlide?: string;
   choices?: DialogueChoice[];

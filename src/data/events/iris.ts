@@ -26,8 +26,9 @@ export const irisEvents: CharacterEvent[] = [
           text: "The hallway throbs with morning chaos--students shoving past, lockers banging, the whole place smelling like cheap body spray and desperation.",
         },
         {
-          speaker: null,
-          text: "You think: Late on the first damn day. Perfect. This campus hates me already.",
+          speaker: "You",
+          text: "Late on the first damn day. Perfect. This campus hates me already.",
+          isThought: true,
         },
         {
           speaker: null,

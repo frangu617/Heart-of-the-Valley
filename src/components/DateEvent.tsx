@@ -3,6 +3,7 @@ import { Girl, PlayerStats, GirlStats } from "@/data/characters";
 import { DateOutcome } from "@/data/dates/types";
 import { dateActivitiesByLocation } from "@/data/dates/activities";
 import DialogueBox from "./DialogueBox";
+import { getLocationImagePath } from "@/lib/locationImages";
 
 interface Props {
   girl: Girl;
@@ -184,7 +185,7 @@ export default function DateEvent({
       darkMode={darkMode}
       characterImage={`/images/characters/${girl.name.toLowerCase()}/faces/happy.webp`}
       isMobile={false}
-      locationImage={`/images/locations/${location.toLowerCase()}/afternoon.png`}
+      locationImage={getLocationImagePath(location, "afternoon")}
     />
   );
 }
