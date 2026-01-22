@@ -68,7 +68,9 @@ export default function LocationActivitiesPanel({
 
   const activities = [...baseActivities];
 
-  const rubyAtGym = getScheduledLocation("Ruby", dayOfWeek, hour) === "Gym";
+  const rubyAtGym =
+    getScheduledLocation("Ruby", dayOfWeek, hour) === "Gym" &&
+    !gameplayFlags?.has("rubyIsHiding");
   const workoutActivityNames = new Set(["Workout", "Light Exercise"]);
 
   const isWorkoutActivity = (activity: Activity) =>

@@ -68,26 +68,71 @@ const rubyTrainerOfferDecline: Dialogue = {
 const rubyEvent2Push: Dialogue = {
   id: "ruby_event_2_push",
   lines: [
-    { speaker: "You", text: "I'm not quitting. Watch me." },
+    { speaker: "You", text: "I'm on it. Watch this." },
     {
       speaker: null,
-      text: "You grit your teeth and force out the last two reps, slamming the weights down.",
+      text: "You grit your teeth and shoulder the weight. It's heavier than usual, but you force out the reps.",
     },
-    { speaker: "Ruby", text: "That's what I'm talking about. You've got some fire in you after all.", expression: "happy" },
+    {
+      speaker: "Ruby",
+      text: "Lower! Control it! Don't let it crush you!",
+      expression: "angry",
+    },
+    {
+      speaker: null,
+      text: "She's spotting you, but her eyes are intense, almost desperate. She's shouting cues that feel like they're about more than just the weights.",
+    },
+    {
+      speaker: "Ruby",
+      text: "Push! Come on! You have to be stronger than that! Don't be weak!",
+      expression: "angry",
+    },
+    {
+      speaker: null,
+      text: "You slam the weights back onto the rack, gasping for air. Ruby stares at you, chest heaving, before she seems to realize where she is.",
+    },
+    { speaker: "Ruby", text: "Right. Good. That was... acceptable.", expression: "neutral" },
+    {
+      speaker: null,
+      text: "She turns away quickly, rubbing the back of her neck.",
+    },
+    {
+      speaker: "Ruby",
+      text: "Just... keep that energy. I can't deal with anyone wasting my time today.",
+      expression: "sad",
+    },
   ],
 };
 
 const rubyEvent2Break: Dialogue = {
   id: "ruby_event_2_break",
   lines: [
-    { speaker: "You", text: "Ruby, seriously... give me a second. I'm dying here." },
+    { speaker: "You", text: "Whoa, easy there, tiger. Did someone piss in your protein shake?" },
     {
       speaker: null,
-      text: "She sighs, shaking her head, but hands you her water bottle.",
+      text: "You try to give her a disarming smile. It doesn't work.",
     },
     {
       speaker: "Ruby",
-      text: "Fine. Take five. But you owe me an extra set for whining.",
+      text: "Do you think this is funny? You think my time is a joke?",
+      expression: "angry",
+    },
+    {
+      speaker: null,
+      text: "She glares at you, her eyes glassy. For a second, she looks like she might actually cry, but she swallows it down instantly.",
+    },
+    {
+      speaker: "Ruby",
+      text: "Ugh. Forget it. Just... forget it.",
+      expression: "neutral",
+    },
+    {
+      speaker: null,
+      text: "She waves a hand dismissively, turning her back to you.",
+    },
+    {
+      speaker: "Ruby",
+      text: "Take five if you're going to whine. I don't care.",
       expression: "neutral",
     },
   ],

@@ -157,28 +157,50 @@ export const rubyEvents: CharacterEvent[] = [
       lines: [
         {
           speaker: null,
-          text: "The gym is sweltering today. Ruby has you running circuits, and she isn't showing any mercy.",
+          text: "You walk into the gym ready for your session, but the vibe is off immediately.",
+        },
+        {
+          speaker: null,
+          text: "Ruby is standing by the squat rack, staring at her phone. Her knuckles are white as she grips it. She types a furious reply, deletes it, then shoves the phone into her bag like she wants to break it.",
         },
         {
           speaker: "Ruby",
-          text: "Come on! Two more reps! Don't you dare quit on me now!",
+          text: "You're here. Finally. Let's go. No warm-up talk today.",
           expression: "annoyed",
         },
         {
           speaker: null,
-          text: "Her voice cuts through the noise of the gym. She's standing over you, arms crossed, looking like a drill sergeant.",
+          text: "She doesn't wait for a response. She loads the bar—heavier than last time.",
+        },
+        {
+          speaker: "Ruby",
+          text: "Get under it. And don't give me that look. You want results? You work for them. Nobody hands you anything.",
+          expression: "angry",
+        },
+        {
+          speaker: null,
+          text: "There's an edge to her voice that wasn't there before. It's not the fun, flirty drill sergeant act. It's raw frustration.",
+        },
+        {
+          speaker: "Ruby",
+          text: "Well? Are you just going to stand there looking useless? Move!",
+          expression: "angry",
+        },
+        {
+          speaker: null,
+          text: "She's taking something out on you. You can tell. But you're here to train, so you decide to just roll with it and hope she snaps out of it.",
         },
         {
           speaker: "You",
           text: "What do you do?",
           choices: [
             {
-              text: "Push through the pain (Dominant/Determined)",
+              text: "Do the set without complaining. (Push through)",
               affectionChange: 1,
               nextDialogueId: "ruby_event_2_push",
             },
             {
-              text: "Ask for a break (Submissive/Weak)",
+              text: "Try to lighten the mood with a joke. (Deflect)",
               affectionChange: 0,
               nextDialogueId: "ruby_event_2_break",
             },

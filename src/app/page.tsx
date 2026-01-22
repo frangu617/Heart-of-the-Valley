@@ -212,6 +212,9 @@ export default function GamePage() {
           withoutRuby: base.withoutRuby + (withRuby ? 0 : 1),
         };
       });
+      if (withRuby) {
+        setRubyWorkoutTotal((prev) => prev + 1);
+      }
     },
     [dayOfWeek]
   );
@@ -247,6 +250,7 @@ export default function GamePage() {
       withRuby: 0,
       withoutRuby: 0,
     });
+  const [rubyWorkoutTotal, setRubyWorkoutTotal] = useState<number>(0);
 
   type GameState =
     | "mainMenu"
@@ -558,6 +562,7 @@ export default function GamePage() {
       scheduledEncounters, // This now includes dates with activities
       gameplayFlags: Array.from(gameplayFlags),
       dailyWorkoutState,
+      rubyWorkoutTotal,
       timestamp: new Date().toISOString(),
     };
     localStorage.setItem("datingSimSave", JSON.stringify(saveData));
@@ -597,6 +602,7 @@ export default function GamePage() {
         withoutRuby: 0,
       });
     }
+    setRubyWorkoutTotal(data.rubyWorkoutTotal || 0);
     setSelectedGirl(null);
     setGameState("playing");
   };
@@ -1192,6 +1198,7 @@ const spendTime = (amount: number) => {
       withRuby: 0,
       withoutRuby: 0,
     });
+    setRubyWorkoutTotal(0);
 
     // Now start the intro
     setGameState("intro");
