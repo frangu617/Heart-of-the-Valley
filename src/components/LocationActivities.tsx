@@ -1,16 +1,17 @@
 import { useState } from "react";
-import { PlayerStats } from "../data/characters";
+import { PlayerStats, type GirlStats } from "../data/characters";
 import { DayOfWeek } from "../data/gameConstants";
 import {
   locationActivities as activitiesMap,
-  LocationActivity as ImportedActivity,
+  LocationActivity,
 } from "../data/LocationActivities";
-import { GameplayFlag } from "@/data/events/chapter1";
+import { GameplayFlag } from "@/data/events/types";
 import { applyPlayerStatDelta } from "@/lib/playerStats";
 import GiftModal from "./GiftModal";
 import { Gift, gifts } from "@/data/gifts";
+import { getScheduledLocation } from "@/lib/schedule";
 
-type Activity = ImportedActivity & {
+type Activity = LocationActivity & {
   id?: string;
   desc?: string;
   perform?: (player: PlayerStats, ctx: { dayOfWeek: DayOfWeek }) => PlayerStats;
@@ -21,6 +22,13 @@ type RequirementFailure = {
   inline: string;
 };
 
+export type DailyWorkoutState = {
+  day: DayOfWeek;
+  total: number;
+  withRuby: number;
+  withoutRuby: number;
+};
+
 type Props = {
   location: string;
   player: PlayerStats;
@@ -28,9 +36,13 @@ type Props = {
   spendTime: (amount: number) => void;
   darkMode?: boolean;
   dayOfWeek: DayOfWeek;
+  hour: number;
   onSetFlag?: (flag: GameplayFlag) => void;
   onTriggerEvent?: (characterName: string, eventId: string) => void;
   gameplayFlags?: Set<GameplayFlag>;
+  dailyWorkoutState?: DailyWorkoutState;
+  onLogWorkout?: (withRuby: boolean) => void;
+  onAdjustGirlStats?: (girlName: string, delta: Partial<GirlStats>) => void;
 };
 
 export default function LocationActivitiesPanel({
@@ -40,26 +52,81 @@ export default function LocationActivitiesPanel({
   spendTime,
   darkMode,
   dayOfWeek,
+  hour,
   onSetFlag,
   onTriggerEvent,
   gameplayFlags,
+  dailyWorkoutState,
+  onLogWorkout,
+  onAdjustGirlStats,
 }: Props) {
-  const activities: Activity[] = activitiesMap[location] ?? [];
+  const baseActivities: Activity[] = activitiesMap[location] ?? [];
   const [showGiftShop, setShowGiftShop] = useState(false);
   const giftStoreTimeCost =
-    activities.find((act) => act.name === "Gift Store")?.timeCost ?? 1;
+    baseActivities.find((act) => act.name === "Gift Store")?.timeCost ?? 1;
   const giftStoreEntries = gifts.map((gift) => ({ gift, count: 0 }));
 
-  const isRubyUnlockActivity = (activity: Activity) =>
-    location === "Gym" &&
-    (activity.name === "Workout" || activity.name === "Light Exercise");
+  const activities = [...baseActivities];
+
+  const rubyAtGym = getScheduledLocation("Ruby", dayOfWeek, hour) === "Gym";
+  const workoutActivityNames = new Set(["Workout", "Light Exercise"]);
+
+  const isWorkoutActivity = (activity: Activity) =>
+    location === "Gym" && workoutActivityNames.has(activity.name);
+
+  const isRubyUnlockActivity = (activity: Activity) => isWorkoutActivity(activity);
+
+  const isRubyWorkoutActivity = (activity: Activity) =>
+    isWorkoutActivity(activity) && rubyAtGym;
 
   const isYumiUnlockActivity = (activity: Activity) =>
     location === "Classroom" && activity.name === "Teach Class";
 
+  const getWorkoutLimitFailure = (
+    activity: Activity
+  ): RequirementFailure | null => {
+    if (!dailyWorkoutState || !isWorkoutActivity(activity)) return null;
+
+    const isToday = dailyWorkoutState.day === dayOfWeek;
+    const total = isToday ? dailyWorkoutState.total : 0;
+    const withRuby = isToday ? dailyWorkoutState.withRuby : 0;
+    const withoutRuby = isToday ? dailyWorkoutState.withoutRuby : 0;
+
+    if (!rubyAtGym) {
+      if (total >= 1) {
+        return {
+          alert: "You already worked out today.",
+          inline: "Workout limit reached",
+        };
+      }
+      return null;
+    }
+
+    if (total === 0) return null;
+
+    const bonusAvailable = withoutRuby > 0 && withRuby === 0 && total === 1;
+    if (bonusAvailable) return null;
+
+    return {
+      alert: "You've already maxed out your workouts for today.",
+      inline: "Workout limit reached",
+    };
+  };
+
+  const getActivityLabel = (activity: Activity) => {
+    if (!isRubyWorkoutActivity(activity)) return activity.name;
+    if (activity.name.includes("with Ruby")) return activity.name;
+    return `${activity.name} with Ruby`;
+  };
+
   const getRequirementFailures = (activity: Activity): RequirementFailure[] => {
     const failures: RequirementFailure[] = [];
     const requirements = activity.requirements;
+
+    const workoutFailure = getWorkoutLimitFailure(activity);
+    if (workoutFailure) {
+      failures.push(workoutFailure);
+    }
 
     if (!requirements) return failures;
 
@@ -147,7 +214,27 @@ export default function LocationActivitiesPanel({
     }
 
     setPlayer(next);
+
+    const workoutActivity = isWorkoutActivity(act);
+    const rubyWorkout = workoutActivity && rubyAtGym;
+    if (workoutActivity) {
+      onLogWorkout?.(rubyWorkout);
+    }
+    if (rubyWorkout) {
+      onAdjustGirlStats?.("Ruby", { affection: 1, lust: 1 });
+      if (gameplayFlags?.has("rubyTrainerAccepted")) {
+        if (!gameplayFlags?.has("rubyWorkoutCount1")) {
+          onSetFlag?.("rubyWorkoutCount1");
+        } else if (!gameplayFlags?.has("rubyWorkoutCount2")) {
+          onSetFlag?.("rubyWorkoutCount2");
+        } else if (!gameplayFlags?.has("rubyWorkoutCount3")) {
+          onSetFlag?.("rubyWorkoutCount3");
+        }
+      }
+    }
+
     spendTime(act.timeCost ?? 1);
+
     //Unlock Ruby when working out at Gym
     if (isRubyUnlockActivity(act)) {
       onSetFlag?.("firstWorkout");
@@ -232,6 +319,7 @@ export default function LocationActivitiesPanel({
             isRubyUnlockActivity(act) && !gameplayFlags?.has("hasMetRuby");
           const showYumiIndicator =
             isYumiUnlockActivity(act) && !gameplayFlags?.has("hasMetYumi");
+          const activityLabel = getActivityLabel(act);
 
           return (
             <button
@@ -260,7 +348,7 @@ export default function LocationActivitiesPanel({
                     </span>
                   )}
                   {act.icon ? <span className="mr-2">{act.icon}</span> : null}
-                  {act.name}
+                  {activityLabel}
                 </span>
                 <div className="flex items-center gap-2">
                   {act.statEffects && (

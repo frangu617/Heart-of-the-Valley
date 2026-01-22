@@ -8,7 +8,9 @@ import NameInput from "@/components/NameInput";
 import StatsPanel from "../components/StatsPanel";
 import LocationCard from "../components/LocationCard";
 import CharacterOverlay from "../components/CharacterOverlay";
-import LocationActivities from "../components/LocationActivities";
+import LocationActivities, {
+  type DailyWorkoutState,
+} from "../components/LocationActivities";
 import MainMenu from "../components/MainMenu";
 import PauseMenu from "../components/PauseMenu";
 import DialogueBox from "../components/DialogueBox";
@@ -173,6 +175,47 @@ export default function GamePage() {
     [getRelationshipCaps]
   );
 
+  const applyGirlStatDelta = useCallback(
+    (girlName: string, delta: Partial<GirlStats>) => {
+      const baseGirl = baseGirls.find((girl) => girl.name === girlName);
+      if (!baseGirl) return;
+
+      setGirlStatsOverrides((prev) => {
+        const currentStats = {
+          ...baseGirl.stats,
+          ...(prev[girlName] ?? {}),
+        };
+        const nextStats: GirlStats = { ...currentStats };
+        Object.entries(delta).forEach(([key, value]) => {
+          if (typeof value !== "number") return;
+          const statKey = key as keyof GirlStats;
+          nextStats[statKey] = (currentStats[statKey] ?? 0) + value;
+        });
+        const capped = clampGirlStatsToCaps(girlName, nextStats);
+        return { ...prev, [girlName]: capped };
+      });
+    },
+    [clampGirlStatsToCaps]
+  );
+
+  const logWorkout = useCallback(
+    (withRuby: boolean) => {
+      setDailyWorkoutState((prev) => {
+        const isToday = prev.day === dayOfWeek;
+        const base = isToday
+          ? prev
+          : { day: dayOfWeek, total: 0, withRuby: 0, withoutRuby: 0 };
+        return {
+          day: dayOfWeek,
+          total: base.total + 1,
+          withRuby: base.withRuby + (withRuby ? 1 : 0),
+          withoutRuby: base.withoutRuby + (withRuby ? 0 : 1),
+        };
+      });
+    },
+    [dayOfWeek]
+  );
+
   // 🎲 Track active random event
   const [currentRandomEvent, setCurrentRandomEvent] =
     useState<RandomEvent | null>(null);
@@ -197,6 +240,13 @@ export default function GamePage() {
   const [interactionHistory, setInteractionHistory] = useState<
     Record<string, Set<string>>
   >({});
+  const [dailyWorkoutState, setDailyWorkoutState] =
+    useState<DailyWorkoutState>({
+      day: START_DAY,
+      total: 0,
+      withRuby: 0,
+      withoutRuby: 0,
+    });
 
   type GameState =
     | "mainMenu"
@@ -441,6 +491,11 @@ export default function GamePage() {
         // Iris is always available
         if (girl.name === "Iris") return true;
 
+        // Hide Ruby if the flag is set
+        if (girl.name === "Ruby" && gameplayFlags.has("rubyIsHiding")) {
+          return false;
+        }
+
         // Other characters require unlocking
         if (girl.name === "Yumi") return characterUnlocks.Yumi;
         if (girl.name === "Gwen") return characterUnlocks.Gwen;
@@ -502,6 +557,7 @@ export default function GamePage() {
       characterUnlocks,
       scheduledEncounters, // This now includes dates with activities
       gameplayFlags: Array.from(gameplayFlags),
+      dailyWorkoutState,
       timestamp: new Date().toISOString(),
     };
     localStorage.setItem("datingSimSave", JSON.stringify(saveData));
@@ -516,7 +572,8 @@ export default function GamePage() {
     setPlayer(data.player);
     setCurrentLocation(data.currentLocation);
     setHour(data.hour);
-    setDayOfWeek(data.dayOfWeek ?? START_DAY);
+    const loadedDay = data.dayOfWeek ?? START_DAY;
+    setDayOfWeek(loadedDay);
     setMetCharacters(new Set(data.metCharacters ?? []));
     setGirlStatsOverrides(data.girlStatsOverrides ?? {});
     setCharacterEventStates(data.characterEventStates ?? {});
@@ -530,6 +587,16 @@ export default function GamePage() {
     );
     setScheduledEncounters(data.scheduledEncounters ?? []); // This loads dates too
     setGameplayFlags(new Set(data.gameplayFlags ?? []));
+    if (data.dailyWorkoutState && data.dailyWorkoutState.day === loadedDay) {
+      setDailyWorkoutState(data.dailyWorkoutState);
+    } else {
+      setDailyWorkoutState({
+        day: loadedDay,
+        total: 0,
+        withRuby: 0,
+        withoutRuby: 0,
+      });
+    }
     setSelectedGirl(null);
     setGameState("playing");
   };
@@ -1051,6 +1118,12 @@ const spendTime = (amount: number) => {
       // Clear selected girl when day changes
       setSelectedGirl(null);
       setInteractionHistory({});
+      setDailyWorkoutState({
+        day: nextDay,
+        total: 0,
+        withRuby: 0,
+        withoutRuby: 0,
+      });
 
       alert(`A new day begins! It's ${nextDay} morning.`);
     } else {
@@ -1113,6 +1186,12 @@ const spendTime = (amount: number) => {
     });
     setScheduledEncounters([]);
     setInteractionHistory({});
+    setDailyWorkoutState({
+      day: START_DAY,
+      total: 0,
+      withRuby: 0,
+      withoutRuby: 0,
+    });
 
     // Now start the intro
     setGameState("intro");
@@ -1783,9 +1862,13 @@ const spendTime = (amount: number) => {
                     spendTime={spendTime}
                     darkMode={darkMode}
                     dayOfWeek={dayOfWeek}
+                    hour={hour}
                     gameplayFlags={gameplayFlags}
                     onTriggerEvent={triggerSpecificEvent}
                     onSetFlag={setFlag}
+                    dailyWorkoutState={dailyWorkoutState}
+                    onLogWorkout={logWorkout}
+                    onAdjustGirlStats={applyGirlStatDelta}
                   />
                 )}
               </div>
@@ -1870,9 +1953,13 @@ const spendTime = (amount: number) => {
                 spendTime={spendTime}
                 darkMode={darkMode}
                 dayOfWeek={dayOfWeek}
+                hour={hour}
                 gameplayFlags={gameplayFlags}
                 onTriggerEvent={triggerSpecificEvent}
                 onSetFlag={setFlag}
+                dailyWorkoutState={dailyWorkoutState}
+                onLogWorkout={logWorkout}
+                onAdjustGirlStats={applyGirlStatDelta}
               />
             </div>
           )}

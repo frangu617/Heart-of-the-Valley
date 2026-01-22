@@ -25,35 +25,59 @@ export const rubyEvents: CharacterEvent[] = [
           speaker: null,
           text: "Sweat runs down your neck as you rack the weights and shake out your arms.",
         },
-        { speaker: "Ruby", text: "Hey.", expression: "annoyed" },
-        {
-          speaker: null,
-          text: "You turn to see a toned woman watching you with arms crossed, gaze sharp and unbothered.",
-        },
-        { speaker: "Ruby", text: "I've been watching you for a bit.", expression: "neutral" },
-        { speaker: "Ruby", text: "You're working hard, I'll give you that.", expression: "neutral" },
         {
           speaker: "Ruby",
-          text: "But your form's all over the place. My shoulders hurt just looking at you.",
+          text: "Hey. Mind if I steal your rack? Kidding. Unless you want me right here.",
+          expression: "happy",
+        },
+        {
+          speaker: null,
+          text: "You turn to see a toned woman with a towel over her shoulder, posture relaxed and confident, like she owns the floor.",
+        },
+        {
+          speaker: null,
+          text: "Jesus. Sweat-slicked muscle and that easy swagger, and I'm already half-hard. Focus, idiot.",
+        },
+        { speaker: "Ruby", text: "I'm Ruby. I coach here. Hands-on when it counts.", expression: "neutral" },
+        { speaker: "Ruby", text: "You're working hard, I'll give you that. Sweat looks good on you.", expression: "neutral" },
+        {
+          speaker: "Ruby",
+          text: "But your form's all over the place. That's how people get hurt.",
           expression: "annoyed",
         },
         { speaker: "You", text: "Ouch. That bad, huh?" },
-        { speaker: "Ruby", text: "Relax, rookie. I'm not roasting you for fun.", expression: "happy" },
-        { speaker: "Ruby", text: "Well. Maybe a little.", expression: "happy" },
-        { speaker: "Ruby", text: "Name's Ruby. I'm here pretty much every day.", expression: "neutral" },
         {
-          speaker: null,
-          text: "She looks you up and down, appraising more like a coach than anything else.",
+          speaker: "Ruby",
+          text: "Relax, rookie. I'm not trying to scare you off. Just get your attention.",
+          expression: "happy",
         },
         {
           speaker: "Ruby",
-          text: "You've got decent potential. Just no idea what you're doing.",
+          text: "I like effort. I like watching effort. But good mechanics keep you in one piece.",
+          expression: "neutral",
+        },
+        {
+          speaker: null,
+          text: "She looks you up and down, appraising more like a coach than anything else, but with a playful spark in her eyes.",
+        },
+        {
+          speaker: null,
+          text: "Her gaze drags slow, like she's already deciding how close she'll need to stand. My pulse jumps for reasons that have nothing to do with cardio.",
+        },
+        {
+          speaker: "Ruby",
+          text: "You've got decent potential. You just need direction.",
           expression: "excited",
         },
         {
           speaker: "Ruby",
           text: "You want a real trainer so you don't blow out your knees or your back?",
           expression: "excited",
+        },
+        {
+          speaker: "Ruby",
+          text: "If you need me, I'm usually here.",
+          expression: "neutral",
         },
         {
           speaker: "You",

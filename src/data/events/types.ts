@@ -29,6 +29,11 @@ export type GameplayFlag =
   | "gwenSubPath"
   | "rubyTrainerAccepted"
   | "rubyTrainerDeclined"
+  | "rubyWorkoutCount1"
+  | "rubyWorkoutCount2"
+  | "rubyWorkoutCount3"
+  | "rubyIsHiding"
+  | "rubyExConflictStarted"
   | "yumiDomPath"
   | "yumiSubPath";
 

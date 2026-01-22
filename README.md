@@ -1,133 +1,120 @@
-# 💖 Dating Sim Adventure
+# Heart of the Valley
 
-A narrative-driven dating simulation game built with Next.js, featuring dynamic character relationships, time management, and branching storylines.
+Heart of the Valley is a narrative-driven dating sim built with Next.js. Manage time, stats, and relationships while exploring locations, meeting characters, and triggering branching story events.
 
-## 🎮 Game Features
+## Features
+- Time management with a 24-hour day/night cycle and weekly schedules
+- Character relationships with affection, trust, love, lust, and mood
+- Player stats for energy, mood, hunger, fitness, intelligence, and style
+- Conditional story events and random encounters
+- Location-based activities with stat effects
+- Save/load via browser localStorage
+- Mobile-friendly UI
 
-### Core Gameplay
-- **Time Management System**: 24-hour day/night cycle with weekly schedules
-- **Character Schedules**: Each character has unique daily routines and locations
-- **Relationship Building**: Track affection, trust, love, lust, and mood for each character
-- **Player Stats**: Manage energy, mood, hunger, fitness, intelligence, and style
-- **Dynamic Events**: Random encounters and character-specific story events
-
-### Characters
-- **Iris**: Shy literature professor and mother of Dawn
-- **Dawn**: Confident young woman, Iris's daughter
-- **Ruby**: Athletic personal trainer at the gym
-- **Yumi**: Independent student in your programming class
-- **Gwen**: Bold neighbor with a mysterious side
-
-### Game Systems
-- **Dialogue System**: Choice-based conversations with stat impacts
-- **Event System**: Conditional story events based on relationships and stats
-- **Location Activities**: Context-sensitive activities at each location
-- **Save/Load System**: Local storage persistence
-- **Mobile-Responsive**: Phone menu and optimized mobile UI
-- **Dark Mode**: Full dark theme support
-
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
-- npm, yarn, pnpm, or bun
+- Node.js 18+
+- npm (or your preferred package manager)
 
-### Installation
-
+### Install
 ```bash
-# Clone the repository
 git clone <your-repo-url>
-
-# Install dependencies
+cd Heart-of-the-Valley
 npm install
+```
 
-# Run development server
+### Run Dev Server
+```bash
 npm run dev
 ```
+Open http://localhost:3000
 
-Open [http://localhost:3000](http://localhost:3000) to start playing!
+### Build and Start
+```bash
+npm run build
+npm run start
+```
 
-## 🎨 Asset Organization
+### Lint
+```bash
+npm run lint
+```
+
+## Content Authoring
+- Characters: `src/data/characters.ts`
+- Events: `src/data/events/` and `src/data/events/chapter1/`
+- Dialogues: `src/data/dialogues/`
+- Activities: `src/data/LocationActivities.ts`
+- Schedules: `src/data/characterSchedules.ts`
+
+## Assets
 
 ### Character Images
-Located in `/public/images/characters/[character_name]/`
+Expected path format:
+```
+public/images/characters/<character>/<category>/<expression>.webp
+```
 
-**Outfit Categories:**
-- `home/` - Pajamas/sleepwear (used at night in home locations)
-- `casual/` - Everyday clothes (daytime home & general locations)
-- `gym/` - Athletic wear
-- `university/` - Professional/academic attire
-- `beach/` - Swimwear
-- `date/` - Elegant outfits
+Categories (from `src/lib/characterImages.ts`):
+- home
+- gym
+- university
+- beach
+- city
+- casual
+- date
 
-**Expression Variants:**
-- `neutral.png` - Default expression
-- `happy.png` - Positive interactions
-- `sad.png` - Negative situations  
-- `love.png` - Romantic moments
-- `shy.png` - Embarrassed/nervous
-- `excited.png` - Excited moments
-- `angry.png` - Angry situations
-
+Expressions map to relationship stance or dialogue expressions (for example: neutral, shy, confident, love, intimate).
 
 ### Location Backgrounds
-Located in `/public/images/locations/[location_name]/`
+Expected path format:
+```
+public/images/locations/<location_key>/<time_of_day>.png
+```
 
-**Time Variants:**
-- `morning.png` (6am-12pm)
-- `afternoon.png` (12pm-6pm) - Default fallback
-- `evening.png` (6pm-10pm)
-- `night.png` (10pm-6am)
+`location_key` is lowercased with spaces replaced by underscores and apostrophes removed.  
+`time_of_day` is one of: morning, afternoon, night.  
+Note: "evening" falls back to "afternoon" in `src/lib/locationImages.ts`.
 
-## 🏗️ Project Structure
-
+## Project Structure
 ```
 src/
-├── app/
-│   ├── page.tsx           # Main game component
-│   ├── globals.css        # Global styles & animations
-│   └── layout.tsx         # Root layout
-├── components/            # React components
-│   ├── CharacterOverlay.tsx
-│   ├── DialogueBox.tsx
-│   ├── LocationActivities.tsx
-│   ├── PhoneMenu.tsx
-│   └── ...
-├── data/                  # Game data & config
-│   ├── characters.ts      # Character definitions
-│   ├── dialogues/         # Dialogue trees
-│   ├── events/           # Story events
-│   ├── locations.ts      # Location graph
-│   └── ...
-└── lib/                   # Utility functions
-    ├── characterImages.ts
-    ├── eventSystem.ts
-    ├── schedule.ts
-    └── ...
+  app/
+    page.tsx
+    globals.css
+    layout.tsx
+  components/
+    CharacterOverlay.tsx
+    DialogueBox.tsx
+    LocationActivities.tsx
+    PhoneMenu.tsx
+    ...
+  data/
+    characters.ts
+    dialogues/
+    events/
+    locations.ts
+    ...
+  lib/
+    characterImages.ts
+    eventSystem.ts
+    schedule.ts
+    ...
+public/
+  images/
+    characters/
+    locations/
 ```
 
-## 🎯 Development Roadmap
+## Tech Stack
+- Next.js 15 (App Router)
+- React 19
+- TypeScript
+- Tailwind CSS
 
-- [ ] Complete character event chains
-- [ ] Add more random events
-- [ ] Expand dialogue trees with more branching
-- [ ] Implement achievement system
-- [ ] Add music and sound effects
-- [ ] Create ending variations based on relationships
-- [ ] Add more locations and activities
+## Contributing
+Feedback and suggestions are welcome. If you want to contribute, open an issue or a PR describing the change and its impact.
 
-## 🛠️ Tech Stack
-
-- **Framework**: Next.js 14 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **State Management**: React Hooks
-- **Storage**: LocalStorage API
-
-## 📝 License
-
+## License
 This project is for educational and portfolio purposes.
-
-## 🤝 Contributing
-
-This is a personal project, but feedback and suggestions are welcome!

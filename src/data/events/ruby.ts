@@ -2,84 +2,119 @@ import { CharacterEvent } from "./types";
 
 export const rubyEvents: CharacterEvent[] = [
   {
-    id: "ruby_trainer_offer_event",
-    name: "Trainer Offer",
-    description: "Ruby offers to train you after spotting your form.",
-    priority: 240,
-    repeatable: false,
-    conditions: {
-      minAffection: 0,
-      minTrust: 0,
-      minHour: 0,
-      maxHour: 24,
-      requiredLocation: "Gym",
-    },
-    dialogue: {
-      id: "ruby_trainer_offer_event",
-      lines: [
-        {
-          speaker: null,
-          text: "The gym hums with low music and the steady rhythm of clanking metal.",
-        },
-        {
-          speaker: null,
-          text: "Sweat runs down your neck as you rack the weights and shake out your arms.",
-        },
-        { speaker: "Ruby", text: "Hey.", expression: "annoyed" },
-        {
-          speaker: null,
-          text: "You turn to see a toned woman watching you with arms crossed, gaze sharp and unbothered.",
-        },
-        { speaker: "Ruby", text: "I've been watching you for a bit.", expression: "neutral" },
-        { speaker: "Ruby", text: "You're working hard, I'll give you that.", expression: "neutral" },
-        {
-          speaker: "Ruby",
-          text: "But your form's all over the place. My shoulders hurt just looking at you.",
-          expression: "annoyed",
-        },
-        { speaker: "You", text: "Ouch. That bad, huh?" },
-        { speaker: "Ruby", text: "Relax, rookie. I'm not roasting you for fun.", expression: "happy" },
-        { speaker: "Ruby", text: "Well. Maybe a little.", expression: "happy" },
-        { speaker: "Ruby", text: "Name's Ruby. I'm here pretty much every day.", expression: "neutral" },
-        {
-          speaker: null,
-          text: "She looks you up and down, appraising more like a coach than anything else.",
-        },
-        {
-          speaker: "Ruby",
-          text: "You've got decent potential. Just no idea what you're doing.",
-          expression: "excited",
-        },
-        {
-          speaker: "Ruby",
-          text: "You want a real trainer so you don't blow out your knees or your back?",
-          expression: "excited",
-        },
-        {
-          speaker: "You",
-          text: "What do you say?",
-          choices: [
-            {
-              text: "Accept Ruby's help",
-              affectionChange: 1,
-              setFlags: ["rubyTrainerAccepted"],
-              nextDialogueId: "ruby_trainer_offer_accept",
-            },
-            {
-              text: "Decline politely",
-              affectionChange: 0,
-              setFlags: ["rubyTrainerDeclined"],
-              nextDialogueId: "ruby_trainer_offer_decline",
-            },
-          ],
-        },
-      ],
-    },
-    rewards: {
-      setFlags: ["hasMetRuby"],
-      unlockCharacters: ["Ruby"],
-    },
+  "id": "ruby_trainer_offer_event",
+  "name": "Trainer Offer",
+  "description": "Ruby offers to train you after spotting your form.",
+  "priority": 240,
+  "repeatable": false,
+  "conditions": {
+    "minAffection": 0,
+    "minTrust": 0,
+    "minHour": 0,
+    "maxHour": 24,
+    "requiredLocation": "Gym"
   },
+  "dialogue": {
+    "id": "ruby_trainer_offer_event",
+    "lines": [
+      {
+        "speaker": null,
+        "text": "The gym hums with low music and the steady rhythm of clanking metal."
+      },
+      {
+        "speaker": null,
+        "text": "Sweat runs down your neck as you rack the weights and shake out your arms."
+      },
+      {
+        "speaker": "Ruby",
+        "text": "Heyyy. Mind if I steal your rack? …Kidding. Unless you’re offering to let me pin you right here~",
+        "expression": "happy"
+      },
+      {
+        "speaker": null,
+        "text": "You turn and—fuck. A redheaded bombshell with a towel slung over her shoulder, standing like she knows every eye in the room is already on her."
+      },
+      {
+        "speaker": null,
+        "text": "Those thick, sculpted thighs, that tiny turquoise crop unzipped just enough to tease deep cleavage, abs carved like they could crush steel… Christ, my dick twitches hard before I can even think. Get it together, you animal—she’s looking right at you."
+      },
+      {
+        "speaker": "Ruby",
+        "text": "I’m Ruby. I coach here. Very… hands-on when someone’s worth the effort.",
+        "expression": "neutral"
+      },
+      {
+        "speaker": "Ruby",
+        "text": "You’re putting in work, I’ll give you that. All that sweat dripping down your neck? Kinda hot, rookie.",
+        "expression": "happy"
+      },
+      {
+        "speaker": "Ruby",
+        "text": "Buuut your form’s a mess. Keep going like that and you’ll blow something… and not in the fun way.",
+        "expression": "annoyed"
+      },
+      {
+        "speaker": "You",
+        "text": "Ouch. That bad, huh?"
+      },
+      {
+        "speaker": "Ruby",
+        "text": "Relax, big guy. I’m not here to scare you away… just to get you all worked up and paying attention~",
+        "expression": "happy"
+      },
+      {
+        "speaker": "Ruby",
+        "text": "I love watching someone push themselves. All that straining, grunting, muscles popping… mmm. But good form means you get to keep coming back for more.",
+        "expression": "neutral"
+      },
+      {
+        "speaker": null,
+        "text": "She drags her gaze down your body—slow, shameless—like she’s already picturing exactly where her hands would go to 'correct' you. That playful glint in her green eyes says she knows exactly what she’s doing to you."
+      },
+      {
+        "speaker": null,
+        "text": "Fuck. My heart’s hammering and it’s definitely not from the set. She’s close enough now I can smell her—sweat, citrus body spray, pure trouble. If she spots me I’m done for."
+      },
+      {
+        "speaker": "Ruby",
+        "text": "You’ve got some real potential under there. Raw. Hungry. I like that.",
+        "expression": "excited"
+      },
+      {
+        "speaker": "Ruby",
+        "text": "Want a trainer who’ll get real personal with you? Keep those knees and back safe… while I make sure every rep feels worth it?",
+        "expression": "excited"
+      },
+      {
+        "speaker": "Ruby",
+        "text": "If you’re interested, I’m usually around… and I don’t bite. Unless you ask nicely.",
+        "expression": "neutral"
+      },
+      {
+        "speaker": "You",
+        "text": "What do you say?",
+        "choices": [
+          {
+            "text": "Accept Ruby's help",
+            "affectionChange": 1,
+            "setFlags": ["rubyTrainerAccepted"],
+            "nextDialogueId": "ruby_trainer_offer_accept"
+          },
+          {
+            "text": "Decline politely",
+            "affectionChange": 0,
+            "setFlags": ["rubyTrainerDeclined"],
+            "nextDialogueId": "ruby_trainer_offer_decline"
+          }
+        ]
+      }
+    ]
+  },
+  "rewards": {
+    "setFlags": ["hasMetRuby"],
+    "unlockCharacters": ["Ruby"]
+  }
+}
   {
     id: "ruby_hire_trainer_event",
     name: "Hire Ruby",
