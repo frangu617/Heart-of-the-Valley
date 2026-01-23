@@ -236,6 +236,19 @@ export default function LocationActivitiesPanel({
         }
       }
     }
+    if (
+      workoutActivity &&
+      !rubyWorkout &&
+      gameplayFlags?.has("rubyTrainerAccepted")
+    ) {
+      if (!gameplayFlags?.has("rubySoloWorkout1")) {
+        onSetFlag?.("rubySoloWorkout1");
+      } else if (!gameplayFlags?.has("rubySoloWorkout2")) {
+        onSetFlag?.("rubySoloWorkout2");
+      } else if (!gameplayFlags?.has("rubySoloWorkout3")) {
+        onSetFlag?.("rubySoloWorkout3");
+      }
+    }
 
     spendTime(act.timeCost ?? 1);
 

@@ -32,8 +32,13 @@ export type GameplayFlag =
   | "rubyWorkoutCount1"
   | "rubyWorkoutCount2"
   | "rubyWorkoutCount3"
+  | "rubySoloWorkout1"
+  | "rubySoloWorkout2"
+  | "rubySoloWorkout3"
   | "rubyIsHiding"
   | "rubyExConflictStarted"
+  | "rubyBarComforted"
+  | "rubyBarWalkedAway"
   | "yumiDomPath"
   | "yumiSubPath";
 

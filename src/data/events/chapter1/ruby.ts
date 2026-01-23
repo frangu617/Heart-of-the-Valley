@@ -179,7 +179,7 @@ export const rubyEvents: CharacterEvent[] = [
         },
         {
           speaker: null,
-          text: "There's an edge to her voice that wasn't there before. It's not the fun, flirty drill sergeant act. It's raw frustration.",
+          text: "There's an edge to her voice that wasn't there before. The teasing is gone. Every cue is clipped, sharp.",
         },
         {
           speaker: "Ruby",
@@ -188,7 +188,7 @@ export const rubyEvents: CharacterEvent[] = [
         },
         {
           speaker: null,
-          text: "She's taking something out on you. You can tell. But you're here to train, so you decide to just roll with it and hope she snaps out of it.",
+          text: "You bite back a comment and set your stance. If she's off today, you can only keep up.",
         },
         {
           speaker: "You",
@@ -211,55 +211,88 @@ export const rubyEvents: CharacterEvent[] = [
   },
   {
     id: "ruby_event_3_playful",
-    name: "The Playful Shift",
-    description: "A playful moment after training.",
+    name: "The Bar Text",
+    description: "Ruby asks you to meet her at the bar.",
     priority: 220,
     repeatable: false,
     conditions: {
       minAffection: 10,
       minTrust: 0,
-      minHour: 0,
+      minHour: 21,
       maxHour: 24,
-      requiredLocation: "Gym",
+      requiredLocation: "Bar",
       requiredPreviousEvents: ["ruby_event_2_routine"],
-      requiredFlags: ["rubyTrainerAccepted"],
+      requiredFlags: ["rubyTrainerAccepted", "rubySoloWorkout3"],
     },
     dialogue: {
       id: "ruby_event_3_playful",
       lines: [
         {
           speaker: null,
-          text: "The workout is over. You're both sitting on a bench, catching your breath. Ruby is wiping sweat from her neck with a towel.",
-        },
-        {
-          speaker: "Ruby",
-          text: "Not bad today. You're actually starting to keep up with me.",
-          expression: "happy",
+          text: "After some solo sessions, you're starting to wonder where Ruby has been.",
         },
         {
           speaker: null,
-          text: "She stretches her arms over her head, her shirt riding up slightly to reveal toned abs. She catches you looking and doesn't pull it down.",
+          text: "Your phone buzzes with a new text from her: 'Hey... can you meet me at the bar? Just for a bit.'",
+        },
+        {
+          speaker: null,
+          text: "You find her tucked into a corner booth, a half-drunk drink sweating on the table.",
         },
         {
           speaker: "Ruby",
-          text: "See something you like? Or just jealous of the core strength?",
-          expression: "happy",
+          text: "Hey. Sorry for the weird text. I just needed to get out of my head.",
+          expression: "neutral",
+        },
+        {
+          speaker: null,
+          text: "She tries for her usual grin, but it slips fast.",
+        },
+        {
+          speaker: "Ruby",
+          text: "My boyfriend's been in my head nonstop. He keeps tearing me down, then acting like he's helping.",
+          expression: "annoyed",
+        },
+        {
+          speaker: "Ruby",
+          text: "Now he's pushing me to start an OnlyFans or go full pornstar, like I'm just content he can cash out on.",
+          expression: "annoyed",
+        },
+        {
+          speaker: null,
+          text: "Her voice cracks. The tough coach act falls apart.",
+        },
+        {
+          speaker: "Ruby",
+          text: "I know I can handle myself, but he makes me feel small. Like I'm stupid for not doing what he wants.",
+          expression: "shy",
+        },
+        {
+          speaker: null,
+          text: "She wipes at her eyes, then the tears start anyway.",
+        },
+        {
+          speaker: "Ruby",
+          text: "I hate that it gets to me. I hate that I'm even saying this out loud.",
+          expression: "shy",
         },
         {
           speaker: "You",
-          text: "What do you say?",
+          text: "What do you do?",
           choices: [
             {
-              text: "Jealous? I'm just admiring the view. (Flirt/Lust Hint)",
+              text: "Stay and comfort her.",
               affectionChange: 2,
-              moodChange: 1,
-              nextDialogueId: "ruby_event_3_flirt",
+              trustChange: 1,
+              setFlags: ["rubyBarComforted"],
+              nextDialogueId: "ruby_event_3_comfort",
             },
             {
-              text: "You're a great teacher. (Sincere/Affectionate)",
-              affectionChange: 2,
-              moodChange: 1,
-              nextDialogueId: "ruby_event_3_sincere",
+              text: "Tell her you cannot get involved and leave.",
+              affectionChange: 0,
+              trustChange: -1,
+              setFlags: ["rubyBarWalkedAway"],
+              nextDialogueId: "ruby_event_3_walk_away",
             },
           ],
         },

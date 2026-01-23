@@ -167,6 +167,124 @@ const rubyEvent3Sincere: Dialogue = {
   ],
 };
 
+const rubyEvent3Comfort: Dialogue = {
+  id: "ruby_event_3_comfort",
+  lines: [
+    { speaker: "You", text: "Hey. I'm here. You don't have to carry this alone." },
+    {
+      speaker: null,
+      text: "You slide closer, lowering your voice so it's just the two of you inside the noise.",
+    },
+    { speaker: "Ruby", text: "I hate crying in public.", expression: "shy" },
+    {
+      speaker: "You",
+      text: "Then don't. Breathe. I'll sit here. I'll make sure nobody bothers you.",
+    },
+    {
+      speaker: null,
+      text: "She exhales, shaky, then presses her knuckles to her mouth like she can hold the tears back.",
+    },
+    {
+      speaker: "Ruby",
+      text: "He keeps saying it's just business. Like I'm a product. Like if I loved him I'd do it.",
+      expression: "sad",
+    },
+    {
+      speaker: "Ruby",
+      text: "He says he believes in me. That he sees my potential. And then he tells me I'm wasting it by saying no.",
+      expression: "sad",
+    },
+    {
+      speaker: "Ruby",
+      text: "I start to hear his voice in my head even when he's not there.",
+      expression: "sad",
+    },
+    { speaker: "You", text: "That's not love. That's control." },
+    {
+      speaker: null,
+      text: "She nods once, like she's been waiting for someone to say it out loud.",
+    },
+    {
+      speaker: "Ruby",
+      text: "I act like I'm tough all day. With clients, with everyone. But I'm tired of being tough.",
+      expression: "shy",
+    },
+    {
+      speaker: "Ruby",
+      text: "I'm tired of performing for him, for the gym, for every room I walk into.",
+      expression: "shy",
+    },
+    { speaker: "You", text: "You don't have to perform with me." },
+    {
+      speaker: null,
+      text: "She breaks then, quiet and full, shoulders shaking as she leans in.",
+    },
+    { speaker: "You", text: "Hey. It's okay. I got you." },
+    {
+      speaker: null,
+      text: "You keep your arm around her until the shaking slows and her breathing steadies.",
+    },
+    {
+      speaker: "Ruby",
+      text: "Thanks for not telling me what to do. Thanks for just... staying.",
+      expression: "shy",
+    },
+    { speaker: "You", text: "Anytime. We can take this one step at a time." },
+    {
+      speaker: null,
+      text: "She nods, fingers curled around the edge of your sleeve like it's a lifeline.",
+    },
+    {
+      speaker: "Ruby",
+      text: "Can we just sit here for a minute? I don't want to go home yet.",
+      expression: "neutral",
+    },
+  ],
+};
+
+const rubyEvent3WalkAway: Dialogue = {
+  id: "ruby_event_3_walk_away",
+  lines: [
+    { speaker: "You", text: "I'm sorry, Ruby. I can't get in the middle of this." },
+    { speaker: "Ruby", text: "Yeah. That's fair.", expression: "neutral" },
+    {
+      speaker: null,
+      text: "She wipes her face fast, like she's embarrassed the tears showed at all.",
+    },
+    {
+      speaker: "Ruby",
+      text: "I shouldn't have pulled you into it.",
+      expression: "sad",
+    },
+    { speaker: "You", text: "I hope things get better." },
+    {
+      speaker: null,
+      text: "She forces a small smile that doesn't reach her eyes.",
+    },
+    {
+      speaker: "Ruby",
+      text: "Me too. Drive safe, okay?",
+      expression: "neutral",
+    },
+    {
+      speaker: null,
+      text: "You step away. The music swells back up between you, warm and loud and indifferent.",
+    },
+    {
+      speaker: null,
+      text: "At the door you pause, hand on the handle, and hear her take a slow, shaky breath.",
+    },
+    {
+      speaker: null,
+      text: "You could turn around. You don't.",
+    },
+    {
+      speaker: null,
+      text: "Outside, the night air is cold. The text you don't send sits heavy in your pocket.",
+    },
+  ],
+};
+
 export const rubyDialogues: Record<string, Dialogue> = {
   Chat: {
     id: "ruby_chat",
@@ -226,4 +344,6 @@ export const rubyDialogues: Record<string, Dialogue> = {
   ruby_event_2_break: rubyEvent2Break,
   ruby_event_3_flirt: rubyEvent3Flirt,
   ruby_event_3_sincere: rubyEvent3Sincere,
+  ruby_event_3_comfort: rubyEvent3Comfort,
+  ruby_event_3_walk_away: rubyEvent3WalkAway,
 };
