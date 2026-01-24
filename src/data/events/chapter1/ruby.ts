@@ -241,39 +241,49 @@ export const rubyEvents: CharacterEvent[] = [
         },
         {
           speaker: "Ruby",
-          text: "Hey. Sorry for the weird text. I just needed to get out of my head.",
+          text: "Hey... *hic*... sorry for the weird text. I just... I really needed to get out of my head.",
+          expression: "neutral",
+        },
+        {
+          speaker: "Ruby",
+          text: "I couldn't call my friends... *hic*. They all know him. They'd just... make it a thing.",
+          expression: "sad",
+        },
+        {
+          speaker: "Ruby",
+          text: "You're the only one who's... removed from it all. Safe.",
           expression: "neutral",
         },
         {
           speaker: null,
-          text: "She tries for her usual grin, but it slips fast.",
+          text: "She tries for her usual grin, but it slips fast. Her eyes are glassy, unfocused.",
         },
         {
           speaker: "Ruby",
-          text: "My boyfriend's been in my head nonstop. He keeps tearing me down, then acting like he's helping.",
+          text: "My boyfriend... he's been in my head nonstop. Keeps tearing me down... then acting like he's helping.",
           expression: "annoyed",
         },
         {
           speaker: "Ruby",
-          text: "Now he's pushing me to start an OnlyFans or go full pornstar, like I'm just content he can cash out on.",
+          text: "Now he's pushing me to do things... things I don't want to do. Like I'm just... content he can cash out on.",
           expression: "annoyed",
         },
         {
           speaker: null,
-          text: "Her voice cracks. The tough coach act falls apart.",
+          text: "Her voice cracks, slurring slightly. The tough coach act falls apart.",
         },
         {
           speaker: "Ruby",
-          text: "I know I can handle myself, but he makes me feel small. Like I'm stupid for not doing what he wants.",
+          text: "I know I can handle myself... usually. But he makes me feel small. Like I'm stupid for not... for not listening.",
           expression: "shy",
         },
         {
           speaker: null,
-          text: "She wipes at her eyes, then the tears start anyway.",
+          text: "She wipes at her eyes aggressively, then the tears start anyway.",
         },
         {
           speaker: "Ruby",
-          text: "I hate that it gets to me. I hate that I'm even saying this out loud.",
+          text: "I hate that it gets to me. I hate that I'm even saying this... out loud.",
           expression: "shy",
         },
         {

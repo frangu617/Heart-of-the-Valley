@@ -98,8 +98,17 @@ const rubyEvent2Push: Dialogue = {
     },
     {
       speaker: "Ruby",
-      text: "Just... keep that energy. I can't deal with anyone wasting my time today.",
+      text: "I... sorry. I didn't mean to snap.",
       expression: "sad",
+    },
+    {
+      speaker: "Ruby",
+      text: "I just... I have to go.",
+      expression: "sad",
+    },
+    {
+      speaker: null,
+      text: "She grabs her bag and walks away quickly, leaving you alone by the rack, wondering what just happened.",
     },
   ],
 };
@@ -170,28 +179,28 @@ const rubyEvent3Sincere: Dialogue = {
 const rubyEvent3Comfort: Dialogue = {
   id: "ruby_event_3_comfort",
   lines: [
-    { speaker: "You", text: "Hey. I'm here. You don't have to carry this alone." },
+    { speaker: "You", text: "Hey. I... uh, I'm here. You don't have to do this alone." },
     {
       speaker: null,
-      text: "You slide closer, lowering your voice so it's just the two of you inside the noise.",
+      text: "You slide closer, feeling a bit out of your depth but wanting to help. You lower your voice so it's just the two of you inside the noise.",
     },
-    { speaker: "Ruby", text: "I hate crying in public.", expression: "shy" },
+    { speaker: "Ruby", text: "I... I hate crying in public.", expression: "shy" },
     {
       speaker: "You",
-      text: "Then don't. Breathe. I'll sit here. I'll make sure nobody bothers you.",
+      text: "Right. Okay. Just... breathe? I'll sit right here. I'll block the view so nobody sees.",
     },
     {
       speaker: null,
-      text: "She exhales, shaky, then presses her knuckles to her mouth like she can hold the tears back.",
+      text: "She exhales, shaky, and leans into your side immediately, as if her legs gave out.",
     },
     {
       speaker: "Ruby",
-      text: "He keeps saying it's just business. Like I'm a product. Like if I loved him I'd do it.",
+      text: "He keeps saying it's just... business. Like I'm a product. Like if I loved him I'd... I'd just do it.",
       expression: "sad",
     },
     {
       speaker: "Ruby",
-      text: "He says he believes in me. That he sees my potential. And then he tells me I'm wasting it by saying no.",
+      text: "He says he believes in me. That he sees my potential. And then... then he tells me I'm wasting it by saying no.",
       expression: "sad",
     },
     {
@@ -199,14 +208,14 @@ const rubyEvent3Comfort: Dialogue = {
       text: "I start to hear his voice in my head even when he's not there.",
       expression: "sad",
     },
-    { speaker: "You", text: "That's not love. That's control." },
+    { speaker: "You", text: "That sounds... that doesn't sound like love. That sounds like he's just trying to control you." },
     {
       speaker: null,
-      text: "She nods once, like she's been waiting for someone to say it out loud.",
+      text: "She nods, pressing her forehead against your shoulder, hiding her face.",
     },
     {
       speaker: "Ruby",
-      text: "I act like I'm tough all day. With clients, with everyone. But I'm tired of being tough.",
+      text: "I act like I'm tough all day. With clients... with everyone. But I'm... I'm tired of being tough.",
       expression: "shy",
     },
     {
@@ -214,30 +223,38 @@ const rubyEvent3Comfort: Dialogue = {
       text: "I'm tired of performing for him, for the gym, for every room I walk into.",
       expression: "shy",
     },
-    { speaker: "You", text: "You don't have to perform with me." },
+    { speaker: "You", text: "You don't have to... do that with me. The performing thing. You can just be... you." },
     {
       speaker: null,
-      text: "She breaks then, quiet and full, shoulders shaking as she leans in.",
+      text: "She breaks then, quiet and full, clutching your shirt tightly as she cries.",
     },
-    { speaker: "You", text: "Hey. It's okay. I got you." },
+    { speaker: "You", text: "Hey. It's... it's okay. I'm not going anywhere." },
     {
       speaker: null,
-      text: "You keep your arm around her until the shaking slows and her breathing steadies.",
+      text: "You awkwardly pat her back, unsure what to do with your hands, but she melts into the touch anyway.",
     },
     {
       speaker: "Ruby",
       text: "Thanks for not telling me what to do. Thanks for just... staying.",
       expression: "shy",
     },
-    { speaker: "You", text: "Anytime. We can take this one step at a time." },
+    { speaker: "You", text: "Anytime. We can... figure it out. One step at a time." },
     {
       speaker: null,
-      text: "She nods, fingers curled around the edge of your sleeve like it's a lifeline.",
+      text: "She doesn't let go of your shirt. She looks up, eyes red but searching yours.",
     },
     {
       speaker: "Ruby",
-      text: "Can we just sit here for a minute? I don't want to go home yet.",
+      text: "Don't leave yet. Please. I just... I can't go home right now. Just stay?",
       expression: "neutral",
+    },
+    {
+      speaker: "You",
+      text: "I'm not going anywhere. We can stay as long as you need.",
+    },
+    {
+      speaker: null,
+      text: "You signal the bartender for another round of water. The two of you sit in the booth for some time, the noise of the bar fading into the background as you just let her exist without expectations.",
     },
   ],
 };
@@ -276,11 +293,61 @@ const rubyEvent3WalkAway: Dialogue = {
     },
     {
       speaker: null,
-      text: "You could turn around. You don't.",
+      text: "You could turn around...",
+      choices: [
+        {
+          text: "Turn around (Comfort her)",
+          nextDialogueId: "ruby_event_3_turn_around",
+          affectionChange: 1,
+          setFlags: ["rubyBarComforted"],
+        },
+        {
+          text: "Keep walking",
+          nextDialogueId: "ruby_event_3_really_leave",
+        },
+      ],
+    },
+  ],
+};
+
+const rubyEvent3ReallyLeave: Dialogue = {
+  id: "ruby_event_3_really_leave",
+  lines: [
+    {
+      speaker: null,
+      text: "You push the door open and step out. You don't look back.",
     },
     {
       speaker: null,
       text: "Outside, the night air is cold. The text you don't send sits heavy in your pocket.",
+    },
+  ],
+};
+
+const rubyEvent3TurnAround: Dialogue = {
+  id: "ruby_event_3_turn_around",
+  lines: [
+    {
+      speaker: null,
+      text: "You let go of the handle. You can't just leave her like this.",
+    },
+    {
+      speaker: null,
+      text: "You turn back and slide into the booth across from her. She looks up, eyes wide and wet.",
+    },
+    {
+      speaker: "Ruby",
+      text: "You... you came back?",
+      expression: "surprised",
+    },
+    {
+      speaker: "You",
+      text: "Yeah. I couldn't leave you alone.",
+    },
+    {
+      speaker: null,
+      text: "She lets out a shuddering breath and nods.",
+      nextDialogueId: "ruby_event_3_comfort",
     },
   ],
 };
@@ -346,4 +413,6 @@ export const rubyDialogues: Record<string, Dialogue> = {
   ruby_event_3_sincere: rubyEvent3Sincere,
   ruby_event_3_comfort: rubyEvent3Comfort,
   ruby_event_3_walk_away: rubyEvent3WalkAway,
+  ruby_event_3_really_leave: rubyEvent3ReallyLeave,
+  ruby_event_3_turn_around: rubyEvent3TurnAround,
 };
