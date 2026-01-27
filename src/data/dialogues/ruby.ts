@@ -304,6 +304,7 @@ const rubyEvent3WalkAway: Dialogue = {
         {
           text: "Keep walking",
           nextDialogueId: "ruby_event_3_really_leave",
+          affectionChange: 0,
         },
       ],
     },
