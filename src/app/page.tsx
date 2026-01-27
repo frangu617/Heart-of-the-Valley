@@ -1475,43 +1475,6 @@ const spendTime = (amount: number) => {
             <div className="container mx-auto px-4 flex justify-center items-center">
               <span className="sr-only">Heart of the Valley</span>
               <div className="flex gap-2 md:gap-3 items-center">
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setShowWhereMenu((prev) => !prev)}
-                    className="bg-white/30 hover:bg-white/40 ring-2 ring-white/60 backdrop-blur-sm px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 shadow-lg"
-                    aria-haspopup="menu"
-                    aria-expanded={showWhereMenu}
-                    aria-label={`Where to. Current location: ${currentLocation}`}
-                    title="Where to"
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="h-5 w-5"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M12 21s-6-4.4-6-10a6 6 0 1 1 12 0c0 5.6-6 10-6 10z" />
-                      <circle cx="12" cy="11" r="2.5" />
-                    </svg>
-                    <svg
-                      viewBox="0 0 20 20"
-                      className={`h-4 w-4 transition-transform ${
-                        showWhereMenu ? "rotate-180" : ""
-                      }`}
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M5 7l5 5 5-5" />
-                    </svg>
-                  </button>
-                </div>
                 <button
                   type="button"
                   onClick={() => setShowPhone(true)}
@@ -1557,57 +1520,6 @@ const spendTime = (amount: number) => {
                 </button>
               </div>
             </div>
-            {showWhereMenu && (
-              <div className="container mx-auto px-4 pb-4">
-                <div
-                  className={`relative rounded-2xl shadow-xl p-3 md:p-4 border-2 ${
-                    darkMode
-                      ? "bg-gray-800 border-purple-700"
-                      : "bg-white border-purple-100"
-                  } transition-colors duration-300`}
-                >
-                  <div
-                    className={`absolute inset-0 rounded-2xl bg-black/60 pointer-events-none transition-opacity duration-200 z-10 ${
-                      isLocationTransitioning ? "opacity-100" : "opacity-0"
-                    }`}
-                  />
-                  <div className="flex items-center justify-between mb-3">
-                    <h2
-                      className={`text-sm font-semibold ${
-                        darkMode ? "text-purple-200" : "text-purple-800"
-                      }`}
-                    >
-                      Where to
-                    </h2>
-                    <span className="text-xs opacity-80">
-                      Current: {currentLocation}
-                    </span>
-                  </div>
-                  {availableLocations.length === 0 ? (
-                    <div className="text-sm opacity-80">No nearby locations.</div>
-                  ) : (
-                    <div className="max-h-[70vh] overflow-y-auto">
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-                        {availableLocations.map((loc) => (
-                          <LocationCard
-                            key={loc.name}
-                            location={loc}
-                            onMove={(name) => {
-                              setShowWhereMenu(false);
-                              moveTo(name);
-                            }}
-                            girls={girls}
-                            darkMode={darkMode}
-                            scheduledEncounters={scheduledEncounters}
-                            pendingEvents={pendingEvents}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
           </>
         ) : (
           <div className="container mx-auto px-4 flex justify-between items-center">
@@ -1895,6 +1807,80 @@ const spendTime = (amount: number) => {
                     onLogWorkout={logWorkout}
                     onAdjustGirlStats={applyGirlStatDelta}
                   />
+                )}
+                <button
+                  type="button"
+                  onClick={() => setShowWhereMenu((prev) => !prev)}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 shadow-md transition-colors ${
+                    darkMode
+                      ? "bg-gray-800 border-purple-700 text-purple-200"
+                      : "bg-white border-purple-200 text-purple-800"
+                  }`}
+                  aria-expanded={showWhereMenu}
+                  aria-label="Where to go"
+                >
+                  <span className="flex items-center gap-2">
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12 21s7-7.4 7-12a7 7 0 0 0-14 0c0 4.6 7 12 7 12z" />
+                      <circle cx="12" cy="9" r="2.5" />
+                    </svg>
+                    <span className="text-sm font-semibold">Where to go?</span>
+                  </span>
+                  <span className="flex items-center gap-2 text-xs opacity-80">
+                    <span>{currentLocation}</span>
+                    <svg
+                      viewBox="0 0 20 20"
+                      className={`h-4 w-4 transition-transform ${
+                        showWhereMenu ? "rotate-180" : ""
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M5 7l5 5 5-5" />
+                    </svg>
+                  </span>
+                </button>
+                {showWhereMenu && (
+                  <div
+                    className={`relative flex flex-col gap-3 rounded-2xl shadow-xl p-4 border-2 ${
+                      darkMode
+                        ? "bg-gray-800 border-purple-700"
+                        : "bg-white border-purple-100"
+                    } transition-colors duration-300`}
+                  >
+                    <div
+                      className={`absolute inset-0 rounded-2xl bg-black/60 pointer-events-none transition-opacity duration-200 z-10 ${
+                        isLocationTransitioning ? "opacity-100" : "opacity-0"
+                      }`}
+                    />
+                    <div className="grid grid-cols-2 gap-3">
+                      {availableLocations.map((loc) => (
+                        <LocationCard
+                          key={loc.name}
+                          location={loc}
+                          onMove={(locationName) => {
+                            setShowWhereMenu(false);
+                            moveTo(locationName);
+                          }}
+                          girls={girls}
+                          darkMode={darkMode}
+                          scheduledEncounters={scheduledEncounters}
+                          pendingEvents={pendingEvents}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             )}
