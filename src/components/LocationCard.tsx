@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Location } from "../data/locations";
 import { Girl } from "../data/characters";
-import { getLocationImagePath } from "../lib/locationImages";
+import { getLocationImagePath } from "../lib/images";
 
 interface ScheduledEncounter {
   characterName: string;

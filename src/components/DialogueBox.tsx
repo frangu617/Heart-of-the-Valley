@@ -6,7 +6,7 @@ import {
   DialogueChoiceCondition,
 } from "../data/dialogues";
 import { PlayerStats, GirlStats } from "@/data/characters";
-import { getCharacterImage } from "@/lib/characterImages";
+import { getCharacterImage } from "@/lib/images";
 import { Girl } from "@/data/characters";
 import { getTimeOfDay } from "@/lib/time";
 

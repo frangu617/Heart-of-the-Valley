@@ -27,6 +27,61 @@ interface Props {
 
 type PhoneTab = "stats" | "contacts" | "gallery" | "messages" | "todo";
 
+type StatBarProps = {
+  label: string;
+  value: number;
+  icon: string;
+  max?: number;
+  darkMode: boolean;
+};
+
+const getStatColor = (value: number, max: number = 100) => {
+  const percentage = (value / max) * 100;
+  if (percentage >= 70) return "bg-green-500";
+  if (percentage >= 40) return "bg-yellow-500";
+  return "bg-red-500";
+};
+
+const StatBar = ({
+  label,
+  value,
+  icon,
+  max = 100,
+  darkMode,
+}: StatBarProps) => (
+  <div className="space-y-1">
+    <div className="flex justify-between items-center">
+      <span
+        className={`text-sm font-medium ${
+          darkMode ? "text-gray-300" : "text-gray-700"
+        }`}
+      >
+        {icon} {label}
+      </span>
+      <span
+        className={`text-sm font-bold ${
+          darkMode ? "text-purple-400" : "text-purple-600"
+        }`}
+      >
+        {value}
+      </span>
+    </div>
+    <div
+      className={`w-full rounded-full h-2 overflow-hidden ${
+        darkMode ? "bg-gray-700" : "bg-gray-200"
+      }`}
+    >
+      <div
+        className={`h-full rounded-full transition-all duration-300 ${getStatColor(
+          value,
+          max
+        )}`}
+        style={{ width: `${Math.min((value / max) * 100, 100)}%` }}
+      />
+    </div>
+  </div>
+);
+
 export default function PhoneMenu({
   player,
   hour,
@@ -51,57 +106,6 @@ export default function PhoneMenu({
   const timeOfDay = getTimeOfDay(hour);
   const timeOfDayLabel =
     timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1);
-
-  const getStatColor = (value: number, max: number = 100) => {
-    const percentage = (value / max) * 100;
-    if (percentage >= 70) return "bg-green-500";
-    if (percentage >= 40) return "bg-yellow-500";
-    return "bg-red-500";
-  };
-
-  const StatBar = ({
-    label,
-    value,
-    icon,
-    max = 100,
-  }: {
-    label: string;
-    value: number;
-    icon: string;
-    max?: number;
-  }) => (
-    <div className="space-y-1">
-      <div className="flex justify-between items-center">
-        <span
-          className={`text-sm font-medium ${
-            darkMode ? "text-gray-300" : "text-gray-700"
-          }`}
-        >
-          {icon} {label}
-        </span>
-        <span
-          className={`text-sm font-bold ${
-            darkMode ? "text-purple-400" : "text-purple-600"
-          }`}
-        >
-          {value}
-        </span>
-      </div>
-      <div
-        className={`w-full rounded-full h-2 overflow-hidden ${
-          darkMode ? "bg-gray-700" : "bg-gray-200"
-        }`}
-      >
-        <div
-          className={`h-full rounded-full transition-all duration-300 ${getStatColor(
-            value,
-            max
-          )}`}
-          style={{ width: `${Math.min((value / max) * 100, 100)}%` }}
-        />
-      </div>
-    </div>
-  );
 
   return (
     <div
@@ -157,22 +161,45 @@ export default function PhoneMenu({
                 Your Stats
               </h3>
 
-              <StatBar label="Energy" value={player.energy} icon="⚡" />
-              <StatBar label="Mood" value={player.mood} icon="😊" />
-              <StatBar label="Hunger" value={player.hunger} icon="🍔" />
+              <StatBar
+                label="Energy"
+                value={player.energy}
+                icon="⚡"
+                darkMode={darkMode}
+              />
+              <StatBar
+                label="Mood"
+                value={player.mood}
+                icon="😊"
+                darkMode={darkMode}
+              />
+              <StatBar
+                label="Hunger"
+                value={player.hunger}
+                icon="🍔"
+                darkMode={darkMode}
+              />
               <StatBar
                 label="Fitness"
                 value={player.fitness}
                 icon="🏋️"
                 max={50}
+                darkMode={darkMode}
               />
               <StatBar
                 label="Intelligence"
                 value={player.intelligence}
                 icon="🧠"
                 max={50}
+                darkMode={darkMode}
               />
-              <StatBar label="Style" value={player.style} icon="💅" max={50} />
+              <StatBar
+                label="Style"
+                value={player.style}
+                icon="💅"
+                max={50}
+                darkMode={darkMode}
+              />
 
               <div
                 className={`rounded-xl p-4 border-2 ${

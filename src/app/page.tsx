@@ -18,8 +18,7 @@ import PhoneMenu from "../components/PhoneMenu";
 
 // Lib
 import { getScheduledLocation } from "../lib/schedule";
-import { getCharacterImage } from "../lib/characterImages";
-import { getLocationBackground } from "../lib/locationImages";
+import { getCharacterImage, getLocationBackground } from "../lib/images";
 import { checkRandomEvent } from "../lib/randomEventSystem";
 import { getCharacterEvents } from "../data/events/chapter1/index";
 import { checkEventConditions, isEventOnCooldown } from "../lib/eventSystem";
@@ -29,7 +28,7 @@ import { applyPlayerStatDelta } from "../lib/playerStats";
 
 // Data / Types
 
-import { locationGraph } from "../data/locations";
+import { locationDescriptions, locationGraph } from "../data/locations";
 import {
   PlayerStats,
   defaultPlayerStats,
@@ -44,7 +43,6 @@ import {
   MAX_HOUR,
   getNextDay,
 } from "../data/gameConstants";
-import { locationDescriptions } from "../data/locationDescriptions";
 import {
   introDialogue,
   characterDialogues,
@@ -60,7 +58,7 @@ import type {
   CharacterEventState,
   EventHistory,
   GameplayFlag,
-} from "../data/events/chapter1/types";
+} from "../data/events/types";
 import { DialogueChoice } from "../data/dialogues";
 
 type ScheduledEncounter = {
@@ -141,6 +139,14 @@ export default function GamePage() {
   const [gameplayFlags, setGameplayFlags] = useState<Set<GameplayFlag>>(
     new Set()
   );
+  const [dailyWorkoutState, setDailyWorkoutState] =
+    useState<DailyWorkoutState>({
+      day: START_DAY,
+      total: 0,
+      withRuby: 0,
+      withoutRuby: 0,
+    });
+  const [rubyWorkoutTotal, setRubyWorkoutTotal] = useState<number>(0);
 
   const getProgressionCount = useCallback(
     (girlName: string) => {
@@ -243,14 +249,6 @@ export default function GamePage() {
   const [interactionHistory, setInteractionHistory] = useState<
     Record<string, Set<string>>
   >({});
-  const [dailyWorkoutState, setDailyWorkoutState] =
-    useState<DailyWorkoutState>({
-      day: START_DAY,
-      total: 0,
-      withRuby: 0,
-      withoutRuby: 0,
-    });
-  const [rubyWorkoutTotal, setRubyWorkoutTotal] = useState<number>(0);
 
   type GameState =
     | "mainMenu"
@@ -522,7 +520,14 @@ export default function GamePage() {
           stats: clampGirlStatsToCaps(girl.name, mergedStats),
         };
       });
-  }, [dayOfWeek, hour, girlStatsOverrides, characterUnlocks, clampGirlStatsToCaps]);
+  }, [
+    dayOfWeek,
+    hour,
+    girlStatsOverrides,
+    characterUnlocks,
+    clampGirlStatsToCaps,
+    gameplayFlags,
+  ]);
 
   useEffect(() => {
     if (selectedGirl) {

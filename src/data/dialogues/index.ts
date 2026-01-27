@@ -60,12 +60,16 @@ export type Dialogue = {
 
 // Import all character dialogues
 import { irisDialogues } from "./iris";
+import { irisStoryDialogues } from "../events/chapter1/iris";
 import { dawnDialogues } from "./dawn";
 import { gwenDialogues } from "./gwen";
+import { gwenStoryDialogues } from "../events/chapter1/gwen";
 import { yumiDialogues } from "./yumi";
 import { rubyDialogues } from "./ruby";
+import { rubyStoryDialogues } from "../events/chapter1/ruby";
+import { yumiStoryDialogues } from "../events/chapter1/yumi";
 import { introDialogue } from "./intro";
-import { GameplayFlag } from "../events";
+import type { GameplayFlag } from "../events/types";
 
 // Export intro
 export { introDialogue };
@@ -81,11 +85,11 @@ export { introDialogue };
 
 // Combine character dialogues
 export const characterDialogues: Record<string, Record<string, Dialogue>> = {
-  Iris: irisDialogues,
+  Iris: { ...irisDialogues, ...irisStoryDialogues },
   Dawn: dawnDialogues,
-  Gwen: gwenDialogues,
-  Yumi: yumiDialogues,
-  Ruby: rubyDialogues,
+  Gwen: { ...gwenDialogues, ...gwenStoryDialogues },
+  Yumi: { ...yumiDialogues, ...yumiStoryDialogues },
+  Ruby: { ...rubyDialogues, ...rubyStoryDialogues },
 };
 
 // Condition for type of dialogue choices

@@ -1,4 +1,4 @@
-import { Dialogue } from "./index";
+import type { Dialogue } from "./index";
 
 export const introDialogue: Dialogue = {
   id: "intro",

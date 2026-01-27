@@ -9,14 +9,14 @@ import {
   Dialogue,
 } from "../data/dialogues/index";
 import { DayOfWeek } from "@/data/gameConstants";
-import { CharacterEventState, GameplayFlag } from "@/data/events/chapter1/types";
+import { CharacterEventState, GameplayFlag } from "@/data/events/types";
 import { findTriggeredEvent } from "@/lib/eventSystem";
 import { getCharacterEvents } from "@/data/events/chapter1";
 import { applyCharacterEventRewards } from "@/lib/rewards";
 // import { firstMeetingDialogues } from "../data/dialogues/index";
 import DatePlanner from "./DatePlanner";
-import { DateLocation } from "@/data/dates/types";
-import { getCharacterImage } from "@/lib/characterImages";
+import { DateLocation } from "@/data/dates";
+import { getCharacterImage } from "@/lib/images";
 import GiftModal from "./GiftModal";
 import { Gift, getGiftEntriesFromInventory } from "@/data/gifts";
 // import { get } from "http";

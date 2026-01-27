@@ -10,6 +10,61 @@ interface Props {
   onSave?: () => void;
 }
 
+type StatBarProps = {
+  label: string;
+  value: number;
+  icon: string;
+  max?: number;
+  darkMode: boolean;
+};
+
+const getStatColor = (value: number, max: number = 100) => {
+  const percentage = (value / max) * 100;
+  if (percentage >= 70) return "bg-green-500";
+  if (percentage >= 40) return "bg-yellow-500";
+  return "bg-red-500";
+};
+
+const StatBar = ({
+  label,
+  value,
+  icon,
+  max = 100,
+  darkMode,
+}: StatBarProps) => (
+  <div className="space-y-1">
+    <div className="flex justify-between items-center">
+      <span
+        className={`text-sm font-medium ${
+          darkMode ? "text-gray-300" : "text-gray-700"
+        }`}
+      >
+        {icon} {label}
+      </span>
+      <span
+        className={`text-sm font-bold ${
+          darkMode ? "text-purple-400" : "text-purple-600"
+        }`}
+      >
+        {value}
+      </span>
+    </div>
+    <div
+      className={`w-full rounded-full h-2 overflow-hidden ${
+        darkMode ? "bg-gray-700" : "bg-gray-200"
+      }`}
+    >
+      <div
+        className={`h-full rounded-full transition-all duration-300 ${getStatColor(
+          value,
+          max
+        )}`}
+        style={{ width: `${Math.min((value / max) * 100, 100)}%` }}
+      />
+    </div>
+  </div>
+);
+
 export default function StatsPanel({
   stats,
   hour,
@@ -20,57 +75,6 @@ export default function StatsPanel({
   const timeOfDay = getTimeOfDay(hour);
   const timeOfDayLabel =
     timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1);
-
-  const getStatColor = (value: number, max: number = 100) => {
-    const percentage = (value / max) * 100;
-    if (percentage >= 70) return "bg-green-500";
-    if (percentage >= 40) return "bg-yellow-500";
-    return "bg-red-500";
-  };
-
-  const StatBar = ({
-    label,
-    value,
-    icon,
-    max = 100,
-  }: {
-    label: string;
-    value: number;
-    icon: string;
-    max?: number;
-  }) => (
-    <div className="space-y-1">
-      <div className="flex justify-between items-center">
-        <span
-          className={`text-sm font-medium ${
-            darkMode ? "text-gray-300" : "text-gray-700"
-          }`}
-        >
-          {icon} {label}
-        </span>
-        <span
-          className={`text-sm font-bold ${
-            darkMode ? "text-purple-400" : "text-purple-600"
-          }`}
-        >
-          {value}
-        </span>
-      </div>
-      <div
-        className={`w-full rounded-full h-2 overflow-hidden ${
-          darkMode ? "bg-gray-700" : "bg-gray-200"
-        }`}
-      >
-        <div
-          className={`h-full rounded-full transition-all duration-300 ${getStatColor(
-            value,
-            max
-          )}`}
-          style={{ width: `${Math.min((value / max) * 100, 100)}%` }}
-        />
-      </div>
-    </div>
-  );
 
   return (
     <div
@@ -99,17 +103,45 @@ export default function StatsPanel({
           Your Stats
         </h3>
 
-        <StatBar label="Energy" value={stats.energy} icon="⚡" />
-        <StatBar label="Mood" value={stats.mood} icon="😊" />
-        <StatBar label="Hunger" value={stats.hunger} icon="🍔" />
-        <StatBar label="Fitness" value={stats.fitness} icon="🏋️" max={50} />
+        <StatBar
+          label="Energy"
+          value={stats.energy}
+          icon="⚡"
+          darkMode={darkMode}
+        />
+        <StatBar
+          label="Mood"
+          value={stats.mood}
+          icon="😊"
+          darkMode={darkMode}
+        />
+        <StatBar
+          label="Hunger"
+          value={stats.hunger}
+          icon="🍔"
+          darkMode={darkMode}
+        />
+        <StatBar
+          label="Fitness"
+          value={stats.fitness}
+          icon="🏋️"
+          max={50}
+          darkMode={darkMode}
+        />
         <StatBar
           label="Intelligence"
           value={stats.intelligence}
           icon="🧠"
           max={50}
+          darkMode={darkMode}
         />
-        <StatBar label="Style" value={stats.style} icon="💅" max={50} />
+        <StatBar
+          label="Style"
+          value={stats.style}
+          icon="💅"
+          max={50}
+          darkMode={darkMode}
+        />
       </div>
 
       {/* Money */}

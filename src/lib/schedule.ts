@@ -1,5 +1,5 @@
 // src/lib/schedule.ts
-import { characterSchedules } from "@/data/characterSchedules";
+import { characterSchedules } from "@/data/characters";
 import { DayOfWeek } from "@/data/gameConstants";
 
 /**

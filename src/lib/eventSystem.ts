@@ -5,7 +5,7 @@ import {
   EventHistory,
   CharacterEventState,
   GameplayFlag,
-} from "@/data/events/chapter1/types";
+} from "@/data/events/types";
 import { Girl, PlayerStats } from "@/data/characters";
 import { DayOfWeek } from "@/data/gameConstants";
 import { calculateGameTime } from "./time";

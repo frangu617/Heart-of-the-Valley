@@ -4,7 +4,7 @@ import { DayOfWeek } from "../data/gameConstants";
 import {
   locationActivities as activitiesMap,
   LocationActivity,
-} from "../data/LocationActivities";
+} from "../data/locations";
 import { GameplayFlag } from "@/data/events/types";
 import { applyPlayerStatDelta } from "@/lib/playerStats";
 import GiftModal from "./GiftModal";
