@@ -148,35 +148,6 @@ const rubyEvent2Break: Dialogue = {
   ],
 };
 
-const rubyEvent3Flirt: Dialogue = {
-  id: "ruby_event_3_flirt",
-  lines: [
-    { speaker: "You", text: "Just admiring the view. You work hard for it." },
-    {
-      speaker: null,
-      text: "Ruby laughs, a flush rising on her cheeks that isn't just from the exercise.",
-    },
-    {
-      speaker: "Ruby",
-      text: "Damn right I do. And if you keep working this hard, maybe you'll look half as good as me someday.",
-      expression: "excited",
-    },
-  ],
-};
-
-const rubyEvent3Sincere: Dialogue = {
-  id: "ruby_event_3_sincere",
-  lines: [
-    { speaker: "You", text: "I'm just impressed. You're a great teacher, Ruby." },
-    { speaker: null, text: "She lowers her arms, looking suddenly bashful." },
-    {
-      speaker: "Ruby",
-      text: "Oh. Well... thanks. I try. Most people just want a cheerleader, not a coach.",
-      expression: "shy",
-    },
-  ],
-};
-
 const rubyEvent3Comfort: Dialogue = {
   id: "ruby_event_3_comfort",
   lines: [
@@ -354,17 +325,137 @@ const rubyEvent3TurnAround: Dialogue = {
   ],
 };
 
+const rubyFinaleComforted: Dialogue = {
+  id: "ruby_finale_comforted",
+  lines: [
+    {
+      speaker: null,
+      text: "Ruby is pacing by the entrance of the gym. She looks nervous, checking her phone repeatedly.",
+    },
+    { speaker: "Ruby", text: "{playerName}. He's here. Outside.", expression: "shy" },
+    { speaker: "You", text: "Your boyfriend?" },
+    {
+      speaker: "Ruby",
+      text: "Ex-boyfriend. Or he will be in about five minutes. But... I don't want to do it alone.",
+      expression: "neutral",
+    },
+    {
+      speaker: "Ruby",
+      text: "You were there for me at the bar. Can you be there for me now? Just... stand with me?",
+      expression: "shy",
+    },
+    { speaker: "You", text: "Always. Let's go." },
+    {
+      speaker: null,
+      text: "You walk outside with her. A car is idling at the curb. A guy steps out—cocky, aggressive.",
+    },
+    {
+      speaker: null,
+      text: "He starts talking, but Ruby cuts him off. She steps forward, her voice shaking at first, then steadying.",
+    },
+    {
+      speaker: "Ruby",
+      text: "No. I'm done listening. I'm done being your project. We're finished.",
+      expression: "angry",
+    },
+    {
+      speaker: null,
+      text: "The guy looks at her, then at you standing beside her, arms crossed. He scoffs, shakes his head, and gets back in his car.",
+    },
+    {
+      speaker: null,
+      text: "As he drives away, Ruby lets out a breath she seems to have been holding for months.",
+    },
+    { speaker: "Ruby", text: "He's gone. It's actually over.", expression: "surprised" },
+    { speaker: "You", text: "You did good, Ruby." },
+    {
+      speaker: "Ruby",
+      text: "We did good.",
+      expression: "happy",
+    },
+    {
+      speaker: null,
+      text: "She turns to you, adrenaline and relief flooding her features. She laughs, a bright, free sound.",
+    },
+    {
+      speaker: null,
+      text: "Without warning, she throws her arms around your neck and kisses you. It's impulsive, joyful, and electric.",
+    },
+    {
+      speaker: null,
+      text: "She pulls back, breathless, her forehead resting against yours.",
+    },
+    { speaker: "Ruby", text: "I... I didn't plan that.", expression: "shy" },
+    { speaker: "Ruby", text: "But I'm definitely not taking it back.", expression: "happy" },
+  ],
+};
+
+const rubyFinaleIndependent: Dialogue = {
+  id: "ruby_finale_independent",
+  lines: [
+    {
+      speaker: null,
+      text: "The gym is nearly empty. You're packing up your bag when Ruby walks in.",
+    },
+    {
+      speaker: null,
+      text: "She looks different today. There's a new sharpness to her movements, a confidence that feels real, not performed.",
+    },
+    { speaker: "Ruby", text: "I did it.", expression: "happy" },
+    { speaker: "You", text: "Did what?" },
+    {
+      speaker: "Ruby",
+      text: "I stood up to him. I told him I'm not his project. I'm done.",
+      expression: "excited",
+    },
+    {
+      speaker: "Ruby",
+      text: "After you left me at the bar... I realized something. I can't wait for someone else to save me.",
+      expression: "neutral",
+    },
+    {
+      speaker: "Ruby",
+      text: "I had to save myself. So I did.",
+      expression: "happy",
+    },
+    { speaker: "You", text: "I'm proud of you, Ruby. Seriously." },
+    {
+      speaker: null,
+      text: "She beams, the praise landing differently now that she knows she earned it.",
+    },
+    {
+      speaker: "Ruby",
+      text: "I feel... light. Like I can finally breathe.",
+      expression: "excited",
+    },
+    {
+      speaker: null,
+      text: "She steps closer, caught up in the rush of her own victory.",
+    },
+    {
+      speaker: null,
+      text: "She grabs the front of your shirt and pulls you down into a kiss. It's fierce, claiming her own happiness.",
+    },
+    {
+      speaker: null,
+      text: "She pulls back, looking slightly surprised at her own boldness, but she doesn't retreat.",
+    },
+    { speaker: "Ruby", text: "I guess I'm done hesitating, too.", expression: "happy" },
+    { speaker: "Ruby", text: "See you tomorrow, {playerName}.", expression: "happy" },
+  ],
+};
+
 export const rubyStoryDialogues: Record<string, Dialogue> = {
   ruby_trainer_offer_accept: rubyTrainerOfferAccept,
   ruby_trainer_offer_decline: rubyTrainerOfferDecline,
   ruby_event_2_push: rubyEvent2Push,
   ruby_event_2_break: rubyEvent2Break,
-  ruby_event_3_flirt: rubyEvent3Flirt,
-  ruby_event_3_sincere: rubyEvent3Sincere,
   ruby_event_3_comfort: rubyEvent3Comfort,
   ruby_event_3_walk_away: rubyEvent3WalkAway,
   ruby_event_3_really_leave: rubyEvent3ReallyLeave,
   ruby_event_3_turn_around: rubyEvent3TurnAround,
+  ruby_finale_comforted: rubyFinaleComforted,
+  ruby_finale_independent: rubyFinaleIndependent,
 };
 
 export const rubyEvents: CharacterEvent[] = [
@@ -737,10 +828,10 @@ export const rubyEvents: CharacterEvent[] = [
     },
   },
   {
-    id: "ruby_chapter_1_finale",
-    name: "Chapter 1 Finale",
-    description: "Ruby breaks the tension with a kiss, then panics.",
-    priority: 200,
+    id: "ruby_event_4_call_to_action",
+    name: "The Ask",
+    description: "Ruby asks you to stand with her.",
+    priority: 205,
     repeatable: false,
     conditions: {
       minAffection: 20,
@@ -749,50 +840,113 @@ export const rubyEvents: CharacterEvent[] = [
       maxHour: 24,
       requiredLocation: "Gym",
       requiredPreviousEvents: ["ruby_event_4_tension"],
-      requiredFlags: ["rubyTrainerAccepted"],
+      requiredFlags: ["rubyTrainerAccepted", "rubyBarComforted"],
     },
     dialogue: {
-      id: "ruby_chapter_1_finale",
+      id: "ruby_event_4_call_to_action",
       lines: [
         {
           speaker: null,
-          text: "The gym is nearly empty. You're packing up your bag in the locker area when Ruby walks in.",
+          text: "The gym is quieter than usual. Ruby waves you over after your set, her phone in hand.",
         },
-        {
-          speaker: null,
-          text: "She walks straight up to you, no hesitation, no jokes.",
-        },
-        { speaker: "Ruby", text: "I can't focus.", expression: "neutral" },
-        { speaker: "You", text: "What?" },
         {
           speaker: "Ruby",
-          text: "I can't focus on my workout. I can't focus on my other clients. Because I keep thinking about earlier.",
+          text: "He keeps texting. I told him I need to talk. I'm going to end it.",
           expression: "neutral",
         },
-        { speaker: null, text: "She grabs the front of your shirt, yanking you forward." },
-        { speaker: "Ruby", text: "I need to get this out of my system.", expression: "annoyed" },
-        {
-          speaker: null,
-          text: "She kisses you hard, pushing you back against the lockers. It tastes like sports drink and adrenaline.",
-        },
-        {
-          speaker: null,
-          text: "Her hands roam over your shoulders, testing the muscles she helped build.",
-        },
-        { speaker: null, text: "Just as you start to respond, she shoves you away." },
-        { speaker: "Ruby", text: "Damn it.", expression: "surprised" },
         {
           speaker: "Ruby",
-          text: "I can't do this. I'm your trainer. This is... this is against the rules.",
-          expression: "surprised",
+          text: "I can do it, but I don't want to do it alone. Can you just be there?",
+          expression: "shy",
         },
-        { speaker: null, text: "She looks furious with herself." },
-        { speaker: "Ruby", text: "Forget this happened. Seriously.", expression: "annoyed" },
+        { speaker: "You", text: "Yeah. I'll be there." },
         {
-          speaker: null,
-          text: "She storms out of the locker room, leaving you leaning against the cold metal lockers.",
+          speaker: "Ruby",
+          text: "Thanks. Tonight. Outside the gym.",
+          expression: "happy",
         },
       ],
     },
+  },
+  {
+    id: "ruby_event_4_decision",
+    name: "The Decision",
+    description: "Ruby decides to handle it herself.",
+    priority: 205,
+    repeatable: false,
+    conditions: {
+      minAffection: 20,
+      minTrust: 0,
+      minHour: 0,
+      maxHour: 24,
+      requiredLocation: "Gym",
+      requiredPreviousEvents: ["ruby_event_4_tension"],
+      requiredFlags: ["rubyTrainerAccepted", "rubyBarWalkedAway"],
+      blockedByFlags: ["rubyBarComforted"],
+    },
+    dialogue: {
+      id: "ruby_event_4_decision",
+      lines: [
+        {
+          speaker: null,
+          text: "You spot Ruby by the water fountain. She looks focused, like she already made a decision.",
+        },
+        {
+          speaker: "Ruby",
+          text: "I wanted you to know... I'm ending it.",
+          expression: "neutral",
+        },
+        {
+          speaker: "Ruby",
+          text: "I'm not asking anyone to do it for me this time.",
+          expression: "neutral",
+        },
+        { speaker: "You", text: "You sure?" },
+        {
+          speaker: "Ruby",
+          text: "Yeah. If I wait for the right moment, I'll keep waiting.",
+          expression: "happy",
+        },
+        {
+          speaker: null,
+          text: "She squeezes your shoulder, then heads for the door.",
+        },
+      ],
+    },
+  },
+  {
+    id: "ruby_chapter_1_finale_comforted",
+    name: "Chapter 1 Finale (Together)",
+    description: "Ruby asks for your help to end things.",
+    priority: 200,
+    repeatable: false,
+    conditions: {
+      minAffection: 20,
+      minTrust: 0,
+      minHour: 0,
+      maxHour: 24,
+      requiredLocation: "Gym",
+      requiredPreviousEvents: ["ruby_event_4_call_to_action"],
+      requiredFlags: ["rubyTrainerAccepted", "rubyBarComforted"],
+    },
+    dialogue: rubyFinaleComforted,
+  },
+  {
+    id: "ruby_chapter_1_finale_independent",
+    name: "Chapter 1 Finale (Independent)",
+    description: "Ruby shares her victory with you.",
+    priority: 200,
+    repeatable: false,
+    conditions: {
+      minAffection: 20,
+      minTrust: 0,
+      minHour: 0,
+      maxHour: 24,
+      requiredLocation: "Gym",
+      requiredPreviousEvents: ["ruby_event_4_decision"],
+      requiredFlags: ["rubyTrainerAccepted", "rubyBarWalkedAway"],
+      blockedByFlags: ["rubyBarComforted"],
+    },
+    dialogue: rubyFinaleIndependent,
   },
 ];
