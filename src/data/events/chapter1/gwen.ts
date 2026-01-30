@@ -351,13 +351,18 @@ export const gwenEvents: CharacterEvent[] = [
     id: "gwen_hallway_intro_event",
     name: "Hallway Intro",
     description: "Meet Gwen for the first time in the hallway.",
+    quest: {
+      title: "Meet the Neighbor",
+      description:
+        "Check the hallway after you've met Iris, Yumi, and Ruby.",
+    },
     priority: 240,
     repeatable: false,
     conditions: {
-      minAffection: 0,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Hallway",
+      requiredFlags: ["hasMetIris", "hasMetYumi", "hasMetRuby"],
     },
     dialogue: {
       id: "gwen_hallway_intro_event",
@@ -446,7 +451,7 @@ export const gwenEvents: CharacterEvent[] = [
       ],
     },
     rewards: {
-      setFlags: ["hasMetGwen"],
+      setFlags: ["hasMetGwen", "gwenIntroDone"],
       unlockCharacters: ["Gwen"],
     },
   },
@@ -454,14 +459,18 @@ export const gwenEvents: CharacterEvent[] = [
     id: "gwen_event_2_door_mixup",
     name: "Door Mixup",
     description: "Gwen mistakes your door for hers after a late night.",
+    quest: {
+      title: "Late-Night Mixup",
+      description: "Be in the hallway late at night (10 PM–midnight).",
+    },
     priority: 235,
     repeatable: false,
     conditions: {
-      minAffection: 0,
+      minAffection: 5,
       minHour: 22,
       maxHour: 24,
       requiredLocation: "Hallway",
-      requiredPreviousEvents: ["gwen_hallway_intro_event"],
+      requiredFlags: ["gwenIntroDone"],
     },
     dialogue: {
       id: "gwen_event_2_door_mixup",
@@ -535,19 +544,26 @@ export const gwenEvents: CharacterEvent[] = [
         },
       ],
     },
+    rewards: {
+      setFlags: ["gwenDoorMixupDone"],
+    },
   },
   {
     id: "gwen_event_3_apology",
     name: "Quick Apology",
     description: "Gwen stops by after the door mixup.",
+    quest: {
+      title: "Gwen's Apology",
+      description: "Check the hallway during the day (8 AM–8 PM).",
+    },
     priority: 220,
     repeatable: false,
     conditions: {
-      minAffection: 0,
+      minAffection: 10,
       minHour: 8,
       maxHour: 20,
       requiredLocation: "Hallway",
-      requiredPreviousEvents: ["gwen_event_2_door_mixup"],
+      requiredFlags: ["gwenDoorMixupDone"],
     },
     dialogue: {
       id: "gwen_event_3_apology",
@@ -594,19 +610,26 @@ export const gwenEvents: CharacterEvent[] = [
         },
       ],
     },
+    rewards: {
+      setFlags: ["gwenApologyDone"],
+    },
   },
   {
     id: "gwen_event_4_rumor",
     name: "The Rumor",
     description: "You hear about a dancer at the strip club.",
+    quest: {
+      title: "A Bar Rumor",
+      description: "Visit the bar in the evening (6 PM–midnight).",
+    },
     priority: 210,
     repeatable: false,
     conditions: {
-      minAffection: 0,
+      minAffection: 10,
       minHour: 18,
       maxHour: 24,
       requiredLocation: "Bar",
-      requiredPreviousEvents: ["gwen_event_3_apology"],
+      requiredFlags: ["gwenApologyDone"],
     },
     dialogue: {
       id: "gwen_event_4_rumor",
@@ -633,19 +656,27 @@ export const gwenEvents: CharacterEvent[] = [
         },
       ],
     },
+    rewards: {
+      setFlags: ["gwenRumorHeard"],
+    },
   },
   {
     id: "gwen_event_5_reveal",
     name: "The Reveal",
     description: "The dancer turns out to be Gwen.",
+    quest: {
+      title: "Strip Club Visit",
+      description: "Go to the strip club late (8 PM–midnight).",
+    },
     priority: 205,
     repeatable: false,
     conditions: {
-      minAffection: 0,
+      minAffection: 10,
+      minLust: 5,
       minHour: 20,
       maxHour: 24,
       requiredLocation: "Strip Club",
-      requiredPreviousEvents: ["gwen_event_4_rumor"],
+      requiredFlags: ["gwenRumorHeard"],
     },
     dialogue: {
       id: "gwen_event_5_reveal",
@@ -704,20 +735,27 @@ export const gwenEvents: CharacterEvent[] = [
         },
       ],
     },
+    rewards: {
+      setFlags: ["gwenRevealDone"],
+    },
   },
   {
     id: "gwen_chapter_1_finale",
     name: "Chapter 1 Finale (Gwen Leads)",
     description: "Gwen sets the terms.",
+    quest: {
+      title: "Gwen's Terms",
+      description: "Check the hallway late (8 PM–midnight).",
+    },
     priority: 200,
     repeatable: false,
     conditions: {
-      minAffection: 0,
+      minAffection: 10,
+      minLust: 10,
       minHour: 20,
       maxHour: 24,
       requiredLocation: "Hallway",
-      requiredPreviousEvents: ["gwen_event_5_reveal"],
-      requiredFlags: ["gwenDomPath"],
+      requiredFlags: ["gwenDomPath", "gwenRevealDone"],
     },
     dialogue: {
       id: "gwen_chapter_1_finale",
@@ -770,15 +808,19 @@ export const gwenEvents: CharacterEvent[] = [
     id: "gwen_chapter_1_finale_sub",
     name: "Chapter 1 Finale (Keep Quiet)",
     description: "Gwen keeps it transactional.",
+    quest: {
+      title: "Keep Quiet",
+      description: "Check the hallway late (8 PM–midnight).",
+    },
     priority: 200,
     repeatable: false,
     conditions: {
-      minAffection: 0,
+      minAffection: 10,
+      minLust: 10,
       minHour: 20,
       maxHour: 24,
       requiredLocation: "Hallway",
-      requiredPreviousEvents: ["gwen_event_5_reveal"],
-      requiredFlags: ["gwenSubPath"],
+      requiredFlags: ["gwenSubPath", "gwenRevealDone"],
     },
     dialogue: {
       id: "gwen_chapter_1_finale_sub",

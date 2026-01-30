@@ -394,6 +394,7 @@ export const rubyEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 20,
+      minLust: 5,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Gym",
@@ -434,6 +435,7 @@ export const rubyEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 20,
+      minLust: 5,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Gym",
@@ -479,6 +481,7 @@ export const rubyEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 20,
+      minLust: 10,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Gym",
@@ -558,6 +561,7 @@ export const rubyEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 20,
+      minLust: 10,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Gym",

@@ -163,6 +163,12 @@ export function findTriggeredEvent(
     (h) => h.timesTriggered > 0
   ).length;
   const storyTriggeredToday = storyHistory.some((h) => h.lastTriggered.day === day);
+  const eventTriggeredToday =
+    eventState?.eventHistory.some((h) => h.lastTriggered.day === day) ?? false;
+
+  if (eventTriggeredToday) {
+    return null;
+  }
 
   // Sort by priority (highest first)
   const sortedEvents = [...events].sort((a, b) => b.priority - a.priority);

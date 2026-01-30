@@ -1261,6 +1261,12 @@ const spendTime = (amount: number) => {
       const storyTriggeredToday = storyHistory.some(
         (h) => h.lastTriggered.day === dayOfWeek
       );
+      const eventTriggeredToday = eventState.eventHistory.some(
+        (h) => h.lastTriggered.day === dayOfWeek
+      );
+      if (eventTriggeredToday) {
+        return;
+      }
       const sortedEvents = [...events].sort((a, b) => b.priority - a.priority);
       let triggerable: CharacterEvent | null = null;
 
