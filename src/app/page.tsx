@@ -1350,12 +1350,14 @@ const spendTime = (amount: number) => {
 
   const questItems = useMemo<QuestItem[]>(() => {
     const items: QuestItem[] = [];
+    const pendingByCharacter = new Set<string>();
 
     pendingEvents.forEach((pending) => {
       const events = getCharacterEvents(pending.characterName);
       const event = events.find((candidate) => candidate.id === pending.eventId);
       if (!event) return;
 
+      pendingByCharacter.add(pending.characterName);
       items.push({
         id: pending.eventId,
         title: event.quest?.title ?? event.name,
@@ -1366,8 +1368,100 @@ const spendTime = (amount: number) => {
       });
     });
 
+    // Add guide or placeholder for characters without a ready event
+    girls.forEach((girl) => {
+      if (pendingByCharacter.has(girl.name)) {
+        return;
+      }
+
+      const events = getCharacterEvents(girl.name);
+      const eventState = characterEventStates[girl.name] ?? {
+        characterName: girl.name,
+        eventHistory: [],
+        lastInteractionTime: 0,
+      };
+      const completedEvents =
+        eventState.eventHistory
+          .filter((h) => h.timesTriggered > 0)
+          .map((h) => h.eventId) || [];
+      const storyEventIds = new Set(
+        events.filter((event) => !event.repeatable).map((event) => event.id)
+      );
+      const storyHistory =
+        eventState.eventHistory.filter((h) => storyEventIds.has(h.eventId)) ||
+        [];
+      const completedStoryCount = storyHistory.filter(
+        (h) => h.timesTriggered > 0
+      ).length;
+
+      let guideEvent: CharacterEvent | null = null;
+      const sortedEvents = [...events].sort((a, b) => b.priority - a.priority);
+
+      for (const event of sortedEvents) {
+        if (!event.repeatable && completedEvents.includes(event.id)) {
+          continue;
+        }
+        if (!event.repeatable && completedStoryCount > 0) {
+          const requiredAffection = completedStoryCount * 5;
+          if (girl.stats.affection < requiredAffection) {
+            continue;
+          }
+        }
+
+        const relaxedConditions = { ...event.conditions };
+        delete relaxedConditions.minHour;
+        delete relaxedConditions.maxHour;
+        delete relaxedConditions.specificDay;
+        delete relaxedConditions.requiredLocation;
+
+        if (
+          checkEventConditions(
+            relaxedConditions,
+            girl,
+            player,
+            currentLocation,
+            dayOfWeek,
+            hour,
+            completedEvents,
+            gameplayFlags
+          )
+        ) {
+          guideEvent = event;
+          break;
+        }
+      }
+
+      if (guideEvent) {
+        items.push({
+          id: guideEvent.id,
+          title: guideEvent.quest?.title ?? guideEvent.name,
+          description: guideEvent.quest?.description,
+          location: guideEvent.conditions.requiredLocation,
+          characterName: girl.name,
+          priority: guideEvent.priority,
+        });
+        return;
+      }
+
+      items.push({
+        id: `todo_placeholder_${girl.name.toLowerCase().replace(/\s+/g, "_")}`,
+        title: `Get to know ${girl.name} better`,
+        characterName: girl.name,
+        priority: -1,
+      });
+    });
+
     return items.sort((a, b) => b.priority - a.priority);
-  }, [pendingEvents]);
+  }, [
+    pendingEvents,
+    girls,
+    characterEventStates,
+    gameplayFlags,
+    player,
+    dayOfWeek,
+    hour,
+    currentLocation,
+  ]);
 
   const hasInteractedToday = useCallback(
     (girlName: string, actionLabel: string) => {

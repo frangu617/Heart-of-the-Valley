@@ -272,7 +272,6 @@ export default function PhoneMenu({
                       `}
                     >
                       <div className="flex items-start gap-3">
-                        <div className="text-2xl">TODO</div>
                         <div className="flex-1">
                           <div
                             className={`font-bold ${
