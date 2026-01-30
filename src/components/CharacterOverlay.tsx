@@ -94,7 +94,7 @@ export default function CharacterOverlay({
     // Check if she accepts (random chance based on affection)
     const acceptanceChance = Math.min(
       95,
-      50 + girl.stats.affection / 2 + girl.stats.trust / 4
+      50 + girl.stats.affection / 2 + girl.stats.lust / 4
     );
     const roll = Math.random() * 100;
 
@@ -312,8 +312,6 @@ export default function CharacterOverlay({
               ? "💕"
               : key === "lust"
               ? "🔥"
-              : key === "trust"
-              ? "🤝"
               : key === "mood"
               ? "😊"
               : "💖";
@@ -430,10 +428,6 @@ export default function CharacterOverlay({
           <div className="flex justify-between items-center px-2 py-1 bg-yellow-50 rounded">
             <span className="font-semibold text-gray-700">😊 Mood</span>
             <span className="font-bold text-yellow-600">{girl.stats.mood}</span>
-          </div>
-          <div className="flex justify-between items-center px-2 py-1 bg-blue-50 rounded">
-            <span className="font-semibold text-gray-700">🤝 Trust</span>
-            <span className="font-bold text-blue-600">{girl.stats.trust}</span>
           </div>
           <div className="flex justify-between items-center px-2 py-1 bg-purple-50 rounded col-span-2">
             <span className="font-semibold text-gray-700">💖 Love</span>

@@ -4,7 +4,7 @@ Heart of the Valley is a narrative-driven dating sim built with Next.js. Manage 
 
 ## Features
 - Time management with a 24-hour day/night cycle and weekly schedules
-- Character relationships with affection, trust, love, lust, and mood
+- Character relationships with affection, love, lust, and mood
 - Player stats for energy, mood, hunger, fitness, intelligence, and style
 - Conditional story events and random encounters
 - Location-based activities with stat effects

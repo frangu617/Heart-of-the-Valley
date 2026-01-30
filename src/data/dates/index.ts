@@ -23,7 +23,6 @@ export type DateActivity = {
   // Requirements to unlock this activity
   requirements?: {
     minAffection?: number;
-    minTrust?: number;
     minLove?: number;
     minPlayerStat?: {
       stat: keyof PlayerStats;
@@ -109,7 +108,7 @@ export const dateActivitiesByLocation: Record<DateLocation, DateActivity[]> = {
             ],
           },
           effects: {
-            girlStats: { affection: 10, trust: 8, love: 5 },
+            girlStats: { affection: 10, love: 5 },
             playerStats: { mood: 15 },
           },
         },
@@ -171,7 +170,7 @@ export const dateActivitiesByLocation: Record<DateLocation, DateActivity[]> = {
             ],
           },
           effects: {
-            girlStats: { affection: 8, trust: 10, love: 5 },
+            girlStats: { affection: 8, love: 5 },
             playerStats: { intelligence: 1 },
           },
         },
@@ -249,7 +248,6 @@ export const dateActivitiesByLocation: Record<DateLocation, DateActivity[]> = {
       icon: "🚶",
       requirements: {
         minAffection: 30,
-        minTrust: 25,
       },
       outcomes: [
         {
@@ -298,7 +296,7 @@ export const dateActivitiesByLocation: Record<DateLocation, DateActivity[]> = {
             ],
           },
           effects: {
-            girlStats: { affection: 15, love: 10, trust: 8 },
+            girlStats: { affection: 15, love: 10 },
             playerStats: { mood: 20 },
           },
         },
@@ -367,7 +365,7 @@ export const dateActivitiesByLocation: Record<DateLocation, DateActivity[]> = {
             ],
           },
           effects: {
-            girlStats: { affection: 20, love: 15, trust: 10 },
+            girlStats: { affection: 20, love: 15 },
             playerStats: { mood: 25 },
             playerMoney: -100,
           },
@@ -402,7 +400,7 @@ export const dateActivitiesByLocation: Record<DateLocation, DateActivity[]> = {
             ],
           },
           effects: {
-            girlStats: { affection: 12, lust: 8, trust: 10 },
+            girlStats: { affection: 12, lust: 8 },
             playerStats: { mood: 15 },
             playerMoney: -30,
           },
@@ -506,7 +504,7 @@ export const dateActivitiesByLocation: Record<DateLocation, DateActivity[]> = {
             ],
           },
           effects: {
-            girlStats: { affection: 15, love: 12, trust: 10 },
+            girlStats: { affection: 15, love: 12 },
             playerStats: { mood: 20 },
             playerMoney: -25,
           },
@@ -538,7 +536,7 @@ export const dateActivitiesByLocation: Record<DateLocation, DateActivity[]> = {
             ],
           },
           effects: {
-            girlStats: { affection: 15, love: 12, trust: 10 },
+            girlStats: { affection: 15, love: 12 },
             playerStats: { mood: 20 },
             playerMoney: -25,
           },
@@ -570,7 +568,7 @@ export const dateActivitiesByLocation: Record<DateLocation, DateActivity[]> = {
             ],
           },
           effects: {
-            girlStats: { affection: 15, love: 12, trust: 10 },
+            girlStats: { affection: 15, love: 12 },
             playerStats: { mood: 20 },
             playerMoney: -25,
           },
@@ -602,7 +600,7 @@ export const dateActivitiesByLocation: Record<DateLocation, DateActivity[]> = {
             ],
           },
           effects: {
-            girlStats: { affection: 15, love: 12, trust: 10 },
+            girlStats: { affection: 15, love: 12 },
             playerStats: { mood: 20 },
             playerMoney: -25,
           },

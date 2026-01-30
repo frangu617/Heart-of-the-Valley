@@ -21,9 +21,6 @@ const formatGiftEffects = (effects: Gift["effects"]) => {
   if (typeof effects.lust === "number") {
     parts.push(`Lust ${effects.lust >= 0 ? "+" : ""}${effects.lust}`);
   }
-  if (typeof effects.trust === "number") {
-    parts.push(`Trust ${effects.trust >= 0 ? "+" : ""}${effects.trust}`);
-  }
   if (typeof effects.mood === "number") {
     parts.push(`Mood ${effects.mood >= 0 ? "+" : ""}${effects.mood}`);
   }

@@ -11,7 +11,6 @@ export type Interaction = {
     affection?: number;
     lust?: number;
     mood?: number;
-    trust?: number;
     love?: number;
   }; // effects on girl
   requiresItem?: string; // optional inventory requirement
@@ -31,7 +30,7 @@ export const interactionMenu: Interaction[] = [
     label: "Flirt",
     timeCost: 1,
     statEffects: { style: +1 },
-    girlEffects: { lust: +5, trust: +3 },
+    girlEffects: { lust: +5 },
   },
   {
     type: "Romance",
@@ -58,6 +57,6 @@ export const interactionMenu: Interaction[] = [
     timeCost: 2,
     locationContext: "Kitchen",
     statEffects: { hunger: -20 },
-    girlEffects: { trust: +5, affection: +6 },
+    girlEffects: { affection: +6 },
   },
 ];

@@ -50,12 +50,12 @@ const homeLocations = new Set(
 
 // Determine relationship stance based on stats
 export function getRelationshipStance(girl: Girl): RelationshipStance {
-  const { affection, love, trust } = girl.stats;
+  const { affection, love, lust } = girl.stats;
 
   if (love >= 60) return "love";
-  if (affection >= 50 && trust >= 40) return "intimate";
+  if (affection >= 50 && lust >= 40) return "intimate";
   if (affection >= 30) return "confident";
-  if (affection >= 15 || trust >= 20) return "shy";
+  if (affection >= 15 || lust >= 20) return "shy";
   return "neutral";
 }
 

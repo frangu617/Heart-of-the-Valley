@@ -29,7 +29,6 @@ export type GirlStats = {
   affection: number;
   lust: number;
   mood: number;
-  trust: number;
   love: number;
 };
 
@@ -47,35 +46,35 @@ export const girls: Girl[] = [
     location: "Cafe",
     relationship: "Single",
     personality: "Shy",
-    stats: { affection: 0, lust: 0, mood: 50, trust: 0, love: 0 },
+    stats: { affection: 0, lust: 0, mood: 50, love: 0 },
   },
   {
     name: "Dawn",
     location: "Gym",
     relationship: "Single",
     personality: "Confident",
-    stats: { affection: 0, lust: 0, mood: 50, trust: 0, love: 0 },
+    stats: { affection: 0, lust: 0, mood: 50, love: 0 },
   },
   {
     name: "Ruby",
     location: "Mall",
     relationship: "Single",
     personality: "Jealous",
-    stats: { affection: 0, lust: 0, mood: 50, trust: 0, love: 0 },
+    stats: { affection: 0, lust: 0, mood: 50, love: 0 },
   },
   {
     name: "Yumi",
     location: "Yumi's Bedroom",
     relationship: "Single",
     personality: "Independent",
-    stats: { affection: 0, lust: 0, mood: 50, trust: 0, love: 0 },
+    stats: { affection: 0, lust: 0, mood: 50, love: 0 },
   },
   {
     name: "Gwen",
     location: "Gwen's Bedroom",
     relationship: "Single",
     personality: "Bold",
-    stats: { affection: 0, lust: 0, mood: 50, trust: 0, love: 0 },
+    stats: { affection: 0, lust: 0, mood: 50, love: 0 },
   },
 ];
 

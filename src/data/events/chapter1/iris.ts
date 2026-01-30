@@ -471,13 +471,11 @@ const irisHallwayInviteSub: Dialogue = {
         {
           text: "It's not weird. You look great. (Flirt)",
           affectionChange: 2,
-          trustChange: 1,
           nextDialogueId: "iris_hallway_invite_sub_flirt",
         },
         {
           text: "It's fine. Nice place. (Friendly)",
           affectionChange: 1,
-          trustChange: 1,
           nextDialogueId: "iris_hallway_invite_sub_friendly",
         },
       ],
@@ -993,7 +991,6 @@ export const irisSexyCoffeeDate: Dialogue = {
         {
           text: "Lets get out of here.",
           affectionChange: 10,
-          trustChange: 10,
           moodChange: 10,
           nextDialogueId: "iris_after_coffee_sex",
           condition: {
@@ -1003,7 +1000,6 @@ export const irisSexyCoffeeDate: Dialogue = {
         {
           text: "Not today.",
           affectionChange: -10,
-          trustChange: -10,
           moodChange: -10,
         },
       ],
@@ -1078,7 +1074,6 @@ export const irisEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 0,
-      minTrust: 0,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "University Hallway",
@@ -1150,7 +1145,6 @@ export const irisEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 0,
-      minTrust: 0,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Cafe",
@@ -1228,7 +1222,6 @@ export const irisEvents: CharacterEvent[] = [
               text: "I like the passion (Flirt)",
               affectionChange: 3,
               moodChange: 1,
-              trustChange: 1,
             },
             {
               text: "It sounds intense (Friendly)",
@@ -1267,7 +1260,6 @@ export const irisEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 0,
-      minTrust: 0,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Cafe",
@@ -1337,7 +1329,6 @@ export const irisEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 0,
-      minTrust: 0,
       minHour: 18,
       maxHour: 24,
       requiredLocation: "Hallway",
@@ -1379,7 +1370,6 @@ export const irisEvents: CharacterEvent[] = [
             {
               text: "I'd love to meet her.",
               affectionChange: 1,
-              trustChange: 1,
               nextDialogueId: "iris_hallway_invite_dom",
             },
             {
@@ -1406,7 +1396,6 @@ export const irisEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 0,
-      minTrust: 0,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Mall",
@@ -1499,7 +1488,6 @@ export const irisEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 0,
-      minTrust: 0,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Mall",
@@ -1600,7 +1588,6 @@ export const irisEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 0,
-      minTrust: 0,
       minHour: 20,
       maxHour: 24,
       requiredLocation: "Hallway",
@@ -1670,7 +1657,6 @@ export const irisEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 0,
-      minTrust: 0,
       minHour: 20,
       maxHour: 24,
       requiredLocation: "Hallway",

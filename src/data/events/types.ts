@@ -46,7 +46,6 @@ export type EventConditions = {
   // Minimum stat requirements
   minAffection?: number;
   minLust?: number;
-  minTrust?: number;
   minLove?: number;
   minMood?: number;
 

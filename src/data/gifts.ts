@@ -1,7 +1,6 @@
 export type GiftEffect = {
   affection?: number;
   lust?: number;
-  trust?: number;
   mood?: number;
   love?: number;
 };

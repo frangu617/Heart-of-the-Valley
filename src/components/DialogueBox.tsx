@@ -16,7 +16,6 @@ interface Props {
     statChanges?: {
       affection?: number;
       mood?: number;
-      trust?: number;
       love?: number;
       lust?: number;
     },
@@ -80,9 +79,6 @@ const checkChoiceCondition = (
     condition.minAffection &&
     (!girl || (girl.affection ?? 0) < condition.minAffection)
   ) {
-    return false;
-  }
-  if (condition.minTrust && (!girl || (girl.trust ?? 0) < condition.minTrust)) {
     return false;
   }
   if (condition.minLove && (!girl || (girl.love ?? 0) < condition.minLove)) {
@@ -341,7 +337,6 @@ export default function DialogueBox({
   const [accumulatedStatChanges, setAccumulatedStatChanges] = useState<{
     affection?: number;
     mood?: number;
-    trust?: number;
   }>({});
 
   const currentLine = dialogue.lines[currentLineIndex];
@@ -464,8 +459,6 @@ export default function DialogueBox({
         (newChanges.affection || 0) + choice.affectionChange;
     if (choice.moodChange)
       newChanges.mood = (newChanges.mood || 0) + choice.moodChange;
-    if (choice.trustChange)
-      newChanges.trust = (newChanges.trust || 0) + choice.trustChange;
     setAccumulatedStatChanges(newChanges);
 
     // ✨ Save to ref instead of state
@@ -548,7 +541,6 @@ export default function DialogueBox({
         affection: girlStats?.affection ?? 0,
         lust: girlStats?.lust ?? 0,
         mood: girlStats?.mood ?? 50,
-        trust: girlStats?.trust ?? 0,
         love: girlStats?.love ?? 0,
       },
     };

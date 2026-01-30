@@ -20,13 +20,11 @@ export const iWorkHere: Dialogue = {
         {
           text: "I'm a programming professor.",
           affectionChange: 5,
-          trustChange: 5,
           nextDialogueId: "told_teaching_programming",
         },
         {
           text: "I'm a sex-ed professor.",
           affectionChange: -5,
-          trustChange: -5,
           nextDialogueId: "dawn_sex_ed_joke",
         },
       ],
@@ -71,19 +69,16 @@ export const dawnSexEdJoke: Dialogue = {
         {
           text: "O-Okay... I'm actually a programming professor.",
           affectionChange: 5,
-          trustChange: 5,
           nextDialogueId: "told_teaching_programming",
         },
         {
           text: "I'm really just checking out the 'student body'.",
           affectionChange: -5,
-          trustChange: -5,
           nextDialogueId: "dawn_sex_ed_joke",
         },
         {
           text: "I gotta go, I have sex to teach.",
           affectionChange: -5,
-          trustChange: -5,
         },
       ],
     },
@@ -178,19 +173,16 @@ export const dawnGrown: Dialogue = {
           text: "Of course! You'll always be my little niece.",
           affectionChange: -5,
           moodChange: -10,
-          trustChange: -2,
         },
         {
           text: "You've grown up a lot. I've noticed.",
           affectionChange: 5,
           moodChange: 5,
-          trustChange: 3,
         },
         {
           text: "Why do you ask? Is something bothering you?",
           affectionChange: 3,
           moodChange: 3,
-          trustChange: 4,
         },
       ],
     },

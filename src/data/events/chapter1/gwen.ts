@@ -99,6 +99,49 @@ const gwenIntroAfterChoice: Dialogue = {
   ],
 };
 
+const gwenEvent2DoorSupportive: Dialogue = {
+  id: "gwen_event_2_door_supportive",
+  lines: [
+    { speaker: "You", text: "Come on. Let's get you to the right door." },
+    {
+      speaker: "Gwen",
+      text: "You're annoyingly helpful, you know that?",
+      expression: "happy",
+    },
+    {
+      speaker: "Gwen",
+      text: "Don't tell anyone about this. I have a reputation to maintain.",
+      expression: "neutral",
+    },
+    { speaker: "You", text: "Your secret's safe." },
+    {
+      speaker: null,
+      text: "She gets her key into the right lock on the first try this time, shooting you a quick, triumphant grin before slipping inside.",
+    },
+  ],
+};
+
+const gwenEvent2DoorAngry: Dialogue = {
+  id: "gwen_event_2_door_angry",
+  lines: [
+    { speaker: "You", text: "You just woke me up. Don't do that again." },
+    {
+      speaker: "Gwen",
+      text: "Yeah. Fine.",
+      expression: "annoyed",
+    },
+    {
+      speaker: "Gwen",
+      text: "We're square.",
+      expression: "neutral",
+    },
+    {
+      speaker: null,
+      text: "She gets her key into the right lock on the first try this time and slips inside without looking back.",
+    },
+  ],
+};
+
 const gwenEvent3ApologySupportive: Dialogue = {
   id: "gwen_event_3_apology_supportive",
   lines: [
@@ -290,6 +333,8 @@ export const gwenStoryDialogues: Record<string, Dialogue> = {
   gwen_intro_call_out: gwenIntroCallOut,
   gwen_intro_neighborly: gwenIntroNeighborly,
   gwen_intro_after_choice: gwenIntroAfterChoice,
+  gwen_event_2_door_supportive: gwenEvent2DoorSupportive,
+  gwen_event_2_door_angry: gwenEvent2DoorAngry,
   gwen_event_3_apology_supportive: gwenEvent3ApologySupportive,
   gwen_event_3_apology_irritated: gwenEvent3ApologyIrritated,
   gwen_event_5_discreet: gwenEvent5Discreet,
@@ -310,7 +355,6 @@ export const gwenEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 0,
-      minTrust: 0,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Hallway",
@@ -390,7 +434,6 @@ export const gwenEvents: CharacterEvent[] = [
             {
               text: "Call it out gently.",
               affectionChange: 0,
-              trustChange: 1,
               nextDialogueId: "gwen_intro_call_out",
             },
             {
@@ -415,7 +458,6 @@ export const gwenEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 0,
-      minTrust: 0,
       minHour: 22,
       maxHour: 24,
       requiredLocation: "Hallway",
@@ -476,19 +518,20 @@ export const gwenEvents: CharacterEvent[] = [
           text: "She hesitates, then allows it, letting you guide her two steps down the hall.",
         },
         {
-          speaker: "Gwen",
-          text: "Don't tell anyone about this. I have a reputation to maintain.",
-          expression: "happy",
-        },
-        { speaker: "You", text: "Your secret's safe." },
-        {
-          speaker: "Gwen",
-          text: "Good. You're already being useful, neighbor.",
-          expression: "neutral",
-        },
-        {
-          speaker: null,
-          text: "She gets her key into the right lock on the first try this time, shooting you a quick, triumphant grin before slipping inside.",
+          speaker: "You",
+          text: "What do you do?",
+          choices: [
+            {
+              text: "Be understanding and walk her to the right door.",
+              affectionChange: 1,
+              nextDialogueId: "gwen_event_2_door_supportive",
+            },
+            {
+              text: "Get on her for waking you up.",
+              affectionChange: -1,
+              nextDialogueId: "gwen_event_2_door_angry",
+            },
+          ],
         },
       ],
     },
@@ -501,7 +544,6 @@ export const gwenEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 0,
-      minTrust: 0,
       minHour: 8,
       maxHour: 20,
       requiredLocation: "Hallway",
@@ -541,13 +583,11 @@ export const gwenEvents: CharacterEvent[] = [
             {
               text: "We're good.",
               affectionChange: 1,
-              trustChange: 1,
               nextDialogueId: "gwen_event_3_apology_supportive",
             },
             {
               text: "Don't let it happen again.",
               affectionChange: -1,
-              trustChange: -1,
               nextDialogueId: "gwen_event_3_apology_irritated",
             },
           ],
@@ -563,7 +603,6 @@ export const gwenEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 0,
-      minTrust: 0,
       minHour: 18,
       maxHour: 24,
       requiredLocation: "Bar",
@@ -603,7 +642,6 @@ export const gwenEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 0,
-      minTrust: 0,
       minHour: 20,
       maxHour: 24,
       requiredLocation: "Strip Club",
@@ -647,21 +685,18 @@ export const gwenEvents: CharacterEvent[] = [
             {
               text: "Your secret's safe.",
               affectionChange: 2,
-              trustChange: 1,
               setFlags: ["gwenDomPath"],
               nextDialogueId: "gwen_event_5_discreet",
             },
             {
               text: "Give me the rules.",
               affectionChange: 1,
-              trustChange: 1,
               setFlags: ["gwenDomPath"],
               nextDialogueId: "gwen_event_5_lead",
             },
             {
               text: "Maybe. Depends what I get out of it.",
               affectionChange: -2,
-              trustChange: -2,
               setFlags: ["gwenSubPath"],
               nextDialogueId: "gwen_event_5_blackmail",
             },
@@ -678,7 +713,6 @@ export const gwenEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 0,
-      minTrust: 0,
       minHour: 20,
       maxHour: 24,
       requiredLocation: "Hallway",
@@ -724,7 +758,6 @@ export const gwenEvents: CharacterEvent[] = [
             {
               text: "Whatever you need, I'm here.",
               affectionChange: 1,
-              trustChange: 1,
               setFlags: ["gwenDomPath"],
               nextDialogueId: "gwen_finale_supportive",
             },
@@ -741,7 +774,6 @@ export const gwenEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 0,
-      minTrust: 0,
       minHour: 20,
       maxHour: 24,
       requiredLocation: "Hallway",

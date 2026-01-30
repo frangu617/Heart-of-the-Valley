@@ -34,11 +34,6 @@ export function checkEventConditions(
     return false;
   if (conditions.minLust !== undefined && girl.stats.lust < conditions.minLust)
     return false;
-  if (
-    conditions.minTrust !== undefined &&
-    girl.stats.trust < conditions.minTrust
-  )
-    return false;
   if (conditions.minLove !== undefined && girl.stats.love < conditions.minLove)
     return false;
   if (conditions.minMood !== undefined && girl.stats.mood < conditions.minMood)

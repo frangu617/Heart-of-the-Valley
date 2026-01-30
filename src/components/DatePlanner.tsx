@@ -74,11 +74,6 @@ export default function DatePlanner({
     )
       return false;
     if (
-      activity.requirements.minTrust &&
-      girl.stats.trust < activity.requirements.minTrust
-    )
-      return false;
-    if (
       activity.requirements.minLove &&
       girl.stats.love < activity.requirements.minLove
     )
@@ -93,7 +88,7 @@ export default function DatePlanner({
   // Check if girl would accept based on stats
   const acceptanceChance = Math.min(
     95,
-    50 + girl.stats.affection / 2 + girl.stats.trust / 4
+    50 + girl.stats.affection / 2 + girl.stats.lust / 4
   );
 
   function getNextDay(day: DayOfWeek): DayOfWeek {

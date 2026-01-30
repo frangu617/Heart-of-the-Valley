@@ -1069,7 +1069,6 @@ export const yumiEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 0,
-      minTrust: 0,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Classroom",
@@ -1211,7 +1210,6 @@ export const yumiEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 5,
-      minTrust: 0,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Office",
@@ -1278,7 +1276,6 @@ export const yumiEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 10,
-      minTrust: 0,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Office",
@@ -1388,7 +1385,6 @@ export const yumiEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 10,
-      minTrust: 0,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Office",
@@ -1498,7 +1494,6 @@ export const yumiEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 15,
-      minTrust: 0,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Classroom",
@@ -1593,7 +1588,6 @@ export const yumiEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 15,
-      minTrust: 0,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Classroom",
@@ -1682,7 +1676,6 @@ export const yumiEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 20,
-      minTrust: 0,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Office",
@@ -1760,7 +1753,6 @@ export const yumiEvents: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 20,
-      minTrust: 0,
       minHour: 0,
       maxHour: 24,
       requiredLocation: "Office",

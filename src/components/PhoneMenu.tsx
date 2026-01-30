@@ -416,24 +416,6 @@ export default function PhoneMenu({
                     </div>
                     <div
                       className={`flex justify-between px-2 py-1 rounded ${
-                        darkMode ? "bg-blue-900/50" : "bg-blue-100"
-                      }`}
-                    >
-                      <span
-                        className={darkMode ? "text-gray-300" : "text-gray-700"}
-                      >
-                        🤝 Trust
-                      </span>
-                      <span
-                        className={`font-bold ${
-                          darkMode ? "text-blue-400" : "text-blue-600"
-                        }`}
-                      >
-                        {girl.stats.trust}
-                      </span>
-                    </div>
-                    <div
-                      className={`flex justify-between px-2 py-1 rounded ${
                         darkMode ? "bg-purple-900/50" : "bg-purple-100"
                       }`}
                     >
