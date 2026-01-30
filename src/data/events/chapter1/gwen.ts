@@ -99,87 +99,189 @@ const gwenIntroAfterChoice: Dialogue = {
   ],
 };
 
-const gwenEvent2Help: Dialogue = {
-  id: "gwen_event_2_help",
+const gwenEvent3ApologySupportive: Dialogue = {
+  id: "gwen_event_3_apology_supportive",
   lines: [
-    { speaker: "You", text: "Here, let me hold that before you wear it." },
+    { speaker: "You", text: "You're good. It was a weird night." },
     {
-      speaker: null,
-      text: "You take the cup from her hand. She flashes you a grateful, slightly superior smile.",
+      speaker: "Gwen",
+      text: "Good. I don't like owing people.",
+      expression: "neutral",
+    },
+    { speaker: "You", text: "Call it even." },
+    { speaker: "Gwen", text: "It is now.", expression: "happy" },
+  ],
+};
+
+const gwenEvent3ApologyIrritated: Dialogue = {
+  id: "gwen_event_3_apology_irritated",
+  lines: [
+    { speaker: "You", text: "You woke me up. Don't do that again." },
+    {
+      speaker: "Gwen",
+      text: "Noted.",
+      expression: "neutral",
     },
     {
       speaker: "Gwen",
-      text: "My hero. Careful, it's a double shot. Don't spill it.",
-      expression: "happy",
-    },
-    { speaker: null, text: "She unlocks the door quickly, then reclaims her drink." },
-    { speaker: "Gwen", text: "Thanks. You're handy to have around.", expression: "happy" },
-    {
-      speaker: "Gwen",
-      text: "Anyway, I gotta run. Catch you later, {playerName}.",
-      expression: "happy",
+      text: "Won't happen.",
+      expression: "neutral",
     },
   ],
 };
 
-const gwenEvent2Tease: Dialogue = {
-  id: "gwen_event_2_tease",
+const gwenEvent5Discreet: Dialogue = {
+  id: "gwen_event_5_discreet",
   lines: [
-    { speaker: "You", text: "You look like a juggling act gone wrong. Need me to spot you?" },
-    { speaker: null, text: "She rolls her eyes, but there's a smirk playing on her lips." },
+    { speaker: "You", text: "Your secret's safe." },
     {
       speaker: "Gwen",
-      text: "I have it under control, thanks. I'm a professional.",
+      text: "Good. Then listen.",
+      expression: "neutral",
+    },
+    {
+      speaker: "Gwen",
+      text: "In here, I'm working. Out there, we're neighbors.",
+      expression: "neutral",
+    },
+    {
+      speaker: "Gwen",
+      text: "Keep it that clean and we're fine.",
       expression: "annoyed",
     },
-    { speaker: null, text: "She manages to unlock the door with a dramatic flourish." },
-    { speaker: "Gwen", text: "See? Flawless execution.", expression: "happy" },
+    {
+      speaker: null,
+      text: "She studies you for a beat, then nods.",
+      nextDialogueId: "gwen_event_5_after",
+    },
+  ],
+};
+
+const gwenEvent5Lead: Dialogue = {
+  id: "gwen_event_5_lead",
+  lines: [
+    { speaker: "You", text: "Give me the rules." },
     {
       speaker: "Gwen",
-      text: "Anyway, I gotta run. Catch you later, {playerName}.",
+      text: "Smart answer. I call the shots.",
       expression: "happy",
     },
-  ],
-};
-
-const gwenEvent3Sheer: Dialogue = {
-  id: "gwen_event_3_sheer",
-  lines: [
-    { speaker: "You", text: "The sheer one. Definitely." },
-    { speaker: "You", text: "If you've got it, flaunt it. And you definitely have it." },
+    {
+      speaker: "Gwen",
+      text: "In here, I'm working. Out there, we talk if I say so.",
+      expression: "neutral",
+    },
     {
       speaker: null,
-      text: "Gwen lowers the top, looking at you with a new spark of interest.",
-    },
-    {
-      speaker: "Gwen",
-      text: "Bold choice. I like it. I didn't think you noticed those kinds of things.",
-      expression: "seductive",
-    },
-    {
-      speaker: "Gwen",
-      text: "Maybe I'll wear it just for you sometime.",
-      expression: "seductive",
+      text: "She tilts her chin, waiting to see if you flinch.",
+      nextDialogueId: "gwen_event_5_after",
     },
   ],
 };
 
-const gwenEvent3Blouse: Dialogue = {
-  id: "gwen_event_3_blouse",
+const gwenEvent5Blackmail: Dialogue = {
+  id: "gwen_event_5_blackmail",
   lines: [
-    { speaker: "You", text: "The blouse. Leave a little mystery." },
-    { speaker: "You", text: "You don't need the sheer top to be the best thing in the room." },
+    { speaker: "You", text: "Maybe. Depends what I get out of it." },
     {
-      speaker: null,
-      text: "She blinks, actually looking a little flustered by the compliment.",
+      speaker: "Gwen",
+      text: "That's what we're doing? Seriously?",
+      expression: "annoyed",
     },
     {
       speaker: "Gwen",
-      text: "Oh. Well... okay then. Mystery it is.",
-      expression: "surprised",
+      text: "Fine. You want leverage, you got it. But don't push it.",
+      expression: "neutral",
     },
-    { speaker: null, text: "She tosses the sheer top onto the couch, smiling at you softly." },
-    { speaker: "Gwen", text: "You're surprisingly good at this.", expression: "happy" },
+    {
+      speaker: null,
+      text: "Her stare is steady, the smile gone.",
+      nextDialogueId: "gwen_event_5_after_blackmail",
+    },
+  ],
+};
+
+const gwenEvent5After: Dialogue = {
+  id: "gwen_event_5_after",
+  lines: [
+    {
+      speaker: null,
+      text: "Her voice drops, the performer gone.",
+    },
+    {
+      speaker: "Gwen",
+      text: "I'm not looking for a savior. I just need discretion.",
+      expression: "neutral",
+    },
+    {
+      speaker: "Gwen",
+      text: "If you can do that, maybe we can talk when I'm off the clock.",
+      expression: "shy",
+    },
+    {
+      speaker: null,
+      text: "She taps your chest once, then slips backstage.",
+    },
+  ],
+};
+
+const gwenEvent5AfterBlackmail: Dialogue = {
+  id: "gwen_event_5_after_blackmail",
+  lines: [
+    {
+      speaker: "Gwen",
+      text: "You keep quiet, we both keep breathing. That's the deal.",
+      expression: "neutral",
+    },
+    {
+      speaker: null,
+      text: "She turns to leave, then pauses.",
+    },
+    {
+      speaker: "Gwen",
+      text: "Don't make me regret letting you in on this.",
+      expression: "neutral",
+    },
+  ],
+};
+
+const gwenFinaleSupportive: Dialogue = {
+  id: "gwen_finale_supportive",
+  lines: [
+    {
+      speaker: "You",
+      text: "You can trust me.",
+    },
+    {
+      speaker: "Gwen",
+      text: "I didn't think I could, but... I do.",
+      expression: "happy",
+    },
+    {
+      speaker: null,
+      text: "She closes the space and kisses you. It's quick, real, and not for show.",
+    },
+  ],
+};
+
+const gwenFinaleHush: Dialogue = {
+  id: "gwen_finale_hush",
+  lines: [
+    { speaker: "You", text: "Then show me you mean it." },
+    {
+      speaker: "Gwen",
+      text: "Clear enough.",
+      expression: "neutral",
+    },
+    {
+      speaker: null,
+      text: "She kisses you once, controlled and transactional.",
+    },
+    {
+      speaker: "Gwen",
+      text: "Now keep your word.",
+      expression: "neutral",
+    },
   ],
 };
 
@@ -188,10 +290,15 @@ export const gwenStoryDialogues: Record<string, Dialogue> = {
   gwen_intro_call_out: gwenIntroCallOut,
   gwen_intro_neighborly: gwenIntroNeighborly,
   gwen_intro_after_choice: gwenIntroAfterChoice,
-  gwen_event_2_help: gwenEvent2Help,
-  gwen_event_2_tease: gwenEvent2Tease,
-  gwen_event_3_sheer: gwenEvent3Sheer,
-  gwen_event_3_blouse: gwenEvent3Blouse,
+  gwen_event_3_apology_supportive: gwenEvent3ApologySupportive,
+  gwen_event_3_apology_irritated: gwenEvent3ApologyIrritated,
+  gwen_event_5_discreet: gwenEvent5Discreet,
+  gwen_event_5_lead: gwenEvent5Lead,
+  gwen_event_5_blackmail: gwenEvent5Blackmail,
+  gwen_event_5_after: gwenEvent5After,
+  gwen_event_5_after_blackmail: gwenEvent5AfterBlackmail,
+  gwen_finale_supportive: gwenFinaleSupportive,
+  gwen_finale_hush: gwenFinaleHush,
 };
 
 export const gwenEvents: CharacterEvent[] = [
@@ -301,126 +408,147 @@ export const gwenEvents: CharacterEvent[] = [
     },
   },
   {
-    id: "gwen_event_2_routine",
-    name: "The Routine",
-    description: "A quick hallway chat as Gwen heads out.",
-    priority: 230,
+    id: "gwen_event_2_door_mixup",
+    name: "Door Mixup",
+    description: "Gwen mistakes your door for hers after a late night.",
+    priority: 235,
     repeatable: false,
     conditions: {
-      minAffection: 5,
+      minAffection: 0,
       minTrust: 0,
-      minHour: 0,
+      minHour: 22,
       maxHour: 24,
       requiredLocation: "Hallway",
       requiredPreviousEvents: ["gwen_hallway_intro_event"],
     },
     dialogue: {
-      id: "gwen_event_2_routine",
+      id: "gwen_event_2_door_mixup",
       lines: [
         {
           speaker: null,
-          text: "You step out of your apartment, locking the door behind you. The hallway is quiet, save for the rhythmic clicking of heels approaching.",
+          text: "A heavy thud jars you awake. Another. Then a frustrated sigh outside your door.",
         },
         {
           speaker: null,
-          text: "Gwen rounds the corner, looking immaculate as always. She's checking her phone, a takeout coffee balanced precariously in her other hand.",
+          text: "You crack it open to find Gwen swaying slightly, purse on one arm, keys in the other, squinting at your lock like it owes her money.",
         },
+        { speaker: "Gwen", text: "Okay, door. Don't do this to me right now.", expression: "annoyed" },
+        { speaker: "You", text: "Uh... Gwen?" },
         {
           speaker: "Gwen",
-          text: "Morning, neighbor. You're up early.",
+          text: "Why are you in my apartment?",
+          expression: "annoyed",
+        },
+        { speaker: "You", text: "I'm not. This is my door." },
+        {
+          speaker: "Gwen",
+          text: "No, it isn't. My door does this sticky thing. It's... a feature.",
           expression: "neutral",
         },
         {
-          speaker: "You",
-          text: "Trying to be. You look like you've been up for hours.",
+          speaker: null,
+          text: "She leans in, peering past you like she's expecting to see her living room behind you.",
         },
+        { speaker: "You", text: "You're on the wrong side of the hall." },
         {
           speaker: "Gwen",
-          text: "The grind doesn't wait for beauty sleep. I've got a casting call across town in forty minutes.",
+          text: "I'm on the right side of the night.",
           expression: "happy",
+        },
+        { speaker: "You", text: "You're also a little drunk." },
+        {
+          speaker: "Gwen",
+          text: "I'm... socially lubricated. There's a difference.",
+          expression: "shy",
         },
         {
           speaker: null,
-          text: "She stops at her door, fumbling with her keys while trying not to spill her coffee.",
+          text: "She frowns at the number on the door, then at you, then at the number again.",
         },
-        { speaker: "Gwen", text: "Ugh. Multitasking is a myth.", expression: "neutral" },
         {
-          speaker: "You",
-          text: "What do you do?",
-          choices: [
-            {
-              text: "Take the coffee for her (Helpful/Submissive)",
-              affectionChange: 1,
-              nextDialogueId: "gwen_event_2_help",
-            },
-            {
-              text: "Tease her struggle (Playful/Dominant)",
-              affectionChange: 1,
-              nextDialogueId: "gwen_event_2_tease",
-            },
-          ],
+          speaker: "Gwen",
+          text: "Fine. Maybe you're in my apartment adjacent.",
+          expression: "annoyed",
+        },
+        { speaker: "You", text: "Close enough. Let me walk you to the right one." },
+        {
+          speaker: null,
+          text: "She hesitates, then allows it, letting you guide her two steps down the hall.",
+        },
+        {
+          speaker: "Gwen",
+          text: "Don't tell anyone about this. I have a reputation to maintain.",
+          expression: "happy",
+        },
+        { speaker: "You", text: "Your secret's safe." },
+        {
+          speaker: "Gwen",
+          text: "Good. You're already being useful, neighbor.",
+          expression: "neutral",
+        },
+        {
+          speaker: null,
+          text: "She gets her key into the right lock on the first try this time, shooting you a quick, triumphant grin before slipping inside.",
         },
       ],
     },
   },
   {
-    id: "gwen_event_3_playful",
-    name: "The Playful Shift",
-    description: "Gwen asks for a wardrobe opinion.",
+    id: "gwen_event_3_apology",
+    name: "Quick Apology",
+    description: "Gwen stops by after the door mixup.",
     priority: 220,
     repeatable: false,
     conditions: {
-      minAffection: 10,
+      minAffection: 0,
       minTrust: 0,
-      minHour: 0,
-      maxHour: 24,
+      minHour: 8,
+      maxHour: 20,
       requiredLocation: "Hallway",
-      requiredPreviousEvents: ["gwen_event_2_routine"],
+      requiredPreviousEvents: ["gwen_event_2_door_mixup"],
     },
     dialogue: {
-      id: "gwen_event_3_playful",
+      id: "gwen_event_3_apology",
       lines: [
         {
           speaker: null,
-          text: "Gwen waved you in when you walked past. Her apartment is a chaotic mix of expensive clothes and fitness gear.",
+          text: "A soft knock in the afternoon pulls you to the door.",
         },
         {
           speaker: null,
-          text: "She is standing in front of a full-length mirror, holding up two different tops against herself.",
+          text: "Gwen stands there in sunglasses, hair up, a coffee in hand.",
         },
         {
           speaker: "Gwen",
-          text: "Okay, neighbor. I need a male opinion. And don't just say 'they both look fine'.",
+          text: "About the other night. I woke you up.",
           expression: "neutral",
         },
+        { speaker: "You", text: "You were trying to open my door." },
         {
-          speaker: null,
-          text: "She holds up a conservative blouse, then a much daring, sheer top.",
+          speaker: "Gwen",
+          text: "Yeah. That one's on me.",
+          expression: "neutral",
         },
         {
           speaker: "Gwen",
-          text: "I'm meeting some... friends later. I want to look like I'm not trying too hard, but also like I'm the best thing in the room.",
+          text: "Just making sure we're good.",
           expression: "neutral",
         },
-        { speaker: "You", text: "That's a specific vibe." },
-        { speaker: "Gwen", text: "It's my brand. So? Which one?", expression: "happy" },
         {
           speaker: "You",
-          text: "What do you say?",
+          text: "How do you respond?",
           choices: [
             {
-              text: "The sheer top. It shows off your confidence. (Bold/Lust Hint)",
-              affectionChange: 2,
-              moodChange: 1,
-              setFlags: ["gwenDomPath"],
-              nextDialogueId: "gwen_event_3_sheer",
+              text: "We're good.",
+              affectionChange: 1,
+              trustChange: 1,
+              nextDialogueId: "gwen_event_3_apology_supportive",
             },
             {
-              text: "The blouse. Make them work for it. (Teasing/Dominant)",
-              affectionChange: 2,
-              moodChange: 1,
-              setFlags: ["gwenSubPath"],
-              nextDialogueId: "gwen_event_3_blouse",
+              text: "Don't let it happen again.",
+              affectionChange: -1,
+              trustChange: -1,
+              nextDialogueId: "gwen_event_3_apology_irritated",
             },
           ],
         },
@@ -428,145 +556,211 @@ export const gwenEvents: CharacterEvent[] = [
     },
   },
   {
-    id: "gwen_event_4_tension",
-    name: "High Tension",
-    description: "A near miss in the hallway late at night.",
+    id: "gwen_event_4_rumor",
+    name: "The Rumor",
+    description: "You hear about a dancer at the strip club.",
     priority: 210,
     repeatable: false,
     conditions: {
-      minAffection: 15,
+      minAffection: 0,
       minTrust: 0,
-      minHour: 20,
+      minHour: 18,
       maxHour: 24,
-      requiredLocation: "Hallway",
-      requiredPreviousEvents: ["gwen_event_3_playful"],
+      requiredLocation: "Bar",
+      requiredPreviousEvents: ["gwen_event_3_apology"],
     },
     dialogue: {
-      id: "gwen_event_4_tension",
+      id: "gwen_event_4_rumor",
       lines: [
         {
           speaker: null,
-          text: "It's late. You're heading back to your apartment when you nearly collide with Gwen coming out of hers.",
-        },
-        { speaker: "Gwen", text: "Whoa!", expression: "surprised" },
-        {
-          speaker: null,
-          text: "She stumbles back on a high heel. Instinctively, you reach out to catch her, grabbing her waist to steady her.",
+          text: "Later that week, you're at the bar when a pair of patrons lean in, whispering over their drinks.",
         },
         {
           speaker: null,
-          text: "She grips your shoulders, her breath hitching.",
+          text: "They talk about a dancer at the Strip Club who 'owns the room' and doesn't even have to try.",
         },
         {
           speaker: null,
-          text: "For a moment, neither of you moves. She is pressed against you, the scent of her perfume--something spicy and sweet--filling your senses.",
+          text: "Someone mentions she goes by G and only does a couple sets a night.",
         },
-        {
-          speaker: "Gwen",
-          text: "I... I didn't see you there.",
-          expression: "neutral",
-        },
-        { speaker: "You", text: "I noticed. You okay?" },
         {
           speaker: null,
-          text: "She doesn't step back immediately. Her hands tighten slightly on your shoulders.",
+          text: "The name sticks. So does the image of Gwen in heels, moving like she owns the hallway.",
         },
-        { speaker: "Gwen", text: "Yeah. I'm... yeah.", expression: "neutral" },
         {
           speaker: null,
-          text: "The air between you feels heavy, charged with static. You could lean in right now. It would be so easy.",
-        },
-        {
-          speaker: "Gwen",
-          text: "You have really strong hands, {playerName}.",
-          expression: "shy",
-        },
-        { speaker: null, text: "She whispers it, almost to herself. Then, the moment breaks." },
-        {
-          speaker: "Gwen",
-          text: "Thanks for the save. I really need to stop wearing these shoes.",
-          expression: "happy",
+          text: "Curiosity scratches at you the rest of the night.",
         },
       ],
     },
   },
   {
-    id: "gwen_chapter_1_finale_dom",
-    name: "Chapter 1 Finale (Teasing Gwen)",
-    description: "Gwen rewards you with a teasing kiss.",
+    id: "gwen_event_5_reveal",
+    name: "The Reveal",
+    description: "The dancer turns out to be Gwen.",
+    priority: 205,
+    repeatable: false,
+    conditions: {
+      minAffection: 0,
+      minTrust: 0,
+      minHour: 20,
+      maxHour: 24,
+      requiredLocation: "Strip Club",
+      requiredPreviousEvents: ["gwen_event_4_rumor"],
+    },
+    dialogue: {
+      id: "gwen_event_5_reveal",
+      lines: [
+        {
+          speaker: null,
+          text: "The Strip Club is all neon and bass, a low thrum in your ribs.",
+        },
+        {
+          speaker: null,
+          text: "You take a seat, half-expecting to leave bored. Then she steps on stage.",
+        },
+        {
+          speaker: null,
+          text: "The dancer moves like she owns the light. And then you recognize her.",
+        },
+        {
+          speaker: null,
+          text: "After the set, she appears at your table in a robe, makeup still sharp, eyes sharper.",
+        },
+        { speaker: "Gwen", text: "{playerName}? What are you doing here?", expression: "annoyed" },
+        { speaker: "You", text: "I didn't know it was you." },
+        {
+          speaker: "Gwen",
+          text: "Keep your voice down. This is my work.",
+          expression: "neutral",
+        },
+        {
+          speaker: "Gwen",
+          text: "Are you going to make this a problem?",
+          expression: "neutral",
+        },
+        {
+          speaker: "You",
+          text: "How do you respond?",
+          choices: [
+            {
+              text: "Your secret's safe.",
+              affectionChange: 2,
+              trustChange: 1,
+              setFlags: ["gwenDomPath"],
+              nextDialogueId: "gwen_event_5_discreet",
+            },
+            {
+              text: "Give me the rules.",
+              affectionChange: 1,
+              trustChange: 1,
+              setFlags: ["gwenDomPath"],
+              nextDialogueId: "gwen_event_5_lead",
+            },
+            {
+              text: "Maybe. Depends what I get out of it.",
+              affectionChange: -2,
+              trustChange: -2,
+              setFlags: ["gwenSubPath"],
+              nextDialogueId: "gwen_event_5_blackmail",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "gwen_chapter_1_finale",
+    name: "Chapter 1 Finale (Gwen Leads)",
+    description: "Gwen sets the terms.",
     priority: 200,
     repeatable: false,
     conditions: {
-      minAffection: 20,
+      minAffection: 0,
       minTrust: 0,
       minHour: 20,
       maxHour: 24,
       requiredLocation: "Hallway",
-      requiredPreviousEvents: ["gwen_event_4_tension"],
+      requiredPreviousEvents: ["gwen_event_5_reveal"],
       requiredFlags: ["gwenDomPath"],
     },
     dialogue: {
-      id: "gwen_chapter_1_finale_dom",
+      id: "gwen_chapter_1_finale",
       lines: [
-        { speaker: null, text: "Gwen is leaning against her doorframe, waiting." },
         {
-          speaker: "Gwen",
-          text: "You know, you've been a very good neighbor lately. I think you've earned a little reward.",
-          expression: "happy",
+          speaker: null,
+          text: "A late-night knock pulls you to the door.",
         },
         {
           speaker: null,
-          text: "She walks up and hooks a finger into your belt loop, pulling you close with a playful smirk.",
+          text: "Gwen stands there in a hoodie, hair damp, the edge gone from her voice.",
         },
         {
           speaker: "Gwen",
-          text: "Don't get used to this, Professor.",
-          expression: "seductive",
+          text: "You kept your mouth shut. That buys trust.",
+          expression: "neutral",
         },
         {
-          speaker: null,
-          text: "She kisses you--a skilled, teasing kiss that leaves you wanting more.",
+          speaker: "Gwen",
+          text: "If this is a thing, I set the pace.",
+          expression: "neutral",
         },
-        { speaker: "Gwen", text: "I... I can't. This is too much.", expression: "surprised" },
-        { speaker: null, text: "She fumbles with her door and slams it shut." },
+        {
+          speaker: "Gwen",
+          text: "And... I'm starting to like you more than a neighbor should.",
+          expression: "shy",
+        },
+        {
+          speaker: "You",
+          text: "How do you respond?",
+          choices: [
+            {
+              text: "You can trust me.",
+              affectionChange: 2,
+              setFlags: ["gwenDomPath"],
+              nextDialogueId: "gwen_finale_supportive",
+            },
+            {
+              text: "Whatever you need, I'm here.",
+              affectionChange: 1,
+              trustChange: 1,
+              setFlags: ["gwenDomPath"],
+              nextDialogueId: "gwen_finale_supportive",
+            },
+          ],
+        },
       ],
     },
   },
   {
     id: "gwen_chapter_1_finale_sub",
-    name: "Chapter 1 Finale (Sincere Gwen)",
-    description: "Gwen opens up and shares a tender moment.",
+    name: "Chapter 1 Finale (Keep Quiet)",
+    description: "Gwen keeps it transactional.",
     priority: 200,
     repeatable: false,
     conditions: {
-      minAffection: 20,
+      minAffection: 0,
       minTrust: 0,
       minHour: 20,
       maxHour: 24,
       requiredLocation: "Hallway",
-      requiredPreviousEvents: ["gwen_event_4_tension"],
+      requiredPreviousEvents: ["gwen_event_5_reveal"],
       requiredFlags: ["gwenSubPath"],
     },
     dialogue: {
       id: "gwen_chapter_1_finale_sub",
       lines: [
-        { speaker: null, text: "Gwen is leaning against her doorframe, waiting." },
+        {
+          speaker: null,
+          text: "You hear a knock and open the door to find Gwen, jaw tight, eyes level.",
+        },
         {
           speaker: "Gwen",
-          text: "I'm tired of the mask, {playerName}. I just want someone to look at me and actually... see me.",
-          expression: "shy",
+          text: "You wanted something for your silence. Here it is.",
+          expression: "neutral",
+          nextDialogueId: "gwen_finale_hush",
         },
-        {
-          speaker: null,
-          text: "She looks up at you, her eyes glistening. You reach out, gently cupping her face.",
-        },
-        { speaker: "You", text: "I see you, Gwen." },
-        {
-          speaker: null,
-          text: "You lean in for a slow, tender kiss. She shudders in your arms, clutching your shirt as if you're her only anchor.",
-        },
-        { speaker: "Gwen", text: "I... I can't. This is too much.", expression: "surprised" },
-        { speaker: null, text: "She fumbles with her door and slams it shut." },
       ],
     },
   },
