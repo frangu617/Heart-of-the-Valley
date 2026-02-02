@@ -4,6 +4,8 @@ export type DialogueChoice = {
   text: string;
   affectionChange: number;
   moodChange?: number;
+  lustChange?: number;
+  dominanceChange?: number;
   nextDialogueId?: string;
   condition?: DialogueChoiceCondition;
   scheduleEncounter?: {
@@ -59,7 +61,8 @@ export type Dialogue = {
 
 // Import all character dialogues
 import { irisDialogues } from "./iris";
-import { irisStoryDialogues } from "../events/chapter1/iris";
+import { irisStoryDialogues as irisStoryDialoguesCh1 } from "../events/chapter1/iris";
+import { irisStoryDialogues as irisStoryDialoguesCh2 } from "../events/chapter2/iris";
 import { dawnDialogues } from "./dawn";
 import { gwenDialogues } from "./gwen";
 import { gwenStoryDialogues } from "../events/chapter1/gwen";
@@ -84,7 +87,7 @@ export { introDialogue };
 
 // Combine character dialogues
 export const characterDialogues: Record<string, Record<string, Dialogue>> = {
-  Iris: { ...irisDialogues, ...irisStoryDialogues },
+  Iris: { ...irisDialogues, ...irisStoryDialoguesCh1, ...irisStoryDialoguesCh2 },
   Dawn: dawnDialogues,
   Gwen: { ...gwenDialogues, ...gwenStoryDialogues },
   Yumi: { ...yumiDialogues, ...yumiStoryDialogues },

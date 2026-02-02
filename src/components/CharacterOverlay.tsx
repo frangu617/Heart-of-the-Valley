@@ -200,7 +200,11 @@ export default function CharacterOverlay({
 
       const characterImage = getCharacterImage(girl, location, hour, getFacialExpression());
       onEventTriggered(triggeredEvent.id, girl.name);
-      onStartDialogue(triggeredEvent.dialogue, characterImage, undefined);
+      onStartDialogue(
+        triggeredEvent.dialogue,
+        characterImage,
+        triggeredEvent.rewards?.girlStats
+      );
 
       const updatedPlayer = applyCharacterEventRewards(
         player,

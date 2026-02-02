@@ -38,6 +38,11 @@ export function checkEventConditions(
     return false;
   if (conditions.minMood !== undefined && girl.stats.mood < conditions.minMood)
     return false;
+  if (
+    conditions.minDominance !== undefined &&
+    (girl.stats.dominance ?? 0) < conditions.minDominance
+  )
+    return false;
 
   if (
     conditions.maxAffection !== undefined &&
@@ -45,6 +50,11 @@ export function checkEventConditions(
   )
     return false;
   if (conditions.maxLust !== undefined && girl.stats.lust > conditions.maxLust)
+    return false;
+  if (
+    conditions.maxDominance !== undefined &&
+    (girl.stats.dominance ?? 0) > conditions.maxDominance
+  )
     return false;
 
   // Check player stats

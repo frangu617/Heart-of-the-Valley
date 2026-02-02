@@ -162,11 +162,18 @@ export default function GamePage() {
   const getRelationshipCaps = useCallback(
     (girlName: string) => {
       const progressionCount = getProgressionCount(girlName);
-      const affectionCap = clampValue(progressionCount * 5, 0, 100);
+      let affectionCap = clampValue(progressionCount * 5, 0, 100);
+      if (girlName === "Iris") {
+        if (gameplayFlags.has("irisCh2Ev2_Done")) {
+          affectionCap = 20;
+        } else if (gameplayFlags.has("irisCh2Ev1_Done")) {
+          affectionCap = 15;
+        }
+      }
       const lustCap = clampValue(Math.floor(affectionCap * 1.25), 0, 100);
       return { affectionCap, lustCap };
     },
-    [getProgressionCount]
+    [getProgressionCount, gameplayFlags]
   );
 
   const clampGirlStatsToCaps = useCallback(
@@ -176,6 +183,7 @@ export default function GamePage() {
         ...stats,
         affection: clampValue(stats.affection ?? 0, 0, affectionCap),
         lust: clampValue(stats.lust ?? 0, 0, lustCap),
+        dominance: clampValue(stats.dominance ?? 0, -100, 100),
       };
     },
     [getRelationshipCaps]
@@ -400,7 +408,11 @@ export default function GamePage() {
           currentLocation,
           hour
         );
-        startDialogue(characterEvent.dialogue, characterImage, null);
+        startDialogue(
+          characterEvent.dialogue,
+          characterImage,
+          characterEvent.rewards?.girlStats ?? null
+        );
 
         const updatedPlayer = applyCharacterEventRewards(
           player,
@@ -724,11 +736,20 @@ export default function GamePage() {
           const combined = { ...dialogueGirlEffects, ...statChanges };
 
           const newStats: Partial<GirlStats> = { ...currentStats };
+          const clampGirlStatValue = (
+            key: keyof GirlStats,
+            value: number
+          ) => {
+            if (key === "dominance") {
+              return clampValue(value, -100, 100);
+            }
+            return clampValue(value, 0, 100);
+          };
           Object.entries(combined).forEach(([key, value]) => {
             if (typeof value === "number") {
               const k = key as keyof GirlStats;
               const cur = (currentStats[k] as number) ?? 0;
-              newStats[k] = clampValue(cur + value, 0, 100);
+              newStats[k] = clampGirlStatValue(k, cur + value);
             }
           });
           const { affectionCap, lustCap } = getRelationshipCaps(girl.name);

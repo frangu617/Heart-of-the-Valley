@@ -18,6 +18,7 @@ interface Props {
       mood?: number;
       love?: number;
       lust?: number;
+      dominance?: number;
     },
     chosenOption?: DialogueChoice
   ) => void;
@@ -337,6 +338,8 @@ export default function DialogueBox({
   const [accumulatedStatChanges, setAccumulatedStatChanges] = useState<{
     affection?: number;
     mood?: number;
+    lust?: number;
+    dominance?: number;
   }>({});
 
   const currentLine = dialogue.lines[currentLineIndex];
@@ -459,6 +462,11 @@ export default function DialogueBox({
         (newChanges.affection || 0) + choice.affectionChange;
     if (choice.moodChange)
       newChanges.mood = (newChanges.mood || 0) + choice.moodChange;
+    if (choice.lustChange)
+      newChanges.lust = (newChanges.lust || 0) + choice.lustChange;
+    if (choice.dominanceChange)
+      newChanges.dominance =
+        (newChanges.dominance || 0) + choice.dominanceChange;
     setAccumulatedStatChanges(newChanges);
 
     // ✨ Save to ref instead of state
@@ -542,6 +550,7 @@ export default function DialogueBox({
         lust: girlStats?.lust ?? 0,
         mood: girlStats?.mood ?? 50,
         love: girlStats?.love ?? 0,
+        dominance: girlStats?.dominance ?? 0,
       },
     };
 

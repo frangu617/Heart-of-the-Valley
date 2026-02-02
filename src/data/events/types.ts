@@ -1,5 +1,6 @@
 // src/data/events/types.ts
 import type { Dialogue } from "../dialogues";
+import type { GirlStats } from "../characters";
 // import { GirlStats } from "../characters";
 
 export type GameplayFlag =
@@ -21,6 +22,13 @@ export type GameplayFlag =
   | "irisCoffeeMet"
   | "irisDomPath"
   | "irisSubPath"
+  | "irisNeutralPath"
+  | "irisCh1FinaleComplete"
+  | "irisCh2Ev1_Done"
+  | "irisCh2Ev2_Done"
+  | "irisDatePlanned"
+  | "irisCh2Complete"
+  | "metMysteryGirl"
   | "iris_intro_done"
   | "iris_coffee_done"
   | "iris_hallway_invite_done"
@@ -53,10 +61,12 @@ export type EventConditions = {
   minLust?: number;
   minLove?: number;
   minMood?: number;
+  minDominance?: number;
 
   // Maximum stat requirements (for specific scenarios)
   maxAffection?: number;
   maxLust?: number;
+  maxDominance?: number;
 
   // Player requirements
   minPlayerIntelligence?: number;
@@ -113,6 +123,7 @@ export type CharacterEvent = {
       fitness?: number;
       style?: number;
     };
+    girlStats?: Partial<GirlStats>;
     setFlags?: GameplayFlag[];
     unlockCharacters?: string[];
   };
