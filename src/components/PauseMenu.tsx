@@ -4,9 +4,17 @@ interface Props {
   onResume: () => void;
   onSave: () => void;
   onMainMenu: () => void;
+  textSpeed: "normal" | "instant";
+  onTextSpeedChange: (speed: "normal" | "instant") => void;
 }
 
-export default function PauseMenu({ onResume, onSave, onMainMenu }: Props) {
+export default function PauseMenu({
+  onResume,
+  onSave,
+  onMainMenu,
+  textSpeed,
+  onTextSpeedChange,
+}: Props) {
   const [isClosing, setIsClosing] = useState(false);
   const closeDelayMs = 200;
 
@@ -60,6 +68,35 @@ export default function PauseMenu({ onResume, onSave, onMainMenu }: Props) {
             <span>🏠</span>
             <span>Main Menu</span>
           </button>
+        </div>
+
+        {/* Text Speed */}
+        <div className="mt-6">
+          <p className="text-sm font-semibold text-gray-600 mb-2">
+            Text Speed
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => onTextSpeedChange("normal")}
+              className={`w-full py-2 rounded-lg border-2 text-sm font-semibold transition-all ${
+                textSpeed === "normal"
+                  ? "border-teal-500 bg-teal-50 text-teal-800"
+                  : "border-gray-300 bg-white text-gray-600 hover:border-teal-300"
+              }`}
+            >
+              Normal
+            </button>
+            <button
+              onClick={() => onTextSpeedChange("instant")}
+              className={`w-full py-2 rounded-lg border-2 text-sm font-semibold transition-all ${
+                textSpeed === "instant"
+                  ? "border-teal-500 bg-teal-50 text-teal-800"
+                  : "border-gray-300 bg-white text-gray-600 hover:border-teal-300"
+              }`}
+            >
+              Instant
+            </button>
+          </div>
         </div>
 
         {/* Hint */}

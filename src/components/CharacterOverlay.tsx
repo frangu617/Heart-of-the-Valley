@@ -53,6 +53,7 @@ interface Props {
   onUnlockCharacter?: (characterName: string) => void
   hasInteractedToday?: (girlName: string, actionLabel: string) => boolean;
   onInteractionLogged?: (girlName: string, actionLabel: string) => void;
+  variant?: "sidebar" | "modal";
 }
 
 export default function CharacterOverlay({
@@ -74,6 +75,7 @@ export default function CharacterOverlay({
   onUnlockCharacter,
   hasInteractedToday,
   onInteractionLogged,
+  variant = "sidebar",
 }: Props) {
   const [showDatePlanner, setShowDatePlanner] = useState(false);
   const [showGiftMenu, setShowGiftMenu] = useState(false);
@@ -370,6 +372,9 @@ export default function CharacterOverlay({
 
   const expression = getFacialExpression();
 
+  const containerPosition =
+    variant === "modal" ? "relative" : "sticky top-4";
+
   return (
     <div
       className={`bg-gradient-to-br ${
@@ -378,7 +383,7 @@ export default function CharacterOverlay({
           : "from-pink-100 via-purple-100 to-blue-100"
       } rounded-2xl shadow-xl p-6 border-4 ${
         darkMode ? "border-purple-700" : "border-purple-200"
-      } sticky top-4 animate-slideUp`}
+      } ${containerPosition} animate-slideUp`}
     >
       {" "}
       <button

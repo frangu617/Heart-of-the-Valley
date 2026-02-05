@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 
 // Components
 import NameInput from "@/components/NameInput";
@@ -125,6 +126,8 @@ export default function GamePage() {
   const [showActivitiesMenu, setShowActivitiesMenu] =
     useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [isMounted, setIsMounted] = useState<boolean>(false);
+  const [textSpeed, setTextSpeed] = useState<"normal" | "instant">("instant");
   const [isDialogueClosing, setIsDialogueClosing] = useState<boolean>(false);
   const [isLocationTransitioning, setIsLocationTransitioning] =
     useState<boolean>(false);
@@ -452,8 +455,14 @@ export default function GamePage() {
 
   // mount
   useEffect(() => {
+    setIsMounted(true);
     const savedGame = localStorage.getItem("datingSimSave");
     setHasSaveData(!!savedGame);
+
+    const storedTextSpeed = localStorage.getItem("textSpeed");
+    if (storedTextSpeed === "instant" || storedTextSpeed === "normal") {
+      setTextSpeed(storedTextSpeed);
+    }
 
     const onResize = () => setIsMobile(window.innerWidth < 768);
     onResize();
@@ -465,6 +474,10 @@ export default function GamePage() {
     document.documentElement.classList.add("dark");
     localStorage.setItem("darkMode", "true");
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("textSpeed", textSpeed);
+  }, [textSpeed]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -580,6 +593,7 @@ export default function GamePage() {
       gameplayFlags: Array.from(gameplayFlags),
       dailyWorkoutState,
       rubyWorkoutTotal,
+      textSpeed,
       timestamp: new Date().toISOString(),
     };
     localStorage.setItem("datingSimSave", JSON.stringify(saveData));
@@ -620,6 +634,9 @@ export default function GamePage() {
       });
     }
     setRubyWorkoutTotal(data.rubyWorkoutTotal || 0);
+    if (data.textSpeed === "instant" || data.textSpeed === "normal") {
+      setTextSpeed(data.textSpeed);
+    }
     setSelectedGirl(null);
     setGameState("playing");
   };
@@ -1555,6 +1572,7 @@ const spendTime = (amount: number) => {
           }
           onNextDialogueId={goToDialogueByEventId}
           isMobile={isMobile}
+          textSpeed={textSpeed}
           locationImage={getCurrentLocationImage()}
           // midgroundImage={getCurrentLocationImage()}
           // midgroundOpacity={0.3}
@@ -1574,6 +1592,50 @@ const spendTime = (amount: number) => {
       </div>
     );
   }
+
+  const mobileCharacterOverlay =
+    isMounted && selectedGirl && isMobile
+      ? createPortal(
+          <div
+            className="fixed inset-0 z-[1000] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setSelectedGirl(null)}
+          >
+            <div
+              className="w-full max-w-md max-h-[90vh] overflow-y-auto relative z-[1001]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <CharacterOverlay
+                girl={selectedGirl}
+                location={currentLocation}
+                player={player}
+                gameplayFlags={gameplayFlags}
+                setPlayer={setPlayer}
+                spendTime={spendTime}
+                onClose={() => setSelectedGirl(null)}
+                onStartDialogue={startDialogue}
+                dayOfWeek={dayOfWeek}
+                hour={hour}
+                eventState={
+                  characterEventStates[selectedGirl.name] ?? {
+                    characterName: selectedGirl.name,
+                    eventHistory: [] as EventHistory[],
+                    lastInteractionTime: calculateGameTime(dayOfWeek, hour),
+                  }
+                }
+                onEventTriggered={onEventTriggered}
+                darkMode={darkMode}
+                onScheduleDate={handleScheduleDate}
+                hasInteractedToday={hasInteractedToday}
+                onInteractionLogged={recordInteraction}
+                onSetFlag={setFlag}
+                onUnlockCharacter={unlockCharacter}
+                variant="modal"
+              />
+            </div>
+          </div>,
+          document.body
+        )
+      : null;
 
   return (
     <div
@@ -2047,7 +2109,7 @@ const spendTime = (amount: number) => {
 
           </div>
 
-          {/* Right Sidebar */}
+          {/* Right Sidebar (Desktop) */}
           {selectedGirl ? (
             <div className="hidden lg:block">
               <CharacterOverlay
@@ -2064,16 +2126,18 @@ const spendTime = (amount: number) => {
                 eventState={
                   characterEventStates[selectedGirl.name] ?? {
                     characterName: selectedGirl.name,
-                eventHistory: [] as EventHistory[],
-                lastInteractionTime: calculateGameTime(dayOfWeek, hour),
-              }
-            }
-                            onEventTriggered={onEventTriggered}                darkMode={darkMode}
+                    eventHistory: [] as EventHistory[],
+                    lastInteractionTime: calculateGameTime(dayOfWeek, hour),
+                  }
+                }
+                onEventTriggered={onEventTriggered}
+                darkMode={darkMode}
                 onScheduleDate={handleScheduleDate}
                 hasInteractedToday={hasInteractedToday}
                 onInteractionLogged={recordInteraction}
                 onSetFlag={setFlag}
                 onUnlockCharacter={unlockCharacter}
+                variant="sidebar"
               />
             </div>
           ) : (
@@ -2095,6 +2159,7 @@ const spendTime = (amount: number) => {
               />
             </div>
           )}
+
         </div>
       </div>
 
@@ -2107,6 +2172,8 @@ const spendTime = (amount: number) => {
             setGameState("playing");
           }}
           onMainMenu={returnToMainMenu}
+          textSpeed={textSpeed}
+          onTextSpeedChange={setTextSpeed}
         />
       )}
 
@@ -2120,6 +2187,7 @@ const spendTime = (amount: number) => {
           characterImage={currentRandomEvent ? "" : dialogueCharacterImage}
           onNextDialogueId={goToDialogueByEventId}
           isMobile={isMobile}
+          textSpeed={textSpeed}
           locationImage={getCurrentLocationImage()}
           currentLocation={currentLocation}
           currentHour={hour}
@@ -2148,6 +2216,8 @@ const spendTime = (amount: number) => {
           quests={questItems}
         />
       )}
+
+      {mobileCharacterOverlay}
     </div>
   );
 }

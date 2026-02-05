@@ -5,6 +5,7 @@ import { irisEvents as irisEventsChapter2 } from "../chapter2/iris";
 // Import other character events as you create them
 import { gwenEvents } from "./gwen";
 import { yumiEvents } from "./yumi";
+import { yumiEvents as yumiEventsChapter2 } from "../chapter2/yumi";
 import { rubyEvents } from "./ruby";
 
 export * from "../types";
@@ -14,7 +15,7 @@ export const characterEvents: Record<string, CharacterEvent[]> = {
   Iris: [...irisEvents, ...irisEventsChapter2],
   Dawn: [],
   Gwen: gwenEvents,
-  Yumi: yumiEvents,
+  Yumi: [...yumiEvents, ...yumiEventsChapter2],
   Ruby: rubyEvents,
 };
 

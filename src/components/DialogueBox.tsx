@@ -36,6 +36,7 @@ interface Props {
   girlStats?: Partial<GirlStats>;
   playerName?: string;
   isClosing?: boolean;
+  textSpeed?: "normal" | "instant";
 }
 
 const checkChoiceCondition = (
@@ -287,8 +288,41 @@ const ORANGE_THEME: DialogueTheme = {
   },
 };
 
+const TEAL_THEME: DialogueTheme = {
+  frameBorder: "border-teal-300",
+  portraitGradient: "from-teal-200/90 via-cyan-200/90 to-sky-200/90",
+  portraitLabel: "from-teal-500 to-cyan-600",
+  dark: {
+    skipButton:
+      "bg-gray-800/90 hover:bg-gray-700 text-teal-300 border-2 border-teal-600",
+    box: "bg-gray-900/95 border-teal-700 hover:border-teal-500",
+    header: "border-teal-700 bg-teal-900/50",
+    headerText: "text-teal-300",
+    choiceButton:
+      "bg-teal-900/50 hover:bg-teal-800/70 border-2 border-teal-700 hover:border-teal-500",
+    choiceText: "text-teal-200",
+    instruction: "border-teal-700 text-gray-400",
+    indicator: "text-teal-400",
+    caret: "bg-teal-500",
+  },
+  light: {
+    skipButton:
+      "bg-white/90 hover:bg-white text-teal-700 border-2 border-teal-400",
+    box: "bg-white/95 border-teal-300 hover:border-teal-500",
+    header: "border-teal-200 bg-teal-50",
+    headerText: "text-teal-800",
+    choiceButton:
+      "bg-teal-50 hover:bg-teal-100 border-2 border-teal-300 hover:border-teal-500",
+    choiceText: "text-teal-900",
+    instruction: "border-teal-200 text-gray-500",
+    indicator: "text-teal-600",
+    caret: "bg-teal-500",
+  },
+};
+
 const DIALOGUE_THEMES: Record<string, DialogueTheme> = {
   default: PURPLE_THEME,
+  player: TEAL_THEME,
   iris: PURPLE_THEME,
   gwen: GREEN_THEME,
   yumi: BLUE_THEME,
@@ -303,11 +337,14 @@ const resolveThemeKey = (
   speaker?: string | null,
   playerName?: string
 ) => {
-  const characterKey = normalizeName(characterName);
-  if (characterKey) return characterKey;
   const speakerKey = normalizeName(speaker ?? undefined);
   const playerKey = normalizeName(playerName);
-  if (!speakerKey || speakerKey === "you" || speakerKey === playerKey) {
+  if (speakerKey === "you" || speakerKey === playerKey) {
+    return "player";
+  }
+  const characterKey = normalizeName(characterName);
+  if (characterKey) return characterKey;
+  if (!speakerKey) {
     return "default";
   }
   return speakerKey;
@@ -330,6 +367,7 @@ export default function DialogueBox({
   girlStats,
   playerName = "You",
   isClosing = false,
+  textSpeed = "normal",
 }: Props) {
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
@@ -436,6 +474,13 @@ export default function DialogueBox({
 
     const text = currentLine.text ?? "";
     const processedText = replaceTemplateVariables(text);
+    if (textSpeed === "instant") {
+      setDisplayedText(processedText);
+      setIsTyping(false);
+      setShowContinue(!currentLine.choices);
+      return;
+    }
+
     const typingSpeed = 30;
     let index = 0;
 
@@ -451,7 +496,7 @@ export default function DialogueBox({
     }, typingSpeed);
 
     return () => clearInterval(interval);
-  }, [currentLineIndex, currentLine, dialogue.lines.length, onComplete, accumulatedStatChanges, currentLocation, currentHour, currentDay, playerStats, girlStats, replaceTemplateVariables]);
+  }, [currentLineIndex, currentLine, dialogue.lines.length, onComplete, accumulatedStatChanges, currentLocation, currentHour, currentDay, playerStats, girlStats, replaceTemplateVariables, textSpeed]);
 
   const handleChoice = (choice: DialogueChoice) => {
     if (isClosing) return;
@@ -661,7 +706,7 @@ export default function DialogueBox({
                     `}
                 >
                   <span className={`font-semibold ${themeMode.choiceText}`}>
-                    â†’ {choice.text}
+                    {"\u2192"} {choice.text}
                   </span>
                 </button>
               ))}
@@ -673,7 +718,7 @@ export default function DialogueBox({
         {showContinue && !currentLine.choices && (
           <div className="absolute bottom-4 right-8 animate-bounce">
             <div className={`text-2xl ${themeMode.indicator}`}>
-              {isLastLine ? "âœ“" : "â–¼"}
+              {isLastLine ? "\u2713" : "\u25BC"}
             </div>
           </div>
         )}
