@@ -68,7 +68,7 @@ const gwenIntroAfterChoice: Dialogue = {
     {
       speaker: "Gwen",
       text: "Lot of people who don't know how to look without staring.",
-      expression: "shy",
+      expression: "annoyed",
     },
     { speaker: "You", text: "That sounds... busy." },
     {
@@ -89,7 +89,7 @@ const gwenIntroAfterChoice: Dialogue = {
     {
       speaker: "Gwen",
       text: "Anyway... welcome to the building, mystery neighbor.",
-      expression: "shy",
+      expression: "happy",
     },
     {
       speaker: "Gwen",
@@ -259,7 +259,7 @@ const gwenEvent5After: Dialogue = {
     {
       speaker: "Gwen",
       text: "If you can do that, maybe we can talk when I'm off the clock.",
-      expression: "shy",
+      expression: "neutral",
     },
     {
       speaker: null,
@@ -393,8 +393,8 @@ export const gwenEvents: CharacterEvent[] = [
         },
         {
           speaker: "Gwen",
-          text: "I mean--uh--new neighbors are good. For the building. Wow. Strong start, Gwen.",
-          expression: "shy",
+          text: "I mean--new neighbors are good. For the building. Strong start, Gwen.",
+          expression: "neutral",
         },
         { speaker: "You", text: "I'll pretend I didn't hear that." },
         { speaker: "Gwen", text: "Appreciated. I'm Gwen.", expression: "happy" },
@@ -412,7 +412,7 @@ export const gwenEvents: CharacterEvent[] = [
           text: "I'm an occasional rescuer of lone neighbors.",
           expression: "excited",
         },
-        { speaker: "Gwen", text: "For a price.", expression: "shy" },
+        { speaker: "Gwen", text: "For a price.", expression: "happy" },
         {
           speaker: null,
           text: "She holds your gaze, the flirt settling into place.",
@@ -510,7 +510,7 @@ export const gwenEvents: CharacterEvent[] = [
         {
           speaker: "Gwen",
           text: "I'm... socially lubricated. There's a difference.",
-          expression: "shy",
+          expression: "neutral",
         },
         {
           speaker: null,
@@ -781,7 +781,7 @@ export const gwenEvents: CharacterEvent[] = [
         {
           speaker: "Gwen",
           text: "And... I'm starting to like you more than a neighbor should.",
-          expression: "shy",
+          expression: "neutral",
         },
         {
           speaker: "You",

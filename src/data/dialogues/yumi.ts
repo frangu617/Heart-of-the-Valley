@@ -7,18 +7,18 @@ export const yumiDialogues: Record<string, Dialogue> = {
     lines: [
       {
         speaker: "Yumi",
-        text: "Professor {playerName}! Do you have a moment?",
+        text: "Professor {playerName}, do you have a moment?",
         expression: "neutral",
       },
       { speaker: "You", text: "Of course, Yumi. What can I help you with?" },
       {
         speaker: "Yumi",
-        text: "I was wondering... would you be willing to mentor me outside of class?",
+        text: "I was wondering if you'd be willing to mentor me outside of class.",
         expression: "neutral",
       },
       {
         speaker: "Yumi",
-        text: "I want to learn more about advanced programming, and you're the best teacher I know.",
+        text: "I want to learn more about advanced programming, and you're one of the best teachers I know.",
         expression: "happy",
       },
       {
@@ -44,7 +44,7 @@ export const yumiDialogues: Record<string, Dialogue> = {
       },
       {
         speaker: "Yumi",
-        text: "Thank you so much, Professor! I really appreciate it.",
+        text: "Thank you, Professor. I appreciate it.",
         expression: "shy",
       },
     ],

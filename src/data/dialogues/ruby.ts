@@ -19,7 +19,7 @@ export const rubyDialogues: Record<string, Dialogue> = {
       { speaker: "You", text: "Sure, what's up?" },
       {
         speaker: "Ruby",
-        text: "Do you ever... think about us? Like, not just as trainer and client?",
+        text: "Do you ever... think about me? Like, not just as your trainer?",
         expression: "sad",
       },
       {
@@ -27,7 +27,7 @@ export const rubyDialogues: Record<string, Dialogue> = {
         text: "How do you respond?",
         choices: [
           {
-            text: "Not really, you're like a sister to me.",
+            text: "Not really. I see you as my trainer.",
             affectionChange: -8,
             moodChange: -15,
           },
@@ -37,7 +37,7 @@ export const rubyDialogues: Record<string, Dialogue> = {
             moodChange: 5,
           },
           {
-            text: "I value our friendship too much to complicate it.",
+            text: "I value our working dynamic too much to blur it.",
             affectionChange: -3,
             moodChange: -5,
           },

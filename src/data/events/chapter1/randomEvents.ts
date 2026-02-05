@@ -218,20 +218,20 @@ export const randomEvents: RandomEvent[] = [
     dialogue: {
       id: "beach_day_dialogue",
       lines: [
-        {
-          speaker: "Dawn",
-          text: "Uncle {playerName}! Perfect! I was hoping I'd run into you!",
-          expression: "happy",
-        },
-        {
-          speaker: "You",
-          text: "Hey Dawn! What's up?",
-        },
-        {
-          speaker: "Dawn",
-          text: "Do you want to swim with me? Come on, the water's great!",
-          expression: "happy",
-        },
+      {
+        speaker: "Dawn",
+        text: "{playerName}. Perfect timing. I was hoping I'd run into you.",
+        expression: "happy",
+      },
+      {
+        speaker: "You",
+        text: "Hey Dawn! What's up?",
+      },
+      {
+        speaker: "Dawn",
+        text: "Come with me. The water's great, and I want the company.",
+        expression: "happy",
+      },
         {
           speaker: null,
           text: "You spend the afternoon at the beach with Dawn.",
@@ -383,7 +383,7 @@ export const randomEvents: RandomEvent[] = [
   },
   {
     id: "Gwen sex show",
-    name: "See Gwen getting dick!",
+    name: "After-Hours Set",
     type: "observation",
     probability: 100,
     conditions: {
@@ -395,7 +395,7 @@ export const randomEvents: RandomEvent[] = [
       lines: [
         {
           speaker: null,
-          text: "Gwen is having a sex show with some friends. You can't help but watch.",
+          text: "Gwen is performing a private after-hours set with a few regulars. You can't help but watch.",
           imageSlide: "/images/events/gwen_sex_show.png",
           choices: [
             {
@@ -411,7 +411,7 @@ export const randomEvents: RandomEvent[] = [
   },
   {
     id: "gwen_ntr",
-    name: "See Gwen getting big dick!",
+    name: "Private Performance",
     type: "observation",
     probability: 1,
     conditions: {
@@ -430,7 +430,7 @@ export const randomEvents: RandomEvent[] = [
         },
         {
           speaker: "Gwen",
-          text: "I'm so horny! I want to cum so bad!",
+          text: "Eyes on me. Don't look away.",
         },
       ],
     },

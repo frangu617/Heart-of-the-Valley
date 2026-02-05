@@ -70,6 +70,7 @@ import { yumiDialogues } from "./yumi";
 import { rubyDialogues } from "./ruby";
 import { rubyStoryDialogues } from "../events/chapter1/ruby";
 import { yumiStoryDialogues } from "../events/chapter1/yumi";
+import { yumiStoryDialogues as yumiStoryDialoguesCh2 } from "../events/chapter2/yumi";
 import { introDialogue } from "./intro";
 import type { GameplayFlag } from "../events/types";
 
@@ -90,7 +91,7 @@ export const characterDialogues: Record<string, Record<string, Dialogue>> = {
   Iris: { ...irisDialogues, ...irisStoryDialoguesCh1, ...irisStoryDialoguesCh2 },
   Dawn: dawnDialogues,
   Gwen: { ...gwenDialogues, ...gwenStoryDialogues },
-  Yumi: { ...yumiDialogues, ...yumiStoryDialogues },
+  Yumi: { ...yumiDialogues, ...yumiStoryDialogues, ...yumiStoryDialoguesCh2 },
   Ruby: { ...rubyDialogues, ...rubyStoryDialogues },
 };
 

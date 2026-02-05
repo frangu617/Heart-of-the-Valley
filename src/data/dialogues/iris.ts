@@ -7,12 +7,12 @@ export const irisDialogues: Record<string, Dialogue> = {
     lines: [
       {
         speaker: "Iris",
-        text: "Oh, {playerName}! I didn't expect to see you here...",
+        text: "Oh, {playerName}. I didn't expect to run into you here.",
         expression: "neutral",
       },
       {
         speaker: "Iris",
-        text: "How... how was your morning class?",
+        text: "How was your morning class?",
         expression: "neutral",
       },
       {
@@ -38,12 +38,12 @@ export const irisDialogues: Record<string, Dialogue> = {
       },
       {
         speaker: "Iris",
-        text: "I... I see. That's... that's good to hear.",
+        text: "I see. That's good to hear.",
         expression: "happy",
       },
       {
         speaker: null,
-        text: "Iris seems pleased with your answer. You notice a slight blush on her cheeks.",
+        text: "Iris seems pleased with your answer. Her smile lingers for a beat.",
       },
     ],
   },
@@ -52,23 +52,23 @@ export const irisDialogues: Record<string, Dialogue> = {
     requiresFirstTimeOnly: true,
     lines: [
       { speaker: "You", text: "Can I give you a hug?" },
-      { speaker: "Iris", text: "A hug? I... um...", expression: "neutral" },
+      { speaker: "Iris", text: "A hug? Here?", expression: "neutral" },
       {
         speaker: null,
-        text: "Iris looks uncertain, glancing around nervously.",
+        text: "Iris glances around the hallway, weighing the moment.",
       },
       {
         speaker: "Iris",
-        text: "I suppose that would be... alright.",
+        text: "All right.",
         expression: "happy",
       },
       {
         speaker: null,
-        text: "You embrace Iris gently. She seems to relax slightly in your arms.",
+        text: "You embrace Iris gently. She relaxes a fraction, then steps back.",
       },
       {
         speaker: "Iris",
-        text: "Thank you, {playerName}. That was... nice.",
+        text: "Thank you, {playerName}. That was nice.",
         expression: "love",
       },
     ],
@@ -80,16 +80,16 @@ export const irisDialogues: Record<string, Dialogue> = {
       { speaker: null, text: "You lean in closer to Iris." },
       {
         speaker: "Iris",
-        text: "{playerName}, what are you...?",
+        text: "{playerName}, what are you doing?",
         expression: "neutral",
       },
       {
         speaker: null,
-        text: "You kiss her softly. Her eyes widen in surprise.",
+        text: "You kiss her softly. She freezes, then exhales.",
       },
       {
         speaker: "Iris",
-        text: "We... we shouldn't... Dawn might...",
+        text: "We shouldn't. Dawn might see.",
         expression: "sad",
       },
       {

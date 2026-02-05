@@ -56,7 +56,20 @@ export type GameplayFlag =
   | "rubyBarComforted"
   | "rubyBarWalkedAway"
   | "yumiDomPath"
-  | "yumiSubPath";
+  | "yumiSubPath"
+  | "yumi_chapter_1_completed"
+  | "yumi_chapter_2_started"
+  | "yumi_c2_event_2_completed"
+  | "yumi_relationship_secret"
+  | "yumi_relationship_secret_dom"
+  | "yumi_relationship_secret_neutral"
+  | "yumi_relationship_stalled"
+  | "yumi_romance_ended"
+  | "yumi_c2_event_3_completed"
+  | "yumi_c2_event_4_completed"
+  | "yumi_chapter_2_date"
+  | "yumi_chapter_2_completed"
+  | "metDawn";
 
 export type EventConditions = {
   // Minimum stat requirements

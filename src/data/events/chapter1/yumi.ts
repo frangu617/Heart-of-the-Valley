@@ -80,12 +80,17 @@ const yumiTutorRequestPrivate: Dialogue = {
       expression: "happy",
     },
     {
+      speaker: "Yumi",
+      text: "My evenings are a little strange. I do some online work too, so I might be late sometimes.",
+      expression: "neutral",
+    },
+    {
       speaker: null,
       text: "She walks out of the classroom with a bounce in her step, clutching her notebook like it's a prize.",
     },
     {
       speaker: null,
-      text: "She seems like a good kid. Hopefully, she keeps that energy up for the rest of the semester.",
+      text: "She seems sharp. Hopefully, she keeps that energy up for the rest of the semester.",
     },
   ],
 };
@@ -238,7 +243,7 @@ const yumiTutor1Stern: Dialogue = {
     { speaker: "You", text: "You're surprisingly fast." },
     {
       speaker: "Yumi",
-      text: "S-sorry! Is it too loud? I can type softer!",
+      text: "Sorry. Is it too loud? I can keep it quiet.",
       expression: "shy",
     },
     { speaker: "You", text: "It's fine. Just... impressive." },
@@ -519,11 +524,11 @@ const yumiClassroomFlirtDomEnjoy: Dialogue = {
     { speaker: "You", text: "Is that so? And what else do you notice?" },
     {
       speaker: null,
-      text: "You don't move away. You let her hand linger on your chest.",
+      text: "You take the tissue and wipe the dust away, letting her watch.",
     },
     {
       speaker: null,
-      text: "Yumi's smile widens. She traces the line of your collar with her thumb.",
+      text: "Yumi's smile widens. Her gaze lingers on your collar.",
     },
     { speaker: "Yumi", text: "I notice that you're not stopping me.", expression: "happy" },
     {
@@ -533,7 +538,7 @@ const yumiClassroomFlirtDomEnjoy: Dialogue = {
     },
     {
       speaker: null,
-      text: "She finally steps back, smoothing her own skirt, looking thoroughly pleased with herself.",
+      text: "She eases back, smoothing her own skirt, looking thoroughly pleased with herself.",
     },
     {
       speaker: "Yumi",
@@ -542,11 +547,11 @@ const yumiClassroomFlirtDomEnjoy: Dialogue = {
     },
     {
       speaker: null,
-      text: "Yumi walks to the door with a sway in her hips, looking back once to make sure you're watching her leave.",
+      text: "Yumi heads to the door with a composed stride, glancing back once to make sure you're watching her leave.",
     },
     {
       speaker: null,
-      text: "That girl is going to be the death of my tenure if I'm not careful.",
+      text: "That student is going to be the death of my tenure if I'm not careful.",
     },
     {
       speaker: null,
@@ -567,7 +572,7 @@ const yumiClassroomFlirtDomTease: Dialogue = {
     },
     {
       speaker: null,
-      text: "You catch her hand gently by the wrist, stopping her motion but holding her gaze.",
+      text: "You keep your tone light, but you don't invite her any closer.",
     },
     {
       speaker: "Yumi",
@@ -585,11 +590,11 @@ const yumiClassroomFlirtDomTease: Dialogue = {
     },
     {
       speaker: null,
-      text: "Yumi walks to the door with a sway in her hips, looking back once to make sure you're watching her leave.",
+      text: "Yumi heads to the door with a composed stride, glancing back once to make sure you're watching her leave.",
     },
     {
       speaker: null,
-      text: "That girl is going to be the death of my tenure if I'm not careful.",
+      text: "That student is going to be the death of my tenure if I'm not careful.",
     },
     {
       speaker: null,
@@ -625,20 +630,20 @@ const yumiClassroomFlirtSubPush: Dialogue = {
     },
     {
       speaker: null,
-      text: "She grabs her bag, looking like she might faint from the attention.",
+      text: "She grabs her bag, steadying herself under the attention.",
     },
     {
       speaker: "Yumi",
-      text: "I... I should go! Before I miss my... bus! Train! Walking!",
+      text: "I... I should go before it gets too late.",
       expression: "shy",
     },
     {
       speaker: null,
-      text: "Yumi hurries out of the room, looking back once with a shy, beaming smile before disappearing into the hallway.",
+      text: "Yumi hurries out of the room, glancing back once with a small, shy smile before disappearing into the hallway.",
     },
     {
       speaker: null,
-      text: "That girl is going to be the death of my tenure if I'm not careful.",
+      text: "That student is going to be the death of my tenure if I'm not careful.",
     },
     {
       speaker: null,
@@ -664,20 +669,20 @@ const yumiClassroomFlirtSubSweet: Dialogue = {
     },
     {
       speaker: null,
-      text: "She grabs her bag, looking like she might faint from the attention.",
+      text: "She grabs her bag, steadying herself under the attention.",
     },
     {
       speaker: "Yumi",
-      text: "I... I should go! Before I miss my... bus! Train! Walking!",
+      text: "I... I should go before it gets too late.",
       expression: "shy",
     },
     {
       speaker: null,
-      text: "Yumi hurries out of the room, looking back once with a shy, beaming smile before disappearing into the hallway.",
+      text: "Yumi hurries out of the room, glancing back once with a small, shy smile before disappearing into the hallway.",
     },
     {
       speaker: null,
-      text: "That girl is going to be the death of my tenure if I'm not careful.",
+      text: "That student is going to be the death of my tenure if I'm not careful.",
     },
     {
       speaker: null,
@@ -821,12 +826,12 @@ const yumiFinaleDomSuccess: Dialogue = {
     { speaker: null, text: "She grabs your collar with both hands." },
     {
       speaker: "Yumi",
-      text: "I'm going to kiss you now. And you aren't going to stop me.",
+      text: "I'm going to kiss you now. Tell me to stop if you want to.",
       expression: "angry",
     },
     {
       speaker: null,
-      text: "She smashes her lips against yours. It's forceful, messy, and desperate.",
+      text: "She kisses you hard, a little clumsy, more intent than practiced.",
     },
     {
       speaker: null,
@@ -859,7 +864,7 @@ const yumiFinaleDomSuccess: Dialogue = {
     { speaker: "Yumi", text: "Dream of me tonight. I know you will.", expression: "happy" },
     {
       speaker: null,
-      text: "She struts out of the office, swinging her hips, leaving you sitting there with lipstick on your face.",
+      text: "She walks out with a practiced sway, leaving you sitting there with lipstick on your face.",
     },
     {
       speaker: null,
@@ -1007,9 +1012,9 @@ const yumiFinaleSubSuccess: Dialogue = {
     },
     {
       speaker: null,
-      text: "She basically runs out of the room, tripping slightly over the doorframe in her haste.",
+      text: "She rushes out of the room, catching herself on the doorframe in her haste.",
     },
-    { speaker: "You", text: "Cute. Definitely cute." },
+    { speaker: "You", text: "Charming. Definitely." },
     {
       speaker: null,
       text: "You sit back down, still feeling her warmth.",
@@ -1117,7 +1122,7 @@ export const yumiEvents: CharacterEvent[] = [
         },
         {
           speaker: null,
-          text: "She steps a little closer, her eyes bright with admiration.",
+          text: "She stays near the front row, eyes bright with admiration.",
         },
         {
           speaker: "Yumi",
@@ -1304,7 +1309,7 @@ export const yumiEvents: CharacterEvent[] = [
         },
         {
           speaker: null,
-          text: "She locks the door behind her with a definitive click.",
+          text: "She closes the door behind her and checks the latch.",
         },
         {
           speaker: "You",
@@ -1413,7 +1418,7 @@ export const yumiEvents: CharacterEvent[] = [
         },
         {
           speaker: null,
-          text: "She locks the door behind her with a definitive click.",
+          text: "She closes the door behind her and checks the latch.",
         },
         {
           speaker: "You",
@@ -1530,7 +1535,7 @@ export const yumiEvents: CharacterEvent[] = [
         },
         {
           speaker: null,
-          text: "She pushes off the desk and walks right up to the podium. She enters your personal space without hesitation.",
+          text: "She pushes off the desk and walks up the aisle, stopping just short of the podium.",
         },
         {
           speaker: "Yumi",
@@ -1539,16 +1544,16 @@ export const yumiEvents: CharacterEvent[] = [
         },
         {
           speaker: null,
-          text: "She reaches out. For a split second, you think she's going to hit you, but her hand lands softly on your lapel.",
+          text: "She tilts her head toward your lapel, then taps her pen lightly against her notebook.",
         },
         {
           speaker: "Yumi",
-          text: "You have marker dust right here. It looks messy.",
+          text: "You have marker dust on your lapel. It looks messy.",
           expression: "happy",
         },
         {
           speaker: null,
-          text: "She brushes her hand against your chest--slowly. It's not really a cleaning motion; it's a caress disguised as helpfulness.",
+          text: "She holds out a clean tissue, waiting to see if you'll take it.",
         },
         { speaker: "You", text: "Yumi..." },
         {
@@ -1558,7 +1563,7 @@ export const yumiEvents: CharacterEvent[] = [
         },
         {
           speaker: "Yumi",
-          text: "I'm very detail-oriented. I notice things other girls miss.",
+          text: "I'm very detail-oriented. I notice things other people miss.",
           expression: "happy",
         },
         {
@@ -1633,16 +1638,16 @@ export const yumiEvents: CharacterEvent[] = [
         },
         {
           speaker: null,
-          text: "You step into her personal space. She freezes, her eyes going wide, her breath hitching in her throat.",
+          text: "You take a small step closer, leaving a polite gap. She freezes, her eyes widening, her breath catching.",
         },
         {
           speaker: null,
-          text: "You reach out and gently brush a stray lock of hair behind her ear. Your fingers linger near her cheek for just a moment longer than necessary.",
+          text: "You reach out and gently brush a stray lock of hair behind her ear, careful and quick.",
         },
         { speaker: "You", text: "There. Your hair was in your eyes." },
         {
           speaker: null,
-          text: "Her face turns a brilliant shade of crimson. She leans into your touch instinctively before realizing what she's doing.",
+          text: "Her face turns a brilliant shade of crimson. She steadies herself and steps back half a pace.",
         },
         {
           speaker: "Yumi",
@@ -1744,6 +1749,9 @@ export const yumiEvents: CharacterEvent[] = [
         },
       ],
     },
+    rewards: {
+      setFlags: ["yumi_chapter_1_completed"],
+    },
   },
   {
     id: "yumi_chapter_1_finale_sub",
@@ -1797,6 +1805,9 @@ export const yumiEvents: CharacterEvent[] = [
           ],
         },
       ],
+    },
+    rewards: {
+      setFlags: ["yumi_chapter_1_completed"],
     },
   },
 ];

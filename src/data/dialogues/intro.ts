@@ -15,16 +15,16 @@ export const introDialogue: Dialogue = {
     },
     {
       speaker: null,
-      text: "Teaching programming at a state university. It's not a bad life - stable, respectable even. Just... not yours.",
+      text: "Teaching programming at a state university. It's a steady life - respectable, even. Not the dream you pictured, but not nothing.",
     },
     {
       speaker: null,
-      text: "The dream was different. Working at a cutting-edge tech company, building something that mattered. But the interviews never panned out, the applications disappeared into the void, and eventually... you stopped trying.",
+      text: "The dream was different: cutting-edge tech, building something that mattered. But you traded the chase for stability, at least for now.",
       imageSlide: "/images/locations/bathroom/morning.png",
     },
     {
       speaker: null,
-      text: "Now you wake up, shower, teach other people how to chase dreams you gave up on. The irony isn't lost on you.",
+      text: "Now you wake up, shower, teach other people how to chase their own ambitions. The irony isn't lost on you.",
       imageSlide: "/images/locations/bathroom/morning.png",
     },
     

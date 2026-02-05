@@ -6,7 +6,7 @@ const irisIntroStayStill: Dialogue = {
   lines: [
     {
       speaker: null,
-      text: "She drops to one knee to scoop up your papers. Her pink blouse pulls tight across her chest as she leans forward, buttons straining, black lace bra spilling into view--deep cleavage on full, shameless display. The short white skirt hikes up her thick thighs, fishnets stretching over soft, full curves.",
+      text: "She drops to one knee to scoop up your papers. Her pink blouse pulls tight across her chest as she leans forward, buttons straining, black lace bra briefly visible. The short white skirt rides up her thighs, fishnets stretching as she reaches.",
     },
     {
       speaker: null,
@@ -28,7 +28,7 @@ const irisIntroStayStill: Dialogue = {
     },
     {
       speaker: null,
-      text: "She reaches out, fingers splaying across the wet patch on your chest, thumb dragging slowly down the soaked fabric like she's tracing muscle.",
+      text: "She reaches out, fingers splaying across the wet patch on your chest, checking the damage.",
     },
     {
       speaker: "Iris",
@@ -37,7 +37,7 @@ const irisIntroStayStill: Dialogue = {
     },
     {
       speaker: null,
-      text: "Her hand lingers, warm through the damp cloth, before she finally pulls away with a tiny, almost satisfied smile.",
+      text: "She pulls her hand away quickly, expression apologetic.",
     },
     { speaker: "You", text: "It'll wash. Probably. Maybe." },
     {
@@ -96,7 +96,7 @@ const irisIntroStayAccept: Dialogue = {
     },
     {
       speaker: null,
-      text: "She pulls out her phone, smile wide and a little wicked.",
+      text: "She pulls out her phone, smile warm and a little embarrassed.",
     },
     { speaker: "You", text: "Tomorrow? I should be dry by then." },
     {
@@ -174,7 +174,7 @@ const irisIntroStepBack: Dialogue = {
     },
     {
       speaker: null,
-      text: "Her eyes slide over the wet stain, then back up your body.",
+      text: "Her eyes flick to the wet stain, then back to your face.",
     },
     { speaker: "You", text: "{playerName}. New here." },
     {
@@ -237,14 +237,14 @@ const irisIntroStepAccept: Dialogue = {
     },
     {
       speaker: null,
-      text: "She lets the question hang with a tiny, teasing smile, clearly aware of the way your gaze has been drifting.",
+      text: "She lets the question hang with a small smile, waiting for your answer.",
     },
     { speaker: null, text: "Busted. Great." },
     { speaker: "You", text: "Definitely the coffee. Mostly." },
     { speaker: "Iris", text: "Uh-huh. Sure it is.", expression: "happy" },
     {
       speaker: null,
-      text: "She winks, quick and playful, then pulls her phone from her pocket.",
+      text: "She gives a quick, playful smile, then pulls her phone from her pocket.",
     },
     {
       speaker: "Iris",
@@ -259,7 +259,7 @@ const irisIntroStepAccept: Dialogue = {
     { speaker: "Iris", text: "Perfect.", expression: "happy" },
     {
       speaker: null,
-      text: "She taps a few times, and your phone buzzes almost instantly with a text: Iris - don't forget tomorrow. And sorry again about the shirt... sort of.",
+      text: "She taps a few times, and your phone buzzes almost instantly with a text: Iris - don't forget tomorrow. And sorry again about the shirt.",
     },
     {
       speaker: "Iris",
