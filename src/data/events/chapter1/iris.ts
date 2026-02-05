@@ -32,7 +32,7 @@ const irisIntroStayStill: Dialogue = {
     },
     {
       speaker: "Iris",
-      text: "This one's toast now. Shame... it fit you so well.",
+      text: "This one's toast now. It did fit you well.",
       expression: "neutral",
     },
     {
@@ -51,7 +51,7 @@ const irisIntroStayStill: Dialogue = {
     },
     {
       speaker: "Iris",
-      text: "First day? Oh, honey, that's brutal. I basically ruined your big debut.",
+      text: "First day? That's brutal. I basically ruined your big debut.",
       expression: "surprised",
     },
     {
@@ -169,7 +169,7 @@ const irisIntroStepBack: Dialogue = {
     { speaker: "You", text: "It's fine. Just coffee." },
     {
       speaker: "Iris",
-      text: "I'm Iris--I teach Advanced Bio here. Still, I hate that I soaked you on your first day. That shirt was doing you favors.",
+      text: "I'm Iris--I teach Advanced Bio here. Still, I hate that I soaked you on your first day. That shirt fit you well.",
       expression: "neutral",
     },
     {
@@ -232,7 +232,7 @@ const irisIntroStepAccept: Dialogue = {
     },
     {
       speaker: "Iris",
-      text: "You still look a little dazed. Coffee shock... or something else?",
+      text: "You still look a little dazed. Coffee shock, maybe?",
       expression: "happy",
     },
     {
@@ -389,11 +389,11 @@ const irisHallwayInviteDom: Dialogue = {
       text: "She reaches out, straightening your collar. Her fingers linger against your neck.",
     },
     { speaker: "Iris", text: "You have a little tension right here. You should be careful.", expression: "neutral" },
-    { speaker: "Iris", text: "Stress is a killer. You need someone to help you relax.", expression: "neutral" },
+    { speaker: "Iris", text: "Stress is a killer. You need to take care of yourself.", expression: "neutral" },
     { speaker: "You", text: "Are you volunteering?" },
     {
       speaker: "Iris",
-      text: "Maybe. I'm very good at anatomy, remember? I know exactly where the pressure points are.",
+      text: "Maybe. I'm very good at anatomy, remember? I know how to fix tension.",
       expression: "happy",
     },
     {
@@ -402,7 +402,7 @@ const irisHallwayInviteDom: Dialogue = {
     },
     {
       speaker: "Iris",
-      text: "Don't be a stranger, {playerName}. My door is unlocked for you.",
+      text: "Don't be a stranger, {playerName}. If you want company, knock.",
       expression: "seductive",
     },
     {
@@ -658,7 +658,7 @@ const irisFinaleDomSuccess: Dialogue = {
       expression: "seductive",
     },
     { speaker: null, text: "She grips your shirt, pulling you down. It's impulsive, almost rough." },
-    { speaker: "Iris", text: "I shouldn't do this. I really shouldn't.", expression: "shy" },
+    { speaker: "Iris", text: "I told myself I'd be careful.", expression: "shy" },
     { speaker: "Iris", text: "But I want to.", expression: "shy" },
     {
       speaker: null,
@@ -1461,12 +1461,12 @@ export const irisEvents: CharacterEvent[] = [
         { speaker: "Iris", text: "You know... since you've already handled the merchandise...", expression: "seductive" },
         {
           speaker: "Iris",
-          text: "I bought a new outfit in there. Very little fabric. Very expensive.",
+          text: "I bought something a little impractical. Very expensive.",
           expression: "seductive",
         },
         {
           speaker: "Iris",
-          text: "I might need a second opinion on how it fits later.",
+          text: "I might ask for a second opinion later.",
           expression: "seductive",
         },
         { speaker: "You", text: "I'm available for consultations." },
