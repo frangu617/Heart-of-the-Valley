@@ -1795,7 +1795,7 @@ const spendTime = (amount: number) => {
                   width={50}
                   height={50}
                 />
-                dY&apos;- Heart of the Valley
+                Heart of the Valley
               </span>
             </h1>
             <div className="flex gap-2 items-center">
