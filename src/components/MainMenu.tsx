@@ -3,14 +3,18 @@ import Image from "next/image";
 interface Props {
   onNewGame: () => void;
   onContinue: () => void;
-  hasSaveData: boolean;
+  onLoad: () => void;
+  hasAutoSave: boolean;
+  hasManualSave: boolean;
   darkMode?: boolean;
 }
 
 export default function MainMenu({
   onNewGame,
   onContinue,
-  hasSaveData,
+  onLoad,
+  hasAutoSave,
+  hasManualSave,
   darkMode = true,
 }: Props) {
   return (
@@ -52,22 +56,42 @@ export default function MainMenu({
             ✨ New Game
           </button>
 
-          {hasSaveData && (
+          {hasAutoSave && (
             <button
               onClick={onContinue}
+              title="Continue from auto-save"
               className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold text-2xl py-6 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-xl"
             >
               📂 Continue
             </button>
           )}
 
-          {!hasSaveData && (
+          {!hasAutoSave && (
             <div
               className={`text-center italic py-4 ${
                 darkMode ? "text-gray-500" : "text-gray-400"
               }`}
             >
-              No saved game found
+              No auto-save found
+            </div>
+          )}
+
+          {hasManualSave && (
+            <button
+              onClick={onLoad}
+              className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-2xl py-6 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-xl"
+            >
+              Load Manual Save
+            </button>
+          )}
+
+          {!hasManualSave && (
+            <div
+              className={`text-center italic py-4 ${
+                darkMode ? "text-gray-500" : "text-gray-400"
+              }`}
+            >
+              No manual save found
             </div>
           )}
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 
 // Components
@@ -81,6 +81,31 @@ type QuestItem = {
   priority: number;
 };
 
+const MANUAL_SAVE_KEY = "datingSimSave";
+const AUTO_SAVE_KEY = "datingSimAutoSave";
+
+type SaveData = {
+  player: PlayerStats;
+  currentLocation: string;
+  hour: number;
+  dayOfWeek: DayOfWeek;
+  metCharacters: string[];
+  girlStatsOverrides: Record<string, Partial<GirlStats>>;
+  characterEventStates: Record<string, CharacterEventState>;
+  characterUnlocks: {
+    Yumi: boolean;
+    Gwen: boolean;
+    Dawn: boolean;
+    Ruby: boolean;
+  };
+  scheduledEncounters: ScheduledEncounter[];
+  gameplayFlags: GameplayFlag[];
+  dailyWorkoutState: DailyWorkoutState;
+  rubyWorkoutTotal: number;
+  textSpeed: "normal" | "instant";
+  timestamp: string;
+};
+
 const clampValue = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
 
@@ -110,8 +135,10 @@ export default function GamePage() {
   const [dayOfWeek, setDayOfWeek] = useState<DayOfWeek>(START_DAY);
 
   const [selectedGirl, setSelectedGirl] = useState<Girl | null>(null);
-  const [hasSaveData, setHasSaveData] = useState<boolean>(false);
+  const [hasManualSave, setHasManualSave] = useState<boolean>(false);
+  const [hasAutoSave, setHasAutoSave] = useState<boolean>(false);
   const darkMode = true;
+  const hasAnySaveData = hasManualSave || hasAutoSave;
 
   const [currentDialogue, setCurrentDialogue] = useState<Dialogue | null>(null);
   const [dialogueCharacterImage, setDialogueCharacterImage] =
@@ -150,6 +177,7 @@ export default function GamePage() {
       withoutRuby: 0,
     });
   const [rubyWorkoutTotal, setRubyWorkoutTotal] = useState<number>(0);
+  const pendingAutoSaveRef = useRef(false);
 
   const getProgressionCount = useCallback(
     (girlName: string) => {
@@ -456,8 +484,10 @@ export default function GamePage() {
   // mount
   useEffect(() => {
     setIsMounted(true);
-    const savedGame = localStorage.getItem("datingSimSave");
-    setHasSaveData(!!savedGame);
+    const manualSave = localStorage.getItem(MANUAL_SAVE_KEY);
+    const autoSave = localStorage.getItem(AUTO_SAVE_KEY);
+    setHasManualSave(!!manualSave);
+    setHasAutoSave(!!autoSave);
 
     const storedTextSpeed = localStorage.getItem("textSpeed");
     if (storedTextSpeed === "instant" || storedTextSpeed === "normal") {
@@ -579,8 +609,8 @@ export default function GamePage() {
   }, []);
 
   // save/load
-  const saveGame = () => {
-    const saveData = {
+  const buildSaveData = useCallback(
+    (): SaveData => ({
       player,
       currentLocation,
       hour,
@@ -595,16 +625,42 @@ export default function GamePage() {
       rubyWorkoutTotal,
       textSpeed,
       timestamp: new Date().toISOString(),
-    };
-    localStorage.setItem("datingSimSave", JSON.stringify(saveData));
-    setHasSaveData(true);
+    }),
+    [
+      player,
+      currentLocation,
+      hour,
+      dayOfWeek,
+      metCharacters,
+      girlStatsOverrides,
+      characterEventStates,
+      characterUnlocks,
+      scheduledEncounters,
+      gameplayFlags,
+      dailyWorkoutState,
+      rubyWorkoutTotal,
+      textSpeed,
+    ]
+  );
+
+  const writeSaveData = useCallback((key: string, data: SaveData) => {
+    localStorage.setItem(key, JSON.stringify(data));
+  }, []);
+
+  const saveGame = () => {
+    const saveData = buildSaveData();
+    writeSaveData(MANUAL_SAVE_KEY, saveData);
+    setHasManualSave(true);
     alert("Game saved! 💾");
   };
 
-  const loadGame = () => {
-    const raw = localStorage.getItem("datingSimSave");
-    if (!raw) return;
-    const data = JSON.parse(raw);
+  const autoSaveGame = useCallback(() => {
+    const saveData = buildSaveData();
+    writeSaveData(AUTO_SAVE_KEY, saveData);
+    setHasAutoSave(true);
+  }, [buildSaveData, writeSaveData]);
+
+  const applySaveData = (data: SaveData) => {
     setPlayer(data.player);
     setCurrentLocation(data.currentLocation);
     setHour(data.hour);
@@ -641,6 +697,26 @@ export default function GamePage() {
     setGameState("playing");
   };
 
+  const loadGame = () => {
+    const raw = localStorage.getItem(MANUAL_SAVE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw) as SaveData;
+    applySaveData(data);
+  };
+
+  const loadAutoSave = () => {
+    const raw = localStorage.getItem(AUTO_SAVE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw) as SaveData;
+    applySaveData(data);
+  };
+
+  useEffect(() => {
+    if (!pendingAutoSaveRef.current) return;
+    autoSaveGame();
+    pendingAutoSaveRef.current = false;
+  }, [currentLocation, autoSaveGame]);
+
   // const resetGame = () => {
   //   setPlayer(defaultPlayerStats);
   //   setCurrentLocation("Bedroom");
@@ -666,10 +742,10 @@ export default function GamePage() {
 
   const newGame = () => {
     // If there's save data, confirm before proceeding
-    if (hasSaveData) {
+    if (hasAnySaveData) {
       if (
         !confirm(
-          "Starting a new game will overwrite your saved progress. Continue?"
+          "Starting a new game will overwrite your manual save and auto-save. Continue?"
         )
       ) {
         return; // User cancelled
@@ -677,8 +753,10 @@ export default function GamePage() {
     }
 
     // Clear save data but don't reset game state yet
-    localStorage.removeItem("datingSimSave");
-    setHasSaveData(false);
+    localStorage.removeItem(MANUAL_SAVE_KEY);
+    localStorage.removeItem(AUTO_SAVE_KEY);
+    setHasManualSave(false);
+    setHasAutoSave(false);
 
     // Go to name input screen
     setGameState("nameInput");
@@ -1047,6 +1125,7 @@ export default function GamePage() {
 
       setCurrentLocation(location);
       setSelectedGirl(null);
+      pendingAutoSaveRef.current = true;
 
       if (
         location === "Hallway" &&
@@ -1531,8 +1610,10 @@ const spendTime = (amount: number) => {
     return (
       <MainMenu
         onNewGame={newGame}
-        onContinue={loadGame}
-        hasSaveData={hasSaveData}
+        onContinue={loadAutoSave}
+        onLoad={loadGame}
+        hasAutoSave={hasAutoSave}
+        hasManualSave={hasManualSave}
         darkMode={darkMode}
       />
     );
