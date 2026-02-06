@@ -351,13 +351,20 @@ export default function PhoneMenu({
                   `}
                 >
                   <div className="flex items-center gap-3 mb-3">
-                    <div
-                      className={`w-12 h-12 rounded-full ${
-                        darkMode ? "bg-purple-700" : "bg-purple-300"
-                      } flex items-center justify-center text-2xl`}
-                    >
-                      {girl.name[0]}
-                    </div>
+                  <div
+                    className={`relative w-12 h-12 rounded-full overflow-hidden border-2 ${
+                      darkMode
+                        ? "bg-purple-700 border-purple-500"
+                        : "bg-purple-300 border-purple-200"
+                    }`}
+                  >
+                    <Image
+                      src={`/images/characters/${girl.name.toLowerCase()}/faces/portrait.webp`}
+                      alt={`${girl.name} portrait`}
+                      layout="fill"
+                      objectFit="cover"
+                    />
+                  </div>
                     <div className="flex-1">
                       <h4
                         className={`font-bold ${
@@ -466,7 +473,7 @@ export default function PhoneMenu({
                     `}
                     >
                       <Image
-                        src={`/images/characters/${girl.name.toLowerCase()}/casual/neutral.webp`}
+                        src={`/images/characters/${girl.name.toLowerCase()}/faces/portrait.webp`}
                         alt={girl.name}
                         layout="fill"
                         objectFit="cover"
