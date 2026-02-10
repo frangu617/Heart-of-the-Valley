@@ -2,6 +2,7 @@
 import { RandomEvent, randomEvents } from "@/data/events/chapter1/randomEvents";
 import { PlayerStats } from "@/data/characters";
 import { DayOfWeek } from "@/data/gameConstants";
+import type { GameplayFlag } from "@/data/events/types";
 
 export type RandomEventTriggerResult = {
   triggered: boolean;
@@ -16,7 +17,8 @@ function checkRandomEventConditions(
   location: string,
   hour: number,
   day: DayOfWeek,
-  player: PlayerStats
+  player: PlayerStats,
+  gameplayFlags?: Set<GameplayFlag>
 ): boolean {
   const { conditions } = event;
 
@@ -36,6 +38,21 @@ function checkRandomEventConditions(
   // Check day specific
   if (conditions.daySpecific && !conditions.daySpecific.includes(day)) {
     return false;
+  }
+
+  if (conditions.requiredFlags && conditions.requiredFlags.length > 0) {
+    if (!gameplayFlags) return false;
+    for (const flag of conditions.requiredFlags) {
+      if (!gameplayFlags.has(flag)) return false;
+    }
+  }
+
+  if (conditions.blockedFlags && conditions.blockedFlags.length > 0) {
+    if (gameplayFlags) {
+      for (const flag of conditions.blockedFlags) {
+        if (gameplayFlags.has(flag)) return false;
+      }
+    }
   }
 
   // Check player stat requirements (min)
@@ -68,9 +85,15 @@ function checkRandomEventConditions(
  * Can be influenced by player stats like intelligence, style, or fitness
  */
 function calculateRandomChance(
-  baseChance: number,
+  event: RandomEvent,
   player: PlayerStats
 ): number {
+  if (event.probabilityByNeeds) {
+    const avg = (player.energy + player.hunger + player.mood) / 3;
+    const scaled = (avg / 100) * event.probability;
+    return Math.min(100, Math.round(scaled));
+  }
+
   // Add a small luck boost based on player stats
   let boost = 0;
 
@@ -81,7 +104,7 @@ function calculateRandomChance(
   // Higher mood = more good things happen
   boost += Math.floor(player.mood / 20);
 
-  return Math.min(100, baseChance + boost);
+  return Math.min(100, event.probability + boost);
 }
 
 /**
@@ -92,11 +115,12 @@ export function checkRandomEvent(
   location: string,
   hour: number,
   day: DayOfWeek,
-  player: PlayerStats
+  player: PlayerStats,
+  gameplayFlags?: Set<GameplayFlag>
 ): RandomEvent | null {
   // Get eligible events for this location
   const eligibleEvents = randomEvents.filter((event) =>
-    checkRandomEventConditions(event, location, hour, day, player)
+    checkRandomEventConditions(event, location, hour, day, player, gameplayFlags)
   );
 
   if (eligibleEvents.length === 0) {
@@ -105,7 +129,7 @@ export function checkRandomEvent(
 
   // For each eligible event, roll the dice
   for (const event of eligibleEvents) {
-    const adjustedChance = calculateRandomChance(event.probability, player);
+    const adjustedChance = calculateRandomChance(event, player);
     const roll = Math.random() * 100;
 
     if (roll < adjustedChance) {

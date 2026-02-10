@@ -94,3 +94,6 @@
 4. Player chooses to support or walk away.
 5. Confrontation and breakup, Ruby claims agency.
 6. Post-breakup confidence and romance.
+
+**Stable Diffusion**
+- Prompt: red hair, woman, big breasts, wide hips, tiny waist, abs, athletic wear, sneakers, athletic body, happy, energetic, amber eyes, cleavage, shorts, blue jacket, green eyes, looking at viewer

@@ -261,6 +261,21 @@ export default function CharacterOverlay({
       return;
     }
 
+    if (action.label === "Kiss" && girl.name === "Iris") {
+      const schoolLocations = new Set([
+        "University",
+        "University Hallway",
+        "University Parking Lot",
+      ]);
+      if (
+        schoolLocations.has(location) &&
+        !gameplayFlags.has("irisSchoolKissUnlocked")
+      ) {
+        alert("Iris isn't ready to be that open at school.");
+        return;
+      }
+    }
+
     // Check affection requirements for intimate actions
     if (action.label === "Flirt") {
       if (girl.stats.affection < 10) {

@@ -75,6 +75,30 @@
 1. Villain arc emerges through tests, sabotage, and manipulation.
 2. Later reveal of motives and a possible pivot toward redemption or deeper antagonism.
 
+**Stable Diffusion**
+- Prompt: (masterpiece, best quality, high resolution, 1girl, solo, full body, anime style), 18 years old, ((long wavy purple hair)), amber eyes, fair skin, medium sized breasts, orange tube top, cleavage, wide hips, white pleated skirt, cream tights, black heels, feminine and pure aesthetic, chroma key green background, cinematic shading, plain green background
+- Steps: 40
+- Sampler: DPM++ 2M SDE
+- Schedule type: Karras
+- CFG scale: 3
+- Seed: 1122057703
+- Size: 768x1344
+- Model hash: ae1a6067cb
+- Model: novaCartoonXL_v40
+- Style Selector Enabled: True
+- Style Selector Randomize: False
+- Style Selector Style: base
+- ADetailer model: face_yolov8n.pt
+- ADetailer prompt: biting her lower lip
+- ADetailer confidence: 0.3
+- ADetailer dilate erode: 4
+- ADetailer mask blur: 4
+- ADetailer denoising strength: 0.4
+- ADetailer inpaint only masked: True
+- ADetailer inpaint padding: 32
+- ADetailer version: 25.3.0
+- Version: f2.0.1v1.10.1-previous-669-gdfdcbab6
+- Module 1: sdxl_vae
 **Global Design Rule**
 - All characters act freely. Pressure exists, but it can always be resisted.
 - Corruption is chosen. Salvation is chosen. Nothing removes agency.

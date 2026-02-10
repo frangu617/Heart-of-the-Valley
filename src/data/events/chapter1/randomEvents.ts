@@ -1,6 +1,7 @@
 // src/data/events/randomEvents.ts
 import { Dialogue } from "../../dialogues";
 import { PlayerStats } from "../../characters";
+import type { GameplayFlag } from "../types";
 
 export type RandomEventType =
   | "luckEvent" // Find money, items
@@ -21,6 +22,8 @@ export type RandomEventConditions = {
   daySpecific?: string[]; // Only on certain days
   hourRange?: { min: number; max: number };
   metCharacters?: boolean; // Only if you've met certain characters
+  requiredFlags?: GameplayFlag[];
+  blockedFlags?: GameplayFlag[];
 };
 
 export type RandomEvent = {
@@ -28,6 +31,7 @@ export type RandomEvent = {
   name: string;
   type: RandomEventType;
   probability: number; // 0-100, chance to trigger
+  probabilityByNeeds?: boolean; // If true, scale chance by energy/hunger/mood
   conditions: RandomEventConditions;
   dialogue: Dialogue;
   timeCost?: number; // NEW: Hours to spend when this event completes
@@ -163,6 +167,222 @@ export const randomEvents: RandomEvent[] = [
     },
     rewards: {
       girlAffection: { Iris: 3 },
+    },
+  },
+
+  {
+    id: "iris_workplace_hallway_whisper",
+    name: "Hallway Whisper",
+    type: "encounter",
+    probability: 25,
+    probabilityByNeeds: true,
+    conditions: {
+      locations: ["University Hallway"],
+      hourRange: { min: 9, max: 15 },
+      requiredFlags: ["irisCh2Ev2_Done"],
+      blockedFlags: ["irisCh2Ev3_Done", "irisDatePlanned", "irisCh2Complete"],
+    },
+    dialogue: {
+      id: "iris_workplace_hallway_whisper_dialogue",
+      lines: [
+        {
+          speaker: null,
+          text: "You round a corner in the hallway and nearly collide with Iris. She catches your arm and pulls you into the shadow of a bulletin board.",
+        },
+        {
+          speaker: "Iris",
+          text: "We should not be doing this here.",
+          expression: "shy",
+        },
+        {
+          speaker: "You",
+          text: "Then why did you pull me in?",
+        },
+        {
+          speaker: "Iris",
+          text: "Because I could not walk past you like nothing happened.",
+          expression: "neutral",
+        },
+        {
+          speaker: null,
+          text: "Her fingers linger on your sleeve. She glances down the hall, then back to you.",
+        },
+        {
+          speaker: "Iris",
+          text: "Just... a second.",
+          expression: "shy",
+        },
+        {
+          speaker: null,
+          text: "She leans in and brushes a quick, secret kiss against your lips before stepping away.",
+        },
+      ],
+    },
+    rewards: {
+      girlAffection: { Iris: 1 },
+      playerStats: { mood: 2 },
+    },
+  },
+
+  {
+    id: "iris_workplace_copy_room",
+    name: "Copy Room Confession",
+    type: "encounter",
+    probability: 25,
+    probabilityByNeeds: true,
+    conditions: {
+      locations: ["University Hallway"],
+      hourRange: { min: 11, max: 17 },
+      requiredFlags: ["irisCh2Ev2_Done"],
+      blockedFlags: ["irisCh2Ev3_Done", "irisDatePlanned", "irisCh2Complete"],
+    },
+    dialogue: {
+      id: "iris_workplace_copy_room_dialogue",
+      lines: [
+        {
+          speaker: null,
+          text: "You step into the copy room as Iris is reloading paper. She looks up and smiles before she remembers where she is.",
+        },
+        {
+          speaker: "Iris",
+          text: "Hi. I should not be happy to see you here.",
+          expression: "shy",
+        },
+        {
+          speaker: "You",
+          text: "And yet you are.",
+        },
+        {
+          speaker: null,
+          text: "The copier hums, masking your voices. Iris inches closer, careful but drawn in.",
+        },
+        {
+          speaker: "Iris",
+          text: "We are going to get in trouble.",
+          expression: "neutral",
+        },
+        {
+          speaker: "You",
+          text: "Then let us be quick.",
+        },
+        {
+          speaker: null,
+          text: "She gives you a soft, fleeting kiss and immediately steps back to her papers.",
+        },
+      ],
+    },
+    rewards: {
+      girlAffection: { Iris: 1 },
+      playerStats: { mood: 2 },
+    },
+  },
+
+  {
+    id: "iris_workplace_parking_lot",
+    name: "Parking Lot Goodbye",
+    type: "encounter",
+    probability: 25,
+    probabilityByNeeds: true,
+    conditions: {
+      locations: ["University Parking Lot"],
+      hourRange: { min: 15, max: 19 },
+      requiredFlags: ["irisCh2Ev2_Done"],
+      blockedFlags: ["irisCh2Ev3_Done", "irisDatePlanned", "irisCh2Complete"],
+    },
+    dialogue: {
+      id: "iris_workplace_parking_lot_dialogue",
+      lines: [
+        {
+          speaker: null,
+          text: "You spot Iris by her car, arms full of books. She pauses when she sees you and waits for the lot to clear.",
+        },
+        {
+          speaker: "Iris",
+          text: "We should not do this out here.",
+          expression: "neutral",
+        },
+        {
+          speaker: "You",
+          text: "Then say goodbye and walk away.",
+        },
+        {
+          speaker: null,
+          text: "She steps in close anyway, eyes soft.",
+        },
+        {
+          speaker: "Iris",
+          text: "I cannot seem to.",
+          expression: "shy",
+        },
+        {
+          speaker: null,
+          text: "She gives you a small, careful kiss, then backs away with a nervous smile.",
+        },
+      ],
+    },
+    rewards: {
+      girlAffection: { Iris: 1 },
+      playerStats: { mood: 2 },
+    },
+  },
+
+  {
+    id: "iris_workplace_kiss_random_man",
+    name: "Caught Off Guard",
+    type: "observation",
+    probability: 12,
+    conditions: {
+      locations: ["University Hallway"],
+      hourRange: { min: 10, max: 16 },
+      requiredFlags: ["irisCh2Ev3_Done", "irisPublicRefused"],
+      blockedFlags: ["irisSchoolKissUnlocked"],
+    },
+    dialogue: {
+      id: "iris_workplace_kiss_random_man_dialogue",
+      lines: [
+        {
+          speaker: null,
+          text: "You turn a corner and freeze. Iris is pressed close to a colleague, their voices low.",
+        },
+        {
+          speaker: null,
+          text: "Then she lifts her chin and kisses him, slow and certain.",
+        },
+        {
+          speaker: null,
+          text: "You step back before either of them notices, your heartbeat loud in your ears.",
+        },
+      ],
+    },
+  },
+
+  {
+    id: "iris_workplace_kiss_random_woman",
+    name: "Different Company",
+    type: "observation",
+    probability: 12,
+    conditions: {
+      locations: ["University Parking Lot"],
+      hourRange: { min: 13, max: 18 },
+      requiredFlags: ["irisCh2Ev3_Done", "irisPublicRefused"],
+      blockedFlags: ["irisSchoolKissUnlocked"],
+    },
+    dialogue: {
+      id: "iris_workplace_kiss_random_woman_dialogue",
+      lines: [
+        {
+          speaker: null,
+          text: "In the parking lot, you spot Iris leaning against a car, laughing with a woman from another department.",
+        },
+        {
+          speaker: null,
+          text: "The laugh turns into a kiss, quick and practiced, as if she does not want to be the one waiting.",
+        },
+        {
+          speaker: null,
+          text: "You keep walking, the scene replaying in your head.",
+        },
+      ],
     },
   },
 

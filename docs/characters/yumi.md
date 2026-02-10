@@ -80,3 +80,6 @@
 4. Rainy-night office finale reveals loneliness and desire.
 **Chapter 2**
 1. Cross-thread: a brief hint of Dawn at the nightclub.
+
+**Stable Diffusion**
+- Prompt: ((Japanese woman)), ((massive breasts:1.5)),((fake breasts)), ((slim body:1.0)), tiny waist, blue eyes, white shirt, blue plaid neck bow, plaid skirt, blue plaid, pleated skirt, high socks, loafers, ((black hair)) , ((plain green background)), mid-drift, fit body, (confident:1.5), (abs:0.3), shirt bursting open, ((barely visible black bra under shirt:0.8)), glasses, medium long hair, ((front view:1.2)), thick lips, looking at viewer, ((tiny skirt)), ((full body)), ((slender legs))

@@ -67,6 +67,30 @@
 2. Public encounters reinforce discretion and choice.
 3. Nightclub date and the mystery girl sighting raise stakes.
 
+**Stable Diffusion**
+- Prompt: one woman, ((she is slender)), (( she has a slim body)), ((big breasts)), purple hair, ponytail, amber eyes, glasses, messy hair, woman has a tired look, woman has a tiny waist, mature woman, chroma key green background, college professor outfit, conservative outfit, full body, wide hips, chroma key green background, holding a cup of coffee, white skirt or pants, pink top
+- Steps: 40
+- Sampler: DPM++ 2M SDE
+- Schedule type: Karras
+- CFG scale: 3
+- Seed: 4121422315
+- Size: 768x1344
+- Model hash: ae1a6067cb
+- Model: novaCartoonXL_v40
+- Style Selector Enabled: True
+- Style Selector Randomize: False
+- Style Selector Style: base
+- ADetailer model: face_yolov8n.pt
+- ADetailer prompt: biting her lower lip
+- ADetailer confidence: 0.3
+- ADetailer dilate erode: 4
+- ADetailer mask blur: 4
+- ADetailer denoising strength: 0.4
+- ADetailer inpaint only masked: True
+- ADetailer inpaint padding: 32
+- ADetailer version: 25.3.0
+- Version: f2.0.1v1.10.1-previous-669-gdfdcbab6
+- Module 1: sdxl_vae
 **Global Design Rule**
 - All characters act freely. Pressure exists, but it can always be resisted.
 - Corruption is chosen. Salvation is chosen. Nothing removes agency.

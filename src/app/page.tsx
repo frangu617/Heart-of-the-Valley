@@ -1171,7 +1171,13 @@ export default function GamePage() {
       // }
 
       // random event roll
-      const randomEvent = checkRandomEvent(location, hour, dayOfWeek, player);
+      const randomEvent = checkRandomEvent(
+        location,
+        hour,
+        dayOfWeek,
+        player,
+        gameplayFlags
+      );
       if (randomEvent) {
         console.log(`Random event: ${randomEvent.name}`);
         setCurrentRandomEvent(randomEvent);

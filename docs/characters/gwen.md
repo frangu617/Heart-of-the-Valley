@@ -79,3 +79,6 @@
 3. Rumor of a dancer named G who "owns the room."
 4. Strip club reveal and a choice: respect her rules or exploit them.
 5. Path branches into boundaries-first romance or tension.
+
+**Stable Diffusion**
+- Prompt: 1 woman, blonde, mature, blue eyes, tiny skirt, pleated skirt, purple skirt, purple leather corset, big breasts, platform heels, ((slender body)), short hair, cropped jacket, green highlights on clothes, green highlights on hair
