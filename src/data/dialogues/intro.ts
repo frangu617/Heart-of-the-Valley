@@ -10,40 +10,111 @@ export const introDialogue: Dialogue = {
     },
     {
       speaker: null,
-      text: "You stare at the ceiling, that familiar weight settling in your chest. Another week. Another routine. Another reminder that this wasn't the plan.",
+      text: "You stare at the ceiling, that familiar weight settling in your chest.",
       imageSlide: "/images/locations/bedroom/morning.png",
     },
     {
       speaker: null,
-      text: "Teaching programming at a state university. It's a steady life - respectable, even. Not the dream you pictured, but not nothing.",
+      text: "Teaching programming at a state university. First day.",
     },
     {
       speaker: null,
-      text: "The dream was different: cutting-edge tech, building something that mattered. But you traded the chase for stability, at least for now.",
+      text: "The dream was different: cutting-edge tech, building something that mattered.",
       imageSlide: "/images/locations/bathroom/morning.png",
     },
     {
       speaker: null,
-      text: "Now you wake up, shower, teach other people how to chase their own ambitions. The irony isn't lost on you.",
+      text: "But you traded the chase for stability, at least for now.",
       imageSlide: "/images/locations/bathroom/morning.png",
     },
-    
     {
       speaker: null,
-      text: "The coffee maker gurgles to life, filling your small apartment with that bitter, familiar aroma. You moved here a year ago - closer to work, cheaper rent.",
+      text: "Now you wake up, shower, and try to look like someone who has it together.",
+      imageSlide: "/images/locations/bathroom/morning.png",
+    },
+
+    {
+      speaker: null,
+      text: "The bathroom mirror is fogged over, your reflection blurred at the edges.",
+      imageSlide: "/images/locations/bathroom/morning.png",
+    },
+    {
+      speaker: null,
+      text: "You wipe it clean with the heel of your hand and meet your own eyes.",
+      imageSlide: "/images/locations/bathroom/morning.png",
+    },
+    {
+      speaker: null,
+      text: "Tired, maybe. Worn in. But not done. Not yet.",
+      imageSlide: "/images/locations/bathroom/morning.png",
+    },
+    {
+      speaker: null,
+      text: "There's still a spark in there, even if you have to squint to see it.",
+      imageSlide: "/images/locations/bathroom/morning.png",
+    },
+    {
+      speaker: null,
+      text: "The coffee maker gurgles to life, filling your small apartment with that bitter, familiar aroma.",
       imageSlide: "/images/locations/kitchen/morning.png",
     },
     {
       speaker: null,
-      text: "The coffee burns your tongue. Perfect. You grab your bag, check your reflection one last time - presentable enough - and head out.",
+      text: "The coffee burns your tongue. Perfect.",
+      imageSlide: "/images/locations/kitchen/morning.png",
     },
     {
       speaker: null,
-      text: "Just another Monday. Just another routine.",
+      text: "You scroll through your inbox. Mostly reminders, mostly noise.",
+      imageSlide: "/images/locations/kitchen/morning.png",
     },
     {
       speaker: null,
-      text: "Right?",
+      text: "Your bag is already by the door, stacked with lecture notes and a laptop that never really sleeps.",
+    },
+    {
+      speaker: null,
+      text: "You check the calendar. A room number, a fresh schedule.",
+    },
+    {
+      speaker: null,
+      text: "Somewhere in the back of your mind, a quiet voice asks 'how long will you keep doing this?'",
+    },
+    {
+      speaker: null,
+      text: "Still, first days are a kind of clean slate. Even for you.",
+    },
+    {
+      speaker: null,
+      text: "You straighten your shirt, smooth your hair, and practice the face that says you're fine.",
+    },
+    {
+      speaker: null,
+      text: "Still, there's a perk to a campus full of bright, young faces, and you'd be lying if you said you weren't looking forward to that.",
+    },
+    {
+      speaker: null,
+      text: "You call it harmless. You call it curiosity. Either way, it makes the morning go down a little easier.",
+    },
+    {
+      speaker: null,
+      text: "You're ready for this; it's just another day.",
+    },
+    {
+      speaker: null,
+      text: "Just another Monday.",
+    },
+    {
+      speaker: null,
+      text: "Just another routine.",
+    },
+    {
+      speaker: null,
+      text: "Except...",
+    },
+    {
+      speaker: null,
+      text: "Something feels different. Good or bad, it will be up to you.",
     },
   ],
 };

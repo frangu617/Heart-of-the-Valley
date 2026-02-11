@@ -13,7 +13,7 @@ export type DialogueChoice = {
     location: string;
     eventId: string;
     label?: string;
-  }
+  };
   setFlags?: GameplayFlag[];
   unlockCharacters?: string[];
 };
@@ -41,7 +41,12 @@ export type DialogueLine = {
   midgroundScale?: number;
   midgroundWidthPct?: number;
   midgroundHeightPct?: number;
-  midgroundPosition2?: "center" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
+  midgroundPosition2?:
+    | "center"
+    | "top-left"
+    | "top-right"
+    | "bottom-left"
+    | "bottom-right";
   //Foreground event media
   foregroundImage?: string;
   foregroundVideo?: string;
@@ -72,6 +77,7 @@ import { rubyStoryDialogues } from "../events/chapter1/ruby";
 import { yumiStoryDialogues } from "../events/chapter1/yumi";
 import { yumiStoryDialogues as yumiStoryDialoguesCh2 } from "../events/chapter2/yumi";
 import { introDialogue } from "./intro";
+import { tutorialDialogue } from "./tutorial";
 import type { GameplayFlag } from "../events/types";
 
 // Export intro
@@ -88,11 +94,16 @@ export { introDialogue };
 
 // Combine character dialogues
 export const characterDialogues: Record<string, Record<string, Dialogue>> = {
-  Iris: { ...irisDialogues, ...irisStoryDialoguesCh1, ...irisStoryDialoguesCh2 },
+  Iris: {
+    ...irisDialogues,
+    ...irisStoryDialoguesCh1,
+    ...irisStoryDialoguesCh2,
+  },
   Dawn: dawnDialogues,
   Gwen: { ...gwenDialogues, ...gwenStoryDialogues },
   Yumi: { ...yumiDialogues, ...yumiStoryDialogues, ...yumiStoryDialoguesCh2 },
   Ruby: { ...rubyDialogues, ...rubyStoryDialogues },
+  System: { tutorial: tutorialDialogue },
 };
 
 // Condition for type of dialogue choices
@@ -112,7 +123,7 @@ export type DialogueChoiceCondition = {
 // Default dialogue helper
 export const getDefaultDialogue = (
   characterName: string,
-  actionLabel: string
+  actionLabel: string,
 ): Dialogue => {
   return {
     id: `${characterName}_${actionLabel}_default`,

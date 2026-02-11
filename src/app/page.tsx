@@ -1,21 +1,22 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 
 // Components
 import NameInput from "@/components/NameInput";
 import StatsPanel from "../components/StatsPanel";
-import LocationCard from "../components/LocationCard";
 import CharacterOverlay from "../components/CharacterOverlay";
-import LocationActivities, {
-  type DailyWorkoutState,
-} from "../components/LocationActivities";
+import { type DailyWorkoutState } from "../components/LocationActivities";
 import MainMenu from "../components/MainMenu";
 import PauseMenu from "../components/PauseMenu";
 import DialogueBox from "../components/DialogueBox";
 import PhoneMenu from "../components/PhoneMenu";
+import TutorialOverlay from "../components/TutorialOverlay";
+import GameHeader from "../components/GameHeader";
+import SceneView from "../components/SceneView";
+import LocationPanels from "../components/LocationPanels";
+import RightSidebar from "../components/RightSidebar";
 
 // Lib
 import { getScheduledLocation } from "../lib/schedule";
@@ -81,9 +82,6 @@ type QuestItem = {
   priority: number;
 };
 
-const MANUAL_SAVE_KEY = "datingSimSave";
-const AUTO_SAVE_KEY = "datingSimAutoSave";
-
 type SaveData = {
   player: PlayerStats;
   currentLocation: string;
@@ -105,6 +103,11 @@ type SaveData = {
   textSpeed: "normal" | "instant";
   timestamp: string;
 };
+
+type GameState = "mainMenu" | "nameInput" | "intro" | "playing" | "paused" | "dialogue";
+
+const MANUAL_SAVE_KEY = "datingSimSave";
+const AUTO_SAVE_KEY = "datingSimAutoSave";
 
 const clampValue = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
@@ -149,9 +152,9 @@ export default function GamePage() {
 
   const [metCharacters, setMetCharacters] = useState<Set<string>>(new Set());
   const [showPhone, setShowPhone] = useState<boolean>(false);
+  const [showTutorial, setShowTutorial] = useState<boolean>(false);
   const [showWhereMenu, setShowWhereMenu] = useState<boolean>(false);
-  const [showActivitiesMenu, setShowActivitiesMenu] =
-    useState<boolean>(false);
+  const [showActivitiesMenu, setShowActivitiesMenu] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const [textSpeed, setTextSpeed] = useState<"normal" | "instant">("instant");
@@ -167,15 +170,16 @@ export default function GamePage() {
     Record<string, CharacterEventState>
   >({});
   const [gameplayFlags, setGameplayFlags] = useState<Set<GameplayFlag>>(
-    new Set()
+    new Set(),
   );
-  const [dailyWorkoutState, setDailyWorkoutState] =
-    useState<DailyWorkoutState>({
+  const [dailyWorkoutState, setDailyWorkoutState] = useState<DailyWorkoutState>(
+    {
       day: START_DAY,
       total: 0,
       withRuby: 0,
       withoutRuby: 0,
-    });
+    },
+  );
   const [rubyWorkoutTotal, setRubyWorkoutTotal] = useState<number>(0);
   const pendingAutoSaveRef = useRef(false);
 
@@ -187,7 +191,7 @@ export default function GamePage() {
       const hasMet = metFlag ? gameplayFlags.has(metFlag) : false;
       return Math.max(historyCount, hasMet ? 1 : 0);
     },
-    [characterEventStates, gameplayFlags]
+    [characterEventStates, gameplayFlags],
   );
 
   const getRelationshipCaps = useCallback(
@@ -204,7 +208,7 @@ export default function GamePage() {
       const lustCap = clampValue(Math.floor(affectionCap * 1.25), 0, 100);
       return { affectionCap, lustCap };
     },
-    [getProgressionCount, gameplayFlags]
+    [getProgressionCount, gameplayFlags],
   );
 
   const clampGirlStatsToCaps = useCallback(
@@ -217,7 +221,7 @@ export default function GamePage() {
         dominance: clampValue(stats.dominance ?? 0, -100, 100),
       };
     },
-    [getRelationshipCaps]
+    [getRelationshipCaps],
   );
 
   const applyGirlStatDelta = useCallback(
@@ -240,7 +244,7 @@ export default function GamePage() {
         return { ...prev, [girlName]: capped };
       });
     },
-    [clampGirlStatsToCaps]
+    [clampGirlStatsToCaps],
   );
 
   const logWorkout = useCallback(
@@ -261,7 +265,7 @@ export default function GamePage() {
         setRubyWorkoutTotal((prev) => prev + 1);
       }
     },
-    [dayOfWeek]
+    [dayOfWeek],
   );
 
   // 🎲 Track active random event
@@ -289,13 +293,36 @@ export default function GamePage() {
     Record<string, Set<string>>
   >({});
 
-  type GameState =
-    | "mainMenu"
-    | "nameInput"
-    | "intro"
-    | "playing"
-    | "paused"
-    | "dialogue";
+  // time
+  const spendTime = (amount: number) => {
+    const newHour = hour + amount;
+
+    if (newHour >= MAX_HOUR) {
+      const nextDay = getNextDay(dayOfWeek);
+      setHour(START_HOUR);
+      setDayOfWeek(nextDay);
+
+      setPlayer((prev) => ({
+        ...prev,
+        energy: Math.min(100, prev.energy + 30),
+        hunger: Math.min(100, prev.hunger + 20),
+      }));
+
+      // Clear selected girl when day changes
+      setSelectedGirl(null);
+      setInteractionHistory({});
+      setDailyWorkoutState({
+        day: nextDay,
+        total: 0,
+        withRuby: 0,
+        withoutRuby: 0,
+      });
+
+      alert(`A new day begins! It's ${nextDay} morning.`);
+    } else {
+      setHour(newHour);
+    }
+  };
 
   // Schedule a new encounter
   const scheduleEncounter = (encounter: ScheduledEncounter) => {
@@ -304,7 +331,7 @@ export default function GamePage() {
       const exists = prev.some(
         (e) =>
           e.characterName === encounter.characterName &&
-          e.eventId === encounter.eventId
+          e.eventId === encounter.eventId,
       );
       if (exists) return prev;
 
@@ -313,7 +340,7 @@ export default function GamePage() {
           encounter.characterName
         } at ${encounter.location}${
           encounter.day ? ` on ${encounter.day} at ${encounter.hour}:00` : ""
-        }`
+        }`,
       );
       return [...prev, encounter];
     });
@@ -331,7 +358,7 @@ export default function GamePage() {
   }) => {
     setScheduledEncounters((prev) => {
       console.log(
-        `💕 Date scheduled: ${date.label} with ${date.characterName} on ${date.day} at ${date.hour}:00`
+        `💕 Date scheduled: ${date.label} with ${date.characterName} on ${date.day} at ${date.hour}:00`,
       );
       return [
         ...prev,
@@ -423,26 +450,26 @@ export default function GamePage() {
     if (!event) {
       const characterEvents = getCharacterEvents(encounter.characterName);
       const characterEvent = characterEvents.find(
-        (e) => e.id === encounter.eventId
+        (e) => e.id === encounter.eventId,
       );
 
       if (characterEvent) {
         console.log(
           `✨ Triggering scheduled character event: ${
             encounter.label || characterEvent.name
-          }`
+          }`,
         );
         setCurrentRandomEvent(null);
 
         const characterImage = getCharacterImage(
           girls.find((g) => g.name === encounter.characterName)!,
           currentLocation,
-          hour
+          hour,
         );
         startDialogue(
           characterEvent.dialogue,
           characterImage,
-          characterEvent.rewards?.girlStats ?? null
+          characterEvent.rewards?.girlStats ?? null,
         );
 
         const updatedPlayer = applyCharacterEventRewards(
@@ -453,10 +480,10 @@ export default function GamePage() {
             onUnlockCharacter: (characterName) => {
               const name = characterName as keyof typeof characterUnlocks;
               setCharacterUnlocks((prev) =>
-                prev[name] ? prev : { ...prev, [name]: true }
+                prev[name] ? prev : { ...prev, [name]: true },
               );
             },
-          }
+          },
         );
         if (updatedPlayer !== player) {
           setPlayer(updatedPlayer);
@@ -468,7 +495,7 @@ export default function GamePage() {
 
     if (event) {
       console.log(
-        `✨ Triggering scheduled encounter: ${encounter.label || event.name}`
+        `✨ Triggering scheduled encounter: ${encounter.label || event.name}`,
       );
       setCurrentRandomEvent(event);
       startDialogue(event.dialogue, "", null);
@@ -488,7 +515,6 @@ export default function GamePage() {
     const autoSave = localStorage.getItem(AUTO_SAVE_KEY);
     setHasManualSave(!!manualSave);
     setHasAutoSave(!!autoSave);
-
     const storedTextSpeed = localStorage.getItem("textSpeed");
     if (storedTextSpeed === "instant" || storedTextSpeed === "normal") {
       setTextSpeed(storedTextSpeed);
@@ -513,7 +539,7 @@ export default function GamePage() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       setGameState((s) =>
-        s === "playing" ? "paused" : s === "paused" ? "playing" : s
+        s === "playing" ? "paused" : s === "paused" ? "playing" : s,
       );
     };
     window.addEventListener("keydown", onKey);
@@ -565,10 +591,12 @@ export default function GamePage() {
         const scheduledLocation = getScheduledLocation(
           girl.name,
           dayOfWeek,
-          hour
+          hour,
         );
         const override = girlStatsOverrides[girl.name];
-        const mergedStats = override ? { ...girl.stats, ...override } : girl.stats;
+        const mergedStats = override
+          ? { ...girl.stats, ...override }
+          : girl.stats;
         return {
           ...girl,
           location: scheduledLocation || girl.location,
@@ -587,7 +615,7 @@ export default function GamePage() {
   useEffect(() => {
     if (selectedGirl) {
       const stillPresent = girls.find(
-        (g) => g.name === selectedGirl.name && g.location === currentLocation
+        (g) => g.name === selectedGirl.name && g.location === currentLocation,
       );
       if (!stillPresent) {
         setSelectedGirl(null);
@@ -604,7 +632,7 @@ export default function GamePage() {
   const unlockCharacter = useCallback((characterName: string) => {
     const name = characterName as keyof typeof characterUnlocks;
     setCharacterUnlocks((prev) =>
-      prev[name] ? prev : { ...prev, [name]: true }
+      prev[name] ? prev : { ...prev, [name]: true },
     );
   }, []);
 
@@ -640,27 +668,10 @@ export default function GamePage() {
       dailyWorkoutState,
       rubyWorkoutTotal,
       textSpeed,
-    ]
+    ],
   );
 
-  const writeSaveData = useCallback((key: string, data: SaveData) => {
-    localStorage.setItem(key, JSON.stringify(data));
-  }, []);
-
-  const saveGame = () => {
-    const saveData = buildSaveData();
-    writeSaveData(MANUAL_SAVE_KEY, saveData);
-    setHasManualSave(true);
-    alert("Game saved! 💾");
-  };
-
-  const autoSaveGame = useCallback(() => {
-    const saveData = buildSaveData();
-    writeSaveData(AUTO_SAVE_KEY, saveData);
-    setHasAutoSave(true);
-  }, [buildSaveData, writeSaveData]);
-
-  const applySaveData = (data: SaveData) => {
+  const applySaveData = useCallback((data: SaveData) => {
     setPlayer(data.player);
     setCurrentLocation(data.currentLocation);
     setHour(data.hour);
@@ -675,7 +686,7 @@ export default function GamePage() {
         Gwen: false,
         Dawn: false,
         Ruby: false,
-      }
+      },
     );
     setScheduledEncounters(data.scheduledEncounters ?? []); // This loads dates too
     setGameplayFlags(new Set(data.gameplayFlags ?? []));
@@ -695,7 +706,24 @@ export default function GamePage() {
     }
     setSelectedGirl(null);
     setGameState("playing");
+  }, [setHour, setDayOfWeek]);
+
+  const writeSaveData = useCallback((key: string, data: SaveData) => {
+    localStorage.setItem(key, JSON.stringify(data));
+  }, []);
+
+  const saveGame = () => {
+    const saveData = buildSaveData();
+    writeSaveData(MANUAL_SAVE_KEY, saveData);
+    setHasManualSave(true);
+    alert("Game saved! 💾");
   };
+
+  const autoSaveGame = useCallback(() => {
+    const saveData = buildSaveData();
+    writeSaveData(AUTO_SAVE_KEY, saveData);
+    setHasAutoSave(true);
+  }, [buildSaveData, writeSaveData]);
 
   const loadGame = () => {
     const raw = localStorage.getItem(MANUAL_SAVE_KEY);
@@ -745,7 +773,7 @@ export default function GamePage() {
     if (hasAnySaveData) {
       if (
         !confirm(
-          "Starting a new game will overwrite your manual save and auto-save. Continue?"
+          "Starting a new game will overwrite your manual save and auto-save. Continue?",
         )
       ) {
         return; // User cancelled
@@ -763,24 +791,28 @@ export default function GamePage() {
   };
 
   // dialogue helpers
-  const startDialogue = useCallback((
-    dialogue: Dialogue,
-    characterImage: string = "",
-    girlEffects: Partial<GirlStats> | null = null,
-    characterName?: string
-  ) => {
-    setIsDialogueClosing(false);
-    setCurrentDialogue(dialogue);
-    setDialogueCharacterImage(characterImage);
-    setDialogueGirlEffects(girlEffects);
-    setDialogueGirlName(characterName || "");
-    setGameState("dialogue");
+  const startDialogue = useCallback(
+    (
+      dialogue: Dialogue,
+      characterImage: string = "",
+      girlEffects: Partial<GirlStats> | null = null,
+      characterName?: string,
+    ) => {
+      setIsDialogueClosing(false);
+      setCurrentDialogue(dialogue);
+      setDialogueCharacterImage(characterImage);
+      setDialogueGirlEffects(girlEffects);
+      setDialogueGirlName(characterName || "");
+      setGameState("dialogue");
 
-    if (characterImage) {
-      const m = characterImage.match(/\/characters\/([^/]+)\//);
-      if (m) setDialogueGirlName(m[1].charAt(0).toUpperCase() + m[1].slice(1));
-    }
-  }, []);
+      if (characterImage) {
+        const m = characterImage.match(/\/characters\/([^/]+)\//);
+        if (m)
+          setDialogueGirlName(m[1].charAt(0).toUpperCase() + m[1].slice(1));
+      }
+    },
+    [],
+  );
 
   const closeDialogue = (afterClose: () => void) => {
     if (isDialogueClosing) return;
@@ -793,7 +825,7 @@ export default function GamePage() {
 
   const endDialogue = (
     statChanges?: Partial<GirlStats>,
-    chosenOption?: DialogueChoice
+    chosenOption?: DialogueChoice,
   ) => {
     closeDialogue(() => {
       // ☕ If dialogue option scheduled an encounter, queue it
@@ -823,7 +855,7 @@ export default function GamePage() {
       // Handle girl stat changes
       if (dialogueGirlName) {
         const girl = girls.find(
-          (g) => g.name.toLowerCase() === dialogueGirlName.toLowerCase()
+          (g) => g.name.toLowerCase() === dialogueGirlName.toLowerCase(),
         );
         if (girl) {
           const currentOverride = girlStatsOverrides[dialogueGirlName] || {};
@@ -831,10 +863,7 @@ export default function GamePage() {
           const combined = { ...dialogueGirlEffects, ...statChanges };
 
           const newStats: Partial<GirlStats> = { ...currentStats };
-          const clampGirlStatValue = (
-            key: keyof GirlStats,
-            value: number
-          ) => {
+          const clampGirlStatValue = (key: keyof GirlStats, value: number) => {
             if (key === "dominance") {
               return clampValue(value, -100, 100);
             }
@@ -848,7 +877,11 @@ export default function GamePage() {
             }
           });
           const { affectionCap, lustCap } = getRelationshipCaps(girl.name);
-          newStats.affection = clampValue(newStats.affection ?? 0, 0, affectionCap);
+          newStats.affection = clampValue(
+            newStats.affection ?? 0,
+            0,
+            affectionCap,
+          );
           newStats.lust = clampValue(newStats.lust ?? 0, 0, lustCap);
 
           setGirlStatsOverrides((prev) => ({
@@ -893,7 +926,7 @@ export default function GamePage() {
 
     // Search through all character dialogues
     for (const [characterName, dialogues] of Object.entries(
-      characterDialogues
+      characterDialogues,
     )) {
       if (dialogues[id]) {
         foundDialogue = dialogues[id];
@@ -927,48 +960,51 @@ export default function GamePage() {
     startDialogue(foundDialogue, characterImage, null);
   };
 
-  const onEventTriggered = useCallback((eventId: string, girlName?: string) => {
-    const name = girlName ?? selectedGirl?.name;
-    if (!name) return;
-    const prevState = characterEventStates[name] ?? {
-      characterName: name,
-      eventHistory: [] as EventHistory[],
-      lastInteractionTime: 0,
-    };
-
-    const gameTime = calculateGameTime(dayOfWeek, hour);
-    const lastTriggered = { day: dayOfWeek, hour, gameTime };
-
-    const idx = prevState.eventHistory.findIndex(
-      (e) => e.eventId === eventId
-    );
-    let updatedHistory: EventHistory[];
-    if (idx >= 0) {
-      const existing = prevState.eventHistory[idx];
-      updatedHistory = [...prevState.eventHistory];
-      updatedHistory[idx] = {
-        ...existing,
-        lastTriggered,
-        timesTriggered: (existing.timesTriggered ?? 0) + 1,
+  const onEventTriggered = useCallback(
+    (eventId: string, girlName?: string) => {
+      const name = girlName ?? selectedGirl?.name;
+      if (!name) return;
+      const prevState = characterEventStates[name] ?? {
+        characterName: name,
+        eventHistory: [] as EventHistory[],
+        lastInteractionTime: 0,
       };
-    } else {
-      updatedHistory = [
-        ...prevState.eventHistory,
-        { eventId, lastTriggered, timesTriggered: 1 },
-      ];
-    }
 
-    const newState: CharacterEventState = {
-      ...prevState,
-      eventHistory: updatedHistory,
-      lastInteractionTime: gameTime,
-    };
+      const gameTime = calculateGameTime(dayOfWeek, hour);
+      const lastTriggered = { day: dayOfWeek, hour, gameTime };
 
-    setCharacterEventStates((prev) => ({
-      ...prev,
-      [name]: newState,
-    }));
-  }, [selectedGirl, characterEventStates, dayOfWeek, hour]);
+      const idx = prevState.eventHistory.findIndex(
+        (e) => e.eventId === eventId,
+      );
+      let updatedHistory: EventHistory[];
+      if (idx >= 0) {
+        const existing = prevState.eventHistory[idx];
+        updatedHistory = [...prevState.eventHistory];
+        updatedHistory[idx] = {
+          ...existing,
+          lastTriggered,
+          timesTriggered: (existing.timesTriggered ?? 0) + 1,
+        };
+      } else {
+        updatedHistory = [
+          ...prevState.eventHistory,
+          { eventId, lastTriggered, timesTriggered: 1 },
+        ];
+      }
+
+      const newState: CharacterEventState = {
+        ...prevState,
+        eventHistory: updatedHistory,
+        lastInteractionTime: gameTime,
+      };
+
+      setCharacterEventStates((prev) => ({
+        ...prev,
+        [name]: newState,
+      }));
+    },
+    [selectedGirl, characterEventStates, dayOfWeek, hour],
+  );
 
   const triggerSpecificEvent = useCallback(
     (characterName: string, eventId: string, locationOverride?: string) => {
@@ -988,7 +1024,7 @@ export default function GamePage() {
       const scheduledLocation = getScheduledLocation(
         characterName,
         dayOfWeek,
-        hour
+        hour,
       );
       const override = girlStatsOverrides[characterName];
       const mergedStats = override
@@ -1021,7 +1057,7 @@ export default function GamePage() {
           dayOfWeek,
           hour,
           completedEvents,
-          gameplayFlags
+          gameplayFlags,
         )
       ) {
         return;
@@ -1038,10 +1074,10 @@ export default function GamePage() {
           onUnlockCharacter: (name) => {
             const key = name as keyof typeof characterUnlocks;
             setCharacterUnlocks((prevState) =>
-              prevState[key] ? prevState : { ...prevState, [key]: true }
+              prevState[key] ? prevState : { ...prevState, [key]: true },
             );
           },
-        })
+        }),
       );
     },
     [
@@ -1059,8 +1095,18 @@ export default function GamePage() {
       setFlag,
       setPlayer,
       startDialogue,
-    ]
+    ],
   );
+
+  //pending Events tracker
+  const [pendingEvents, setPendingEvents] = useState<
+    {
+      characterName: string;
+      eventId: string;
+      location: string;
+      priority: number;
+    }[]
+  >([]);
 
   const triggerLocationEvent = (location: string) => {
     const availableEvents = pendingEvents
@@ -1090,10 +1136,10 @@ export default function GamePage() {
         onUnlockCharacter: (characterName) => {
           const name = characterName as keyof typeof characterUnlocks;
           setCharacterUnlocks((prev) =>
-            prev[name] ? prev : { ...prev, [name]: true }
+            prev[name] ? prev : { ...prev, [name]: true },
           );
         },
-      }
+      },
     );
     if (updatedPlayer !== player) {
       setPlayer(updatedPlayer);
@@ -1103,7 +1149,7 @@ export default function GamePage() {
   };
 
   // location change + random events
-  
+
   // location change + random events
   const moveTo = (location: string) => {
     if (isLocationTransitioning || location === currentLocation) {
@@ -1176,7 +1222,7 @@ export default function GamePage() {
         hour,
         dayOfWeek,
         player,
-        gameplayFlags
+        gameplayFlags,
       );
       if (randomEvent) {
         console.log(`Random event: ${randomEvent.name}`);
@@ -1188,7 +1234,6 @@ export default function GamePage() {
       finishTransition();
     }, transitionDurationMs);
   };
-
 
   // rewards
   const applyRandomEventRewards = (rewards: RandomEvent["rewards"]) => {
@@ -1226,43 +1271,12 @@ export default function GamePage() {
           [girlName]: cappedStats,
         }));
         console.log(
-          `💕 ${girlName} affection: ${change > 0 ? "+" : ""}${change}`
+          `💕 ${girlName} affection: ${change > 0 ? "+" : ""}${change}`,
         );
       });
     }
 
     setPlayer(updated);
-  };
-
-  // time
-const spendTime = (amount: number) => {
-    const newHour = hour + amount;
-
-    if (newHour >= MAX_HOUR) {
-      const nextDay = getNextDay(dayOfWeek);
-      setHour(START_HOUR);
-      setDayOfWeek(nextDay);
-
-      setPlayer((prev) => ({
-        ...prev,
-        energy: Math.min(100, prev.energy + 30),
-        hunger: Math.min(100, prev.hunger + 20),
-      }));
-
-      // Clear selected girl when day changes
-      setSelectedGirl(null);
-      setInteractionHistory({});
-      setDailyWorkoutState({
-        day: nextDay,
-        total: 0,
-        withRuby: 0,
-        withoutRuby: 0,
-      });
-
-      alert(`A new day begins! It's ${nextDay} morning.`);
-    } else {
-      setHour(newHour);
-    }
   };
 
   const getCurrentLocationImage = () =>
@@ -1274,7 +1288,7 @@ const spendTime = (amount: number) => {
     return options.filter((loc) => {
       const isNightLife = ["Bar", "Nightclub", "Strip Club"].includes(loc.name);
       const isDaytimeOnly = ["Cafe", "Gym", "Mall", "Car Store"].includes(
-        loc.name
+        loc.name,
       );
       const isNightTime = hour >= 21;
 
@@ -1333,6 +1347,8 @@ const spendTime = (amount: number) => {
     });
     setScheduledEncounters([]);
     setInteractionHistory({});
+    setGameplayFlags(new Set());
+    setCurrentRandomEvent(null);
     setDailyWorkoutState({
       day: START_DAY,
       total: 0,
@@ -1345,16 +1361,6 @@ const spendTime = (amount: number) => {
     setGameState("intro");
     setCurrentDialogue(introDialogue);
   };
-
-  //pending Events tracker
-  const [pendingEvents, setPendingEvents] = useState<
-    {
-      characterName: string;
-      eventId: string;
-      location: string;
-      priority: number;
-    }[]
-  >([]);
 
   // Check what events are available but not yet triggered
   const checkPendingEvents = useCallback(() => {
@@ -1373,19 +1379,19 @@ const spendTime = (amount: number) => {
           .filter((h) => h.timesTriggered > 0)
           .map((h) => h.eventId) || [];
       const storyEventIds = new Set(
-        events.filter((event) => !event.repeatable).map((event) => event.id)
+        events.filter((event) => !event.repeatable).map((event) => event.id),
       );
       const storyHistory =
         eventState.eventHistory.filter((h) => storyEventIds.has(h.eventId)) ||
         [];
       const completedStoryCount = storyHistory.filter(
-        (h) => h.timesTriggered > 0
+        (h) => h.timesTriggered > 0,
       ).length;
       const storyTriggeredToday = storyHistory.some(
-        (h) => h.lastTriggered.day === dayOfWeek
+        (h) => h.lastTriggered.day === dayOfWeek,
       );
       const eventTriggeredToday = eventState.eventHistory.some(
-        (h) => h.lastTriggered.day === dayOfWeek
+        (h) => h.lastTriggered.day === dayOfWeek,
       );
       if (eventTriggeredToday) {
         return;
@@ -1410,7 +1416,7 @@ const spendTime = (amount: number) => {
         }
 
         const history = eventState.eventHistory.find(
-          (h) => h.eventId === event.id
+          (h) => h.eventId === event.id,
         );
         if (isEventOnCooldown(event, history, currentGameTime)) {
           continue;
@@ -1427,7 +1433,7 @@ const spendTime = (amount: number) => {
             dayOfWeek,
             hour,
             completedEvents,
-            gameplayFlags
+            gameplayFlags,
           )
         ) {
           triggerable = event;
@@ -1466,9 +1472,9 @@ const spendTime = (amount: number) => {
       new Set(
         pendingEvents
           .filter((e) => e.location === currentLocation)
-          .map((e) => e.characterName)
+          .map((e) => e.characterName),
       ),
-    [pendingEvents, currentLocation]
+    [pendingEvents, currentLocation],
   );
 
   const questItems = useMemo<QuestItem[]>(() => {
@@ -1477,7 +1483,9 @@ const spendTime = (amount: number) => {
 
     pendingEvents.forEach((pending) => {
       const events = getCharacterEvents(pending.characterName);
-      const event = events.find((candidate) => candidate.id === pending.eventId);
+      const event = events.find(
+        (candidate) => candidate.id === pending.eventId,
+      );
       if (!event) return;
 
       pendingByCharacter.add(pending.characterName);
@@ -1508,13 +1516,13 @@ const spendTime = (amount: number) => {
           .filter((h) => h.timesTriggered > 0)
           .map((h) => h.eventId) || [];
       const storyEventIds = new Set(
-        events.filter((event) => !event.repeatable).map((event) => event.id)
+        events.filter((event) => !event.repeatable).map((event) => event.id),
       );
       const storyHistory =
         eventState.eventHistory.filter((h) => storyEventIds.has(h.eventId)) ||
         [];
       const completedStoryCount = storyHistory.filter(
-        (h) => h.timesTriggered > 0
+        (h) => h.timesTriggered > 0,
       ).length;
 
       let guideEvent: CharacterEvent | null = null;
@@ -1546,7 +1554,7 @@ const spendTime = (amount: number) => {
             dayOfWeek,
             hour,
             completedEvents,
-            gameplayFlags
+            gameplayFlags,
           )
         ) {
           guideEvent = event;
@@ -1592,7 +1600,7 @@ const spendTime = (amount: number) => {
       const set = interactionHistory[key];
       return set ? set.has(actionLabel) : false;
     },
-    [dayOfWeek, interactionHistory]
+    [dayOfWeek, interactionHistory],
   );
 
   const recordInteraction = useCallback(
@@ -1604,7 +1612,7 @@ const spendTime = (amount: number) => {
         return { ...prev, [key]: current };
       });
     },
-    [dayOfWeek]
+    [dayOfWeek],
   );
 
   if (gameState == "nameInput") {
@@ -1720,7 +1728,7 @@ const spendTime = (amount: number) => {
               />
             </div>
           </div>,
-          document.body
+          document.body,
         )
       : null;
 
@@ -1732,124 +1740,13 @@ const spendTime = (amount: number) => {
           : "bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50"
       }`}
     >
-      {/* Header */}
-      <header
-        className={`${
-          darkMode
-            ? "bg-gradient-to-r from-purple-900 to-pink-900"
-            : "bg-gradient-to-r from-pink-500 to-purple-600"
-        } text-white py-4 md:py-6 shadow-lg transition-colors duration-300`}
-      >
-        {isMobile ? (
-          <>
-            <div className="container mx-auto px-4 flex justify-center items-center">
-              <span className="sr-only">Heart of the Valley</span>
-              <div className="flex gap-2 md:gap-3 items-center">
-                <button
-                  type="button"
-                  onClick={() => setShowPhone(true)}
-                  className={`bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center ${
-                    isMobile ? "animate-pulse" : ""
-                  }`}
-                  aria-label="Open phone"
-                  title="Open phone"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <rect x="7" y="2" width="10" height="20" rx="2" ry="2" />
-                    <path d="M11 18h2" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setGameState("paused")}
-                  className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center"
-                  aria-label="Open menu"
-                  title="Open menu"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M4 6h16" />
-                    <path d="M4 12h16" />
-                    <path d="M4 18h16" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="container mx-auto px-4 flex justify-between items-center">
-            <h1 className="text-2xl md:text-4xl font-bold">
-              <span className="flex items-center gap-2">
-                <Image
-                  src="/images/logo.png"
-                  alt="Heart of the Valley"
-                  width={50}
-                  height={50}
-                />
-                Heart of the Valley
-              </span>
-            </h1>
-            <div className="flex gap-2 items-center">
-              <button
-                onClick={() => setShowPhone(true)}
-                className={`bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${
-                  isMobile ? "animate-pulse" : ""
-                }`}
-                title="Open phone"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="7" y="2" width="10" height="20" rx="2" ry="2" />
-                  <path d="M11 18h2" />
-                </svg>
-                <span className="hidden sm:inline">Phone</span>
-              </button>
-              <button
-                onClick={() => setGameState("paused")}
-                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M4 6h16" />
-                  <path d="M4 12h16" />
-                  <path d="M4 18h16" />
-                </svg>
-                <span className="hidden md:inline">Menu</span>
-              </button>
-            </div>
-          </div>
-        )}
-      </header>
-
+      <GameHeader
+        darkMode={darkMode}
+        isMobile={isMobile}
+        onShowTutorial={() => setShowTutorial(true)}
+        onShowPhone={() => setShowPhone(true)}
+        onOpenMenu={() => setGameState("paused")}
+      />
 
       <div className="container mx-auto px-2 md:px-4 py-4 md:py-8">
         <div className="grid grid-cols-1 lg:[grid-template-columns:240px_minmax(0,1fr)_320px] gap-6">
@@ -1869,384 +1766,83 @@ const spendTime = (amount: number) => {
           {/* Main */}
           <div className="space-y-6 min-w-0">
             {/* Scene */}
-            <div
-              className={`relative rounded-2xl shadow-xl overflow-hidden border-4 w-full ${
-                darkMode
-                  ? "bg-gray-800 border-purple-700"
-                  : "bg-white border-purple-200"
-              } transition-colors duration-300`}
-            >
-              {/* Mobile title/desc */}
-              <div className="block md:hidden px-3 py-3">
-                <h2
-                  className={`text-lg font-bold mb-1 ${
-                    darkMode ? "text-purple-300" : "text-purple-800"
-                  }`}
-                >
-                  📍 {currentLocation}
-                </h2>
-                <p
-                  className={`text-xs italic ${
-                    darkMode ? "text-gray-400" : "text-gray-600"
-                  }`}
-                >
-                  {locationDescriptions[currentLocation]?.[
-                    timeOfDay
-                  ] || locationDescriptions[currentLocation]?.default}
-                </p>
-              </div>
+            <SceneView
+              darkMode={darkMode}
+              currentLocation={currentLocation}
+              timeOfDay={timeOfDay}
+              locationDescriptions={locationDescriptions}
+              getCurrentLocationImage={getCurrentLocationImage}
+              presentGirls={presentGirls}
+              eventReadyByGirl={eventReadyByGirl}
+              selectedGirl={selectedGirl}
+              onSelectGirl={setSelectedGirl}
+              hour={hour}
+              isLocationTransitioning={isLocationTransitioning}
+            />
 
-              <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-purple-100 to-white overflow-hidden">
-                {/* Background image with safe fallbacks */}
-                <Image
-                  src={getCurrentLocationImage()}
-                  alt={currentLocation}
-                  layout="fill"
-                  objectFit="cover"
-                />
-
-                {/* Atmosphere overlay */}
-                <div
-                  className={`absolute inset-0 pointer-events-none transition-all duration-1000 ${
-                    timeOfDay === "morning"
-                      ? "bg-gradient-to-b from-orange-300/30 via-transparent to-transparent"
-                      : timeOfDay === "afternoon"
-                      ? "bg-gradient-to-b from-yellow-200/20 via-transparent to-transparent"
-                      : timeOfDay === "evening"
-                      ? "bg-gradient-to-b from-purple-400/40 via-pink-300/20 to-transparent"
-                      : "bg-gradient-to-b from-indigo-900/60 via-purple-900/30 to-black/40"
-                  }`}
-                />
-
-                {/* Darken for readability */}
-                <div className="absolute inset-0 bg-black/20" />
-
-                {/* Desktop title/desc */}
-                <div className="hidden md:block absolute top-2 md:top-4 left-2 md:left-4 right-2 md:right-4 z-20">
-                  <div className="bg-black/60 backdrop-blur-sm px-3 md:px-4 py-2 md:py-3 rounded-lg">
-                    <h2 className="text-lg md:text-2xl font-bold text-white drop-shadow-lg mb-1">
-                      📍 {currentLocation}
-                    </h2>
-                    <p className="text-xs md:text-sm text-white/90 italic">
-                      {locationDescriptions[currentLocation]?.[
-                        timeOfDay
-                      ] || locationDescriptions[currentLocation]?.default}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Characters */}
-                <div className="absolute inset-0 flex items-end justify-around px-4 md:px-8 pb-8 md:pb-4">
-                  {presentGirls.map((girl, index) => {
-                    const imgPath = getCharacterImage(
-                      girl,
-                      currentLocation,
-                      hour
-                    );
-                    return (
-                      <button
-                        key={girl.name}
-                        onClick={() => setSelectedGirl(girl)}
-                        className={`group relative transform transition-all duration-300 hover:scale-105 hover:-translate-y-6 ${
-                          selectedGirl?.name === girl.name
-                            ? "scale-105 -translate-y-6 z-20"
-                            : "z-10"
-                        } animate-fadeIn`}
-                        style={{ animationDelay: `${index * 0.2}s` }}
-                      >
-                        {eventReadyByGirl.has(girl.name) && (
-                          <div className="absolute -top-2 -right-2 z-30">
-                            <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-yellow-300 text-yellow-900 font-bold border-2 border-yellow-500 shadow">
-                              ?
-                            </span>
-                          </div>
-                        )}
-                        {/* Shadow */}
-                        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-24 sm:w-32 h-3 sm:h-4 bg-black/30 rounded-full blur-md" />
-
-                        {/* Glow */}
-                        {selectedGirl?.name === girl.name && (
-                          <div className="absolute inset-0 bg-gradient-to-t from-pink-500 to-purple-500 rounded-3xl blur-2xl opacity-60 animate-pulse" />
-                        )}
-
-                        {/* Character image */}
-                        <div className="relative">
-                          <Image
-                            src={imgPath}
-                            alt={girl.name}
-                            width={192}
-                            height={288}
-                            className={`w-32 h-48 sm:w-40 sm:h-60 md:w-48 md:h-72 object-cover object-top rounded-3xl border-4 ${
-                              selectedGirl?.name === girl.name
-                                ? "border-pink-400 shadow-2xl shadow-pink-500/50"
-                                : "border-white/80 shadow-2xl"
-                            } transition-all ${
-                              selectedGirl && selectedGirl.name !== girl.name
-                                ? "brightness-75"
-                                : ""
-                            }`}
-                          />
-
-                          {/* Name tag */}
-                          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-pink-500 to-purple-500 px-3 sm:px-5 py-1 sm:py-2 rounded-full shadow-xl border-2 border-white">
-                            <span className="text-white font-bold text-xs sm:text-sm whitespace-nowrap drop-shadow-lg">
-                              {girl.name}
-                            </span>
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Nobody
-                {presentGirls.length === 0 && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-black/60 backdrop-blur-sm px-4 md:px-8 py-3 md:py-4 rounded-2xl">
-                      <p className="text-white text-lg md:text-xl text-center">
-                        🏜️ Nobody is here right now...
-                      </p>
-                    </div>
-                  </div>
-                )} */}
-              </div>
-              <div
-                className={`absolute inset-0 bg-black/60 pointer-events-none transition-opacity duration-200 z-30 ${
-                  isLocationTransitioning ? "opacity-100" : "opacity-0"
-                }`}
-              />
-            </div>
-
-            {isMobile && (
-              <div className="space-y-3">
-                <button
-                  type="button"
-                  onClick={() => setShowActivitiesMenu((prev) => !prev)}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 shadow-md transition-colors ${
-                    darkMode
-                      ? "bg-gray-800 border-purple-700 text-purple-200"
-                      : "bg-white border-purple-200 text-purple-800"
-                  }`}
-                  aria-expanded={showActivitiesMenu}
-                  aria-label={`Activities for ${currentLocation}`}
-                >
-                  <span className="flex items-center gap-2">
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="h-5 w-5"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M12 2l1.8 5.5H19l-4.3 3.1L16.5 16 12 12.7 7.5 16l1.8-5.4L5 7.5h5.2L12 2z" />
-                    </svg>
-                    <span className="text-sm font-semibold">Activities</span>
-                  </span>
-                  <span className="flex items-center gap-2 text-xs opacity-80">
-                    <span>{currentLocation}</span>
-                    <svg
-                      viewBox="0 0 20 20"
-                      className={`h-4 w-4 transition-transform ${
-                        showActivitiesMenu ? "rotate-180" : ""
-                      }`}
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M5 7l5 5 5-5" />
-                    </svg>
-                  </span>
-                </button>
-                {showActivitiesMenu && (
-                  <LocationActivities
-                    location={currentLocation}
-                    player={player}
-                    setPlayer={setPlayer}
-                    spendTime={spendTime}
-                    darkMode={darkMode}
-                    dayOfWeek={dayOfWeek}
-                    hour={hour}
-                    gameplayFlags={gameplayFlags}
-                    onTriggerEvent={triggerSpecificEvent}
-                    onSetFlag={setFlag}
-                    dailyWorkoutState={dailyWorkoutState}
-                    onLogWorkout={logWorkout}
-                    onAdjustGirlStats={applyGirlStatDelta}
-                  />
-                )}
-                <button
-                  type="button"
-                  onClick={() => setShowWhereMenu((prev) => !prev)}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 shadow-md transition-colors ${
-                    darkMode
-                      ? "bg-gray-800 border-purple-700 text-purple-200"
-                      : "bg-white border-purple-200 text-purple-800"
-                  }`}
-                  aria-expanded={showWhereMenu}
-                  aria-label="Where to go"
-                >
-                  <span className="flex items-center gap-2">
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="h-5 w-5"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M12 21s7-7.4 7-12a7 7 0 0 0-14 0c0 4.6 7 12 7 12z" />
-                      <circle cx="12" cy="9" r="2.5" />
-                    </svg>
-                    <span className="text-sm font-semibold">Where to go?</span>
-                  </span>
-                  <span className="flex items-center gap-2 text-xs opacity-80">
-                    <span>{currentLocation}</span>
-                    <svg
-                      viewBox="0 0 20 20"
-                      className={`h-4 w-4 transition-transform ${
-                        showWhereMenu ? "rotate-180" : ""
-                      }`}
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M5 7l5 5 5-5" />
-                    </svg>
-                  </span>
-                </button>
-                {showWhereMenu && (
-                  <div
-                    className={`relative flex flex-col gap-3 rounded-2xl shadow-xl p-4 border-2 ${
-                      darkMode
-                        ? "bg-gray-800 border-purple-700"
-                        : "bg-white border-purple-100"
-                    } transition-colors duration-300`}
-                  >
-                    <div
-                      className={`absolute inset-0 rounded-2xl bg-black/60 pointer-events-none transition-opacity duration-200 z-10 ${
-                        isLocationTransitioning ? "opacity-100" : "opacity-0"
-                      }`}
-                    />
-                    <div className="grid grid-cols-2 gap-3">
-                      {availableLocations.map((loc) => (
-                        <LocationCard
-                          key={loc.name}
-                          location={loc}
-                          onMove={(locationName) => {
-                            setShowWhereMenu(false);
-                            moveTo(locationName);
-                          }}
-                          girls={girls}
-                          darkMode={darkMode}
-                          scheduledEncounters={scheduledEncounters}
-                          pendingEvents={pendingEvents}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Available locations */}
-            {!isMobile && (
-              <div
-                className={`relative flex flex-col gap-3 md:gap-4 rounded-2xl shadow-xl p-4 md:p-6 border-2  ${
-                  darkMode
-                    ? "bg-gray-800 border-purple-700"
-                    : "bg-white border-purple-100"
-                } transition-colors duration-300`}
-              >
-                <div
-                  className={`absolute inset-0 rounded-2xl bg-black/60 pointer-events-none transition-opacity duration-200 z-10 ${
-                    isLocationTransitioning ? "opacity-100" : "opacity-0"
-                  }`}
-                />
-                <h3
-                  className={`text-xl text-center md:text-2xl font-bold mb-3 md:mb-4 ${
-                    darkMode ? "text-purple-300" : "text-purple-800"
-                  }`}
-                >
-                  Where to go?
-                </h3>
-                <div className="mt-4 overflow-x-auto [-webkit-overflow-scrolling:touch]">
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-                    {availableLocations.map((loc) => (
-                      <LocationCard
-                        key={loc.name}
-                        location={loc}
-                        onMove={moveTo}
-                        girls={girls}
-                        darkMode={darkMode}
-                        scheduledEncounters={scheduledEncounters}
-                        pendingEvents={pendingEvents}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
+            <LocationPanels
+              isMobile={isMobile}
+              showActivitiesMenu={showActivitiesMenu}
+              onToggleActivitiesMenu={() =>
+                setShowActivitiesMenu((prev) => !prev)
+              }
+              showWhereMenu={showWhereMenu}
+              onToggleWhereMenu={() => setShowWhereMenu((prev) => !prev)}
+              currentLocation={currentLocation}
+              darkMode={darkMode}
+              dayOfWeek={dayOfWeek}
+              hour={hour}
+              gameplayFlags={gameplayFlags}
+              dailyWorkoutState={dailyWorkoutState}
+              onLogWorkout={logWorkout}
+              onAdjustGirlStats={applyGirlStatDelta}
+              player={player}
+              setPlayer={setPlayer}
+              spendTime={spendTime}
+              onTriggerEvent={triggerSpecificEvent}
+              onSetFlag={setFlag}
+              availableLocations={availableLocations}
+              moveTo={moveTo}
+              girls={girls}
+              scheduledEncounters={scheduledEncounters}
+              pendingEvents={pendingEvents}
+              isLocationTransitioning={isLocationTransitioning}
+            />
           </div>
 
-          {/* Right Sidebar (Desktop) */}
-          {selectedGirl ? (
-            <div className="hidden lg:block">
-              <CharacterOverlay
-                girl={selectedGirl}
-                location={currentLocation}
-                player={player}
-                gameplayFlags={gameplayFlags}
-                setPlayer={setPlayer}
-                spendTime={spendTime}
-                onClose={() => setSelectedGirl(null)}
-                onStartDialogue={startDialogue}
-                dayOfWeek={dayOfWeek}
-                hour={hour}
-                eventState={
-                  characterEventStates[selectedGirl.name] ?? {
+          <RightSidebar
+            selectedGirl={selectedGirl}
+            currentLocation={currentLocation}
+            player={player}
+            gameplayFlags={gameplayFlags}
+            setPlayer={setPlayer}
+            spendTime={spendTime}
+            onCloseSelectedGirl={() => setSelectedGirl(null)}
+            onStartDialogue={startDialogue}
+            dayOfWeek={dayOfWeek}
+            hour={hour}
+            eventState={
+              selectedGirl
+                ? characterEventStates[selectedGirl.name] ?? {
                     characterName: selectedGirl.name,
                     eventHistory: [] as EventHistory[],
                     lastInteractionTime: calculateGameTime(dayOfWeek, hour),
                   }
-                }
-                onEventTriggered={onEventTriggered}
-                darkMode={darkMode}
-                onScheduleDate={handleScheduleDate}
-                hasInteractedToday={hasInteractedToday}
-                onInteractionLogged={recordInteraction}
-                onSetFlag={setFlag}
-                onUnlockCharacter={unlockCharacter}
-                variant="sidebar"
-              />
-            </div>
-          ) : (
-            <div className={`${isMobile ? "hidden" : "block"}`}>
-              <LocationActivities
-                location={currentLocation}
-                player={player}
-                setPlayer={setPlayer}
-                spendTime={spendTime}
-                darkMode={darkMode}
-                dayOfWeek={dayOfWeek}
-                hour={hour}
-                gameplayFlags={gameplayFlags}
-                onTriggerEvent={triggerSpecificEvent}
-                onSetFlag={setFlag}
-                dailyWorkoutState={dailyWorkoutState}
-                onLogWorkout={logWorkout}
-                onAdjustGirlStats={applyGirlStatDelta}
-              />
-            </div>
-          )}
-
+                : null
+            }
+            onEventTriggered={onEventTriggered}
+            darkMode={darkMode}
+            onScheduleDate={handleScheduleDate}
+            hasInteractedToday={hasInteractedToday}
+            onInteractionLogged={recordInteraction}
+            onSetFlag={setFlag}
+            onUnlockCharacter={unlockCharacter}
+            isMobile={isMobile}
+            onTriggerEvent={triggerSpecificEvent}
+            dailyWorkoutState={dailyWorkoutState}
+            onLogWorkout={logWorkout}
+            onAdjustGirlStats={applyGirlStatDelta}
+          />
         </div>
       </div>
 
@@ -2301,6 +1897,15 @@ const spendTime = (amount: number) => {
           isMobile={isMobile}
           dayOfWeek={dayOfWeek}
           quests={questItems}
+        />
+      )}
+
+      {/* Tutorial Overlay */}
+      {showTutorial && (
+        <TutorialOverlay
+          onClose={() => setShowTutorial(false)}
+          isMobile={isMobile}
+          darkMode={darkMode}
         />
       )}
 

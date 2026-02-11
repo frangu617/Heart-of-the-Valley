@@ -36,23 +36,22 @@ export default function NameInput({ onNameSubmit, darkMode = true }: Props) {
             💖 Heart of the Valley
           </h1> */}
           <span>
-          <Image
-            src="/images/logo.png"
-            alt="Heart of the Valley"
-            width={128}
-            height={128}
-            className="justify-center h-32 w-32 mx-auto"
-
-          />
+            <Image
+              src="/images/logo.png"
+              alt="Heart of the Valley"
+              width={128}
+              height={128}
+              className="h-32 w-32 mx-auto"
+            />
           </span>
           <span>
-          <p
-            className={`text-xl mb-8 ${
-              darkMode ? "text-gray-300" : "text-gray-600"
-            }`}
-          >
-            What&apos;s your name?
-          </p>
+            <p
+              className={`text-xl mb-8 ${
+                darkMode ? "text-gray-300" : "text-gray-600"
+              }`}
+            >
+              What&apos;s your name?
+            </p>
           </span>
         </div>
 
@@ -61,7 +60,7 @@ export default function NameInput({ onNameSubmit, darkMode = true }: Props) {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleSubmit()}
+            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
             placeholder="Enter your name..."
             maxLength={20}
             className={`w-full text-2xl text-center py-4 px-6 rounded-xl border-4 font-semibold transition-all ${
@@ -81,10 +80,9 @@ export default function NameInput({ onNameSubmit, darkMode = true }: Props) {
                 : "bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 hover:scale-105 hover:shadow-2xl"
             } text-white`}
           >
-             Begin Your Journey
+            Begin Your Journey
           </button>
         </div>
-       
 
         <div
           className={`mt-8 text-center text-sm ${
