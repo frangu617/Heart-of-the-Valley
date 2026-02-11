@@ -26,7 +26,7 @@ import { getCharacterEvents } from "../data/events/chapter1/index";
 import { checkEventConditions, isEventOnCooldown } from "../lib/eventSystem";
 import { calculateGameTime, getTimeOfDay } from "../lib/time";
 import { applyCharacterEventRewards } from "../lib/rewards";
-import { applyPlayerStatDelta } from "../lib/playerStats";
+import { applyPlayerStatDelta, withDerivedMood } from "../lib/playerStats";
 
 // Data / Types
 
@@ -302,11 +302,13 @@ export default function GamePage() {
       setHour(START_HOUR);
       setDayOfWeek(nextDay);
 
-      setPlayer((prev) => ({
-        ...prev,
-        energy: Math.min(100, prev.energy + 30),
-        hunger: Math.min(100, prev.hunger + 20),
-      }));
+      setPlayer((prev) =>
+        withDerivedMood({
+          ...prev,
+          energy: Math.min(100, prev.energy + 30),
+          hunger: Math.min(100, prev.hunger + 20),
+        })
+      );
 
       // Clear selected girl when day changes
       setSelectedGirl(null);
@@ -672,7 +674,7 @@ export default function GamePage() {
   );
 
   const applySaveData = useCallback((data: SaveData) => {
-    setPlayer(data.player);
+    setPlayer(withDerivedMood(data.player));
     setCurrentLocation(data.currentLocation);
     setHour(data.hour);
     const loadedDay = data.dayOfWeek ?? START_DAY;
@@ -1331,7 +1333,7 @@ export default function GamePage() {
   //handler for name submission
   const handleNameSubmit = (playerName: string) => {
     // Reset everything to initial state
-    setPlayer({ ...defaultPlayerStats, name: playerName });
+    setPlayer(withDerivedMood({ ...defaultPlayerStats, name: playerName }));
     setCurrentLocation("Bedroom");
     setHour(START_HOUR);
     setDayOfWeek(START_DAY);

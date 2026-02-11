@@ -168,12 +168,6 @@ export default function PhoneMenu({
                 darkMode={darkMode}
               />
               <StatBar
-                label="Mood"
-                value={player.mood}
-                icon="😊"
-                darkMode={darkMode}
-              />
-              <StatBar
                 label="Hunger"
                 value={player.hunger}
                 icon="🍔"

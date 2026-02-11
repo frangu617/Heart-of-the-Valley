@@ -13,6 +13,7 @@ import { CharacterEventState, GameplayFlag } from "@/data/events/types";
 import { findTriggeredEvent } from "@/lib/eventSystem";
 import { getCharacterEvents } from "@/data/events/chapter1";
 import { applyCharacterEventRewards } from "@/lib/rewards";
+import { applyPlayerStatDelta } from "@/lib/playerStats";
 // import { firstMeetingDialogues } from "../data/dialogues/index";
 import DatePlanner from "./DatePlanner";
 import { DateLocation } from "@/data/dates";
@@ -280,9 +281,6 @@ export default function CharacterOverlay({
     if (action.label === "Flirt") {
       if (girl.stats.affection < 10) {
         alert(`${girl.name} doesn't seem comfortable with that right now...`);
-        const updatedStats = { ...player };
-        updatedStats.mood = Math.max(0, updatedStats.mood - 10);
-        setPlayer(updatedStats);
         return;
       }
     }
@@ -290,9 +288,6 @@ export default function CharacterOverlay({
     if (action.label === "Kiss") {
       if (girl.stats.affection < 40 || girl.stats.mood < 50) {
         alert(`${girl.name} pulls away. The timing doesn't seem right...`);
-        const updatedStats = { ...player };
-        updatedStats.mood = Math.max(0, updatedStats.mood - 15);
-        setPlayer(updatedStats);
         return;
       }
     }
@@ -307,13 +302,9 @@ export default function CharacterOverlay({
     }
 
     // Apply stat effects
-    const updatedStats = { ...player };
-    Object.entries(action.statEffects || {}).forEach(([key, value]) => {
-      const statKey = key as keyof PlayerStats;
-      if (statKey !== "inventory" && typeof value === "number") {
-        (updatedStats[statKey] as number) += value;
-      }
-    });
+    const updatedStats = action.statEffects
+      ? applyPlayerStatDelta(player, action.statEffects)
+      : player;
     setPlayer(updatedStats);
     spendTime(action.timeCost);
 

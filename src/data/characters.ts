@@ -16,7 +16,7 @@ export type PlayerStats = {
 export const defaultPlayerStats: PlayerStats = {
   name: "You",
   energy: 100,
-  mood: 50,
+  mood: 75,
   hunger: 50,
   fitness: 10,
   intelligence: 10,

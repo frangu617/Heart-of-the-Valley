@@ -110,12 +110,6 @@ export default function StatsPanel({
           darkMode={darkMode}
         />
         <StatBar
-          label="Mood"
-          value={stats.mood}
-          icon="😊"
-          darkMode={darkMode}
-        />
-        <StatBar
           label="Hunger"
           value={stats.hunger}
           icon="🍔"

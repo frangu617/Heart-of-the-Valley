@@ -2,6 +2,20 @@ import { PlayerStats } from "@/data/characters";
 
 const CLAMPED_STATS: Array<keyof PlayerStats> = ["energy", "mood", "hunger"];
 
+export const derivePlayerMood = (energy: number, hunger: number) =>
+  Math.round((energy + hunger) / 2);
+
+export const withDerivedMood = (player: PlayerStats): PlayerStats => ({
+  ...player,
+  mood: derivePlayerMood(player.energy, player.hunger),
+});
+
+const getEnergyExertionMultiplier = (hunger: number) => {
+  if (hunger <= 25) return 1.5;
+  if (hunger <= 50) return 1.25;
+  return 1;
+};
+
 export function applyPlayerStatDelta(
   player: PlayerStats,
   deltas: Partial<PlayerStats>
@@ -15,12 +29,18 @@ export function applyPlayerStatDelta(
     const current = next[statKey];
     if (typeof current !== "number") return;
 
-    const updated = current + value;
+    let adjustedValue = value;
+    if (statKey === "energy" && value < 0) {
+      adjustedValue = Math.floor(
+        value * getEnergyExertionMultiplier(player.hunger)
+      );
+    }
+    const updated = current + adjustedValue;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (next as any)[statKey] = CLAMPED_STATS.includes(statKey)
       ? Math.max(0, Math.min(100, updated))
       : Math.max(0, updated);
   });
 
-  return next;
+  return withDerivedMood(next);
 }

@@ -211,10 +211,9 @@ export default function LocationActivitiesPanel({
     } else if (act.statEffects) {
       next = applyPlayerStatDelta(player, act.statEffects);
     } else {
-      next = {
-        ...player,
-        energy: Math.max(0, player.energy - (act.timeCost ?? 1) * 5),
-      };
+      next = applyPlayerStatDelta(player, {
+        energy: -(act.timeCost ?? 1) * 5,
+      });
     }
 
     setPlayer(next);
