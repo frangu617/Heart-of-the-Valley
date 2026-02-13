@@ -149,6 +149,7 @@ const iris_ch2_ev3_neutral_dialogue: Dialogue = {
           text: "Keep exploring. No labels yet.",
           affectionChange: 1,
           dominanceChange: 0,
+          setFlags: ["irisSchoolKissUnlocked"],
         },
         {
           text: "This is too risky. We should pull back.",
@@ -186,7 +187,7 @@ export const irisEvent3Events: CharacterEvent[] = [
       maxDominance: -10,
     },
     dialogue: iris_ch2_ev3_sub_dialogue,
-    rewards: { setFlags: ["irisCh2Ev3_Done", "irisDatePlanned"] },
+    rewards: { setFlags: ["irisCh2Ev3_Done"] },
   },
   {
     id: "iris_ch2_ev3_dom",
@@ -206,7 +207,7 @@ export const irisEvent3Events: CharacterEvent[] = [
       minDominance: 10,
     },
     dialogue: iris_ch2_ev3_dom_dialogue,
-    rewards: { setFlags: ["irisCh2Ev3_Done", "irisDatePlanned"] },
+    rewards: { setFlags: ["irisCh2Ev3_Done"] },
   },
   {
     id: "iris_ch2_ev3_neutral",
@@ -227,6 +228,6 @@ export const irisEvent3Events: CharacterEvent[] = [
       maxDominance: 9,
     },
     dialogue: iris_ch2_ev3_neutral_dialogue,
-    rewards: { setFlags: ["irisCh2Ev3_Done", "irisDatePlanned"] },
+    rewards: { setFlags: ["irisCh2Ev3_Done"] },
   },
 ];

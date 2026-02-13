@@ -100,6 +100,7 @@ type SaveData = {
   gameplayFlags: GameplayFlag[];
   dailyWorkoutState: DailyWorkoutState;
   rubyWorkoutTotal: number;
+  randomEventDailyCounts: Record<string, number>;
   textSpeed: "normal" | "instant";
   timestamp: string;
 };
@@ -292,6 +293,9 @@ export default function GamePage() {
   const [interactionHistory, setInteractionHistory] = useState<
     Record<string, Set<string>>
   >({});
+  const [randomEventDailyCounts, setRandomEventDailyCounts] = useState<
+    Record<string, number>
+  >({});
 
   // time
   const spendTime = (amount: number) => {
@@ -313,6 +317,7 @@ export default function GamePage() {
       // Clear selected girl when day changes
       setSelectedGirl(null);
       setInteractionHistory({});
+      setRandomEventDailyCounts({});
       setDailyWorkoutState({
         day: nextDay,
         total: 0,
@@ -500,7 +505,8 @@ export default function GamePage() {
         `✨ Triggering scheduled encounter: ${encounter.label || event.name}`,
       );
       setCurrentRandomEvent(event);
-      startDialogue(event.dialogue, "", null);
+      recordRandomEventTrigger(event.id);
+      startDialogue(event.dialogue, "", null, event.characterName);
       applyRandomEventRewards(event.rewards);
       return true;
     } else {
@@ -631,6 +637,12 @@ export default function GamePage() {
     console.log(`🚩 Flag set: ${flag}`);
   }, []);
 
+  const recordRandomEventTrigger = useCallback((eventId: string) => {
+    setRandomEventDailyCounts((prev) => ({
+      ...prev,
+      [eventId]: (prev[eventId] ?? 0) + 1,
+    }));
+  }, []);
   const unlockCharacter = useCallback((characterName: string) => {
     const name = characterName as keyof typeof characterUnlocks;
     setCharacterUnlocks((prev) =>
@@ -653,6 +665,7 @@ export default function GamePage() {
       gameplayFlags: Array.from(gameplayFlags),
       dailyWorkoutState,
       rubyWorkoutTotal,
+      randomEventDailyCounts,
       textSpeed,
       timestamp: new Date().toISOString(),
     }),
@@ -669,6 +682,7 @@ export default function GamePage() {
       gameplayFlags,
       dailyWorkoutState,
       rubyWorkoutTotal,
+      randomEventDailyCounts,
       textSpeed,
     ],
   );
@@ -692,6 +706,7 @@ export default function GamePage() {
     );
     setScheduledEncounters(data.scheduledEncounters ?? []); // This loads dates too
     setGameplayFlags(new Set(data.gameplayFlags ?? []));
+    setRandomEventDailyCounts(data.randomEventDailyCounts ?? {});
     if (data.dailyWorkoutState && data.dailyWorkoutState.day === loadedDay) {
       setDailyWorkoutState(data.dailyWorkoutState);
     } else {
@@ -903,8 +918,74 @@ export default function GamePage() {
     });
   };
 
-  const endRandomEventDialogue = () => {
+  const endRandomEventDialogue = (
+    statChanges?: Partial<GirlStats>,
+    chosenOption?: DialogueChoice,
+  ) => {
     const finalize = () => {
+      if (chosenOption?.scheduleEncounter) {
+        scheduleEncounter(chosenOption.scheduleEncounter);
+      }
+
+      if (chosenOption?.setFlags) {
+        chosenOption.setFlags.forEach((flag) => {
+          setFlag(flag);
+          console.log(`Flag set from random choice: ${flag}`);
+        });
+      }
+
+      if (chosenOption?.unlockCharacters) {
+        chosenOption.unlockCharacters.forEach((characterName) => {
+          const name = characterName as keyof typeof characterUnlocks;
+          if (!characterUnlocks[name]) {
+            setCharacterUnlocks((prev) => ({ ...prev, [name]: true }));
+          }
+        });
+      }
+
+      if (dialogueGirlName) {
+        const girl = girls.find(
+          (g) => g.name.toLowerCase() === dialogueGirlName.toLowerCase(),
+        );
+        if (girl) {
+          const currentOverride = girlStatsOverrides[dialogueGirlName] || {};
+          const currentStats = { ...girl.stats, ...currentOverride };
+          const combined = { ...dialogueGirlEffects, ...statChanges };
+
+          const newStats: Partial<GirlStats> = { ...currentStats };
+          const clampGirlStatValue = (key: keyof GirlStats, value: number) => {
+            if (key === "dominance") {
+              return clampValue(value, -100, 100);
+            }
+            return clampValue(value, 0, 100);
+          };
+
+          Object.entries(combined).forEach(([key, value]) => {
+            if (typeof value === "number") {
+              const statKey = key as keyof GirlStats;
+              const currentValue = (currentStats[statKey] as number) ?? 0;
+              newStats[statKey] = clampGirlStatValue(
+                statKey,
+                currentValue + value,
+              );
+            }
+          });
+
+          const { affectionCap, lustCap } = getRelationshipCaps(girl.name);
+          newStats.affection = clampValue(
+            newStats.affection ?? 0,
+            0,
+            affectionCap,
+          );
+          newStats.lust = clampValue(newStats.lust ?? 0, 0, lustCap);
+
+          setGirlStatsOverrides((prev) => ({
+            ...prev,
+            [dialogueGirlName]: newStats,
+          }));
+        }
+      }
+
       // Spend time if the event has a timeCost
       if (currentRandomEvent?.timeCost) {
         spendTime(currentRandomEvent.timeCost);
@@ -948,6 +1029,12 @@ export default function GamePage() {
       if (ev) {
         foundDialogue = ev.dialogue;
         setCurrentRandomEvent(ev);
+        if (ev.characterName) {
+          const girl = girls.find((g) => g.name === ev.characterName);
+          if (girl) {
+            characterImage = getCharacterImage(girl, currentLocation, hour);
+          }
+        }
         console.log(`✅ Found dialogue '${id}' in random events`);
       }
     }
@@ -959,7 +1046,8 @@ export default function GamePage() {
     }
 
     // Start the dialogue
-    startDialogue(foundDialogue, characterImage, null);
+    const randomSpeaker = randomEvents.find((e) => e.id === id)?.characterName;
+    startDialogue(foundDialogue, characterImage, null, randomSpeaker);
   };
 
   const onEventTriggered = useCallback(
@@ -1225,11 +1313,19 @@ export default function GamePage() {
         dayOfWeek,
         player,
         gameplayFlags,
+        girls,
+        randomEventDailyCounts,
       );
       if (randomEvent) {
         console.log(`Random event: ${randomEvent.name}`);
         setCurrentRandomEvent(randomEvent);
-        startDialogue(randomEvent.dialogue, "", null);
+        recordRandomEventTrigger(randomEvent.id);
+        startDialogue(
+          randomEvent.dialogue,
+          "",
+          null,
+          randomEvent.characterName,
+        );
         applyRandomEventRewards(randomEvent.rewards);
       }
 
@@ -1349,6 +1445,7 @@ export default function GamePage() {
     });
     setScheduledEncounters([]);
     setInteractionHistory({});
+    setRandomEventDailyCounts({});
     setGameplayFlags(new Set());
     setCurrentRandomEvent(null);
     setDailyWorkoutState({
@@ -1915,3 +2012,7 @@ export default function GamePage() {
     </div>
   );
 }
+
+
+
+

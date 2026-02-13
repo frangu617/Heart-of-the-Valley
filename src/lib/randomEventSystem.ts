@@ -1,6 +1,6 @@
 // src/lib/randomEventSystem.ts
 import { RandomEvent, randomEvents } from "@/data/events/chapter1/randomEvents";
-import { PlayerStats } from "@/data/characters";
+import { PlayerStats, type Girl } from "@/data/characters";
 import { DayOfWeek } from "@/data/gameConstants";
 import type { GameplayFlag } from "@/data/events/types";
 
@@ -18,7 +18,8 @@ function checkRandomEventConditions(
   hour: number,
   day: DayOfWeek,
   player: PlayerStats,
-  gameplayFlags?: Set<GameplayFlag>
+  gameplayFlags?: Set<GameplayFlag>,
+  girls?: Girl[]
 ): boolean {
   const { conditions } = event;
 
@@ -38,6 +39,16 @@ function checkRandomEventConditions(
   // Check day specific
   if (conditions.daySpecific && !conditions.daySpecific.includes(day)) {
     return false;
+  }
+
+  if (conditions.requiredCharactersPresent?.length) {
+    if (!girls) return false;
+    for (const characterName of conditions.requiredCharactersPresent) {
+      const character = girls.find((girl) => girl.name === characterName);
+      if (!character || character.location !== location) {
+        return false;
+      }
+    }
   }
 
   if (conditions.requiredFlags && conditions.requiredFlags.length > 0) {
@@ -77,6 +88,46 @@ function checkRandomEventConditions(
     }
   }
 
+  if (conditions.minGirlStat) {
+    if (!girls) return false;
+    const girl = girls.find((g) => g.name === conditions.minGirlStat?.girlName);
+    const stat = girl?.stats[conditions.minGirlStat.stat];
+    if (typeof stat !== "number" || stat < conditions.minGirlStat.value) {
+      return false;
+    }
+  }
+
+  if (conditions.minGirlStats?.length) {
+    if (!girls) return false;
+    for (const requirement of conditions.minGirlStats) {
+      const girl = girls.find((g) => g.name === requirement.girlName);
+      const stat = girl?.stats[requirement.stat];
+      if (typeof stat !== "number" || stat < requirement.value) {
+        return false;
+      }
+    }
+  }
+
+  if (conditions.maxGirlStat) {
+    if (!girls) return false;
+    const girl = girls.find((g) => g.name === conditions.maxGirlStat?.girlName);
+    const stat = girl?.stats[conditions.maxGirlStat.stat];
+    if (typeof stat !== "number" || stat > conditions.maxGirlStat.value) {
+      return false;
+    }
+  }
+
+  if (conditions.maxGirlStats?.length) {
+    if (!girls) return false;
+    for (const requirement of conditions.maxGirlStats) {
+      const girl = girls.find((g) => g.name === requirement.girlName);
+      const stat = girl?.stats[requirement.stat];
+      if (typeof stat !== "number" || stat > requirement.value) {
+        return false;
+      }
+    }
+  }
+
   return true;
 }
 
@@ -86,25 +137,44 @@ function checkRandomEventConditions(
  */
 function calculateRandomChance(
   event: RandomEvent,
-  player: PlayerStats
+  player: PlayerStats,
+  girls?: Girl[]
 ): number {
+  let chance = event.probability;
+
   if (event.probabilityByNeeds) {
     const avg = (player.energy + player.hunger + player.mood) / 3;
     const scaled = (avg / 100) * event.probability;
-    return Math.min(100, Math.round(scaled));
+    chance = scaled;
+  } else {
+    // Add a small luck boost based on player stats
+    let boost = 0;
+
+    // Higher intelligence = better luck reading situations
+    boost += Math.floor(player.intelligence / 10);
+    // Higher style = attracts attention
+    boost += Math.floor(player.style / 15);
+    // Higher mood = more good things happen
+    boost += Math.floor(player.mood / 20);
+    chance += boost;
   }
 
-  // Add a small luck boost based on player stats
-  let boost = 0;
+  if (event.probabilityByGirlStat && girls) {
+    const { girlName, stat, multiplier, min, max } = event.probabilityByGirlStat;
+    const girl = girls.find((g) => g.name === girlName);
+    const statValue = girl?.stats[stat];
+    if (typeof statValue === "number") {
+      chance += statValue * multiplier;
+      if (min !== undefined) {
+        chance = Math.max(min, chance);
+      }
+      if (max !== undefined) {
+        chance = Math.min(max, chance);
+      }
+    }
+  }
 
-  // Higher intelligence = better luck reading situations
-  boost += Math.floor(player.intelligence / 10);
-  // Higher style = attracts attention
-  boost += Math.floor(player.style / 15);
-  // Higher mood = more good things happen
-  boost += Math.floor(player.mood / 20);
-
-  return Math.min(100, event.probability + boost);
+  return Math.min(100, Math.max(0, Math.round(chance)));
 }
 
 /**
@@ -116,11 +186,21 @@ export function checkRandomEvent(
   hour: number,
   day: DayOfWeek,
   player: PlayerStats,
-  gameplayFlags?: Set<GameplayFlag>
+  gameplayFlags?: Set<GameplayFlag>,
+  girls?: Girl[],
+  eventTriggerCountsToday?: Record<string, number>
 ): RandomEvent | null {
   // Get eligible events for this location
   const eligibleEvents = randomEvents.filter((event) =>
-    checkRandomEventConditions(event, location, hour, day, player, gameplayFlags)
+    checkRandomEventConditions(
+      event,
+      location,
+      hour,
+      day,
+      player,
+      gameplayFlags,
+      girls
+    )
   );
 
   if (eligibleEvents.length === 0) {
@@ -129,7 +209,15 @@ export function checkRandomEvent(
 
   // For each eligible event, roll the dice
   for (const event of eligibleEvents) {
-    const adjustedChance = calculateRandomChance(event, player);
+    const triggerCount = eventTriggerCountsToday?.[event.id] ?? 0;
+    if (
+      event.maxTriggersPerDay !== undefined &&
+      triggerCount >= event.maxTriggersPerDay
+    ) {
+      continue;
+    }
+
+    const adjustedChance = calculateRandomChance(event, player, girls);
     const roll = Math.random() * 100;
 
     if (roll < adjustedChance) {
