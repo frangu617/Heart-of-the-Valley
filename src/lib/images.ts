@@ -13,6 +13,12 @@ type LocationCategory =
   | "date";
 
 type RelationshipStance = "neutral" | "shy" | "confident" | "love" | "intimate";
+const EXPRESSION_ASSET_ALIASES: Record<string, string> = {
+  love: "seductvie",
+};
+
+export const resolveExpressionAssetName = (expression: string) =>
+  EXPRESSION_ASSET_ALIASES[expression] ?? expression;
 
 // Map locations to outfit categories
 const locationToCategory: Record<string, LocationCategory> = {
@@ -71,6 +77,7 @@ export function getCharacterImage(
 
   // Use expression if provided, otherwise calculate stance from stats
   const stance = expression || getRelationshipStance(girl);
+  const stanceAsset = resolveExpressionAssetName(stance);
 
   // Special logic for home locations:
   // Before 6 PM, use casual clothes
@@ -85,7 +92,7 @@ export function getCharacterImage(
     }
   }
 
-  const specificImage = `/images/characters/${girlName}/${category}/${stance}.webp`;
+  const specificImage = `/images/characters/${girlName}/${category}/${stanceAsset}.webp`;
   return specificImage;
 }
 

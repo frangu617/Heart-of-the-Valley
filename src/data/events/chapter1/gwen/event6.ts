@@ -114,6 +114,9 @@ export const gwenEvent6Events: CharacterEvent[] = [
         },
       ],
     },
+    rewards: {
+      setFlags: ["gwen_chapter_1_completed"],
+    },
   },
   {
     id: "gwen_chapter_1_finale_sub",
@@ -147,6 +150,9 @@ export const gwenEvent6Events: CharacterEvent[] = [
           nextDialogueId: "gwen_finale_hush",
         },
       ],
+    },
+    rewards: {
+      setFlags: ["gwen_chapter_1_completed"],
     },
   },
 ];

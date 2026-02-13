@@ -431,6 +431,9 @@ export const irisEvent6Events: CharacterEvent[] = [
         },
       ],
     },
+    rewards: {
+      setFlags: ["irisCh1FinaleComplete"],
+    },
   },
   {
     id: "iris_chapter_1_finale_sub",
@@ -503,6 +506,9 @@ export const irisEvent6Events: CharacterEvent[] = [
           ],
         },
       ],
+    },
+    rewards: {
+      setFlags: ["irisCh1FinaleComplete"],
     },
   },
 ];

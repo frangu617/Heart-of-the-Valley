@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Location } from "../data/locations";
 import { Girl } from "../data/characters";
 import { getLocationImagePath } from "../lib/images";
+import type { GameplayFlag } from "../data/events/types";
 
 interface ScheduledEncounter {
   characterName: string;
@@ -17,6 +18,7 @@ interface Props {
   location: Location;
   onMove: (name: string) => void;
   girls: Girl[];
+  gameplayFlags?: Set<GameplayFlag>;
   darkMode?: boolean;
   scheduledEncounters?: ScheduledEncounter[]; // ✨ NEW
   pendingEvents?: {
@@ -31,10 +33,34 @@ interface Props {
   }[];
 }
 
+const metFlagByGirlName: Partial<Record<string, GameplayFlag>> = {
+  Iris: "hasMetIris",
+  Dawn: "hasMetDawn",
+  Gwen: "hasMetGwen",
+  Yumi: "hasMetYumi",
+  Ruby: "hasMetRuby",
+};
+
+const hasMetGirl = (gameplayFlags: Set<GameplayFlag>, girlName: string) => {
+  const metFlag = metFlagByGirlName[girlName];
+  return metFlag ? gameplayFlags.has(metFlag) : true;
+};
+
+const shouldMaskText = (text: string, gameplayFlags: Set<GameplayFlag>) => {
+  const lowerText = text.toLowerCase();
+  return Object.entries(metFlagByGirlName).some(
+    ([girlName, metFlag]) =>
+      !!metFlag &&
+      lowerText.includes(girlName.toLowerCase()) &&
+      !gameplayFlags.has(metFlag),
+  );
+};
+
 export default function LocationCard({
   location,
   onMove,
   girls,
+  gameplayFlags = new Set<GameplayFlag>(),
   darkMode = true,
   scheduledEncounters = [],
   pendingEvents = []
@@ -48,6 +74,14 @@ export default function LocationCard({
   );
 
   const pendingEvent = pendingEvents.find((e) => e.location === location.name);
+  const displayLocationName = shouldMaskText(location.name, gameplayFlags)
+    ? "????"
+    : location.name;
+  const getDisplayGirlName = (girlName: string) =>
+    hasMetGirl(gameplayFlags, girlName) ? girlName : "????";
+  const displayEncounterName = pendingEncounter
+    ? getDisplayGirlName(pendingEncounter.characterName)
+    : "";
 
   return (
     <div
@@ -73,7 +107,7 @@ export default function LocationCard({
       >
         <Image
           src={getLocationImagePath(location.name, "afternoon")}
-          alt={location.name}
+          alt={displayLocationName}
           layout="fill"
           objectFit="cover"
           className="group-hover:scale-110 transition-transform duration-300"
@@ -130,7 +164,7 @@ export default function LocationCard({
             darkMode ? "text-gray-200" : "text-gray-800"
           }`}
         >
-          {location.name}
+          {displayLocationName}
         </h3>
 
         {/* Show who you're meeting */}
@@ -138,8 +172,8 @@ export default function LocationCard({
           <div className="mb-2 text-center">
             <p className="text-xs font-semibold text-pink-600 dark:text-pink-400">
               {pendingEncounter.day && pendingEncounter.hour !== undefined
-                ? `Date with ${pendingEncounter.characterName}`
-                : `Meeting ${pendingEncounter.characterName}`}
+                ? `Date with ${displayEncounterName}`
+                : `Meeting ${displayEncounterName}`}
             </p>
             {pendingEncounter.activities &&
               pendingEncounter.activities.length > 0 && (
@@ -162,7 +196,7 @@ export default function LocationCard({
                     : "bg-pink-100 text-pink-700 border-pink-300"
                 }`}
               >
-                {girl.name}
+                {getDisplayGirlName(girl.name)}
               </span>
             ))}
           </div>

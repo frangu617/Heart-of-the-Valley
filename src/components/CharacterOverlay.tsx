@@ -17,11 +17,51 @@ import { applyPlayerStatDelta } from "@/lib/playerStats";
 // import { firstMeetingDialogues } from "../data/dialogues/index";
 import DatePlanner from "./DatePlanner";
 import { DateLocation } from "@/data/dates";
-import { getCharacterImage } from "@/lib/images";
+import { getCharacterImage, resolveExpressionAssetName } from "@/lib/images";
 import GiftModal from "./GiftModal";
 import { Gift, getGiftEntriesFromInventory } from "@/data/gifts";
 // import { get } from "http";
 
+const ALWAYS_VISIBLE_INTERACTIONS = new Set(["Chat", "Flirt", "Give Gift"]);
+const KISS_LUST_REQUIREMENT = 15;
+const KISS_REJECTION_EFFECTS: Partial<GirlStats> = { affection: -2, lust: -2 };
+const KISS_UNLOCK_FLAG_BY_CHARACTER: Partial<Record<string, GameplayFlag>> = {
+  Iris: "irisCh1FinaleComplete",
+  Gwen: "gwen_chapter_1_completed",
+  Ruby: "ruby_chapter_1_completed",
+  Yumi: "yumi_chapter_1_completed",
+};
+const CHAPTER_ONE_FINALE_EVENT_IDS_BY_CHARACTER: Partial<Record<string, string[]>> = {
+  Iris: ["iris_chapter_1_finale_dom", "iris_chapter_1_finale_sub"],
+  Gwen: ["gwen_chapter_1_finale", "gwen_chapter_1_finale_sub"],
+  Ruby: ["ruby_ch1_ev5_mall_sub", "ruby_ch1_ev5_mall_dom"],
+  Yumi: ["yumi_chapter_1_finale_dom", "yumi_chapter_1_finale_sub"],
+};
+const SHOW_DATE_PLANNER_ACTION = false;
+
+const hasKissUnlockedByFlag = (
+  characterName: string,
+  gameplayFlags: Set<GameplayFlag>
+): boolean => {
+  const requiredFlag = KISS_UNLOCK_FLAG_BY_CHARACTER[characterName];
+  if (!requiredFlag) return false;
+  return gameplayFlags.has(requiredFlag);
+};
+
+const hasCompletedChapterOneByHistory = (
+  characterName: string,
+  eventState: CharacterEventState
+): boolean => {
+  const finaleEventIds = CHAPTER_ONE_FINALE_EVENT_IDS_BY_CHARACTER[characterName];
+  if (!finaleEventIds || finaleEventIds.length === 0) return false;
+
+  return finaleEventIds.some((eventId) =>
+    eventState.eventHistory.some(
+      (historyEntry) =>
+        historyEntry.eventId === eventId && historyEntry.timesTriggered > 0
+    )
+  );
+};
 
 interface Props {
   girl: Girl;
@@ -83,6 +123,13 @@ export default function CharacterOverlay({
   const [pendingGiftAction, setPendingGiftAction] = useState<Interaction | null>(
     null
   );
+  const kissUnlocked =
+    hasKissUnlockedByFlag(girl.name, gameplayFlags) ||
+    hasCompletedChapterOneByHistory(girl.name, eventState);
+  const visibleInteractions = interactionMenu.filter((action) => {
+    if (action.label === "Kiss") return kissUnlocked;
+    return ALWAYS_VISIBLE_INTERACTIONS.has(action.label);
+  });
   const giftEntries = getGiftEntriesFromInventory(player.inventory);
   const hasGifts = giftEntries.length > 0;
   // Check for triggered events when component mounts or dependencies change
@@ -262,6 +309,44 @@ export default function CharacterOverlay({
       return;
     }
 
+    if (action.label === "Kiss") {
+      if (!kissUnlocked) {
+        alert(
+          `Kiss unlocks for ${girl.name} after finishing their Chapter 1 story.`
+        );
+        return;
+      }
+
+      if (girl.stats.lust < KISS_LUST_REQUIREMENT) {
+        const characterImage = getCharacterImage(
+          girl,
+          location,
+          hour,
+          getFacialExpression()
+        );
+        const rejectionDialogue: Dialogue = {
+          id: `${girl.name.toLowerCase()}_kiss_rejected`,
+          lines: [
+            {
+              speaker: null,
+              text: `You lean in to kiss ${girl.name}, but the moment goes wrong.`,
+            },
+            {
+              speaker: girl.name,
+              text: "Not yet. That felt too sudden.",
+              expression: "sad",
+            },
+          ],
+        };
+        onStartDialogue(rejectionDialogue, characterImage, KISS_REJECTION_EFFECTS);
+        spendTime(action.timeCost);
+        if (onInteractionLogged) {
+          onInteractionLogged(girl.name, action.label);
+        }
+        return;
+      }
+    }
+
     if (action.label === "Kiss" && girl.name === "Iris") {
       const schoolLocations = new Set([
         "University",
@@ -377,6 +462,7 @@ export default function CharacterOverlay({
   };
 
   const expression = getFacialExpression();
+  const portraitExpression = resolveExpressionAssetName(expression);
 
   const containerPosition =
     variant === "modal" ? "relative" : "sticky top-4";
@@ -403,7 +489,7 @@ export default function CharacterOverlay({
           <div className="absolute inset-0 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full blur-lg group-hover:blur-xl transition-all"></div>
           <div className="relative w-50 h-60 rounded-full border-4 border-white shadow-xl overflow-hidden">
             <Image
-              src={`/images/characters/${girl.name.toLowerCase()}/casual/${expression}.webp`}
+              src={`/images/characters/${girl.name.toLowerCase()}/casual/${portraitExpression}.webp`}
               alt={`${girl.name} - ${expression}`}
               layout="fill"
               objectFit="cover"
@@ -459,7 +545,8 @@ export default function CharacterOverlay({
           {" "}
           💝 Actions
         </h4>
-        <button
+        {SHOW_DATE_PLANNER_ACTION && (
+          <button
           onClick={() => setShowDatePlanner(true)}
           className="relative overflow-hidden group w-full bg-gradient-to-r from-red-400 to-pink-600 hover:from-red-500 hover:to-pink-700 shadow-md hover:shadow-lg transform hover:scale-102 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 text-sm"
         >
@@ -471,9 +558,10 @@ export default function CharacterOverlay({
             <span className="text-xs opacity-75">Plan</span>
           </div>
           <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity"></div>
-        </button>
+          </button>
+        )}
 
-        {interactionMenu.map((action) => {
+        {visibleInteractions.map((action) => {
           const giftDisabled = action.label === "Give Gift" && !hasGifts;
           const isDisabled = Boolean(
             (action.requiresItem &&
@@ -532,7 +620,7 @@ export default function CharacterOverlay({
           actions affect {girl.name}&apos;s feelings toward you!
         </p>
       </div>
-      {showDatePlanner && (
+      {SHOW_DATE_PLANNER_ACTION && showDatePlanner && (
         <DatePlanner
           girl={girl}
           currentDay={dayOfWeek}

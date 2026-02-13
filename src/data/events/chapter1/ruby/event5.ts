@@ -188,7 +188,7 @@ export const rubyEvent5Events: CharacterEvent[] = [
     },
     dialogue: rubyCh1Ev5MallSub,
     rewards: {
-      setFlags: ["rubyExConflictStarted"],
+      setFlags: ["rubyExConflictStarted", "ruby_chapter_1_completed"],
     },
   },
   {
@@ -207,7 +207,7 @@ export const rubyEvent5Events: CharacterEvent[] = [
     },
     dialogue: rubyCh1Ev5MallDom,
     rewards: {
-      setFlags: ["rubyExConflictStarted"],
+      setFlags: ["rubyExConflictStarted", "ruby_chapter_1_completed"],
     },
   },
 ];

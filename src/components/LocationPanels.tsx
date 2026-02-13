@@ -206,6 +206,7 @@ export default function LocationPanels({
                       moveTo(locationName);
                     }}
                     girls={girls}
+                    gameplayFlags={gameplayFlags}
                     darkMode={darkMode}
                     scheduledEncounters={scheduledEncounters}
                     pendingEvents={pendingEvents}
@@ -246,6 +247,7 @@ export default function LocationPanels({
                   location={loc}
                   onMove={moveTo}
                   girls={girls}
+                  gameplayFlags={gameplayFlags}
                   darkMode={darkMode}
                   scheduledEncounters={scheduledEncounters}
                   pendingEvents={pendingEvents}
