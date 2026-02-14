@@ -93,8 +93,9 @@
 - Goal:
 - Resolve emotional fallout from Event 3 and set up the date in a route-consistent way.
 - Route key:
-- `sub`: `irisSubPath` is set.
-- `dom`: `irisDomPath` is set.
+- `sub`: dominance band `<= -10`.
+- `balanced`: dominance band `-9..9`.
+- `dom`: dominance band `>= 10`.
 - `accepted`: `irisSchoolKissUnlocked` is set.
 - `denied`: `irisPublicRefused` is set.
 - Base gate:
@@ -102,27 +103,37 @@
 
 **Event 4 Branch Events**
 1. `iris_ch2_ev4_sub_accepted`
-- Conditions: `irisCh2Ev3_Done`, `irisSubPath`, `irisSchoolKissUnlocked`, blocked by `irisDatePlanned`.
+- Conditions: `irisCh2Ev3_Done`, `irisSchoolKissUnlocked`, `dominance <= -10`, blocked by `irisDatePlanned`.
 - Priority: `160`.
 - Tone: Iris is visibly happier and more attached (not clingy, still in-character).
 - Outcome flags: `irisCh2Ev4_Done`, `irisDatePlanned`.
 2. `iris_ch2_ev4_sub_denied`
-- Conditions: `irisCh2Ev3_Done`, `irisSubPath`, `irisPublicRefused`, blocked by `irisDatePlanned`.
+- Conditions: `irisCh2Ev3_Done`, `irisPublicRefused`, `dominance <= -10`, blocked by `irisDatePlanned`.
 - Priority: `160`.
 - Tone: she asks for another chance and proposes a date without sounding dramatic or desperate.
 - Outcome flags: `irisCh2Ev4_Done`, `irisDatePlanned`.
 3. `iris_ch2_ev4_dom_accepted`
-- Conditions: `irisCh2Ev3_Done`, `irisDomPath`, `irisSchoolKissUnlocked`, blocked by `irisDatePlanned`.
+- Conditions: `irisCh2Ev3_Done`, `irisSchoolKissUnlocked`, `dominance >= 10`, blocked by `irisDatePlanned`.
 - Priority: `160`.
 - Tone: she calls out that you skipped the date phase and demands a real date now.
 - Outcome flags: `irisCh2Ev4_Done`, `irisDatePlanned`, `irisDomAcceptedKissLoopActive`.
 4. `iris_ch2_ev4_dom_denied_start`
-- Conditions: `irisCh2Ev3_Done`, `irisDomPath`, `irisPublicRefused`, blocked by `irisDatePlanned`.
+- Conditions: `irisCh2Ev3_Done`, `irisPublicRefused`, `dominance >= 10`, blocked by `irisDatePlanned`.
 - Priority: `160`.
 - Tone: controlled frustration; the kiss re-opened a part of her she had shut down.
 - Outcome flags: `irisCh2Ev4_Done`, `irisDomDeniedKissLoopActive`.
 - Does not set `irisDatePlanned` yet.
-5. `iris_ch2_ev4_dom_denied_confront`
+5. `iris_ch2_ev4_balanced_accepted`
+- Conditions: `irisCh2Ev3_Done`, `irisSchoolKissUnlocked`, `dominance -9..9`, blocked by `irisDatePlanned`.
+- Priority: `161`.
+- Tone: mature and steady; both agree on a proper date without pressure.
+- Outcome flags: `irisCh2Ev4_Done`, `irisDatePlanned`.
+6. `iris_ch2_ev4_balanced_denied`
+- Conditions: `irisCh2Ev3_Done`, `irisPublicRefused`, `dominance -9..9`, blocked by `irisDatePlanned`.
+- Priority: `161`.
+- Tone: respectful reset after denial; recommit through a clear date plan.
+- Outcome flags: `irisCh2Ev4_Done`, `irisDatePlanned`.
+7. `iris_ch2_ev4_dom_denied_confront`
 - Conditions:
 - `irisDomDeniedKissLoopActive`
 - `irisDomDeniedSeen3`

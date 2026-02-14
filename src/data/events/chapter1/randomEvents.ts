@@ -423,7 +423,7 @@ export const randomEvents: RandomEvent[] = [
       locations: ["University Hallway", "University Parking Lot", "Cafe", "Mall", "City"],
       hourRange: { min: 9, max: 22 },
       requiredCharactersPresent: ["Iris"],
-      requiredFlags: ["irisDomDeniedKissLoopActive", "irisPublicRefused", "irisDomPath"],
+      requiredFlags: ["irisDomDeniedKissLoopActive", "irisPublicRefused"],
       blockedFlags: ["irisDomDeniedSeen1", "irisDomDeniedExclusive", "irisCh2Complete"],
     },
     dialogue: {
@@ -471,7 +471,6 @@ export const randomEvents: RandomEvent[] = [
       requiredFlags: [
         "irisDomDeniedKissLoopActive",
         "irisPublicRefused",
-        "irisDomPath",
         "irisDomDeniedSeen1",
       ],
       blockedFlags: ["irisDomDeniedSeen2", "irisDomDeniedExclusive", "irisCh2Complete"],
@@ -521,7 +520,6 @@ export const randomEvents: RandomEvent[] = [
       requiredFlags: [
         "irisDomDeniedKissLoopActive",
         "irisPublicRefused",
-        "irisDomPath",
         "irisDomDeniedSeen2",
       ],
       blockedFlags: ["irisDomDeniedSeen3", "irisDomDeniedExclusive", "irisCh2Complete"],
