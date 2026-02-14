@@ -9,7 +9,7 @@ const iris_ch2_ev4_sub_accepted_dialogue: Dialogue = {
   lines: [
     {
       speaker: null,
-      text: "You find Iris in the hallway between classes. She is already watching for you before you speak.",
+      text: "You find Iris in the hallway between classes. She is already watching for you before you speak, gaze lingering a beat too long.",
     },
     {
       speaker: "Iris",
@@ -18,7 +18,7 @@ const iris_ch2_ev4_sub_accepted_dialogue: Dialogue = {
     },
     {
       speaker: "Iris",
-      text: "I keep catching myself looking for you in every corridor.",
+      text: "I keep catching myself looking for you in every corridor, wondering if you'll pull me in again.",
       expression: "shy",
     },
     {
@@ -235,7 +235,7 @@ const iris_ch2_ev4_sub_accepted_dialogue: Dialogue = {
     },
     {
       speaker: null,
-      text: "She brushes her hand against yours as you pass, smiling like she finally gets to stop pretending.",
+      text: "She trails her fingers across your hand a second longer than casual, smiling like she finally gets to stop pretending.",
     },
   ],
 };
@@ -245,7 +245,7 @@ const iris_ch2_ev4_sub_denied_dialogue: Dialogue = {
   lines: [
     {
       speaker: null,
-      text: "Iris meets you at the edge of the faculty hall, both hands around a cooling cup of coffee.",
+      text: "Iris meets you at the edge of the faculty hall, both hands around a cooling cup of coffee, lipstick faint on the rim.",
     },
     {
       speaker: "Iris",
@@ -301,7 +301,7 @@ const iris_ch2_ev4_sub_denied_dialogue: Dialogue = {
     },
     {
       speaker: "Iris",
-      text: "I am asking for one date where we both show up honestly.",
+      text: "I am asking for one date where we both show up honestly, without pretending we do not want each other.",
       expression: "neutral",
     },
     {
@@ -473,7 +473,7 @@ const iris_ch2_ev4_dom_accepted_dialogue: Dialogue = {
   lines: [
     {
       speaker: null,
-      text: "Iris catches your sleeve and pulls you just out of hallway traffic.",
+      text: "Iris catches your sleeve, backs you lightly toward the wall, and keeps you just out of hallway traffic.",
     },
     {
       speaker: "Iris",
@@ -529,7 +529,7 @@ const iris_ch2_ev4_dom_accepted_dialogue: Dialogue = {
     },
     {
       speaker: "Iris",
-      text: "From now on, if I want to kiss you, I will.",
+      text: "From now on, if I want to kiss you, I will. No warning.",
       expression: "seductive",
     },
     {
@@ -677,7 +677,7 @@ const iris_ch2_ev4_dom_accepted_dialogue: Dialogue = {
     },
     {
       speaker: null,
-      text: "She steals a quick kiss anyway and lets you go with a satisfied smile.",
+      text: "She steals a quick kiss anyway, thumb at your jaw, and lets you go with a satisfied smile.",
     },
     {
       speaker: "Iris",
@@ -710,7 +710,7 @@ const iris_ch2_ev4_dom_denied_start_dialogue: Dialogue = {
     },
     {
       speaker: "Iris",
-      text: "I am still upset.",
+      text: "I am still upset. And still wound tight, if I am being honest.",
       expression: "shy",
     },
     {
@@ -752,7 +752,7 @@ const iris_ch2_ev4_dom_denied_start_dialogue: Dialogue = {
     },
     {
       speaker: "Iris",
-      text: "That kiss opened something I had sealed for years.",
+      text: "That kiss opened something I had sealed for years, and it has not gone quiet since.",
       expression: "shy",
     },
     {
@@ -929,7 +929,7 @@ const iris_ch2_ev4_balanced_accepted_dialogue: Dialogue = {
   lines: [
     {
       speaker: null,
-      text: "Iris finds you in a quiet stretch of hallway and matches your pace.",
+      text: "Iris finds you in a quiet stretch of hallway and matches your pace, shoulder brushing yours every few steps.",
     },
     {
       speaker: "Iris",
@@ -1128,7 +1128,7 @@ const iris_ch2_ev4_balanced_accepted_dialogue: Dialogue = {
     },
     {
       speaker: "Iris",
-      text: "No games. Just show up.",
+      text: "No games. Just show up and stay close.",
       expression: "happy",
     },
     {
@@ -1152,7 +1152,7 @@ const iris_ch2_ev4_balanced_denied_dialogue: Dialogue = {
   lines: [
     {
       speaker: null,
-      text: "Iris catches you by the faculty door, expression steady but searching.",
+      text: "Iris catches you by the faculty door, expression steady but searching, as if she has decided not to flinch.",
     },
     {
       speaker: "Iris",
@@ -1175,7 +1175,7 @@ const iris_ch2_ev4_balanced_denied_dialogue: Dialogue = {
     },
     {
       speaker: "Iris",
-      text: "One date, clear terms, no theatrics.",
+      text: "One date, clear terms, no theatrics. Just chemistry and honesty.",
       expression: "neutral",
     },
     {
@@ -1356,7 +1356,7 @@ const iris_ch2_ev4_balanced_denied_dialogue: Dialogue = {
     },
     {
       speaker: "Iris",
-      text: "No tragedy, no ultimatums. Just a date.",
+      text: "No tragedy, no ultimatums. Just a date, and no pretending.",
       expression: "happy",
     },
     {

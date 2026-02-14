@@ -18,7 +18,7 @@ const iris_ch2_date_encounter_sub: Dialogue = {
     { speaker: "You", text: "Iris?" },
     {
       speaker: null,
-      text: "She turns. It's not Iris. It's a younger woman, her face framed by the same dark hair, but her eyes hold a mischievous glint.",
+      text: "She turns. It's not Iris. It's a younger woman, her face framed by the same dark hair, but her eyes hold a mischievous glint as they flick to your mouth.",
     },
     { speaker: "???", text: "...", expression: "happy" },
     { speaker: "You", text: "Oh, I'm so sorry. I thought you were someone else." },
@@ -45,6 +45,35 @@ const iris_ch2_date_after_encounter: Dialogue = {
         { text: "Nothing, just admiring the view.", affectionChange: 0 },
       ],
     },
+    {
+      speaker: null,
+      text: "She steps in close enough that her perfume cuts through the smoke and bass.",
+    },
+    {
+      speaker: "You",
+      text: "How do you greet her?",
+      choices: [
+        {
+          text: "Offer your arm and smile.",
+          affectionChange: 1,
+        },
+        {
+          text: "Let your eyes linger. You look dangerous tonight.",
+          affectionChange: 0,
+          lustChange: 1,
+        },
+        {
+          text: "Brush her fingers. Been waiting for this all day.",
+          affectionChange: 1,
+          lustChange: 1,
+        },
+      ],
+    },
+    {
+      speaker: "Iris",
+      text: "Then do not waste the night.",
+      expression: "happy",
+    },
   ],
 };
 
@@ -62,7 +91,7 @@ const iris_ch2_date_encounter_dom: Dialogue = {
     { speaker: "You", text: "There you are." },
     {
       speaker: null,
-      text: "The woman turns. It's not Iris. It's a younger woman, her face framed by the same dark hair, but her eyes hold a challenging glint.",
+      text: "The woman turns. It's not Iris. It's a younger woman, her face framed by the same dark hair, but her eyes hold a challenging glint that dares you to react.",
     },
     { speaker: "???", text: "...", expression: "happy" },
     { speaker: "You", text: "Oh. My mistake. I thought you were someone else." },
@@ -87,7 +116,7 @@ const iris_ch2_date_encounter_neutral: Dialogue = {
     { speaker: "You", text: "Hey-ready to order?" },
     {
       speaker: null,
-      text: "She turns. It's not Iris. It's a younger woman, her face framed by the same dark hair, her eyes filled with curiosity.",
+      text: "She turns. It's not Iris. It's a younger woman, her face framed by the same dark hair, her eyes filled with curiosity that lingers a beat too long.",
     },
     { speaker: "???", text: "...", expression: "happy" },
     { speaker: "You", text: "Sorry about that. I mistook you for my date." },
@@ -144,17 +173,61 @@ export const irisEvent5Events: CharacterEvent[] = [
         },
         {
           speaker: "Iris",
-          text: "It's... a lot. I haven't been to a place like this in years.",
+          text: "It's... a lot. I have not been in a room this loud in years.",
           expression: "shy",
         },
-        { speaker: "You", text: "Just stay with me. I'll keep you safe." },
         {
-          speaker: null,
-          text: "You find a quieter corner booth. After a while, she relaxes, enjoying being out with you.",
+          speaker: "You",
+          text: "How do you steady her?",
+          choices: [
+            {
+              text: "Offer your hand. Then stay with me.",
+              affectionChange: 2,
+              dominanceChange: -1,
+            },
+            {
+              text: "Lean close and murmur. Keep your eyes on me.",
+              affectionChange: 1,
+              lustChange: 1,
+            },
+            {
+              text: "Tease softly. You can hide behind me for the first song.",
+              affectionChange: 1,
+              dominanceChange: 1,
+            },
+          ],
         },
         {
           speaker: null,
-          text: "The rest of the date is perfect, ending with a slow, trusting kiss at her door.",
+          text: "She threads her fingers through yours, grip warm and a little unsteady.",
+        },
+        {
+          speaker: null,
+          text: "You find a quieter corner booth. As the music settles into the background, your knees brush beneath the table.",
+        },
+        {
+          speaker: "You",
+          text: "How do you keep the mood?",
+          choices: [
+            {
+              text: "Ask about the reckless nights she used to love.",
+              affectionChange: 1,
+              lustChange: 1,
+            },
+            {
+              text: "Keep it present. Tonight is about us, not old ghosts.",
+              affectionChange: 2,
+            },
+            {
+              text: "Tell her she looks impossible to ignore tonight.",
+              affectionChange: 1,
+              lustChange: 1,
+            },
+          ],
+        },
+        {
+          speaker: null,
+          text: "By the time you walk her home, she lingers at her door and kisses you slowly, trusting and unhurried.",
         },
       ],
     },
@@ -205,12 +278,57 @@ export const irisEvent5Events: CharacterEvent[] = [
           expression: "seductive",
         },
         {
-          speaker: null,
-          text: "The night is a whirlwind of dancing and flirty banter.",
+          speaker: "You",
+          text: "How do you answer?",
+          choices: [
+            {
+              text: "Pull her straight to the dance floor.",
+              affectionChange: 1,
+              lustChange: 2,
+              dominanceChange: 1,
+            },
+            {
+              text: "Keep her close at the bar first and make her wait.",
+              affectionChange: 1,
+              lustChange: 1,
+            },
+            {
+              text: "Lean to her ear. You started this. Do not slow down now.",
+              affectionChange: 0,
+              lustChange: 2,
+              dominanceChange: 1,
+            },
+          ],
         },
         {
           speaker: null,
-          text: "The rest of the date is electric, ending with a fiery, possessive kiss at her door.",
+          text: "The night turns into a push-and-pull of dancing, sharp smiles, and hands that keep finding each other.",
+        },
+        {
+          speaker: "You",
+          text: "At the edge of the dance floor, what do you do?",
+          choices: [
+            {
+              text: "Spin her in close and keep her there.",
+              affectionChange: 1,
+              lustChange: 2,
+            },
+            {
+              text: "Hold eye contact and make her come to you.",
+              affectionChange: 0,
+              lustChange: 2,
+              dominanceChange: 1,
+            },
+            {
+              text: "Break the tension with a low, private joke.",
+              affectionChange: 2,
+              lustChange: 1,
+            },
+          ],
+        },
+        {
+          speaker: null,
+          text: "The date stays electric to the end, finishing with a fierce, possessive kiss at her door that leaves both of you breathless.",
         },
       ],
     },
@@ -259,12 +377,52 @@ export const irisEvent5Events: CharacterEvent[] = [
           expression: "happy",
         },
         {
-          speaker: null,
-          text: "The conversation is easy and balanced as you find a comfortable spot to talk and people-watch.",
+          speaker: "You",
+          text: "How do you set the tone?",
+          choices: [
+            {
+              text: "Warm and close. Keep your hand at the small of her back.",
+              affectionChange: 2,
+            },
+            {
+              text: "Playful. Trade teasing comments while you watch the crowd.",
+              affectionChange: 1,
+              lustChange: 1,
+            },
+            {
+              text: "Quiet and intimate. Guide her to a calmer corner booth.",
+              affectionChange: 2,
+              dominanceChange: -1,
+            },
+          ],
         },
         {
           speaker: null,
-          text: "The date ends with a comfortable, intimate kiss at her door.",
+          text: "Conversation comes easily as you people-watch and share a drink, your shoulders touching more often than either of you comments on.",
+        },
+        {
+          speaker: "You",
+          text: "Later in the night?",
+          choices: [
+            {
+              text: "Tell her she looks even better when she relaxes.",
+              affectionChange: 1,
+              lustChange: 1,
+            },
+            {
+              text: "Ask for one slow dance away from the crowd.",
+              affectionChange: 2,
+            },
+            {
+              text: "Keep talking, let the tension build naturally.",
+              affectionChange: 1,
+              lustChange: 0,
+            },
+          ],
+        },
+        {
+          speaker: null,
+          text: "The date ends with a soft, intimate kiss at her door, lingering just long enough to promise more.",
         },
       ],
     },
