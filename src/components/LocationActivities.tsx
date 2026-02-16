@@ -4,6 +4,8 @@ import { DayOfWeek } from "../data/gameConstants";
 import {
   locationActivities as activitiesMap,
   LocationActivity,
+  TESTING_LOCATION_NAME,
+  type TestingEnvironment,
 } from "../data/locations";
 import { GameplayFlag } from "@/data/events/types";
 import { applyPlayerStatDelta } from "@/lib/playerStats";
@@ -43,6 +45,8 @@ type Props = {
   dailyWorkoutState?: DailyWorkoutState;
   onLogWorkout?: (withRuby: boolean) => void;
   onAdjustGirlStats?: (girlName: string, delta: Partial<GirlStats>) => void;
+  testingEnvironment?: TestingEnvironment;
+  onSetTestingEnvironment?: (environment: TestingEnvironment) => void;
 };
 
 export default function LocationActivitiesPanel({
@@ -59,6 +63,8 @@ export default function LocationActivitiesPanel({
   dailyWorkoutState,
   onLogWorkout,
   onAdjustGirlStats,
+  testingEnvironment,
+  onSetTestingEnvironment,
 }: Props) {
   const baseActivities: Activity[] = activitiesMap[location] ?? [];
   const [showGiftShop, setShowGiftShop] = useState(false);
@@ -67,6 +73,13 @@ export default function LocationActivitiesPanel({
   const giftStoreEntries = gifts.map((gift) => ({ gift, count: 0 }));
 
   const activities = [...baseActivities];
+  const testingEnvironmentByActivityId: Record<string, TestingEnvironment> = {
+    test_env_casual: "casual",
+    test_env_university: "university",
+    test_env_gym: "gym",
+    test_env_home: "home",
+    test_env_date: "date",
+  };
 
   const rubyAtGym =
     getScheduledLocation("Ruby", dayOfWeek, hour) === "Gym" &&
@@ -193,6 +206,17 @@ export default function LocationActivitiesPanel({
   }
 
   const doActivity = (act: Activity) => {
+    const selectedTestingEnvironment =
+      act.id ? testingEnvironmentByActivityId[act.id] : undefined;
+    if (
+      location === TESTING_LOCATION_NAME &&
+      selectedTestingEnvironment &&
+      onSetTestingEnvironment
+    ) {
+      onSetTestingEnvironment(selectedTestingEnvironment);
+      return;
+    }
+
     if (location === "Mall" && act.name === "Gift Store") {
       setShowGiftShop(true);
       return;
@@ -329,8 +353,17 @@ export default function LocationActivitiesPanel({
 
       <div className="grid grid-cols-1 gap-2">
         {activities.map((act) => {
+          const selectedTestingEnvironment =
+            act.id ? testingEnvironmentByActivityId[act.id] : undefined;
+          const isTestingEnvironmentActivity =
+            location === TESTING_LOCATION_NAME && !!selectedTestingEnvironment;
+          const isActiveTestingEnvironment =
+            isTestingEnvironmentActivity &&
+            selectedTestingEnvironment === testingEnvironment;
           const failures = getRequirementFailures(act);
-          const isDisabled = failures.length > 0;
+          const isDisabled = isTestingEnvironmentActivity
+            ? false
+            : failures.length > 0;
           const showRubyIndicator =
             isRubyUnlockActivity(act) && !gameplayFlags?.has("hasMetRuby");
           const showYumiIndicator =
@@ -361,6 +394,11 @@ export default function LocationActivitiesPanel({
                   {showYumiIndicator && (
                     <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-yellow-300 text-yellow-900 text-xs font-bold border border-yellow-500">
                       ?
+                    </span>
+                  )}
+                  {isActiveTestingEnvironment && (
+                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-300 text-green-900 text-xs font-bold border border-green-500">
+                      ✓
                     </span>
                   )}
                   {act.icon ? <span className="mr-2">{act.icon}</span> : null}

@@ -5,7 +5,7 @@ import LocationCard from "./LocationCard";
 import type { DayOfWeek } from "../data/gameConstants";
 import type { Dispatch, SetStateAction } from "react";
 import type { Girl, PlayerStats, GirlStats } from "../data/characters";
-import type { Location } from "../data/locations";
+import type { Location, TestingEnvironment } from "../data/locations";
 import type { GameplayFlag } from "../data/events/types";
 
 type ScheduledEncounter = {
@@ -50,6 +50,8 @@ type Props = {
   scheduledEncounters: ScheduledEncounter[];
   pendingEvents: PendingEvent[];
   isLocationTransitioning: boolean;
+  testingEnvironment?: TestingEnvironment;
+  onSetTestingEnvironment?: (environment: TestingEnvironment) => void;
 };
 
 export default function LocationPanels({
@@ -77,6 +79,8 @@ export default function LocationPanels({
   scheduledEncounters,
   pendingEvents,
   isLocationTransitioning,
+  testingEnvironment,
+  onSetTestingEnvironment,
 }: Props) {
   return (
     <>
@@ -139,6 +143,8 @@ export default function LocationPanels({
               dailyWorkoutState={dailyWorkoutState}
               onLogWorkout={onLogWorkout}
               onAdjustGirlStats={onAdjustGirlStats}
+              testingEnvironment={testingEnvironment}
+              onSetTestingEnvironment={onSetTestingEnvironment}
             />
           )}
           <button

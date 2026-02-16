@@ -30,7 +30,13 @@ import { applyPlayerStatDelta, withDerivedMood } from "../lib/playerStats";
 
 // Data / Types
 
-import { locationDescriptions, locationGraph } from "../data/locations";
+import {
+  locationDescriptions,
+  locationGraph,
+  TESTING_LOCATION_NAME,
+  TESTING_ENVIRONMENT_LOCATION_BY_ID,
+  type TestingEnvironment,
+} from "../data/locations";
 import {
   PlayerStats,
   defaultPlayerStats,
@@ -182,6 +188,8 @@ export default function GamePage() {
     },
   );
   const [rubyWorkoutTotal, setRubyWorkoutTotal] = useState<number>(0);
+  const [testingEnvironment, setTestingEnvironment] =
+    useState<TestingEnvironment>("casual");
   const pendingAutoSaveRef = useRef(false);
 
   const getProgressionCount = useCallback(
@@ -577,6 +585,23 @@ export default function GamePage() {
   }, [gameplayFlags]);
   // girls with schedules + overrides
   const girls = useMemo(() => {
+    const withResolvedStats = (girl: Girl, resolvedLocation: string): Girl => {
+      const override = girlStatsOverrides[girl.name];
+      const mergedStats = override ? { ...girl.stats, ...override } : girl.stats;
+      return {
+        ...girl,
+        location: resolvedLocation,
+        stats: clampGirlStatsToCaps(girl.name, mergedStats),
+      };
+    };
+
+    // Testing location: show every girl at once, always.
+    if (currentLocation === TESTING_LOCATION_NAME) {
+      return baseGirls.map((girl) =>
+        withResolvedStats(girl, TESTING_LOCATION_NAME),
+      );
+    }
+
     return baseGirls
       .filter((girl) => {
         // Iris is always available
@@ -601,17 +626,10 @@ export default function GamePage() {
           dayOfWeek,
           hour,
         );
-        const override = girlStatsOverrides[girl.name];
-        const mergedStats = override
-          ? { ...girl.stats, ...override }
-          : girl.stats;
-        return {
-          ...girl,
-          location: scheduledLocation || girl.location,
-          stats: clampGirlStatsToCaps(girl.name, mergedStats),
-        };
+        return withResolvedStats(girl, scheduledLocation || girl.location);
       });
   }, [
+    currentLocation,
     dayOfWeek,
     hour,
     girlStatsOverrides,
@@ -1379,6 +1397,10 @@ export default function GamePage() {
 
   const getCurrentLocationImage = () =>
     getLocationBackground(currentLocation, hour);
+  const currentCharacterImageLocation =
+    currentLocation === TESTING_LOCATION_NAME
+      ? TESTING_ENVIRONMENT_LOCATION_BY_ID[testingEnvironment]
+      : currentLocation;
   const timeOfDay = getTimeOfDay(hour);
   const presentGirls = girls.filter((g) => g.location === currentLocation);
   const availableLocations = useMemo(() => {
@@ -1768,6 +1790,7 @@ export default function GamePage() {
           isMobile={isMobile}
           textSpeed={textSpeed}
           locationImage={getCurrentLocationImage()}
+          characterImageLocation={currentCharacterImageLocation}
           // midgroundImage={getCurrentLocationImage()}
           // midgroundOpacity={0.3}
           // midgroundBlend="normal"
@@ -1801,6 +1824,7 @@ export default function GamePage() {
               <CharacterOverlay
                 girl={selectedGirl}
                 location={currentLocation}
+                characterImageLocation={currentCharacterImageLocation}
                 player={player}
                 gameplayFlags={gameplayFlags}
                 setPlayer={setPlayer}
@@ -1868,6 +1892,7 @@ export default function GamePage() {
             <SceneView
               darkMode={darkMode}
               currentLocation={currentLocation}
+              characterImageLocation={currentCharacterImageLocation}
               timeOfDay={timeOfDay}
               locationDescriptions={locationDescriptions}
               getCurrentLocationImage={getCurrentLocationImage}
@@ -1906,12 +1931,15 @@ export default function GamePage() {
               scheduledEncounters={scheduledEncounters}
               pendingEvents={pendingEvents}
               isLocationTransitioning={isLocationTransitioning}
+              testingEnvironment={testingEnvironment}
+              onSetTestingEnvironment={setTestingEnvironment}
             />
           </div>
 
           <RightSidebar
             selectedGirl={selectedGirl}
             currentLocation={currentLocation}
+            characterImageLocation={currentCharacterImageLocation}
             player={player}
             gameplayFlags={gameplayFlags}
             setPlayer={setPlayer}
@@ -1941,6 +1969,8 @@ export default function GamePage() {
             dailyWorkoutState={dailyWorkoutState}
             onLogWorkout={logWorkout}
             onAdjustGirlStats={applyGirlStatDelta}
+            testingEnvironment={testingEnvironment}
+            onSetTestingEnvironment={setTestingEnvironment}
           />
         </div>
       </div>
@@ -1971,6 +2001,7 @@ export default function GamePage() {
           isMobile={isMobile}
           textSpeed={textSpeed}
           locationImage={getCurrentLocationImage()}
+          characterImageLocation={currentCharacterImageLocation}
           currentLocation={currentLocation}
           currentHour={hour}
           currentDay={dayOfWeek}
@@ -2012,7 +2043,3 @@ export default function GamePage() {
     </div>
   );
 }
-
-
-
-

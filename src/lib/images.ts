@@ -132,8 +132,14 @@ const LOCATION_IMAGE_EXTENSIONS: Record<
   bar: { afternoon: "jpg" },
 };
 
-const normalizeLocationKey = (location: string) =>
-  location.toLowerCase().replace(/\s+/g, "_").replace(/'/g, "");
+const LOCATION_KEY_ALIASES: Record<string, string> = {
+  testing_studio: "city",
+};
+
+const normalizeLocationKey = (location: string) => {
+  const key = location.toLowerCase().replace(/\s+/g, "_").replace(/'/g, "");
+  return LOCATION_KEY_ALIASES[key] ?? key;
+};
 
 export function getLocationImagePath(
   location: string,

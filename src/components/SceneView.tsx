@@ -1,6 +1,9 @@
 import Image from "next/image";
+import { useEffect, useMemo, useState } from "react";
 import { getCharacterImage } from "../lib/images";
 import type { Girl } from "../data/characters";
+import { getSceneCharacterObjectPosition } from "@/lib/portraitFraming";
+import { TESTING_LOCATION_NAME } from "@/data/locations";
 
 type Props = {
   darkMode: boolean;
@@ -14,6 +17,7 @@ type Props = {
   onSelectGirl: (girl: Girl) => void;
   hour: number;
   isLocationTransitioning: boolean;
+  characterImageLocation?: string;
 };
 
 export default function SceneView({
@@ -28,7 +32,31 @@ export default function SceneView({
   onSelectGirl,
   hour,
   isLocationTransitioning,
+  characterImageLocation,
 }: Props) {
+  const [missingTestRoomGirls, setMissingTestRoomGirls] = useState<Set<string>>(
+    new Set(),
+  );
+  const isTestingRoom = currentLocation === TESTING_LOCATION_NAME;
+  const resolvedCharacterImageLocation = characterImageLocation ?? currentLocation;
+
+  useEffect(() => {
+    if (!isTestingRoom) {
+      setMissingTestRoomGirls(new Set());
+      return;
+    }
+    // Reset missing list when the preview outfit context/time changes.
+    setMissingTestRoomGirls(new Set());
+  }, [isTestingRoom, resolvedCharacterImageLocation, hour]);
+
+  const visibleGirls = useMemo(
+    () =>
+      isTestingRoom
+        ? presentGirls.filter((girl) => !missingTestRoomGirls.has(girl.name))
+        : presentGirls,
+    [isTestingRoom, missingTestRoomGirls, presentGirls],
+  );
+
   return (
     <div
       className={`relative rounded-2xl shadow-xl overflow-hidden border-4 w-full ${
@@ -94,8 +122,12 @@ export default function SceneView({
 
         {/* Characters */}
         <div className="absolute inset-0 flex items-end justify-around px-4 md:px-8 pb-8 md:pb-4">
-          {presentGirls.map((girl, index) => {
-            const imgPath = getCharacterImage(girl, currentLocation, hour);
+          {visibleGirls.map((girl, index) => {
+            const imgPath = getCharacterImage(
+              girl,
+              resolvedCharacterImageLocation,
+              hour,
+            );
             return (
               <button
                 key={girl.name}
@@ -129,7 +161,7 @@ export default function SceneView({
                     alt={girl.name}
                     width={192}
                     height={288}
-                    className={`w-32 h-48 sm:w-40 sm:h-60 md:w-48 md:h-72 object-cover object-top rounded-3xl border-4 ${
+                    className={`w-32 h-48 sm:w-40 sm:h-60 md:w-48 md:h-72 object-cover rounded-3xl border-4 ${
                       selectedGirl?.name === girl.name
                         ? "border-pink-400 shadow-2xl shadow-pink-500/50"
                         : "border-white/80 shadow-2xl"
@@ -138,6 +170,18 @@ export default function SceneView({
                         ? "brightness-75"
                         : ""
                     }`}
+                    style={{
+                      objectPosition: getSceneCharacterObjectPosition(girl.name),
+                    }}
+                    onError={() => {
+                      if (!isTestingRoom) return;
+                      setMissingTestRoomGirls((prev) => {
+                        if (prev.has(girl.name)) return prev;
+                        const next = new Set(prev);
+                        next.add(girl.name);
+                        return next;
+                      });
+                    }}
                   />
 
                   {/* Name tag */}

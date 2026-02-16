@@ -9,6 +9,7 @@ import { PlayerStats, GirlStats } from "@/data/characters";
 import { getCharacterImage } from "@/lib/images";
 import { Girl } from "@/data/characters";
 import { getTimeOfDay } from "@/lib/time";
+import { getDialogueCharacterObjectPosition } from "@/lib/portraitFraming";
 
 interface Props {
   dialogue: Dialogue;
@@ -30,6 +31,7 @@ interface Props {
   isMobile?: boolean;
   locationImage?: string;
   currentLocation?: string;
+  characterImageLocation?: string;
   currentHour?: number;
   currentDay?: string;
   playerStats?: PlayerStats;
@@ -361,6 +363,7 @@ export default function DialogueBox({
   isMobile = false,
   locationImage,
   currentLocation,
+  characterImageLocation,
   currentHour,
   currentDay,
   playerStats,
@@ -577,7 +580,9 @@ export default function DialogueBox({
     }
 
     // If we don't have location/hour info, fall back to original
-    if (!currentLocation || currentHour === undefined) {
+    const resolvedCharacterImageLocation =
+      characterImageLocation || currentLocation;
+    if (!resolvedCharacterImageLocation || currentHour === undefined) {
       return characterImage;
     }
 
@@ -587,7 +592,7 @@ export default function DialogueBox({
     // Create a minimal Girl object for the getCharacterImage function
     const mockGirl: Girl = {
       name: name,
-      location: currentLocation,
+      location: resolvedCharacterImageLocation,
       relationship: "Single",
       personality: "",
       stats: {
@@ -602,7 +607,7 @@ export default function DialogueBox({
     // Use the existing location-aware image selection logic
     return getCharacterImage(
       mockGirl,
-      currentLocation,
+      resolvedCharacterImageLocation,
       currentHour,
       expression
     );
@@ -610,6 +615,10 @@ export default function DialogueBox({
 
   const dynamicCharacterImage = getCurrentCharacterImage();
   const portraitSrc = dynamicCharacterImage || characterImage || "";
+  const portraitObjectPosition = getDialogueCharacterObjectPosition(
+    characterName ?? currentLine?.speaker ?? undefined,
+    20
+  );
   const showMobilePortrait = !isNarration && !isPlayerSpeaking && characterImage;
   const mobilePortrait = showMobilePortrait ? (
     <div className="relative animate-fadeIn pointer-events-none">
@@ -624,7 +633,7 @@ export default function DialogueBox({
           objectFit="cover"
           className="absolute inset-0"
           style={{
-            objectPosition: "center 20%",
+            objectPosition: portraitObjectPosition,
             transform: "scale(1.8)",
             transformOrigin: "center 0%",
           }}
@@ -846,7 +855,7 @@ export default function DialogueBox({
                 objectFit="cover"
                 className="absolute inset-0"
                 style={{
-                  objectPosition: "center 20%",
+                  objectPosition: portraitObjectPosition,
                   transform: "scale(1.9)",
                   transformOrigin: "center 0%",
                 }}

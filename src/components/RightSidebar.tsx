@@ -7,6 +7,7 @@ import type { Girl, GirlStats, PlayerStats } from "../data/characters";
 import type { DayOfWeek } from "../data/gameConstants";
 import type { CharacterEventState, GameplayFlag } from "../data/events/types";
 import type { Dialogue } from "../data/dialogues";
+import type { TestingEnvironment } from "../data/locations";
 
 type Props = {
   selectedGirl: Girl | null;
@@ -44,6 +45,9 @@ type Props = {
   dailyWorkoutState: DailyWorkoutState;
   onLogWorkout: (withRuby: boolean) => void;
   onAdjustGirlStats: (girlName: string, delta: Partial<GirlStats>) => void;
+  characterImageLocation?: string;
+  testingEnvironment?: TestingEnvironment;
+  onSetTestingEnvironment?: (environment: TestingEnvironment) => void;
 };
 
 export default function RightSidebar({
@@ -70,6 +74,9 @@ export default function RightSidebar({
   dailyWorkoutState,
   onLogWorkout,
   onAdjustGirlStats,
+  characterImageLocation,
+  testingEnvironment,
+  onSetTestingEnvironment,
 }: Props) {
   if (selectedGirl && eventState) {
     return (
@@ -93,6 +100,7 @@ export default function RightSidebar({
           onInteractionLogged={onInteractionLogged}
           onSetFlag={onSetFlag}
           onUnlockCharacter={onUnlockCharacter}
+          characterImageLocation={characterImageLocation}
           variant="sidebar"
         />
       </div>
@@ -115,6 +123,8 @@ export default function RightSidebar({
         dailyWorkoutState={dailyWorkoutState}
         onLogWorkout={onLogWorkout}
         onAdjustGirlStats={onAdjustGirlStats}
+        testingEnvironment={testingEnvironment}
+        onSetTestingEnvironment={onSetTestingEnvironment}
       />
     </div>
   );

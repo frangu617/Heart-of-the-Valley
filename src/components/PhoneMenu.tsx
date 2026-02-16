@@ -4,6 +4,7 @@ import { getTimeOfDay } from "@/lib/time";
 import { PlayerStats } from "../data/characters";
 import { Girl } from "../data/characters";
 import { DayOfWeek } from "../data/gameConstants";
+import { getPortraitObjectPosition } from "@/lib/portraitFraming";
 
 type QuestItem = {
   id: string;
@@ -357,6 +358,9 @@ export default function PhoneMenu({
                       alt={`${girl.name} portrait`}
                       layout="fill"
                       objectFit="cover"
+                      style={{
+                        objectPosition: getPortraitObjectPosition(girl.name, 50),
+                      }}
                     />
                   </div>
                     <div className="flex-1">
@@ -471,6 +475,9 @@ export default function PhoneMenu({
                         alt={girl.name}
                         layout="fill"
                         objectFit="cover"
+                        style={{
+                          objectPosition: getPortraitObjectPosition(girl.name, 50),
+                        }}
                       />
                     </div>
                     <p

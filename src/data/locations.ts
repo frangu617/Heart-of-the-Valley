@@ -8,12 +8,31 @@ export type Location = {
   image: string;
 };
 
+export const TESTING_LOCATION_NAME = "Testing Studio";
+export type TestingEnvironment =
+  | "casual"
+  | "university"
+  | "gym"
+  | "home"
+  | "date";
+export const TESTING_ENVIRONMENT_LOCATION_BY_ID: Record<
+  TestingEnvironment,
+  string
+> = {
+  casual: "City",
+  university: "University",
+  gym: "Gym",
+  home: "Living Room",
+  date: "Strip Club",
+};
+
 export const locationGraph: Record<string, Location[]> = {
   //Home locations
   Bedroom: [
     { name: "Bathroom", cost: 0, time: 0, image: "bathroom.png" },
     { name: "Living Room", cost: 0, time: 0, image: "livingroom.png" },
     { name: "Kitchen", cost: 0, time: 0, image: "kitchen.png" },
+    { name: "Testing Studio", cost: 0, time: 0, image: "city.png" },
   ],
   Bathroom: [
     { name: "Bedroom", cost: 0, time: 0, image: "bedroom.png" },
@@ -112,7 +131,12 @@ export const locationGraph: Record<string, Location[]> = {
     { name: "Bar", cost: 0, time: 0, image: "bar.png" },
     { name: "Nightclub", cost: 0, time: 0, image: "nightclub.png" },
     { name: "Strip Club", cost: 0, time: 0, image: "stripclub.png" },
+    { name: "Testing Studio", cost: 0, time: 0, image: "city.png" },
     { name: "Street", cost: 0, time: 0, image: "street.png" },
+  ],
+  "Testing Studio": [
+    { name: "Bedroom", cost: 0, time: 0, image: "bedroom.png" },
+    { name: "City", cost: 0, time: 0, image: "city.png" },
   ],
   Cafe: [{ name: "City", cost: 0, time: 0, image: "city.png" }],
   Gym: [{ name: "City", cost: 0, time: 0, image: "city.png" }],
@@ -254,6 +278,14 @@ export const locationDescriptions: Record<string, LocationDescription> = {
     evening: "Neon signs flicker to life as the city prepares for nightlife.",
     night: "The city that never sleeps is at its most alive.",
   },
+  "Testing Studio": {
+    default:
+      "Debug sandbox: every girl is always here so you can quickly test portraits, overlays, and interactions.",
+    morning: "Debug sandbox is active. Everyone is available for testing.",
+    afternoon: "Debug sandbox is active. Everyone is available for testing.",
+    evening: "Debug sandbox is active. Everyone is available for testing.",
+    night: "Debug sandbox is active. Everyone is available for testing.",
+  },
   Cafe: {
     default: "The aroma of freshly brewed coffee welcomes you.",
     morning: "Morning regulars sip their lattes and read the news.",
@@ -372,6 +404,7 @@ export const getQuickActions = (
 
 // Location activities
 export type LocationActivity = {
+  id?: string;
   name: string;
   icon: string;
   description: string;
@@ -676,6 +709,48 @@ export const locationActivities: Record<string, LocationActivity[]> = {
       timeCost: 1,
       statEffects: { mood: 5, energy: -5, money: -20 },
       requirements: { minMoney: 20 },
+    },
+  ],
+  [TESTING_LOCATION_NAME]: [
+    {
+      id: "test_env_casual",
+      name: "Preview Casual",
+      icon: "👕",
+      description: "Preview casual outfit category.",
+      timeCost: 0,
+      statEffects: {},
+    },
+    {
+      id: "test_env_university",
+      name: "Preview University",
+      icon: "🎓",
+      description: "Preview university outfit category.",
+      timeCost: 0,
+      statEffects: {},
+    },
+    {
+      id: "test_env_gym",
+      name: "Preview Gym",
+      icon: "🏋️",
+      description: "Preview gym outfit category.",
+      timeCost: 0,
+      statEffects: {},
+    },
+    {
+      id: "test_env_home",
+      name: "Preview Home",
+      icon: "🏠",
+      description: "Preview home outfit category.",
+      timeCost: 0,
+      statEffects: {},
+    },
+    {
+      id: "test_env_date",
+      name: "Preview Date",
+      icon: "💃",
+      description: "Preview date outfit category.",
+      timeCost: 0,
+      statEffects: {},
     },
   ],
 };
