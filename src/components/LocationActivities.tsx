@@ -79,6 +79,7 @@ export default function LocationActivitiesPanel({
     test_env_gym: "gym",
     test_env_home: "home",
     test_env_date: "date",
+    test_env_nun: "nun",
   };
 
   const rubyAtGym =

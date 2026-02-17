@@ -14,7 +14,8 @@ export type TestingEnvironment =
   | "university"
   | "gym"
   | "home"
-  | "date";
+  | "date"
+  | "nun";
 export const TESTING_ENVIRONMENT_LOCATION_BY_ID: Record<
   TestingEnvironment,
   string
@@ -24,6 +25,7 @@ export const TESTING_ENVIRONMENT_LOCATION_BY_ID: Record<
   gym: "Gym",
   home: "Living Room",
   date: "Strip Club",
+  nun: "Convent",
 };
 
 export const locationGraph: Record<string, Location[]> = {
@@ -749,6 +751,14 @@ export const locationActivities: Record<string, LocationActivity[]> = {
       name: "Preview Date",
       icon: "💃",
       description: "Preview date outfit category.",
+      timeCost: 0,
+      statEffects: {},
+    },
+    {
+      id: "test_env_nun",
+      name: "Preview Nun",
+      icon: "⛪",
+      description: "Preview nun outfit category.",
       timeCost: 0,
       statEffects: {},
     },

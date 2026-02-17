@@ -10,7 +10,8 @@ type LocationCategory =
   | "beach"
   | "city"
   | "casual"
-  | "date";
+  | "date"
+  | "nun";
 
 type RelationshipStance = "neutral" | "shy" | "confident" | "love" | "intimate";
 const EXPRESSION_ASSET_ALIASES: Record<string, string> = {
@@ -39,6 +40,7 @@ const locationToCategory: Record<string, LocationCategory> = {
   Street: "casual",
   Hallway: "home",
   "Strip Club": "date",
+  Convent: "nun",
   // Iris's apartment
   "Iris' Living Room": "home",
   "Iris' Bedroom": "home",
@@ -112,6 +114,7 @@ export function getOutfitDescription(location: string, hour: number): string {
     city: "stylish casual outfit",
     casual: "everyday casual clothes",
     date: "elegant date outfit",
+    nun: "religious habit attire",
   };
 
   return descriptions[category];

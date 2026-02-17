@@ -79,6 +79,24 @@ export const girls: Girl[] = [
   },
 ];
 
+// Characters that should only appear inside Testing Studio.
+export const testingOnlyGirls: Girl[] = [
+  {
+    name: "Lucia",
+    location: "City",
+    relationship: "Single",
+    personality: "Reserved",
+    stats: { affection: 0, lust: 0, mood: 50, love: 0, dominance: 0 },
+  },
+  {
+    name: "Shizune",
+    location: "City",
+    relationship: "Single",
+    personality: "Gentle",
+    stats: { affection: 0, lust: 0, mood: 50, love: 0, dominance: 0 },
+  },
+];
+
 // Character schedules
 export type TimeSlot = {
   location: string;

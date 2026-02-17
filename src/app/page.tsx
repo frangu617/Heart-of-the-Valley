@@ -42,6 +42,7 @@ import {
   defaultPlayerStats,
   Girl,
   girls as baseGirls,
+  testingOnlyGirls,
   GirlStats,
 } from "../data/characters";
 import {
@@ -597,7 +598,12 @@ export default function GamePage() {
 
     // Testing location: show every girl at once, always.
     if (currentLocation === TESTING_LOCATION_NAME) {
-      return baseGirls.map((girl) =>
+      const testingStudioGirls = [...baseGirls, ...testingOnlyGirls].filter(
+        (girl, index, allGirls) =>
+          allGirls.findIndex((candidate) => candidate.name === girl.name) ===
+          index,
+      );
+      return testingStudioGirls.map((girl) =>
         withResolvedStats(girl, TESTING_LOCATION_NAME),
       );
     }
