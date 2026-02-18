@@ -13,7 +13,10 @@ import { CharacterEventState, GameplayFlag } from "@/data/events/types";
 import { findTriggeredEvent } from "@/lib/eventSystem";
 import { getCharacterEvents } from "@/data/events/chapter1";
 import { applyCharacterEventRewards } from "@/lib/rewards";
-import { applyPlayerStatDelta } from "@/lib/playerStats";
+import {
+  applyPlayerStatDelta,
+  STARVING_HUNGER_THRESHOLD,
+} from "@/lib/playerStats";
 // import { firstMeetingDialogues } from "../data/dialogues/index";
 import DatePlanner from "./DatePlanner";
 import { DateLocation } from "@/data/dates";
@@ -178,7 +181,11 @@ interface Props {
   player: PlayerStats;
   gameplayFlags: Set<GameplayFlag>;
   setPlayer: Dispatch<SetStateAction<PlayerStats>>;
-  spendTime: (amount: number) => void;
+  spendTime: (
+    amount: number,
+    basePlayer?: PlayerStats,
+    options?: { skipHungerGain?: boolean; hungerGainMultiplier?: number },
+  ) => void;
   onClose: () => void;
   onStartDialogue: (
     dialogue: Dialogue,
@@ -244,6 +251,7 @@ export default function CharacterOverlay({
   const giftEntries = getGiftEntriesFromInventory(player.inventory);
   const hasGifts = giftEntries.length > 0;
   const resolvedCharacterImageLocation = characterImageLocation ?? location;
+  const isPlayerStarving = player.hunger >= STARVING_HUNGER_THRESHOLD;
   // Check for triggered events when component mounts or dependencies change
   // Check for first meeting or triggered events
   //Date handler
@@ -253,6 +261,12 @@ export default function CharacterOverlay({
     dateHour: number,
     activities: string[]
   ) => {
+    if (isPlayerStarving) {
+      alert("You're too hungry to do that right now. Eat something first.");
+      setShowDatePlanner(false);
+      return;
+    }
+
     // Check if she accepts (random chance based on affection)
     const acceptanceChance = Math.min(
       95,
@@ -298,8 +312,8 @@ export default function CharacterOverlay({
 
     const nextInventory = [...player.inventory];
     nextInventory.splice(giftIndex, 1);
-    setPlayer({ ...player, inventory: nextInventory });
-    spendTime(pendingGiftAction?.timeCost ?? 1);
+    const nextPlayer = { ...player, inventory: nextInventory };
+    spendTime(pendingGiftAction?.timeCost ?? 1, nextPlayer);
 
     const dialogue: Dialogue = {
       id: `give_gift_${gift.id.replace(/\s+/g, "_").toLowerCase()}`,
@@ -403,6 +417,20 @@ export default function CharacterOverlay({
   const interact = (action: Interaction) => {
     const isSandboxChat =
       location === TESTING_LOCATION_NAME && action.label === "Chat";
+
+    if (!isSandboxChat && isPlayerStarving) {
+      alert("You're too hungry to do that right now. Eat something first.");
+      return;
+    }
+
+    if (
+      location === "Classroom" &&
+      girl.name === "Iris" &&
+      !isSandboxChat
+    ) {
+      alert("Iris is busy teaching right now.");
+      return;
+    }
 
     // ... rest of your existing interact function stays the same
     if (
@@ -519,8 +547,11 @@ export default function CharacterOverlay({
       const updatedStats = action.statEffects
         ? applyPlayerStatDelta(player, action.statEffects)
         : player;
-      setPlayer(updatedStats);
-      spendTime(action.timeCost);
+      spendTime(action.timeCost, updatedStats, {
+        skipHungerGain:
+          typeof action.statEffects?.hunger === "number" &&
+          action.statEffects.hunger < 0,
+      });
     }
 
     // Get dialogue for this interaction
@@ -691,7 +722,13 @@ export default function CharacterOverlay({
         </h4>
         {SHOW_DATE_PLANNER_ACTION && (
           <button
-          onClick={() => setShowDatePlanner(true)}
+          onClick={() => {
+            if (isPlayerStarving) {
+              alert("You're too hungry to do that right now. Eat something first.");
+              return;
+            }
+            setShowDatePlanner(true);
+          }}
           className="relative overflow-hidden group w-full bg-gradient-to-r from-red-400 to-pink-600 hover:from-red-500 hover:to-pink-700 shadow-md hover:shadow-lg transform hover:scale-102 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 text-sm"
         >
           <div className="flex items-center justify-between relative z-10">

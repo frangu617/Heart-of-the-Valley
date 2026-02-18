@@ -6,6 +6,8 @@ export type PlayerStats = {
   energy: number;
   mood: number;
   hunger: number;
+  hygiene: number;
+  sobriety: number;
   fitness: number;
   intelligence: number;
   style: number;
@@ -18,6 +20,8 @@ export const defaultPlayerStats: PlayerStats = {
   energy: 100,
   mood: 75,
   hunger: 50,
+  hygiene: 100,
+  sobriety: 100,
   fitness: 10,
   intelligence: 10,
   style: 10,
@@ -163,7 +167,7 @@ export const characterSchedules: Record<string, CharacterSchedule> = {
       { location: "Classroom", startHour: 13, endHour: 17 },
       { location: "Iris' Office", startHour: 17, endHour: 18 },
       { location: "Hallway", startHour: 18, endHour: 22 },
-      { location: "Iris' Living Room", startHour: 22, endHour: 24 },
+      { location: "Bar", startHour: 22, endHour: 24 },
     ],
     Thursday: [
       { location: "Iris' Bedroom", startHour: 0, endHour: 8 },
@@ -181,13 +185,14 @@ export const characterSchedules: Record<string, CharacterSchedule> = {
       { location: "Classroom", startHour: 13, endHour: 17 },
       { location: "Iris' Office", startHour: 17, endHour: 18 },
       { location: "Hallway", startHour: 18, endHour: 22 },
-      { location: "Iris' Living Room", startHour: 22, endHour: 24 },
+      { location: "Bar", startHour: 22, endHour: 24 },
     ],
     Saturday: [
       { location: "Iris' Bedroom", startHour: 0, endHour: 9 },
       { location: "Cafe", startHour: 9, endHour: 12 },
       { location: "Gym", startHour: 12, endHour: 14 },
-      { location: "Iris' Living Room", startHour: 14, endHour: 24 },
+      { location: "Iris' Living Room", startHour: 14, endHour: 22 },
+      { location: "Nightclub", startHour: 22, endHour: 24 },
     ],
     Sunday: [
       { location: "Iris' Bedroom", startHour: 0, endHour: 10 },
@@ -195,7 +200,8 @@ export const characterSchedules: Record<string, CharacterSchedule> = {
       { location: "Gym", startHour: 11, endHour: 13 },
       { location: "Mall", startHour: 13, endHour: 18 },
       { location: "Iris' Bathroom", startHour: 18, endHour: 19 },
-      { location: "Iris' Bedroom", startHour: 19, endHour: 24 },
+      { location: "Iris' Bedroom", startHour: 19, endHour: 22 },
+      { location: "Nightclub", startHour: 22, endHour: 24 },
     ],
   },
 
@@ -234,7 +240,8 @@ export const characterSchedules: Record<string, CharacterSchedule> = {
       { location: "Classroom", startHour: 14, endHour: 18 },
       { location: "Gym", startHour: 18, endHour: 20 },
       { location: "Iris' Bathroom", startHour: 20, endHour: 21 },
-      { location: "Dawn's Bedroom", startHour: 21, endHour: 23 },
+      { location: "Dawn's Bedroom", startHour: 21, endHour: 22 },
+      { location: "Nightclub", startHour: 22, endHour: 24 },
     ],
     Friday: [
       { location: "Dawn's Bedroom", startHour: 0, endHour: 9 },
@@ -249,17 +256,20 @@ export const characterSchedules: Record<string, CharacterSchedule> = {
       { location: "Gym", startHour: 10, endHour: 12 },
       { location: "Iris' Bathroom", startHour: 12, endHour: 13 },
       { location: "Beach", startHour: 13, endHour: 17 },
-      { location: "Iris' Living Room", startHour: 17, endHour: 23 },
+      { location: "Iris' Living Room", startHour: 17, endHour: 22 },
+      { location: "Nightclub", startHour: 22, endHour: 24 },
     ],
     Sunday: [
       { location: "Dawn's Bedroom", startHour: 0, endHour: 11 },
-      { location: "Iris' Living Room", startHour: 11, endHour: 23 },
+      { location: "Iris' Living Room", startHour: 11, endHour: 22 },
+      { location: "Nightclub", startHour: 22, endHour: 24 },
     ],
   },
 
   Gwen: {
     Monday: [
-      { location: "Gwen's Bedroom", startHour: 0, endHour: 8 },
+      { location: "Strip Club", startHour: 0, endHour: 2 },
+      { location: "Gwen's Bedroom", startHour: 2, endHour: 8 },
       { location: "Gwen's Bathroom", startHour: 8, endHour: 9 },
       { location: "Hallway", startHour: 9, endHour: 10 },
       { location: "City", startHour: 10, endHour: 17 },
@@ -284,29 +294,34 @@ export const characterSchedules: Record<string, CharacterSchedule> = {
       { location: "Gwen's Bathroom", startHour: 8, endHour: 9 },
       { location: "Hallway", startHour: 9, endHour: 10 },
       { location: "City", startHour: 10, endHour: 17 },
-      { location: "Gwen's Living Room", startHour: 17, endHour: 23 },
+      { location: "Gwen's Living Room", startHour: 17, endHour: 22 },
+      { location: "Strip Club", startHour: 22, endHour: 24 },
     ],
     Friday: [
-      { location: "Gwen's Bedroom", startHour: 0, endHour: 8 },
+      { location: "Strip Club", startHour: 0, endHour: 2 },
+      { location: "Gwen's Bedroom", startHour: 2, endHour: 8 },
       { location: "Gwen's Bathroom", startHour: 8, endHour: 9 },
       { location: "Hallway", startHour: 9, endHour: 10 },
       { location: "City", startHour: 10, endHour: 17 },
-      { location: "Gwen's Living Room", startHour: 17, endHour: 21 },
-      { location: "Strip Club", startHour: 21, endHour: 23 },
+      { location: "Gwen's Living Room", startHour: 17, endHour: 22 },
+      { location: "Strip Club", startHour: 22, endHour: 24 },
     ],
     Saturday: [
-      { location: "Gwen's Bedroom", startHour: 0, endHour: 3 },
+      { location: "Strip Club", startHour: 0, endHour: 2 },
+      { location: "Gwen's Bedroom", startHour: 2, endHour: 3 },
       { location: "Gwen's Bathroom", startHour: 3, endHour: 4 },
       { location: "Gwen's Bedroom", startHour: 4, endHour: 11 },
       { location: "Gwen's Living Room", startHour: 11, endHour: 18 },
       { location: "Gwen's Bathroom", startHour: 18, endHour: 19 },
-      { location: "Strip Club", startHour: 21, endHour: 23 },
+      { location: "Strip Club", startHour: 22, endHour: 24 },
     ],
     Sunday: [
-      { location: "Gwen's Bedroom", startHour: 0, endHour: 3 },
+      { location: "Strip Club", startHour: 0, endHour: 2 },
+      { location: "Gwen's Bedroom", startHour: 2, endHour: 3 },
       { location: "Gwen's Bathroom", startHour: 3, endHour: 4 },
       { location: "Gwen's Bedroom", startHour: 4, endHour: 12 },
-      { location: "Gwen's Living Room", startHour: 12, endHour: 23 },
+      { location: "Gwen's Living Room", startHour: 12, endHour: 22 },
+      { location: "Strip Club", startHour: 22, endHour: 24 },
     ],
   },
 
@@ -345,7 +360,8 @@ export const characterSchedules: Record<string, CharacterSchedule> = {
       { location: "Gym", startHour: 10, endHour: 12 },
       { location: "Cafe", startHour: 12, endHour: 18 },
       { location: "Yumi's Bedroom", startHour: 18, endHour: 20 },
-      { location: "Yumi's Bedroom", startHour: 20, endHour: 23 },
+      { location: "Yumi's Bedroom", startHour: 20, endHour: 22 },
+      { location: "Nightclub", startHour: 22, endHour: 24 },
     ],
     Friday: [
       { location: "Yumi's Bedroom", startHour: 0, endHour: 9 },
@@ -360,14 +376,15 @@ export const characterSchedules: Record<string, CharacterSchedule> = {
       { location: "Yumi's Bedroom", startHour: 0, endHour: 11 },
       { location: "Yumi's Bathroom", startHour: 11, endHour: 12 },
       { location: "Cafe", startHour: 12, endHour: 16 },
-      { location: "Yumi's Bedroom", startHour: 16, endHour: 20 },
-      { location: "Yumi's Bedroom", startHour: 20, endHour: 23 },
+      { location: "Yumi's Bedroom", startHour: 16, endHour: 22 },
+      { location: "Nightclub", startHour: 22, endHour: 24 },
     ],
     Sunday: [
       { location: "Yumi's Bedroom", startHour: 0, endHour: 10 },
       { location: "Yumi's Bathroom", startHour: 10, endHour: 11 },
       { location: "Beach", startHour: 11, endHour: 15 },
-      { location: "Yumi's Bedroom", startHour: 15, endHour: 23 },
+      { location: "Yumi's Bedroom", startHour: 15, endHour: 22 },
+      { location: "Nightclub", startHour: 22, endHour: 24 },
     ],
   },
 

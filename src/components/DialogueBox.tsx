@@ -333,6 +333,8 @@ const DIALOGUE_THEMES: Record<string, DialogueTheme> = {
 };
 
 const normalizeName = (value?: string) => value?.trim().toLowerCase() ?? "";
+const toCasualFallbackImage = (imagePath: string) =>
+  imagePath.replace(/\/(date|work)\//, "/casual/");
 
 const resolveThemeKey = (
   characterName?: string,
@@ -376,6 +378,8 @@ export default function DialogueBox({
   const [displayedText, setDisplayedText] = useState("");
   const [isTyping, setIsTyping] = useState(true);
   const [showContinue, setShowContinue] = useState(false);
+  const [usePortraitCasualFallback, setUsePortraitCasualFallback] =
+    useState(false);
   const [accumulatedStatChanges, setAccumulatedStatChanges] = useState<{
     affection?: number;
     mood?: number;
@@ -548,6 +552,19 @@ export default function DialogueBox({
   }, [dialogue.id]);
 
   useEffect(() => {
+    setUsePortraitCasualFallback(false);
+  }, [
+    dialogue.id,
+    currentLineIndex,
+    characterImage,
+    characterName,
+    characterImageLocation,
+    currentLocation,
+    currentHour,
+    currentLine?.expression,
+  ]);
+
+  useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (isClosing) return;
       if (currentLine?.choices) return;
@@ -614,12 +631,22 @@ export default function DialogueBox({
   };
 
   const dynamicCharacterImage = getCurrentCharacterImage();
-  const portraitSrc = dynamicCharacterImage || characterImage || "";
+  const basePortraitSrc = dynamicCharacterImage || characterImage || "";
+  const fallbackPortraitSrc = toCasualFallbackImage(basePortraitSrc);
+  const portraitSrc = usePortraitCasualFallback
+    ? fallbackPortraitSrc
+    : basePortraitSrc;
+  const hasPortrait = Boolean(portraitSrc);
+  const handlePortraitError = () => {
+    if (!usePortraitCasualFallback && fallbackPortraitSrc !== basePortraitSrc) {
+      setUsePortraitCasualFallback(true);
+    }
+  };
   const portraitObjectPosition = getDialogueCharacterObjectPosition(
     characterName ?? currentLine?.speaker ?? undefined,
     20
   );
-  const showMobilePortrait = !isNarration && !isPlayerSpeaking && characterImage;
+  const showMobilePortrait = !isNarration && !isPlayerSpeaking && hasPortrait;
   const mobilePortrait = showMobilePortrait ? (
     <div className="relative animate-fadeIn pointer-events-none">
       <div className="relative w-[280px] h-[420px] rounded-xl overflow-hidden shadow-2xl border-4 border-white/80">
@@ -637,6 +664,7 @@ export default function DialogueBox({
             transform: "scale(1.8)",
             transformOrigin: "center 0%",
           }}
+          onError={handlePortraitError}
         />
         {currentLine.speaker && (
           <div
@@ -841,7 +869,7 @@ export default function DialogueBox({
       {/* ===== MOBILE: Portrait rendered in dialogue stack ===== */}
 
       {/* ===== CHARACTER PORTRAIT CARD (z-20) ===== */}
-      {!isNarration && !isPlayerSpeaking && characterImage && !isMobile && (
+      {!isNarration && !isPlayerSpeaking && hasPortrait && !isMobile && (
         <div className="absolute bottom-62 left-0 right-0 flex justify-center items-end pointer-events-none z-20 px-4">
           <div className="relative animate-fadeIn">
             <div className="relative w-[400px] h-[600px] rounded-2xl overflow-hidden shadow-2xl border-4 border-white/80">
@@ -859,6 +887,7 @@ export default function DialogueBox({
                   transform: "scale(1.9)",
                   transformOrigin: "center 0%",
                 }}
+                onError={handlePortraitError}
               />
               {currentLine.speaker && (
                 <div

@@ -1,9 +1,17 @@
 import { PlayerStats } from "@/data/characters";
 
-const CLAMPED_STATS: Array<keyof PlayerStats> = ["energy", "mood", "hunger"];
+export const STARVING_HUNGER_THRESHOLD = 100;
+
+const CLAMPED_STATS: Array<keyof PlayerStats> = [
+  "energy",
+  "mood",
+  "hunger",
+  "hygiene",
+  "sobriety",
+];
 
 export const derivePlayerMood = (energy: number, hunger: number) =>
-  Math.round((energy + hunger) / 2);
+  Math.round((energy + (100 - hunger)) / 2);
 
 export const withDerivedMood = (player: PlayerStats): PlayerStats => ({
   ...player,
@@ -11,8 +19,8 @@ export const withDerivedMood = (player: PlayerStats): PlayerStats => ({
 });
 
 const getEnergyExertionMultiplier = (hunger: number) => {
-  if (hunger <= 25) return 1.5;
-  if (hunger <= 50) return 1.25;
+  if (hunger >= 75) return 1.5;
+  if (hunger >= 50) return 1.25;
   return 1;
 };
 

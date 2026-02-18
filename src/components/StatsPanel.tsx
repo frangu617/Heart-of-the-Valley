@@ -75,6 +75,7 @@ export default function StatsPanel({
   const timeOfDay = getTimeOfDay(hour);
   const timeOfDayLabel =
     timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1);
+  const hungerBarValue = Math.max(0, Math.min(100, 100 - stats.hunger));
 
   return (
     <div
@@ -111,7 +112,7 @@ export default function StatsPanel({
         />
         <StatBar
           label="Hunger"
-          value={stats.hunger}
+          value={hungerBarValue}
           icon="🍔"
           darkMode={darkMode}
         />

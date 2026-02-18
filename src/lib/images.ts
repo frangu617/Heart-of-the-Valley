@@ -11,11 +11,12 @@ type LocationCategory =
   | "city"
   | "casual"
   | "date"
+  | "work"
   | "nun";
 
 type RelationshipStance = "neutral" | "shy" | "confident" | "love" | "intimate";
 const EXPRESSION_ASSET_ALIASES: Record<string, string> = {
-  love: "seductvie",
+  love: "seductive",
 };
 
 export const resolveExpressionAssetName = (expression: string) =>
@@ -40,6 +41,7 @@ const locationToCategory: Record<string, LocationCategory> = {
   Street: "casual",
   Hallway: "home",
   "Strip Club": "date",
+  Nightclub: "date",
   Convent: "nun",
   // Iris's apartment
   "Iris' Living Room": "home",
@@ -86,6 +88,9 @@ export function getCharacterImage(
   // After 7 PM, use home/pajama outfits
   if (girl.name === "Iris" && location === "Hallway") {
     category = "casual";
+  } else if (girl.name === "Gwen" && location === "Strip Club") {
+    // Gwen uses her strip-club-specific work outfit if available.
+    category = "work";
   } else if (homeLocations.has(location)) {
     if (hour < 19) {
       category = "casual";
@@ -114,6 +119,7 @@ export function getOutfitDescription(location: string, hour: number): string {
     city: "stylish casual outfit",
     casual: "everyday casual clothes",
     date: "elegant date outfit",
+    work: "work/performance outfit",
     nun: "religious habit attire",
   };
 

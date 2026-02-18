@@ -41,7 +41,11 @@ type Props = {
   onAdjustGirlStats: (girlName: string, delta: Partial<GirlStats>) => void;
   player: PlayerStats;
   setPlayer: Dispatch<SetStateAction<PlayerStats>>;
-  spendTime: (hours: number) => void;
+  spendTime: (
+    hours: number,
+    basePlayer?: PlayerStats,
+    options?: { skipHungerGain?: boolean; hungerGainMultiplier?: number },
+  ) => void;
   onTriggerEvent: (girlName: string, eventId: string, location?: string) => void;
   onSetFlag: (flag: GameplayFlag) => void;
   availableLocations: Location[];
@@ -52,6 +56,7 @@ type Props = {
   isLocationTransitioning: boolean;
   testingEnvironment?: TestingEnvironment;
   onSetTestingEnvironment?: (environment: TestingEnvironment) => void;
+  onPassOut: (playerAtBlackout: PlayerStats) => void;
 };
 
 export default function LocationPanels({
@@ -81,6 +86,7 @@ export default function LocationPanels({
   isLocationTransitioning,
   testingEnvironment,
   onSetTestingEnvironment,
+  onPassOut,
 }: Props) {
   return (
     <>
@@ -145,6 +151,7 @@ export default function LocationPanels({
               onAdjustGirlStats={onAdjustGirlStats}
               testingEnvironment={testingEnvironment}
               onSetTestingEnvironment={onSetTestingEnvironment}
+              onPassOut={onPassOut}
             />
           )}
           <button

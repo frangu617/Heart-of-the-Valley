@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 
 // Components
+import LoginScreen from "@/components/LoginScreen";
 import NameInput from "@/components/NameInput";
 import StatsPanel from "../components/StatsPanel";
 import CharacterOverlay from "../components/CharacterOverlay";
@@ -21,12 +22,27 @@ import RightSidebar from "../components/RightSidebar";
 // Lib
 import { getScheduledLocation } from "../lib/schedule";
 import { getCharacterImage, getLocationBackground } from "../lib/images";
-import { checkRandomEvent } from "../lib/randomEventSystem";
+import {
+  checkRandomEvent,
+  getScheduledNonStoryRandomEventForContext,
+  rollDailyNonStoryRandomEventIds,
+} from "../lib/randomEventSystem";
 import { getCharacterEvents } from "../data/events/chapter1/index";
 import { checkEventConditions, isEventOnCooldown } from "../lib/eventSystem";
 import { calculateGameTime, getTimeOfDay } from "../lib/time";
 import { applyCharacterEventRewards } from "../lib/rewards";
-import { applyPlayerStatDelta, withDerivedMood } from "../lib/playerStats";
+import {
+  applyPlayerStatDelta,
+  STARVING_HUNGER_THRESHOLD,
+  withDerivedMood,
+} from "../lib/playerStats";
+import {
+  AUTH_SESSION_KEY,
+  SINGLE_USER_ACCOUNT,
+  buildAuthSession,
+  isValidAuthSession,
+  verifyCredentials,
+} from "../lib/auth";
 
 // Data / Types
 
@@ -108,14 +124,24 @@ type SaveData = {
   dailyWorkoutState: DailyWorkoutState;
   rubyWorkoutTotal: number;
   randomEventDailyCounts: Record<string, number>;
+  dayCount: number;
+  dailyNonStoryRandomEventIds: string[];
+  nonStoryRandomEventLastTriggeredDay: Record<string, number>;
+  hungerProgressRemainder: number;
   textSpeed: "normal" | "instant";
   timestamp: string;
 };
 
 type GameState = "mainMenu" | "nameInput" | "intro" | "playing" | "paused" | "dialogue";
+type SpendTimeOptions = {
+  skipHungerGain?: boolean;
+  hungerGainMultiplier?: number;
+};
 
 const MANUAL_SAVE_KEY = "datingSimSave";
 const AUTO_SAVE_KEY = "datingSimAutoSave";
+const HUNGER_GAIN_PER_HOUR = 80 / 6;
+const SOBRIETY_BLACKOUT_THRESHOLD = 0;
 
 const clampValue = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
@@ -137,9 +163,69 @@ const getMetFlagForGirl = (girlName: string): GameplayFlag | null => {
   }
 };
 
+const GWEN_DOOR_MIXUP_CASUAL_DIALOGUE_IDS = new Set([
+  "gwen_event_2_door_mixup",
+  "gwen_event_2_door_supportive",
+  "gwen_event_2_door_angry",
+]);
+const UNIVERSITY_LOCATION_NAMES = new Set([
+  "University",
+  "University Hallway",
+  "Classroom",
+  "Office",
+  "Iris' Office",
+  "Men's Bathroom",
+  "Women's Bathroom",
+  "University Parking Lot",
+]);
+const NIGHTLIFE_LOCATION_NAMES = new Set(["Bar", "Nightclub", "Strip Club"]);
+const CAFE_AND_GYM_CLOSING_HOUR = 22;
+const MALL_CLOSING_HOUR = 20;
+const CAR_STORE_CLOSING_HOUR = 21;
+const CHAPTER_TWO_UNLOCK_FLAG_BY_CHARACTER: Partial<
+  Record<string, GameplayFlag>
+> = {
+  Iris: "irisCh1FinaleComplete",
+  Dawn: "hasMetDawn",
+  Gwen: "gwen_chapter_1_completed",
+  Ruby: "ruby_chapter_1_completed",
+  Yumi: "yumi_chapter_1_completed",
+};
+
+const isNightlifeOpenAtHour = (hour: number) => hour >= 22 || hour < 2;
+const isChapterTwoOrHigher = (
+  characterName: string,
+  flags: Set<GameplayFlag>,
+) => {
+  const requiredFlag = CHAPTER_TWO_UNLOCK_FLAG_BY_CHARACTER[characterName];
+  const normalizedCharacterName = characterName.toLowerCase();
+  const hasFlag = (flag: string) => (flags as Set<string>).has(flag);
+
+  return (
+    (requiredFlag ? flags.has(requiredFlag) : false) ||
+    hasFlag(`${normalizedCharacterName}_chapter_1_completed`) ||
+    hasFlag(`${normalizedCharacterName}_chapter_2_started`) ||
+    hasFlag(`${normalizedCharacterName}_chapter_2_completed`) ||
+    hasFlag(`${normalizedCharacterName}_chapter_3_completed`) ||
+    hasFlag(`${normalizedCharacterName}_chapter_4_completed`)
+  );
+};
+
+const getDialogueCharacterImageLocationOverride = (
+  dialogueId: string,
+): string | undefined => {
+  if (GWEN_DOOR_MIXUP_CASUAL_DIALOGUE_IDS.has(dialogueId)) {
+    return "City";
+  }
+
+  return undefined;
+};
+
 export default function GamePage() {
   // States
   const [gameState, setGameState] = useState<GameState>("mainMenu");
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [authChecked, setAuthChecked] = useState<boolean>(false);
   const [player, setPlayer] = useState<PlayerStats>(defaultPlayerStats);
   const [currentLocation, setCurrentLocation] = useState<string>("Bedroom");
   const [hour, setHour] = useState<number>(START_HOUR);
@@ -154,6 +240,8 @@ export default function GamePage() {
   const [currentDialogue, setCurrentDialogue] = useState<Dialogue | null>(null);
   const [dialogueCharacterImage, setDialogueCharacterImage] =
     useState<string>("");
+  const [dialogueCharacterImageLocationOverride, setDialogueCharacterImageLocationOverride] =
+    useState<string | null>(null);
   const [dialogueGirlEffects, setDialogueGirlEffects] =
     useState<Partial<GirlStats> | null>(null);
   const [dialogueGirlName, setDialogueGirlName] = useState<string>("");
@@ -305,23 +393,73 @@ export default function GamePage() {
   const [randomEventDailyCounts, setRandomEventDailyCounts] = useState<
     Record<string, number>
   >({});
+  const [dayCount, setDayCount] = useState<number>(0);
+  const [dailyNonStoryRandomEventIds, setDailyNonStoryRandomEventIds] =
+    useState<string[]>([]);
+  const [nonStoryRandomEventLastTriggeredDay, setNonStoryRandomEventLastTriggeredDay] =
+    useState<Record<string, number>>({});
+  const [hungerProgressRemainder, setHungerProgressRemainder] =
+    useState<number>(0);
 
   // time
-  const spendTime = (amount: number) => {
+  const spendTime = (
+    amount: number,
+    basePlayer?: PlayerStats,
+    options?: SpendTimeOptions,
+  ) => {
     const newHour = hour + amount;
+    const effectivePlayer = basePlayer ?? player;
+    const skipHungerGain = options?.skipHungerGain ?? false;
+    const hungerGainMultiplier = Math.max(
+      0,
+      options?.hungerGainMultiplier ?? 1,
+    );
+    const elapsedHours =
+      newHour >= MAX_HOUR ? MAX_HOUR - hour + START_HOUR : amount;
+    const rawHungerGain = skipHungerGain
+      ? hungerProgressRemainder
+      : elapsedHours * HUNGER_GAIN_PER_HOUR * hungerGainMultiplier +
+        hungerProgressRemainder;
+    const hungerGain = skipHungerGain ? 0 : Math.floor(rawHungerGain);
+    const nextHunger = skipHungerGain
+      ? effectivePlayer.hunger
+      : Math.min(100, effectivePlayer.hunger + hungerGain);
+    const nextHungerRemainder = skipHungerGain
+      ? hungerProgressRemainder
+      : nextHunger >= 100
+        ? 0
+        : rawHungerGain - hungerGain;
+
+    if (!skipHungerGain) {
+      setHungerProgressRemainder(nextHungerRemainder);
+    }
 
     if (newHour >= MAX_HOUR) {
       const nextDay = getNextDay(dayOfWeek);
+      const nextDayCount = dayCount + 1;
+      const nextDayRestedPlayer = withDerivedMood({
+        ...effectivePlayer,
+        energy: Math.min(100, effectivePlayer.energy + 30),
+        hunger: nextHunger,
+        sobriety: 100,
+      });
+      const nextDayNonStoryRandomEvents = rollDailyNonStoryRandomEventIds({
+        day: nextDay,
+        player: nextDayRestedPlayer,
+        gameplayFlags,
+        girls,
+        cooldownByEventId: nonStoryRandomEventLastTriggeredDay,
+        currentDayCount: nextDayCount,
+        maxEventsPerDay: 2,
+        cooldownDays: 7,
+      });
+
       setHour(START_HOUR);
       setDayOfWeek(nextDay);
+      setDayCount(nextDayCount);
+      setDailyNonStoryRandomEventIds(nextDayNonStoryRandomEvents);
 
-      setPlayer((prev) =>
-        withDerivedMood({
-          ...prev,
-          energy: Math.min(100, prev.energy + 30),
-          hunger: Math.min(100, prev.hunger + 20),
-        })
-      );
+      setPlayer(nextDayRestedPlayer);
 
       // Clear selected girl when day changes
       setSelectedGirl(null);
@@ -334,11 +472,81 @@ export default function GamePage() {
         withoutRuby: 0,
       });
 
+      if (nextDayNonStoryRandomEvents.length > 0) {
+        console.log(
+          `🎲 Daily non-story random events scheduled (${nextDayNonStoryRandomEvents.length}):`,
+          nextDayNonStoryRandomEvents.join(", "),
+        );
+      } else {
+        console.log("🎲 No non-story random events scheduled for today.");
+      }
+
       alert(`A new day begins! It's ${nextDay} morning.`);
     } else {
       setHour(newHour);
+      setPlayer(
+        withDerivedMood({
+          ...effectivePlayer,
+          hunger: nextHunger,
+        }),
+      );
     }
   };
+
+  const handleSobrietyBlackout = useCallback(
+    (playerAtBlackout: PlayerStats) => {
+      if (playerAtBlackout.sobriety > SOBRIETY_BLACKOUT_THRESHOLD) {
+        return;
+      }
+
+      const nextDay = getNextDay(dayOfWeek);
+      const nextDayCount = dayCount + 1;
+      const recoveredPlayer = withDerivedMood({
+        ...playerAtBlackout,
+        energy: Math.min(100, playerAtBlackout.energy + 40),
+        hunger: Math.floor(playerAtBlackout.hunger / 2),
+        sobriety: 100,
+      });
+      const nextDayNonStoryRandomEvents = rollDailyNonStoryRandomEventIds({
+        day: nextDay,
+        player: recoveredPlayer,
+        gameplayFlags,
+        girls: baseGirls,
+        cooldownByEventId: nonStoryRandomEventLastTriggeredDay,
+        currentDayCount: nextDayCount,
+        maxEventsPerDay: 2,
+        cooldownDays: 7,
+      });
+
+      setPlayer(recoveredPlayer);
+      setCurrentLocation("Bedroom");
+      setHour(START_HOUR);
+      setDayOfWeek(nextDay);
+      setDayCount(nextDayCount);
+      setDailyNonStoryRandomEventIds(nextDayNonStoryRandomEvents);
+      setHungerProgressRemainder(0);
+
+      setSelectedGirl(null);
+      setInteractionHistory({});
+      setRandomEventDailyCounts({});
+      setCurrentRandomEvent(null);
+      setDailyWorkoutState({
+        day: nextDay,
+        total: 0,
+        withRuby: 0,
+        withoutRuby: 0,
+      });
+
+      pendingAutoSaveRef.current = true;
+      alert("You drank too much, passed out, and woke up in your bed at 8:00 AM.");
+    },
+    [
+      dayCount,
+      dayOfWeek,
+      gameplayFlags,
+      nonStoryRandomEventLastTriggeredDay,
+    ],
+  );
 
   // Schedule a new encounter
   const scheduleEncounter = (encounter: ScheduledEncounter) => {
@@ -479,13 +687,16 @@ export default function GamePage() {
 
         const characterImage = getCharacterImage(
           girls.find((g) => g.name === encounter.characterName)!,
-          currentLocation,
+          getDialogueCharacterImageLocationOverride(characterEvent.id) ??
+            currentLocation,
           hour,
         );
         startDialogue(
           characterEvent.dialogue,
           characterImage,
           characterEvent.rewards?.girlStats ?? null,
+          encounter.characterName,
+          getDialogueCharacterImageLocationOverride(characterEvent.id),
         );
 
         const updatedPlayer = applyCharacterEventRewards(
@@ -528,6 +739,26 @@ export default function GamePage() {
   // mount
   useEffect(() => {
     setIsMounted(true);
+
+    const rawSession = localStorage.getItem(AUTH_SESSION_KEY);
+    if (!rawSession) {
+      setIsAuthenticated(false);
+    } else {
+      try {
+        const parsed = JSON.parse(rawSession) as unknown;
+        if (isValidAuthSession(parsed)) {
+          setIsAuthenticated(true);
+        } else {
+          localStorage.removeItem(AUTH_SESSION_KEY);
+          setIsAuthenticated(false);
+        }
+      } catch {
+        localStorage.removeItem(AUTH_SESSION_KEY);
+        setIsAuthenticated(false);
+      }
+    }
+    setAuthChecked(true);
+
     const manualSave = localStorage.getItem(MANUAL_SAVE_KEY);
     const autoSave = localStorage.getItem(AUTO_SAVE_KEY);
     setHasManualSave(!!manualSave);
@@ -690,6 +921,10 @@ export default function GamePage() {
       dailyWorkoutState,
       rubyWorkoutTotal,
       randomEventDailyCounts,
+      dayCount,
+      dailyNonStoryRandomEventIds,
+      nonStoryRandomEventLastTriggeredDay,
+      hungerProgressRemainder,
       textSpeed,
       timestamp: new Date().toISOString(),
     }),
@@ -707,15 +942,27 @@ export default function GamePage() {
       dailyWorkoutState,
       rubyWorkoutTotal,
       randomEventDailyCounts,
+      dayCount,
+      dailyNonStoryRandomEventIds,
+      nonStoryRandomEventLastTriggeredDay,
+      hungerProgressRemainder,
       textSpeed,
     ],
   );
 
   const applySaveData = useCallback((data: SaveData) => {
-    setPlayer(withDerivedMood(data.player));
+    const loadedPlayer = withDerivedMood({
+      ...defaultPlayerStats,
+      ...data.player,
+    });
+    const loadedDay = data.dayOfWeek ?? START_DAY;
+    const loadedFlags = new Set(data.gameplayFlags ?? []);
+    const loadedDayCount = data.dayCount ?? 0;
+    const loadedCooldowns = data.nonStoryRandomEventLastTriggeredDay ?? {};
+
+    setPlayer(loadedPlayer);
     setCurrentLocation(data.currentLocation);
     setHour(data.hour);
-    const loadedDay = data.dayOfWeek ?? START_DAY;
     setDayOfWeek(loadedDay);
     setMetCharacters(new Set(data.metCharacters ?? []));
     setGirlStatsOverrides(data.girlStatsOverrides ?? {});
@@ -729,8 +976,24 @@ export default function GamePage() {
       },
     );
     setScheduledEncounters(data.scheduledEncounters ?? []); // This loads dates too
-    setGameplayFlags(new Set(data.gameplayFlags ?? []));
+    setGameplayFlags(loadedFlags);
     setRandomEventDailyCounts(data.randomEventDailyCounts ?? {});
+    setDayCount(loadedDayCount);
+    setNonStoryRandomEventLastTriggeredDay(loadedCooldowns);
+    setHungerProgressRemainder(data.hungerProgressRemainder ?? 0);
+    setDailyNonStoryRandomEventIds(
+      data.dailyNonStoryRandomEventIds ??
+        rollDailyNonStoryRandomEventIds({
+          day: loadedDay,
+          player: loadedPlayer,
+          gameplayFlags: loadedFlags,
+          girls: baseGirls,
+          cooldownByEventId: loadedCooldowns,
+          currentDayCount: loadedDayCount,
+          maxEventsPerDay: 2,
+          cooldownDays: 7,
+        }),
+    );
     if (data.dailyWorkoutState && data.dailyWorkoutState.day === loadedDay) {
       setDailyWorkoutState(data.dailyWorkoutState);
     } else {
@@ -838,10 +1101,14 @@ export default function GamePage() {
       characterImage: string = "",
       girlEffects: Partial<GirlStats> | null = null,
       characterName?: string,
+      characterImageLocationOverride?: string,
     ) => {
       setIsDialogueClosing(false);
       setCurrentDialogue(dialogue);
       setDialogueCharacterImage(characterImage);
+      setDialogueCharacterImageLocationOverride(
+        characterImageLocationOverride ?? null,
+      );
       setDialogueGirlEffects(girlEffects);
       setDialogueGirlName(characterName || "");
       setGameState("dialogue");
@@ -935,6 +1202,7 @@ export default function GamePage() {
       // Clean up dialogue state
       setCurrentDialogue(null);
       setDialogueCharacterImage("");
+      setDialogueCharacterImageLocationOverride(null);
       setDialogueGirlEffects(null);
       setDialogueGirlName("");
       setSelectedGirl(null);
@@ -1018,6 +1286,7 @@ export default function GamePage() {
       setCurrentRandomEvent(null);
       setCurrentDialogue(null);
       setDialogueCharacterImage("");
+      setDialogueCharacterImageLocationOverride(null);
       setDialogueGirlEffects(null);
       setDialogueGirlName("");
       setGameState("playing");
@@ -1030,6 +1299,8 @@ export default function GamePage() {
     // First, try to find in character dialogues
     let foundDialogue: Dialogue | null = null;
     let characterImage = "";
+    const dialogueImageLocationOverride =
+      getDialogueCharacterImageLocationOverride(id);
 
     // Search through all character dialogues
     for (const [characterName, dialogues] of Object.entries(
@@ -1040,7 +1311,11 @@ export default function GamePage() {
         // Get the character image for this dialogue
         const girl = girls.find((g) => g.name === characterName);
         if (girl) {
-          characterImage = getCharacterImage(girl, currentLocation, hour);
+          characterImage = getCharacterImage(
+            girl,
+            dialogueImageLocationOverride ?? currentLocation,
+            hour,
+          );
         }
         console.log(`✅ Found dialogue '${id}' for character ${characterName}`);
         break;
@@ -1056,7 +1331,11 @@ export default function GamePage() {
         if (ev.characterName) {
           const girl = girls.find((g) => g.name === ev.characterName);
           if (girl) {
-            characterImage = getCharacterImage(girl, currentLocation, hour);
+            characterImage = getCharacterImage(
+              girl,
+              dialogueImageLocationOverride ?? currentLocation,
+              hour,
+            );
           }
         }
         console.log(`✅ Found dialogue '${id}' in random events`);
@@ -1071,7 +1350,13 @@ export default function GamePage() {
 
     // Start the dialogue
     const randomSpeaker = randomEvents.find((e) => e.id === id)?.characterName;
-    startDialogue(foundDialogue, characterImage, null, randomSpeaker);
+    startDialogue(
+      foundDialogue,
+      characterImage,
+      null,
+      randomSpeaker,
+      dialogueImageLocationOverride,
+    );
   };
 
   const onEventTriggered = useCallback(
@@ -1178,9 +1463,21 @@ export default function GamePage() {
       }
 
       setCurrentRandomEvent(null);
-      const characterImage = getCharacterImage(girl, locationToCheck, hour);
+      const dialogueImageLocationOverride =
+        getDialogueCharacterImageLocationOverride(triggerable.id);
+      const characterImage = getCharacterImage(
+        girl,
+        dialogueImageLocationOverride ?? locationToCheck,
+        hour,
+      );
       onEventTriggered(triggerable.id, characterName);
-      startDialogue(triggerable.dialogue, characterImage, null, characterName);
+      startDialogue(
+        triggerable.dialogue,
+        characterImage,
+        null,
+        characterName,
+        dialogueImageLocationOverride,
+      );
 
       setPlayer((prev) =>
         applyCharacterEventRewards(prev, triggerable.rewards, {
@@ -1238,9 +1535,21 @@ export default function GamePage() {
     if (!girl) return false;
 
     setCurrentRandomEvent(null);
-    const characterImage = getCharacterImage(girl, location, hour);
+    const dialogueImageLocationOverride =
+      getDialogueCharacterImageLocationOverride(triggerable.id);
+    const characterImage = getCharacterImage(
+      girl,
+      dialogueImageLocationOverride ?? location,
+      hour,
+    );
     onEventTriggered(triggerable.id, girl.name);
-    startDialogue(triggerable.dialogue, characterImage, null, girl.name);
+    startDialogue(
+      triggerable.dialogue,
+      characterImage,
+      null,
+      girl.name,
+      dialogueImageLocationOverride,
+    );
 
     const updatedPlayer = applyCharacterEventRewards(
       player,
@@ -1286,6 +1595,11 @@ export default function GamePage() {
       setCurrentLocation(location);
       setSelectedGirl(null);
       pendingAutoSaveRef.current = true;
+      setPlayer((prev) =>
+        prev.hunger >= STARVING_HUNGER_THRESHOLD
+          ? applyPlayerStatDelta(prev, { energy: -1 })
+          : prev,
+      );
 
       if (
         location === "Hallway" &&
@@ -1330,8 +1644,40 @@ export default function GamePage() {
       //   }
       // }
 
-      // random event roll
-      const randomEvent = checkRandomEvent(
+      // Daily pre-rolled non-story random events trigger first.
+      const dailyNonStoryEvent = getScheduledNonStoryRandomEventForContext(
+        dailyNonStoryRandomEventIds,
+        location,
+        hour,
+        dayOfWeek,
+        player,
+        gameplayFlags,
+        girls,
+      );
+      if (dailyNonStoryEvent) {
+        console.log(`🎲 Daily random event: ${dailyNonStoryEvent.name}`);
+        setDailyNonStoryRandomEventIds((prev) =>
+          prev.filter((eventId) => eventId !== dailyNonStoryEvent.id),
+        );
+        setNonStoryRandomEventLastTriggeredDay((prev) => ({
+          ...prev,
+          [dailyNonStoryEvent.id]: dayCount,
+        }));
+        setCurrentRandomEvent(dailyNonStoryEvent);
+        recordRandomEventTrigger(dailyNonStoryEvent.id);
+        startDialogue(
+          dailyNonStoryEvent.dialogue,
+          "",
+          null,
+          dailyNonStoryEvent.characterName,
+        );
+        applyRandomEventRewards(dailyNonStoryEvent.rewards);
+        finishTransition();
+        return;
+      }
+
+      // Story-related random events continue to roll on movement.
+      const storyRandomEvent = checkRandomEvent(
         location,
         hour,
         dayOfWeek,
@@ -1339,18 +1685,22 @@ export default function GamePage() {
         gameplayFlags,
         girls,
         randomEventDailyCounts,
+        {
+          includeStoryRelated: true,
+          includeNonStoryRelated: false,
+        },
       );
-      if (randomEvent) {
-        console.log(`Random event: ${randomEvent.name}`);
-        setCurrentRandomEvent(randomEvent);
-        recordRandomEventTrigger(randomEvent.id);
+      if (storyRandomEvent) {
+        console.log(`Random event: ${storyRandomEvent.name}`);
+        setCurrentRandomEvent(storyRandomEvent);
+        recordRandomEventTrigger(storyRandomEvent.id);
         startDialogue(
-          randomEvent.dialogue,
+          storyRandomEvent.dialogue,
           "",
           null,
-          randomEvent.characterName,
+          storyRandomEvent.characterName,
         );
-        applyRandomEventRewards(randomEvent.rewards);
+        applyRandomEventRewards(storyRandomEvent.rewards);
       }
 
       finishTransition();
@@ -1411,17 +1761,37 @@ export default function GamePage() {
   const presentGirls = girls.filter((g) => g.location === currentLocation);
   const availableLocations = useMemo(() => {
     const options = locationGraph[currentLocation] ?? [];
-    return options.filter((loc) => {
-      const isNightLife = ["Bar", "Nightclub", "Strip Club"].includes(loc.name);
-      const isDaytimeOnly = ["Cafe", "Gym", "Mall", "Car Store"].includes(
-        loc.name,
-      );
-      const isNightTime = hour >= 21;
+    const universityClosed =
+      dayOfWeek === "Sunday" ||
+      (dayOfWeek === "Saturday" ? hour >= 16 : hour >= 21);
+    const currentlyAtUniversity =
+      UNIVERSITY_LOCATION_NAMES.has(currentLocation);
 
-      if (!isNightTime && isNightLife) {
+    return options.filter((loc) => {
+      const isNightLife = NIGHTLIFE_LOCATION_NAMES.has(loc.name);
+
+      if (
+        universityClosed &&
+        !currentlyAtUniversity &&
+        UNIVERSITY_LOCATION_NAMES.has(loc.name)
+      ) {
         return false;
       }
-      if (isNightTime && isDaytimeOnly) {
+
+      if (isNightLife && !isNightlifeOpenAtHour(hour)) {
+        return false;
+      }
+
+      if (
+        (loc.name === "Cafe" || loc.name === "Gym") &&
+        hour >= CAFE_AND_GYM_CLOSING_HOUR
+      ) {
+        return false;
+      }
+      if (loc.name === "Mall" && hour >= MALL_CLOSING_HOUR) {
+        return false;
+      }
+      if (loc.name === "Car Store" && hour >= CAR_STORE_CLOSING_HOUR) {
         return false;
       }
 
@@ -1446,7 +1816,7 @@ export default function GamePage() {
 
       return true;
     });
-  }, [currentLocation, gameplayFlags, hour]);
+  }, [currentLocation, dayOfWeek, gameplayFlags, hour]);
 
   const returnToMainMenu = () => {
     if (!confirm("Return to main menu? Any unsaved progress will be lost."))
@@ -1456,11 +1826,25 @@ export default function GamePage() {
   };
   //handler for name submission
   const handleNameSubmit = (playerName: string) => {
+    const nextPlayer = withDerivedMood({ ...defaultPlayerStats, name: playerName });
+    const initialDayCount = 0;
+    const initialDailyNonStoryRandomEvents = rollDailyNonStoryRandomEventIds({
+      day: START_DAY,
+      player: nextPlayer,
+      gameplayFlags: new Set(),
+      girls: baseGirls,
+      cooldownByEventId: {},
+      currentDayCount: initialDayCount,
+      maxEventsPerDay: 2,
+      cooldownDays: 7,
+    });
+
     // Reset everything to initial state
-    setPlayer(withDerivedMood({ ...defaultPlayerStats, name: playerName }));
+    setPlayer(nextPlayer);
     setCurrentLocation("Bedroom");
     setHour(START_HOUR);
     setDayOfWeek(START_DAY);
+    setDayCount(initialDayCount);
     setSelectedGirl(null);
     setMetCharacters(new Set());
     setGirlStatsOverrides({});
@@ -1474,6 +1858,9 @@ export default function GamePage() {
     setScheduledEncounters([]);
     setInteractionHistory({});
     setRandomEventDailyCounts({});
+    setDailyNonStoryRandomEventIds(initialDailyNonStoryRandomEvents);
+    setNonStoryRandomEventLastTriggeredDay({});
+    setHungerProgressRemainder(0);
     setGameplayFlags(new Set());
     setCurrentRandomEvent(null);
     setDailyWorkoutState({
@@ -1738,9 +2125,61 @@ export default function GamePage() {
         current.add(actionLabel);
         return { ...prev, [key]: current };
       });
+
+      if (currentLocation === TESTING_LOCATION_NAME) {
+        return;
+      }
+
+      const girlsAtLocation = girls.filter((girl) => girl.location === currentLocation);
+      if (girlsAtLocation.length < 2) {
+        return;
+      }
+
+      const witnessingGirls = girlsAtLocation.filter(
+        (girl) =>
+          girl.name !== girlName &&
+          isChapterTwoOrHigher(girl.name, gameplayFlags),
+      );
+      if (witnessingGirls.length === 0) {
+        return;
+      }
+
+      witnessingGirls.forEach((girl) => {
+        applyGirlStatDelta(girl.name, { affection: -1, lust: -1 });
+      });
     },
-    [dayOfWeek],
+    [
+      applyGirlStatDelta,
+      currentLocation,
+      dayOfWeek,
+      gameplayFlags,
+      girls,
+    ],
   );
+
+  const handleLogin = useCallback((username: string, password: string) => {
+    if (!verifyCredentials(username, password)) {
+      return false;
+    }
+
+    localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(buildAuthSession()));
+    setIsAuthenticated(true);
+    return true;
+  }, []);
+
+  if (!authChecked) {
+    return null;
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <LoginScreen
+        onLogin={handleLogin}
+        communicationEmail={SINGLE_USER_ACCOUNT.email}
+        darkMode={darkMode}
+      />
+    );
+  }
 
   if (gameState == "nameInput") {
     return <NameInput onNameSubmit={handleNameSubmit} darkMode={darkMode} />;
@@ -1785,6 +2224,7 @@ export default function GamePage() {
                     setGameState("playing");
                     setCurrentDialogue(null);
                     setDialogueCharacterImage("");
+                    setDialogueCharacterImageLocationOverride(null);
                     setDialogueGirlEffects(null);
                     setDialogueGirlName("");
                     setSelectedGirl(null);
@@ -1796,7 +2236,9 @@ export default function GamePage() {
           isMobile={isMobile}
           textSpeed={textSpeed}
           locationImage={getCurrentLocationImage()}
-          characterImageLocation={currentCharacterImageLocation}
+          characterImageLocation={
+            dialogueCharacterImageLocationOverride ?? currentCharacterImageLocation
+          }
           // midgroundImage={getCurrentLocationImage()}
           // midgroundOpacity={0.3}
           // midgroundBlend="normal"
@@ -1939,6 +2381,7 @@ export default function GamePage() {
               isLocationTransitioning={isLocationTransitioning}
               testingEnvironment={testingEnvironment}
               onSetTestingEnvironment={setTestingEnvironment}
+              onPassOut={handleSobrietyBlackout}
             />
           </div>
 
@@ -1977,6 +2420,7 @@ export default function GamePage() {
             onAdjustGirlStats={applyGirlStatDelta}
             testingEnvironment={testingEnvironment}
             onSetTestingEnvironment={setTestingEnvironment}
+            onPassOut={handleSobrietyBlackout}
           />
         </div>
       </div>
@@ -2007,7 +2451,9 @@ export default function GamePage() {
           isMobile={isMobile}
           textSpeed={textSpeed}
           locationImage={getCurrentLocationImage()}
-          characterImageLocation={currentCharacterImageLocation}
+          characterImageLocation={
+            dialogueCharacterImageLocationOverride ?? currentCharacterImageLocation
+          }
           currentLocation={currentLocation}
           currentHour={hour}
           currentDay={dayOfWeek}

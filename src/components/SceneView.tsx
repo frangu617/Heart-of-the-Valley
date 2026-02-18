@@ -5,6 +5,9 @@ import type { Girl } from "../data/characters";
 import { getSceneCharacterObjectPosition } from "@/lib/portraitFraming";
 import { TESTING_LOCATION_NAME } from "@/data/locations";
 
+const toCasualFallbackImage = (imagePath: string) =>
+  imagePath.replace(/\/(date|work)\//, "/casual/");
+
 type Props = {
   darkMode: boolean;
   currentLocation: string;
@@ -37,8 +40,15 @@ export default function SceneView({
   const [missingTestRoomGirls, setMissingTestRoomGirls] = useState<Set<string>>(
     new Set(),
   );
+  const [girlsUsingCasualFallback, setGirlsUsingCasualFallback] = useState<
+    Set<string>
+  >(new Set());
   const isTestingRoom = currentLocation === TESTING_LOCATION_NAME;
   const resolvedCharacterImageLocation = characterImageLocation ?? currentLocation;
+
+  useEffect(() => {
+    setGirlsUsingCasualFallback(new Set());
+  }, [resolvedCharacterImageLocation, hour]);
 
   useEffect(() => {
     if (!isTestingRoom) {
@@ -123,11 +133,14 @@ export default function SceneView({
         {/* Characters */}
         <div className="absolute inset-0 flex items-end justify-around px-4 md:px-8 pb-8 md:pb-4">
           {visibleGirls.map((girl, index) => {
-            const imgPath = getCharacterImage(
+            const baseImgPath = getCharacterImage(
               girl,
               resolvedCharacterImageLocation,
               hour,
             );
+            const fallbackImgPath = toCasualFallbackImage(baseImgPath);
+            const isUsingFallback = girlsUsingCasualFallback.has(girl.name);
+            const imgPath = isUsingFallback ? fallbackImgPath : baseImgPath;
             return (
               <button
                 key={girl.name}
@@ -174,6 +187,15 @@ export default function SceneView({
                       objectPosition: getSceneCharacterObjectPosition(girl.name),
                     }}
                     onError={() => {
+                      if (!isUsingFallback && fallbackImgPath !== baseImgPath) {
+                        setGirlsUsingCasualFallback((prev) => {
+                          if (prev.has(girl.name)) return prev;
+                          const next = new Set(prev);
+                          next.add(girl.name);
+                          return next;
+                        });
+                        return;
+                      }
                       if (!isTestingRoom) return;
                       setMissingTestRoomGirls((prev) => {
                         if (prev.has(girl.name)) return prev;

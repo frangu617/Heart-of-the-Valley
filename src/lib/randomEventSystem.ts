@@ -9,6 +9,39 @@ export type RandomEventTriggerResult = {
   event: RandomEvent | null;
 };
 
+type CheckRandomEventConditionOptions = {
+  ignoreLocation?: boolean;
+  ignoreHourRange?: boolean;
+  ignoreRequiredCharacters?: boolean;
+};
+
+type CheckRandomEventOptions = {
+  includeStoryRelated?: boolean;
+  includeNonStoryRelated?: boolean;
+};
+
+type RollDailyNonStoryRandomEventsOptions = {
+  day: DayOfWeek;
+  player: PlayerStats;
+  gameplayFlags?: Set<GameplayFlag>;
+  girls?: Girl[];
+  cooldownByEventId?: Record<string, number>;
+  currentDayCount: number;
+  maxEventsPerDay?: number;
+  cooldownDays?: number;
+};
+
+const DEFAULT_NON_STORY_MAX_EVENTS_PER_DAY = 2;
+const DEFAULT_NON_STORY_COOLDOWN_DAYS = 7;
+
+export function isStoryRelatedRandomEvent(event: RandomEvent): boolean {
+  const { requiredFlags, blockedFlags } = event.conditions;
+  return Boolean(
+    (requiredFlags && requiredFlags.length > 0) ||
+      (blockedFlags && blockedFlags.length > 0)
+  );
+}
+
 /**
  * Check if a random event's conditions are met
  */
@@ -19,17 +52,24 @@ function checkRandomEventConditions(
   day: DayOfWeek,
   player: PlayerStats,
   gameplayFlags?: Set<GameplayFlag>,
-  girls?: Girl[]
+  girls?: Girl[],
+  options: CheckRandomEventConditionOptions = {}
 ): boolean {
   const { conditions } = event;
+  const {
+    ignoreLocation = false,
+    ignoreHourRange = false,
+    ignoreRequiredCharacters = false,
+  } = options;
 
   // Check location
-  if (!conditions.locations.includes(location)) {
+  if (!ignoreLocation && !conditions.locations.includes(location)) {
     return false;
   }
 
   // Check hour range
   if (
+    !ignoreHourRange &&
     conditions.hourRange &&
     (hour < conditions.hourRange.min || hour >= conditions.hourRange.max)
   ) {
@@ -41,7 +81,7 @@ function checkRandomEventConditions(
     return false;
   }
 
-  if (conditions.requiredCharactersPresent?.length) {
+  if (!ignoreRequiredCharacters && conditions.requiredCharactersPresent?.length) {
     if (!girls) return false;
     for (const characterName of conditions.requiredCharactersPresent) {
       const character = girls.find((girl) => girl.name === characterName);
@@ -188,11 +228,25 @@ export function checkRandomEvent(
   player: PlayerStats,
   gameplayFlags?: Set<GameplayFlag>,
   girls?: Girl[],
-  eventTriggerCountsToday?: Record<string, number>
+  eventTriggerCountsToday?: Record<string, number>,
+  options: CheckRandomEventOptions = {}
 ): RandomEvent | null {
+  const {
+    includeStoryRelated = true,
+    includeNonStoryRelated = true,
+  } = options;
+
   // Get eligible events for this location
-  const eligibleEvents = randomEvents.filter((event) =>
-    checkRandomEventConditions(
+  const eligibleEvents = randomEvents.filter((event) => {
+    const storyRelated = isStoryRelatedRandomEvent(event);
+    if (storyRelated && !includeStoryRelated) {
+      return false;
+    }
+    if (!storyRelated && !includeNonStoryRelated) {
+      return false;
+    }
+
+    return checkRandomEventConditions(
       event,
       location,
       hour,
@@ -200,8 +254,8 @@ export function checkRandomEvent(
       player,
       gameplayFlags,
       girls
-    )
-  );
+    );
+  });
 
   if (eligibleEvents.length === 0) {
     return null;
@@ -235,4 +289,98 @@ export function getRandomEventsForLocation(location: string): RandomEvent[] {
   return randomEvents.filter((event) =>
     event.conditions.locations.includes(location)
   );
+}
+
+export function getScheduledNonStoryRandomEventForContext(
+  eventIds: string[],
+  location: string,
+  hour: number,
+  day: DayOfWeek,
+  player: PlayerStats,
+  gameplayFlags?: Set<GameplayFlag>,
+  girls?: Girl[]
+): RandomEvent | null {
+  for (const eventId of eventIds) {
+    const event = randomEvents.find((candidate) => candidate.id === eventId);
+    if (!event) continue;
+    if (isStoryRelatedRandomEvent(event)) continue;
+
+    if (
+      checkRandomEventConditions(
+        event,
+        location,
+        hour,
+        day,
+        player,
+        gameplayFlags,
+        girls
+      )
+    ) {
+      return event;
+    }
+  }
+
+  return null;
+}
+
+export function rollDailyNonStoryRandomEventIds({
+  day,
+  player,
+  gameplayFlags,
+  girls,
+  cooldownByEventId = {},
+  currentDayCount,
+  maxEventsPerDay = DEFAULT_NON_STORY_MAX_EVENTS_PER_DAY,
+  cooldownDays = DEFAULT_NON_STORY_COOLDOWN_DAYS,
+}: RollDailyNonStoryRandomEventsOptions): string[] {
+  const candidates = randomEvents.filter((event) => {
+    if (isStoryRelatedRandomEvent(event)) {
+      return false;
+    }
+
+    const lastTriggeredDay = cooldownByEventId[event.id];
+    if (
+      typeof lastTriggeredDay === "number" &&
+      currentDayCount - lastTriggeredDay < cooldownDays
+    ) {
+      return false;
+    }
+
+    return checkRandomEventConditions(
+      event,
+      event.conditions.locations[0] ?? "",
+      12,
+      day,
+      player,
+      gameplayFlags,
+      girls,
+      {
+        ignoreLocation: true,
+        ignoreHourRange: true,
+        ignoreRequiredCharacters: true,
+      }
+    );
+  });
+
+  if (candidates.length === 0 || maxEventsPerDay <= 0) {
+    return [];
+  }
+
+  // Shuffle to avoid deterministic bias toward earlier array entries.
+  const shuffledCandidates = [...candidates].sort(() => Math.random() - 0.5);
+  const selectedEventIds: string[] = [];
+
+  for (const event of shuffledCandidates) {
+    if (selectedEventIds.length >= maxEventsPerDay) {
+      break;
+    }
+
+    const adjustedChance = calculateRandomChance(event, player, girls);
+    const roll = Math.random() * 100;
+    if (roll < adjustedChance) {
+      selectedEventIds.push(event.id);
+    }
+  }
+
+  return selectedEventIds;
 }

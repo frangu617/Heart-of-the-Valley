@@ -8,7 +8,10 @@ import {
   type TestingEnvironment,
 } from "../data/locations";
 import { GameplayFlag } from "@/data/events/types";
-import { applyPlayerStatDelta } from "@/lib/playerStats";
+import {
+  applyPlayerStatDelta,
+  STARVING_HUNGER_THRESHOLD,
+} from "@/lib/playerStats";
 import GiftModal from "./GiftModal";
 import { Gift, gifts } from "@/data/gifts";
 import { getScheduledLocation } from "@/lib/schedule";
@@ -35,7 +38,11 @@ type Props = {
   location: string;
   player: PlayerStats;
   setPlayer: (next: PlayerStats) => void;
-  spendTime: (amount: number) => void;
+  spendTime: (
+    amount: number,
+    basePlayer?: PlayerStats,
+    options?: { skipHungerGain?: boolean; hungerGainMultiplier?: number },
+  ) => void;
   darkMode?: boolean;
   dayOfWeek: DayOfWeek;
   hour: number;
@@ -47,6 +54,7 @@ type Props = {
   onAdjustGirlStats?: (girlName: string, delta: Partial<GirlStats>) => void;
   testingEnvironment?: TestingEnvironment;
   onSetTestingEnvironment?: (environment: TestingEnvironment) => void;
+  onPassOut?: (playerAtBlackout: PlayerStats) => void;
 };
 
 export default function LocationActivitiesPanel({
@@ -65,6 +73,7 @@ export default function LocationActivitiesPanel({
   onAdjustGirlStats,
   testingEnvironment,
   onSetTestingEnvironment,
+  onPassOut,
 }: Props) {
   const baseActivities: Activity[] = activitiesMap[location] ?? [];
   const [showGiftShop, setShowGiftShop] = useState(false);
@@ -88,9 +97,12 @@ export default function LocationActivitiesPanel({
   const rubyUnlocked = gameplayFlags?.has("hasMetRuby") ?? false;
   const rubyAvailableForWorkout = rubyUnlocked && rubyAtGym;
   const workoutActivityNames = new Set(["Workout", "Light Exercise"]);
+  const sleepActivityNames = new Set(["Sleep", "Take a Nap"]);
 
   const isWorkoutActivity = (activity: Activity) =>
     location === "Gym" && workoutActivityNames.has(activity.name);
+  const isSleepActivity = (activity: Activity) =>
+    location === "Bedroom" && sleepActivityNames.has(activity.name);
 
   const isRubyUnlockActivity = (activity: Activity) => isWorkoutActivity(activity);
 
@@ -99,6 +111,9 @@ export default function LocationActivitiesPanel({
 
   const isYumiUnlockActivity = (activity: Activity) =>
     location === "Classroom" && activity.name === "Teach Class";
+  const irisIsTeachingInClassroom =
+    location === "Classroom" &&
+    getScheduledLocation("Iris", dayOfWeek, hour) === "Classroom";
 
   const getWorkoutLimitFailure = (
     activity: Activity
@@ -137,9 +152,23 @@ export default function LocationActivitiesPanel({
     return `${activity.name} with Ruby`;
   };
 
+  const activityReducesHunger = (activity: Activity) =>
+    typeof activity.statEffects?.hunger === "number" &&
+    activity.statEffects.hunger < 0;
+
   const getRequirementFailures = (activity: Activity): RequirementFailure[] => {
     const failures: RequirementFailure[] = [];
     const requirements = activity.requirements;
+
+    if (
+      player.hunger >= STARVING_HUNGER_THRESHOLD &&
+      !activityReducesHunger(activity)
+    ) {
+      failures.push({
+        alert: "You're too hungry to do that right now. Eat something first.",
+        inline: "🍔 Too hungry right now",
+      });
+    }
 
     const workoutFailure = getWorkoutLimitFailure(activity);
     if (workoutFailure) {
@@ -223,6 +252,15 @@ export default function LocationActivitiesPanel({
       return;
     }
 
+    if (
+      location === "Classroom" &&
+      act.name === "Teach Class" &&
+      irisIsTeachingInClassroom
+    ) {
+      alert("Iris is currently teaching this class.");
+      return;
+    }
+
     const failures = getRequirementFailures(act);
     if (failures.length > 0) {
       alert(failures[0].alert);
@@ -240,8 +278,19 @@ export default function LocationActivitiesPanel({
         energy: -(act.timeCost ?? 1) * 5,
       });
     }
+    if (isWorkoutActivity(act)) {
+      next = {
+        ...next,
+        hygiene: Math.max(0, Math.floor(next.hygiene * 0.5)),
+      };
+    } else if (act.name === "Swim") {
+      next = applyPlayerStatDelta(next, { hygiene: -25 });
+    }
 
-    setPlayer(next);
+    if (next.sobriety <= 0) {
+      onPassOut?.(next);
+      return;
+    }
 
     const workoutActivity = isWorkoutActivity(act);
     const rubyWorkout = workoutActivity && rubyAvailableForWorkout;
@@ -274,7 +323,10 @@ export default function LocationActivitiesPanel({
       }
     }
 
-    spendTime(act.timeCost ?? 1);
+    spendTime(act.timeCost ?? 1, next, {
+      skipHungerGain: activityReducesHunger(act),
+      hungerGainMultiplier: isSleepActivity(act) ? 0.25 : 1,
+    });
 
     //Unlock Ruby when working out at Gym
     if (isRubyUnlockActivity(act)) {
@@ -474,8 +526,7 @@ export default function LocationActivitiesPanel({
               money: player.money - gift.cost,
               inventory: [...player.inventory, gift.id],
             };
-            setPlayer(next);
-            spendTime(giftStoreTimeCost);
+            spendTime(giftStoreTimeCost, next);
             setShowGiftShop(false);
           }}
           darkMode={darkMode}

@@ -97,6 +97,7 @@ export default function PhoneMenu({
   const [activeTab, setActiveTab] = useState<PhoneTab>("stats");
   const [isClosing, setIsClosing] = useState(false);
   const closeDelayMs = 200;
+  const hungerBarValue = Math.max(0, Math.min(100, 100 - player.hunger));
 
   const handleClose = () => {
     if (isClosing) return;
@@ -170,7 +171,7 @@ export default function PhoneMenu({
               />
               <StatBar
                 label="Hunger"
-                value={player.hunger}
+                value={hungerBarValue}
                 icon="🍔"
                 darkMode={darkMode}
               />

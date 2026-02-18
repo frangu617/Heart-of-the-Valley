@@ -15,7 +15,11 @@ type Props = {
   player: PlayerStats;
   gameplayFlags: Set<GameplayFlag>;
   setPlayer: Dispatch<SetStateAction<PlayerStats>>;
-  spendTime: (amount: number) => void;
+  spendTime: (
+    amount: number,
+    basePlayer?: PlayerStats,
+    options?: { skipHungerGain?: boolean; hungerGainMultiplier?: number },
+  ) => void;
   onCloseSelectedGirl: () => void;
   onStartDialogue: (
     dialogue: Dialogue,
@@ -48,6 +52,7 @@ type Props = {
   characterImageLocation?: string;
   testingEnvironment?: TestingEnvironment;
   onSetTestingEnvironment?: (environment: TestingEnvironment) => void;
+  onPassOut: (playerAtBlackout: PlayerStats) => void;
 };
 
 export default function RightSidebar({
@@ -77,6 +82,7 @@ export default function RightSidebar({
   characterImageLocation,
   testingEnvironment,
   onSetTestingEnvironment,
+  onPassOut,
 }: Props) {
   if (selectedGirl && eventState) {
     return (
@@ -125,6 +131,7 @@ export default function RightSidebar({
         onAdjustGirlStats={onAdjustGirlStats}
         testingEnvironment={testingEnvironment}
         onSetTestingEnvironment={onSetTestingEnvironment}
+        onPassOut={onPassOut}
       />
     </div>
   );
