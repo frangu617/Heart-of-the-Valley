@@ -275,6 +275,21 @@ const inferMissingPathFlags = (
     }
   }
 
+  if (
+    nextFlags.has("irisCh2Complete") &&
+    !nextFlags.has("irisKissOthersChoiceMade")
+  ) {
+    if (
+      nextFlags.has("irisNtrSeeded") ||
+      nextFlags.has("irisDomDeniedExplore")
+    ) {
+      nextFlags.add("irisKissOthersChoiceMade");
+      nextFlags.add("irisKissOthersEnabled");
+    } else if (nextFlags.has("irisDomDeniedExclusive")) {
+      nextFlags.add("irisKissOthersChoiceMade");
+    }
+  }
+
   if (!nextFlags.has("gwenDomPath") && !nextFlags.has("gwenSubPath")) {
     if (hasCompletedEvent(gwenState, "gwen_chapter_1_finale")) {
       nextFlags.add("gwenDomPath");
@@ -557,6 +572,7 @@ export default function GamePage() {
   const noticeIdRef = useRef(0);
   const confirmIdRef = useRef(0);
   const confirmQueueRef = useRef<PendingGameConfirm[]>([]);
+  const irisKissOthersPromptedRef = useRef(false);
   const pendingAutoSaveRef = useRef(false);
 
   const applyDebugVitalsProtection = useCallback(
@@ -1734,6 +1750,62 @@ export default function GamePage() {
       return migratedFlags;
     });
   }, [characterEventStates]);
+
+  const shouldPromptIrisKissOthersChoice =
+    gameState === "playing" &&
+    gameplayFlags.has("irisCh2Complete") &&
+    !gameplayFlags.has("irisKissOthersChoiceMade");
+
+  useEffect(() => {
+    if (!shouldPromptIrisKissOthersChoice) {
+      irisKissOthersPromptedRef.current = false;
+      return;
+    }
+
+    if (irisKissOthersPromptedRef.current) {
+      return;
+    }
+    irisKissOthersPromptedRef.current = true;
+
+    let cancelled = false;
+    const promptForChoice = async () => {
+      const allowKissingOthers = await askGameConfirm(
+        "Iris asks for a little freedom: should she be allowed to kiss other people sometimes?",
+        {
+          confirmLabel: "Yes, allow it",
+          cancelLabel: "No, keep it exclusive",
+        },
+      );
+
+      if (cancelled) return;
+
+      setGameplayFlags((prev) => {
+        if (prev.has("irisKissOthersChoiceMade")) {
+          return prev;
+        }
+
+        const next = new Set(prev);
+        next.add("irisKissOthersChoiceMade");
+        if (allowKissingOthers) {
+          next.add("irisKissOthersEnabled");
+        }
+        return next;
+      });
+
+      showGameNotice(
+        allowKissingOthers
+          ? "Iris may now have random encounters kissing other people."
+          : "Iris will stay focused on kissing only you in random encounters.",
+        { tone: allowKissingOthers ? "warning" : "success" },
+      );
+    };
+
+    promptForChoice();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [shouldPromptIrisKissOthersChoice]);
 
   const writeSaveData = useCallback((key: string, data: SaveData) => {
     localStorage.setItem(key, JSON.stringify(data));
@@ -2965,6 +3037,23 @@ export default function GamePage() {
     return true;
   }, []);
 
+  const handleLogout = useCallback(async () => {
+    const confirmed = await askGameConfirm(
+      "Log out and return to the login screen?",
+      {
+        confirmLabel: "Log out",
+        cancelLabel: "Stay",
+      },
+    );
+    if (!confirmed) return;
+
+    localStorage.removeItem(AUTH_SESSION_KEY);
+    setIsAuthenticated(false);
+    setShowPhone(false);
+    setShowTutorial(false);
+    showGameNotice("Logged out.", { tone: "info" });
+  }, []);
+
   const gameFeedbackOverlays = (
     <>
       {gameNotices.length > 0 && (
@@ -3161,6 +3250,7 @@ export default function GamePage() {
         onShowTutorial={() => setShowTutorial(true)}
         onShowPhone={() => setShowPhone(true)}
         onOpenMenu={() => setGameState("paused")}
+        onLogout={handleLogout}
       />
 
       <div className="container mx-auto px-2 md:px-4 py-4 md:py-8">

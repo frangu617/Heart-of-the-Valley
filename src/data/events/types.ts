@@ -39,6 +39,8 @@ export type GameplayFlag =
   | "irisDomDeniedExclusive"
   | "irisDomDeniedExplore"
   | "irisNtrSeeded"
+  | "irisKissOthersChoiceMade"
+  | "irisKissOthersEnabled"
   | "irisCh2Complete"
   | "metMysteryGirl"
   | "iris_intro_done"

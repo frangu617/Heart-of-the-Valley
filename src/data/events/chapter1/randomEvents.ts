@@ -369,14 +369,13 @@ export const randomEvents: RandomEvent[] = [
     name: "Claimed In Passing",
     type: "encounter",
     characterName: "Iris",
-    probability: 16,
+    probability: 62,
     maxTriggersPerDay: 1,
     conditions: {
       locations: ["University Hallway", "University Parking Lot", "Cafe", "Mall"],
       hourRange: { min: 9, max: 22 },
       requiredCharactersPresent: ["Iris"],
       requiredFlags: ["irisDomAcceptedKissLoopActive", "irisDatePlanned"],
-      blockedFlags: ["irisCh2Complete"],
     },
     dialogue: {
       id: "iris_dom_accepted_daily_kiss_dialogue",
@@ -665,14 +664,13 @@ export const randomEvents: RandomEvent[] = [
     name: "Exclusive Habit",
     type: "encounter",
     characterName: "Iris",
-    probability: 18,
+    probability: 62,
     maxTriggersPerDay: 1,
     conditions: {
       locations: ["University Hallway", "University Parking Lot", "Cafe", "Mall"],
       hourRange: { min: 9, max: 22 },
       requiredCharactersPresent: ["Iris"],
       requiredFlags: ["irisDomDeniedExclusive", "irisDatePlanned"],
-      blockedFlags: ["irisCh2Complete"],
     },
     dialogue: {
       id: "iris_dom_denied_player_kiss_exclusive_dialogue",
@@ -699,14 +697,13 @@ export const randomEvents: RandomEvent[] = [
     name: "Shared Current",
     type: "encounter",
     characterName: "Iris",
-    probability: 18,
+    probability: 62,
     maxTriggersPerDay: 1,
     conditions: {
       locations: ["University Hallway", "University Parking Lot", "Cafe", "Mall", "City"],
       hourRange: { min: 9, max: 23 },
       requiredCharactersPresent: ["Iris"],
       requiredFlags: ["irisDomDeniedExplore", "irisDatePlanned"],
-      blockedFlags: ["irisCh2Complete"],
     },
     dialogue: {
       id: "iris_dom_denied_player_kiss_shared_dialogue",
@@ -729,6 +726,185 @@ export const randomEvents: RandomEvent[] = [
     rewards: {
       girlAffection: { Iris: 1 },
       playerStats: { mood: 1 },
+    },
+  },
+
+  {
+    id: "iris_post_ch2_player_kiss_daily",
+    name: "Still Ours",
+    type: "encounter",
+    characterName: "Iris",
+    probability: 65,
+    maxTriggersPerDay: 1,
+    conditions: {
+      locations: ["University Hallway", "University Parking Lot", "Cafe", "Mall"],
+      hourRange: { min: 9, max: 22 },
+      requiredCharactersPresent: ["Iris"],
+      requiredFlags: ["irisCh2Complete", "irisDatePlanned"],
+    },
+    dialogue: {
+      id: "iris_post_ch2_player_kiss_daily_dialogue",
+      lines: [
+        {
+          speaker: null,
+          text: "Iris catches your hand in passing, checks the room, then pulls you in for a kiss that feels practiced and hungry at the same time.",
+          expression: "kissingMC",
+        },
+        {
+          speaker: "Iris",
+          text: "You are still my favorite interruption.",
+          expression: "happy",
+        },
+      ],
+    },
+    rewards: {
+      girlAffection: { Iris: 1 },
+      playerStats: { mood: 1 },
+    },
+  },
+
+  {
+    id: "iris_kiss_others_rando_1",
+    name: "kissingRando1",
+    type: "observation",
+    characterName: "Iris",
+    probability: 20,
+    maxTriggersPerDay: 1,
+    conditions: {
+      locations: ["Cafe", "Mall"],
+      hourRange: { min: 10, max: 22 },
+      requiredCharactersPresent: ["Iris"],
+      requiredFlags: ["irisCh2Complete", "irisKissOthersEnabled"],
+    },
+    dialogue: {
+      id: "iris_kiss_others_rando_1_dialogue",
+      lines: [
+        {
+          speaker: null,
+          text: "At the edge of the crowd, Iris leans into someone and steals a quick kiss before stepping back with a sharp, electric smile.",
+          expression: "kissingRando1",
+        },
+        {
+          speaker: null,
+          text: "She spots you afterward, holds your gaze for a beat, then drifts away like she wanted you to see it.",
+        },
+      ],
+    },
+  },
+
+  {
+    id: "iris_kiss_others_rando_2",
+    name: "kissingRando2",
+    type: "observation",
+    characterName: "Iris",
+    probability: 20,
+    maxTriggersPerDay: 1,
+    conditions: {
+      locations: ["Cafe", "Mall"],
+      hourRange: { min: 10, max: 22 },
+      requiredCharactersPresent: ["Iris"],
+      requiredFlags: ["irisCh2Complete", "irisKissOthersEnabled"],
+    },
+    dialogue: {
+      id: "iris_kiss_others_rando_2_dialogue",
+      lines: [
+        {
+          speaker: null,
+          text: "You catch Iris in a narrow aisle, laughing low at something a stranger says before she kisses him first and leaves him stunned.",
+          expression: "kissingRando2",
+        },
+        {
+          speaker: null,
+          text: "She walks past you a moment later, calm on the surface but visibly charged underneath.",
+        },
+      ],
+    },
+  },
+
+  {
+    id: "iris_kiss_others_rando_3",
+    name: "kissingRando3",
+    type: "observation",
+    characterName: "Iris",
+    probability: 20,
+    maxTriggersPerDay: 1,
+    conditions: {
+      locations: ["Cafe", "Mall"],
+      hourRange: { min: 10, max: 22 },
+      requiredCharactersPresent: ["Iris"],
+      requiredFlags: ["irisCh2Complete", "irisKissOthersEnabled"],
+    },
+    dialogue: {
+      id: "iris_kiss_others_rando_3_dialogue",
+      lines: [
+        {
+          speaker: null,
+          text: "Iris is already close when you notice her, one hand on a stranger's collar as she takes a slow kiss and breaks it on her own timing.",
+          expression: "kissingRando3",
+        },
+        {
+          speaker: null,
+          text: "She exhales, re-centers herself, and keeps moving through the room without apology.",
+        },
+      ],
+    },
+  },
+
+  {
+    id: "iris_kiss_others_rando_4",
+    name: "kissingRando4",
+    type: "observation",
+    characterName: "Iris",
+    probability: 20,
+    maxTriggersPerDay: 1,
+    conditions: {
+      locations: ["Cafe", "Mall"],
+      hourRange: { min: 10, max: 22 },
+      requiredCharactersPresent: ["Iris"],
+      requiredFlags: ["irisCh2Complete", "irisKissOthersEnabled"],
+    },
+    dialogue: {
+      id: "iris_kiss_others_rando_4_dialogue",
+      lines: [
+        {
+          speaker: null,
+          text: "By the window, Iris trades a few playful words with a stranger and then closes the distance herself, kissing him with deliberate confidence.",
+          expression: "kissingRando4",
+        },
+        {
+          speaker: null,
+          text: "When it ends, she smooths her hair, checks for you, and leaves the moment behind.",
+        },
+      ],
+    },
+  },
+
+  {
+    id: "iris_kiss_others_rando_5",
+    name: "kissingRando5",
+    type: "observation",
+    characterName: "Iris",
+    probability: 20,
+    maxTriggersPerDay: 1,
+    conditions: {
+      locations: ["Cafe", "Mall"],
+      hourRange: { min: 10, max: 22 },
+      requiredCharactersPresent: ["Iris"],
+      requiredFlags: ["irisCh2Complete", "irisKissOthersEnabled"],
+    },
+    dialogue: {
+      id: "iris_kiss_others_rando_5_dialogue",
+      lines: [
+        {
+          speaker: null,
+          text: "You find Iris near the exit, fingertips at a stranger's jaw while she gives him one final kiss before turning away first.",
+          expression: "kissingRando5",
+        },
+        {
+          speaker: null,
+          text: "She catches your eye on the way out, expression unreadable but intentional.",
+        },
+      ],
     },
   },
 
