@@ -87,7 +87,7 @@ const irisKissChapter2 = makeDialogue("iris_kiss_ch2", [
   {
     speaker: "Iris",
     text: "If we do this, we do it because we chose it. Together.",
-    expression: "love",
+    expression: "kissingMC",
   },
   {
     speaker: null,
@@ -133,7 +133,7 @@ const irisKissChapter3 = makeDialogue("iris_kiss_ch3", [
   {
     speaker: "Iris",
     text: "That felt like a promise.",
-    expression: "love",
+    expression: "kissingMC",
   },
   {
     speaker: null,
@@ -179,7 +179,7 @@ const irisKissChapter4 = makeDialogue("iris_kiss_ch4", [
   {
     speaker: "Iris",
     text: "No more mixed signals.",
-    expression: "love",
+    expression: "kissingMC",
   },
   {
     speaker: null,
@@ -225,7 +225,7 @@ const irisKissChapter5 = makeDialogue("iris_kiss_ch5", [
   {
     speaker: "Iris",
     text: "This is what I wanted. Something real that still feels alive.",
-    expression: "love",
+    expression: "kissingMC",
   },
   {
     speaker: null,

@@ -260,13 +260,13 @@ export const randomEvents: RandomEvent[] = [
 
   {
     id: "iris_workplace_copy_room",
-    name: "Copy Room Confession",
+    name: "Office Confession",
     type: "encounter",
     characterName: "Iris",
     probability: 25,
     probabilityByNeeds: true,
     conditions: {
-      locations: ["University Hallway"],
+      locations: ["Iris' Office"],
       hourRange: { min: 11, max: 17 },
       requiredFlags: ["irisCh2Ev2_Done"],
       blockedFlags: ["irisCh2Ev3_Done", "irisDatePlanned", "irisCh2Complete"],
@@ -277,7 +277,7 @@ export const randomEvents: RandomEvent[] = [
       lines: [
         {
           speaker: null,
-          text: "You step into the copy room as Iris is reloading paper. She looks up and smiles before she remembers where she is.",
+          text: "You step into Iris' office as she is organizing papers by the printer. She looks up and smiles before she remembers where she is.",
         },
         {
           speaker: "Iris",

@@ -12,6 +12,10 @@ const iris_ch2_ev3_sub_dialogue: Dialogue = {
       text: "You catch Iris in the faculty corridor between classes. She hesitates, then pulls you toward an empty classroom door.",
     },
     {
+      speaker: null,
+      text: "She checks both ends of the hall before she lets herself stand close.",
+    },
+    {
       speaker: "Iris",
       text: "We have to be careful. This place is all eyes and rumors.",
       expression: "neutral",
@@ -25,6 +29,32 @@ const iris_ch2_ev3_sub_dialogue: Dialogue = {
       speaker: "Iris",
       text: "I want to be able to look at you without flinching.",
       expression: "shy",
+    },
+    {
+      speaker: "Iris",
+      text: "I can handle judgment about me. I cannot handle a rumor reaching Dawn before I can explain anything.",
+      expression: "neutral",
+    },
+    {
+      speaker: "You",
+      text: "What do you give her first?",
+      choices: [
+        {
+          text: "Reassure her. We set boundaries together.",
+          affectionChange: 1,
+          dominanceChange: -1,
+        },
+        {
+          text: "Take control. We follow your rules and keep moving.",
+          affectionChange: 0,
+          dominanceChange: 1,
+        },
+        {
+          text: "Stay practical. We map risks and avoid easy mistakes.",
+          affectionChange: 0,
+          dominanceChange: 0,
+        },
+      ],
     },
     {
       speaker: "Iris",
@@ -62,8 +92,39 @@ const iris_ch2_ev3_dom_dialogue: Dialogue = {
     { speaker: "Iris", text: "I am done sneaking.", expression: "seductive" },
     {
       speaker: "Iris",
+      text: "I crossed the line with you and I am not walking it back because a hallway makes me nervous.",
+      expression: "neutral",
+    },
+    {
+      speaker: "Iris",
       text: "We stop hiding what this is, or we stop this entirely.",
       expression: "neutral",
+    },
+    {
+      speaker: "Iris",
+      text: "No half-claims. No pretending in public and honesty in private.",
+      expression: "neutral",
+    },
+    {
+      speaker: "You",
+      text: "How do you steady the moment?",
+      choices: [
+        {
+          text: "Match her intensity. Then we own it.",
+          affectionChange: 1,
+          dominanceChange: 1,
+        },
+        {
+          text: "Push back. You do not get to corner me.",
+          affectionChange: -1,
+          dominanceChange: -1,
+        },
+        {
+          text: "Cool it down. We decide this without pressure.",
+          affectionChange: 0,
+          dominanceChange: 0,
+        },
+      ],
     },
     {
       speaker: "Iris",
@@ -121,6 +182,32 @@ const iris_ch2_ev3_neutral_dialogue: Dialogue = {
       speaker: "Iris",
       text: "I do not want to be reckless, but I also do not want to be erased.",
       expression: "shy",
+    },
+    {
+      speaker: "Iris",
+      text: "If we keep this hidden forever, it turns into shame. I do not want that.",
+      expression: "neutral",
+    },
+    {
+      speaker: "You",
+      text: "What do you offer her first?",
+      choices: [
+        {
+          text: "Soft promise. We can be honest without being loud.",
+          affectionChange: 1,
+          dominanceChange: -1,
+        },
+        {
+          text: "Firm frame. We move when I say it is safe.",
+          affectionChange: 0,
+          dominanceChange: 1,
+        },
+        {
+          text: "Balanced. We plan this together, step by step.",
+          affectionChange: 1,
+          dominanceChange: 0,
+        },
+      ],
     },
     {
       speaker: "Iris",

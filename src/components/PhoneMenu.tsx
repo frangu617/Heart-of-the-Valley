@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
-import { getTimeOfDay } from "@/lib/time";
+import { getTimeOfDayLabel } from "@/lib/time";
+import { giftById } from "@/data/gifts";
 import { PlayerStats } from "../data/characters";
 import { Girl } from "../data/characters";
 import { DayOfWeek } from "../data/gameConstants";
@@ -11,6 +12,7 @@ type QuestItem = {
   title: string;
   description?: string;
   location?: string;
+  timing?: string;
   characterName?: string;
 };
 
@@ -26,7 +28,21 @@ interface Props {
   quests?: QuestItem[];
 }
 
-type PhoneTab = "stats" | "contacts" | "gallery" | "messages" | "todo";
+type PhoneTab =
+  | "stats"
+  | "inventory"
+  | "contacts"
+  | "gallery"
+  | "messages"
+  | "todo";
+
+type InventoryEntry = {
+  id: string;
+  name: string;
+  count: number;
+  description: string;
+  details: string;
+};
 
 type StatBarProps = {
   label: string;
@@ -41,6 +57,40 @@ const getStatColor = (value: number, max: number = 100) => {
   if (percentage >= 70) return "bg-green-500";
   if (percentage >= 40) return "bg-yellow-500";
   return "bg-red-500";
+};
+
+const INVENTORY_ITEM_DETAILS: Record<
+  string,
+  { description: string; details: string }
+> = {
+  "Gift Card": {
+    description: "A prepaid mall gift card you found.",
+    details:
+      "Currently a collectible item. Keep it in case future events or dialogue checks need it.",
+  },
+};
+
+const formatGiftEffects = (
+  effects: Partial<{ affection: number; lust: number; mood: number; love: number }>,
+) => {
+  const parts: string[] = [];
+
+  if (typeof effects.affection === "number") {
+    parts.push(
+      `Affection ${effects.affection >= 0 ? "+" : ""}${effects.affection}`,
+    );
+  }
+  if (typeof effects.lust === "number") {
+    parts.push(`Lust ${effects.lust >= 0 ? "+" : ""}${effects.lust}`);
+  }
+  if (typeof effects.mood === "number") {
+    parts.push(`Mood ${effects.mood >= 0 ? "+" : ""}${effects.mood}`);
+  }
+  if (typeof effects.love === "number") {
+    parts.push(`Love ${effects.love >= 0 ? "+" : ""}${effects.love}`);
+  }
+
+  return parts.join(", ");
 };
 
 const StatBar = ({
@@ -105,9 +155,43 @@ export default function PhoneMenu({
     setTimeout(onClose, closeDelayMs);
   };
 
-  const timeOfDay = getTimeOfDay(hour);
-  const timeOfDayLabel =
-    timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1);
+  const timeOfDayLabel = getTimeOfDayLabel(hour);
+  const inventoryEntries = useMemo<InventoryEntry[]>(() => {
+    const counts: Record<string, number> = {};
+    player.inventory.forEach((itemId) => {
+      counts[itemId] = (counts[itemId] ?? 0) + 1;
+    });
+
+    return Object.entries(counts)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([itemId, count]) => {
+        const gift = giftById[itemId];
+        if (gift) {
+          const effectsText = formatGiftEffects(gift.effects);
+          return {
+            id: itemId,
+            name: gift.name,
+            count,
+            description: gift.description,
+            details: effectsText
+              ? `Use: Give it as a gift (${effectsText}).`
+              : "Use: Give it as a gift.",
+          };
+        }
+
+        const knownDetails = INVENTORY_ITEM_DETAILS[itemId];
+        return {
+          id: itemId,
+          name: itemId,
+          count,
+          description:
+            knownDetails?.description ?? "An item in your inventory.",
+          details:
+            knownDetails?.details ??
+            "No specific effect is defined yet, but it may be used by future events.",
+        };
+      });
+  }, [player.inventory]);
 
   return (
     <div
@@ -285,20 +369,20 @@ export default function PhoneMenu({
                               {quest.description}
                             </div>
                           )}
-                          {(quest.location || quest.characterName) && (
+                          {(quest.location || quest.timing || quest.characterName) && (
                             <div
                               className={`text-xs mt-2 ${
                                 darkMode ? "text-gray-400" : "text-gray-600"
                               }`}
                             >
                               {quest.location && (
-                                <span>Location: {quest.location}</span>
+                                <div>Location: {quest.location}</div>
                               )}
-                              {quest.location && quest.characterName && (
-                                <span> - </span>
+                              {quest.timing && (
+                                <div>Time: {quest.timing}</div>
                               )}
                               {quest.characterName && (
-                                <span>Character: {quest.characterName}</span>
+                                <div>Character: {quest.characterName}</div>
                               )}
                             </div>
                           )}
@@ -318,6 +402,91 @@ export default function PhoneMenu({
                   <p>No active to-dos right now</p>
                   <p className="text-sm mt-2">
                     Check back after you meet new conditions
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Inventory Tab */}
+          {activeTab === "inventory" && (
+            <div className="space-y-4 animate-slideUp">
+              <h3
+                className={`text-lg font-bold ${
+                  darkMode ? "text-gray-200" : "text-gray-800"
+                }`}
+              >
+                Inventory
+              </h3>
+              <p
+                className={`text-sm ${
+                  darkMode ? "text-gray-400" : "text-gray-600"
+                }`}
+              >
+                Everything you are carrying and what each item does.
+              </p>
+
+              {inventoryEntries.length > 0 ? (
+                <div className="space-y-3">
+                  {inventoryEntries.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className={`rounded-xl border-2 p-4 ${
+                        darkMode
+                          ? "bg-gray-800 border-purple-700"
+                          : "bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <div
+                            className={`font-bold ${
+                              darkMode ? "text-gray-200" : "text-gray-800"
+                            }`}
+                          >
+                            {entry.name}
+                          </div>
+                          <div
+                            className={`mt-1 text-xs ${
+                              darkMode ? "text-gray-400" : "text-gray-600"
+                            }`}
+                          >
+                            {entry.description}
+                          </div>
+                          <div
+                            className={`mt-2 text-xs ${
+                              darkMode ? "text-purple-300" : "text-purple-700"
+                            }`}
+                          >
+                            {entry.details}
+                          </div>
+                        </div>
+                        {entry.count > 1 && (
+                          <div
+                            className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                              darkMode
+                                ? "bg-purple-900 text-purple-200"
+                                : "bg-purple-100 text-purple-700"
+                            }`}
+                          >
+                            x{entry.count}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div
+                  className={`
+                    text-center py-12
+                    ${darkMode ? "text-gray-500" : "text-gray-400"}
+                  `}
+                >
+                  <div className="text-6xl mb-4">🎒</div>
+                  <p>Your inventory is empty.</p>
+                  <p className="text-sm mt-2">
+                    Buy gifts at the mall or find items through events.
                   </p>
                 </div>
               )}
@@ -567,6 +736,25 @@ export default function PhoneMenu({
           >
             <div className="text-xl">💡</div>
             <div className="text-[10px]">To-Do</div>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("inventory")}
+            className={`
+              flex-1 py-3 px-1 rounded-lg transition-all
+              ${
+                activeTab === "inventory"
+                  ? darkMode
+                    ? "bg-purple-700 text-white"
+                    : "bg-purple-500 text-white"
+                  : darkMode
+                  ? "text-gray-400 hover:bg-gray-700"
+                  : "text-gray-600 hover:bg-gray-200"
+              }
+            `}
+          >
+            <div className="text-xl">🎒</div>
+            <div className="text-[10px]">Items</div>
           </button>
 
           <button

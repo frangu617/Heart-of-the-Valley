@@ -335,6 +335,9 @@ const DIALOGUE_THEMES: Record<string, DialogueTheme> = {
 const normalizeName = (value?: string) => value?.trim().toLowerCase() ?? "";
 const toCasualFallbackImage = (imagePath: string) =>
   imagePath.replace(/\/(date|work)\//, "/casual/");
+const IRIS_KISS_ACTION_PATTERN = /\bkiss(?:es|ed|ing)?\b/i;
+const IRIS_KISS_NON_ACTION_PATTERN =
+  /\b(about the kiss|liked the kiss|say about the kiss|since the kiss|what did it feel like)\b/i;
 
 const resolveThemeKey = (
   characterName?: string,
@@ -352,6 +355,37 @@ const resolveThemeKey = (
     return "default";
   }
   return speakerKey;
+};
+
+const inferExpressionFromLine = (
+  characterName: string | undefined,
+  lineExpression: string | undefined,
+  lineText: string | undefined,
+  lineSpeaker: string | null | undefined
+): string | undefined => {
+  if (lineExpression) {
+    return lineExpression;
+  }
+  if (!lineText) {
+    return undefined;
+  }
+
+  if (normalizeName(characterName) !== "iris") {
+    return undefined;
+  }
+  if (lineSpeaker !== null) {
+    return undefined;
+  }
+
+  const normalizedText = lineText.toLowerCase();
+  if (
+    IRIS_KISS_ACTION_PATTERN.test(normalizedText) &&
+    !IRIS_KISS_NON_ACTION_PATTERN.test(normalizedText)
+  ) {
+    return "kissingMC";
+  }
+
+  return undefined;
 };
 
 export default function DialogueBox({
@@ -592,7 +626,13 @@ export default function DialogueBox({
   );
 
   const getCurrentCharacterImage = () => {
-    if (!characterName || !currentLine?.expression) {
+    const resolvedExpression = inferExpressionFromLine(
+      characterName,
+      currentLine?.expression,
+      currentLine?.text,
+      currentLine?.speaker
+    );
+    if (!characterName || !resolvedExpression) {
       return characterImage; // fallback to original
     }
 
@@ -604,7 +644,7 @@ export default function DialogueBox({
     }
 
     const name = characterName;
-    const expression = currentLine.expression || "neutral";
+    const expression = resolvedExpression;
 
     // Create a minimal Girl object for the getCharacterImage function
     const mockGirl: Girl = {

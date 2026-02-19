@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Girl } from "@/data/characters";
 import { DateLocation, dateActivitiesByLocation } from "@/data/dates";
 import { DayOfWeek, DAYS_OF_WEEK } from "@/data/gameConstants";
+import { showGameNotice } from "@/lib/gameUi";
 
 interface Props {
   girl: Girl;
@@ -106,12 +107,16 @@ export default function DatePlanner({
 
   const handleSchedule = () => {
     if (!canAfford) {
-      alert(`You need $${totalCost} for this date!`);
+      showGameNotice(`You need $${totalCost} for this date!`, {
+        tone: "warning",
+      });
       return;
     }
 
     if (selectedActivities.length === 0) {
-      alert("Please select at least one activity!");
+      showGameNotice("Please select at least one activity!", {
+        tone: "warning",
+      });
       return;
     }
 

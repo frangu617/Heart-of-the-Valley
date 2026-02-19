@@ -94,6 +94,10 @@ const irisFinaleDomSuccess: Dialogue = {
       text: "She moves her hand up to your neck, her thumb grazing your pulse point. Her voice drops, thick with something she's trying to suppress.",
     },
     {
+      speaker: null,
+      text: "You catch the faint scent of wine on her breath, just enough to dull her usual restraint.",
+    },
+    {
       speaker: "Iris",
       text: "I've been thinking about you. About how much you hold back.",
       expression: "seductive",
@@ -109,13 +113,18 @@ const irisFinaleDomSuccess: Dialogue = {
     {
       speaker: null,
       text: "Before you can respond, she kisses you. It's not a question; it's a demand.",
+      expression: "kissingMC",
     },
     {
       speaker: null,
       text: "Her lips are hungry, pressing against yours with a desperate energy. It feels like she's losing a fight with herself, and you're the collateral damage.",
     },
     { speaker: null, text: "For a moment, you surrender to it, the heat between you spiking." },
-    { speaker: null, text: "Then, she breaks the kiss abruptly." },
+    {
+      speaker: null,
+      text: "Then, she breaks the kiss abruptly.",
+      expression: "kissingMC",
+    },
     {
       speaker: null,
       text: "She stares at you, chest heaving, eyes wide as the reality of what she just did crashes in.",
@@ -284,6 +293,10 @@ const irisFinaleSubSuccess: Dialogue = {
     },
     { speaker: "You", text: "Then let's make something happen." },
     { speaker: null, text: "She shudders under your touch, her breath hitching." },
+    {
+      speaker: null,
+      text: "There is a warm sweetness to her breath, a hint she is a little tipsy and done pretending she is in control.",
+    },
     { speaker: "You", text: "Iris. Look at me." },
     {
       speaker: null,
@@ -293,6 +306,7 @@ const irisFinaleSubSuccess: Dialogue = {
     {
       speaker: null,
       text: "You kiss her deeply, swallowing her surprise. You kiss her with intent, possessive and firm, letting her know exactly where she stands.",
+      expression: "kissingMC",
     },
     {
       speaker: null,

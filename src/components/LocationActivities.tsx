@@ -12,6 +12,7 @@ import {
   applyPlayerStatDelta,
   STARVING_HUNGER_THRESHOLD,
 } from "@/lib/playerStats";
+import { showGameNotice } from "@/lib/gameUi";
 import GiftModal from "./GiftModal";
 import { Gift, gifts } from "@/data/gifts";
 import { getScheduledLocation } from "@/lib/schedule";
@@ -76,12 +77,22 @@ export default function LocationActivitiesPanel({
   onPassOut,
 }: Props) {
   const baseActivities: Activity[] = activitiesMap[location] ?? [];
+  const waitActivity: Activity = {
+    id: "universal_wait",
+    name: "Wait",
+    icon: "⏳",
+    description: "Kill a little time and wait for the next hour.",
+    timeCost: 1,
+    statEffects: {},
+  };
   const [showGiftShop, setShowGiftShop] = useState(false);
   const giftStoreTimeCost =
     baseActivities.find((act) => act.name === "Gift Store")?.timeCost ?? 1;
   const giftStoreEntries = gifts.map((gift) => ({ gift, count: 0 }));
 
-  const activities = [...baseActivities];
+  const activities = baseActivities.some((activity) => activity.name === "Wait")
+    ? [...baseActivities]
+    : [...baseActivities, waitActivity];
   const testingEnvironmentByActivityId: Record<string, TestingEnvironment> = {
     test_env_casual: "casual",
     test_env_university: "university",
@@ -157,6 +168,10 @@ export default function LocationActivitiesPanel({
     activity.statEffects.hunger < 0;
 
   const getRequirementFailures = (activity: Activity): RequirementFailure[] => {
+    if (activity.name === "Wait") {
+      return [];
+    }
+
     const failures: RequirementFailure[] = [];
     const requirements = activity.requirements;
 
@@ -236,6 +251,8 @@ export default function LocationActivitiesPanel({
   }
 
   const doActivity = (act: Activity) => {
+    const isEatingActivity = activityReducesHunger(act);
+
     const selectedTestingEnvironment =
       act.id ? testingEnvironmentByActivityId[act.id] : undefined;
     if (
@@ -257,13 +274,15 @@ export default function LocationActivitiesPanel({
       act.name === "Teach Class" &&
       irisIsTeachingInClassroom
     ) {
-      alert("Iris is currently teaching this class.");
+      showGameNotice("Iris is currently teaching this class.", {
+        tone: "warning",
+      });
       return;
     }
 
     const failures = getRequirementFailures(act);
     if (failures.length > 0) {
-      alert(failures[0].alert);
+      showGameNotice(failures[0].alert, { tone: "warning" });
       return;
     }
 
@@ -285,6 +304,9 @@ export default function LocationActivitiesPanel({
       };
     } else if (act.name === "Swim") {
       next = applyPlayerStatDelta(next, { hygiene: -25 });
+    }
+    if (isEatingActivity) {
+      next = applyPlayerStatDelta(next, { energy: 20 });
     }
 
     if (next.sobriety <= 0) {
@@ -324,7 +346,7 @@ export default function LocationActivitiesPanel({
     }
 
     spendTime(act.timeCost ?? 1, next, {
-      skipHungerGain: activityReducesHunger(act),
+      skipHungerGain: isEatingActivity,
       hungerGainMultiplier: isSleepActivity(act) ? 0.25 : 1,
     });
 
@@ -353,7 +375,7 @@ export default function LocationActivitiesPanel({
 
     if (location === "Car Store" && act.name === "Buy Car") {
       onSetFlag?.("hasCar");
-      alert("You bought a car.");
+      showGameNotice("You bought a car.", { tone: "success" });
     }
 
     showActivityFeedback(act);
@@ -518,7 +540,9 @@ export default function LocationActivitiesPanel({
           onCancel={() => setShowGiftShop(false)}
           onSelect={(gift: Gift) => {
             if (player.money < gift.cost) {
-              alert(`You need $${gift.cost} for that gift.`);
+              showGameNotice(`You need $${gift.cost} for that gift.`, {
+                tone: "warning",
+              });
               return;
             }
             const next = {

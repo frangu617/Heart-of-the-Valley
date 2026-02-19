@@ -758,6 +758,14 @@ export const locationActivities: Record<string, LocationActivity[]> = {
       timeCost: 0,
       statEffects: { mood: 5 },
     },
+    {
+      name: "Cafeteria Meal",
+      icon: "🍽️",
+      description: "Grab a full meal on campus",
+      timeCost: 1,
+      statEffects: { hunger: -80, mood: 10, money: -10 },
+      requirements: { minMoney: 10 },
+    },
   ],
   Classroom: [
     {

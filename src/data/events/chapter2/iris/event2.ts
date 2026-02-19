@@ -19,6 +19,16 @@ const iris_ch2_ev2_sub_dialogue: Dialogue = {
         { speaker: "Iris", text: "After last night, I could not focus on work.", expression: "neutral" },
         { speaker: "Iris", text: "I kept replaying it.", expression: "shy" },
         { speaker: "Iris", text: "Part of me felt brave. Part of me felt reckless.", expression: "neutral" },
+        {
+          speaker: "Iris",
+          text: "I had a couple glasses of wine before I saw you. It lowered my guard more than I expected.",
+          expression: "shy",
+        },
+        {
+          speaker: "Iris",
+          text: "I am not blaming it. I still chose you. I just... chose you loudly.",
+          expression: "neutral",
+        },
         { speaker: "You", text: "How do you answer?", choices: [
             { text: "Reassure her. \"It felt right.\"", affectionChange: 1, lustChange: 1, dominanceChange: -1 },
             { text: "Keep it light. \"We did not hurt anyone.\"", affectionChange: 0, lustChange: 0, dominanceChange: 0 },
@@ -75,6 +85,11 @@ const iris_ch2_ev2_dom_dialogue: Dialogue = {
         { speaker: "Iris", text: "Good.", expression: "happy" },
         { speaker: "Iris", text: "I like it when you do not hesitate.", expression: "seductive" },
         { speaker: "Iris", text: "About last night...", expression: "neutral" },
+        {
+          speaker: "Iris",
+          text: "I had wine in my system and no patience left for pretending.",
+          expression: "neutral",
+        },
         { speaker: "Iris", text: "I took control and you let me.", expression: "neutral" },
         { speaker: "Iris", text: "Tell me that was not a mistake.", expression: "neutral" },
         { speaker: "You", text: "What do you say?", choices: [
@@ -102,7 +117,11 @@ const iris_ch2_ev2_dom_dialogue: Dialogue = {
             { text: "Meet her halfway.", affectionChange: 1, lustChange: 0, dominanceChange: 0 },
             { text: "Playfully stop her.", affectionChange: -1, lustChange: 0, dominanceChange: -1 }
         ]},
-        { speaker: null, text: "Iris leans in and steals a kiss, slow and deliberate." },
+        {
+          speaker: null,
+          text: "Iris leans in and steals a kiss, slow and deliberate.",
+          expression: "kissingMC",
+        },
         { speaker: null, text: "Her eyes linger on you for a beat longer than necessary." },
         { speaker: "Iris", text: "That is for later.", expression: "happy" },
         { speaker: "Iris", text: "Text me when you are free.", expression: "neutral" },
@@ -131,6 +150,11 @@ const iris_ch2_ev2_neutral_dialogue: Dialogue = {
         { speaker: "Iris", text: "I could get used to this kind of coincidence.", expression: "happy" },
         { speaker: "Iris", text: "It has been a strange week.", expression: "neutral" },
         { speaker: "Iris", text: "Last night made it stranger.", expression: "shy" },
+        {
+          speaker: "Iris",
+          text: "I was a little tipsy, and it made it easier to cross lines I had been staring at for weeks.",
+          expression: "shy",
+        },
         { speaker: "Iris", text: "I keep thinking about it.", expression: "neutral" },
         { speaker: "Iris", text: "And I keep wondering if you regret it.", expression: "neutral" },
         { speaker: "You", text: "What do you say?", choices: [

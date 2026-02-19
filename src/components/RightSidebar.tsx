@@ -27,6 +27,7 @@ type Props = {
     girlEffects?: Partial<GirlStats>
   ) => void;
   dayOfWeek: DayOfWeek;
+  dayCount: number;
   hour: number;
   eventState: CharacterEventState | null;
   onEventTriggered: (eventId: string, girlName?: string) => void;
@@ -65,6 +66,7 @@ export default function RightSidebar({
   onCloseSelectedGirl,
   onStartDialogue,
   dayOfWeek,
+  dayCount,
   hour,
   eventState,
   onEventTriggered,
@@ -97,6 +99,7 @@ export default function RightSidebar({
           onClose={onCloseSelectedGirl}
           onStartDialogue={onStartDialogue}
           dayOfWeek={dayOfWeek}
+          dayCount={dayCount}
           hour={hour}
           eventState={eventState}
           onEventTriggered={onEventTriggered}

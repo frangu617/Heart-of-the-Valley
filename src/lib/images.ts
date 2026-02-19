@@ -14,9 +14,11 @@ type LocationCategory =
   | "work"
   | "nun";
 
-type RelationshipStance = "neutral" | "shy" | "confident" | "love" | "intimate";
+type RelationshipStance = "neutral" | "shy" | "flirty" | "love" | "intimate";
 const EXPRESSION_ASSET_ALIASES: Record<string, string> = {
   love: "seductive",
+  confident: "flirty",
+  kissingmc: "kissingMC",
 };
 
 export const resolveExpressionAssetName = (expression: string) =>
@@ -64,7 +66,7 @@ export function getRelationshipStance(girl: Girl): RelationshipStance {
 
   if (love >= 60) return "love";
   if (affection >= 50 && lust >= 40) return "intimate";
-  if (affection >= 30) return "confident";
+  if (affection >= 30) return "flirty";
   if (affection >= 15 || lust >= 20) return "shy";
   return "neutral";
 }

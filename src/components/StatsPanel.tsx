@@ -1,4 +1,4 @@
-import { getTimeOfDay } from "@/lib/time";
+import { getTimeOfDayLabel } from "@/lib/time";
 import { PlayerStats } from "../data/characters";
 import { DayOfWeek } from "../data/gameConstants";
 
@@ -72,9 +72,7 @@ export default function StatsPanel({
   darkMode = true,
   onSave,
 }: Props) {
-  const timeOfDay = getTimeOfDay(hour);
-  const timeOfDayLabel =
-    timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1);
+  const timeOfDayLabel = getTimeOfDayLabel(hour);
   const hungerBarValue = Math.max(0, Math.min(100, 100 - stats.hunger));
 
   return (

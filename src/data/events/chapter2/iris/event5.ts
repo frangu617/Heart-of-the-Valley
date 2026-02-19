@@ -14,13 +14,15 @@ const iris_ch2_date_encounter_sub: Dialogue = {
     {
       speaker: null,
       text: "A woman with Iris's dark hair is waiting near the spot, back to you.",
+      imageSlide: "/images/characters/dawn/date/back.webp",
     },
     { speaker: "You", text: "Iris?" },
     {
       speaker: null,
       text: "She turns. It's not Iris. It's a younger woman, her face framed by the same dark hair, but her eyes hold a mischievous glint as they flick to your mouth.",
+      imageSlide: "/images/characters/dawn/date/neutral.webp",
     },
-    { speaker: "???", text: "...", expression: "happy" },
+    { speaker: "???", text: "...", imageSlide: "/images/characters/dawn/date/happy.webp" },
     { speaker: "You", text: "Oh, I'm so sorry. I thought you were someone else." },
     {
       speaker: null,
@@ -87,13 +89,15 @@ const iris_ch2_date_encounter_dom: Dialogue = {
     {
       speaker: null,
       text: "You spot a familiar silhouette and walk up behind her with a hand at her lower back.",
+      imageSlide: "/images/characters/dawn/date/back.webp",
     },
     { speaker: "You", text: "There you are." },
     {
       speaker: null,
       text: "The woman turns. It's not Iris. It's a younger woman, her face framed by the same dark hair, but her eyes hold a challenging glint that dares you to react.",
+      imageSlide: "/images/characters/dawn/date/neutral.webp",
     },
-    { speaker: "???", text: "...", expression: "happy" },
+    { speaker: "???", text: "...", imageSlide: "/images/characters/dawn/date/happy.webp" },
     { speaker: "You", text: "Oh. My mistake. I thought you were someone else." },
     {
       speaker: null,
@@ -112,13 +116,15 @@ const iris_ch2_date_encounter_neutral: Dialogue = {
     {
       speaker: null,
       text: "Someone with the same dark hair is leaning there, and you step up beside her.",
+      imageSlide: "/images/characters/dawn/date/back.webp",
     },
     { speaker: "You", text: "Hey-ready to order?" },
     {
       speaker: null,
       text: "She turns. It's not Iris. It's a younger woman, her face framed by the same dark hair, her eyes filled with curiosity that lingers a beat too long.",
+      imageSlide: "/images/characters/dawn/date/neutral.webp",
     },
-    { speaker: "???", text: "...", expression: "happy" },
+    { speaker: "???", text: "...", imageSlide: "/images/characters/dawn/date/happy.webp" },
     { speaker: "You", text: "Sorry about that. I mistook you for my date." },
     {
       speaker: null,
@@ -228,6 +234,7 @@ export const irisEvent5Events: CharacterEvent[] = [
         {
           speaker: null,
           text: "By the time you walk her home, she lingers at her door and kisses you slowly, trusting and unhurried.",
+          expression: "kissingMC",
         },
       ],
     },
@@ -329,6 +336,7 @@ export const irisEvent5Events: CharacterEvent[] = [
         {
           speaker: null,
           text: "The date stays electric to the end, finishing with a fierce, possessive kiss at her door that leaves both of you breathless.",
+          expression: "kissingMC",
         },
       ],
     },
@@ -423,6 +431,7 @@ export const irisEvent5Events: CharacterEvent[] = [
         {
           speaker: null,
           text: "The date ends with a soft, intimate kiss at her door, lingering just long enough to promise more.",
+          expression: "kissingMC",
         },
       ],
     },
