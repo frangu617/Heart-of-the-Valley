@@ -58,6 +58,7 @@ import {
   type GameNoticePayload,
   type GameNoticeTone,
 } from "@/lib/gameUi";
+import { startImageManifestPreload } from "@/lib/imagePreload";
 
 // Data / Types
 
@@ -609,6 +610,7 @@ export default function GamePage() {
   const confirmQueueRef = useRef<PendingGameConfirm[]>([]);
   const irisKissOthersPromptedRef = useRef(false);
   const pendingAutoSaveRef = useRef(false);
+  const imagePreloadStartedRef = useRef(false);
 
   const applyDebugVitalsProtection = useCallback(
     (nextPlayer: PlayerStats, previousPlayer: PlayerStats): PlayerStats => {
@@ -646,6 +648,12 @@ export default function GamePage() {
       current.resolve(confirmed);
       return confirmQueueRef.current.shift() ?? null;
     });
+  }, []);
+
+  useEffect(() => {
+    if (imagePreloadStartedRef.current) return;
+    imagePreloadStartedRef.current = true;
+    startImageManifestPreload();
   }, []);
 
   useEffect(() => {
