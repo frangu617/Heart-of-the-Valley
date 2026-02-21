@@ -70,8 +70,25 @@ export type RandomEvent = {
     item?: string;
     playerStats?: Partial<PlayerStats>;
     girlAffection?: Record<string, number>; // { "Iris": +5 }
+    girlStats?: Record<string, Partial<GirlStats>>;
   };
 };
+
+const IRIS_KISS_LOCATIONS_NON_UNIVERSITY = [
+  "Cafe",
+  "Mall",
+  "City",
+  "Gym",
+  "Beach",
+  "Nightclub",
+];
+
+const IRIS_KISS_LOCATIONS_WITH_UNIVERSITY = [
+  ...IRIS_KISS_LOCATIONS_NON_UNIVERSITY,
+  "University Hallway",
+  "Iris' Office",
+  "University Parking Lot",
+];
 
 export const randomEvents: RandomEvent[] = [
   // === LUCK EVENTS ===
@@ -203,164 +220,104 @@ export const randomEvents: RandomEvent[] = [
   },
 
   {
-    id: "iris_workplace_hallway_whisper",
-    name: "Hallway Whisper",
+    id: "iris_ch2_pre_confrontation_daily_kiss",
+    name: "Stolen Moment",
     type: "encounter",
     characterName: "Iris",
-    probability: 25,
-    probabilityByNeeds: true,
+    probability: 50,
+    probabilityByGirlStat: {
+      girlName: "Iris",
+      stat: "lust",
+      multiplier: 0.75,
+      max: 92,
+    },
+    maxTriggersPerDay: 1,
     conditions: {
-      locations: ["University Hallway"],
-      hourRange: { min: 9, max: 15 },
-      requiredFlags: ["irisCh2Ev2_Done"],
+      locations: IRIS_KISS_LOCATIONS_NON_UNIVERSITY,
+      hourRange: { min: 9, max: 23 },
+      requiredFlags: ["irisCh2Ev1_Done"],
       blockedFlags: ["irisCh2Ev3_Done", "irisDatePlanned", "irisCh2Complete"],
       requiredCharactersPresent: ["Iris"],
+      minGirlStat: {
+        girlName: "Iris",
+        stat: "lust",
+        value: 15,
+      },
     },
     dialogue: {
-      id: "iris_workplace_hallway_whisper_dialogue",
+      id: "iris_ch2_pre_confrontation_daily_kiss_dialogue",
       lines: [
         {
           speaker: null,
-          text: "You round a corner in the hallway and nearly collide with Iris. She catches your arm and pulls you into the shadow of a bulletin board.",
+          text: "Iris catches your eye across the room, closes the gap, and pauses just long enough to make sure you do not pull away.",
         },
         {
           speaker: "Iris",
-          text: "We should not be doing this here.",
-          expression: "shy",
-        },
-        {
-          speaker: "You",
-          text: "Then why did you pull me in?",
-        },
-        {
-          speaker: "Iris",
-          text: "Because I could not walk past you like nothing happened.",
-          expression: "neutral",
-        },
-        {
-          speaker: null,
-          text: "Her fingers linger on your sleeve. She glances down the hall, then back to you.",
-        },
-        {
-          speaker: "Iris",
-          text: "Just... a second.",
+          text: "I was trying to be normal for five minutes. I failed.",
           expression: "shy",
         },
         {
           speaker: null,
-          text: "She leans in and brushes a quick, secret kiss against your lips before stepping away.",
+          text: "She gives you a quick, heated kiss, then slips away before anyone can read too much into it.",
+          expression: "kissingMC",
         },
       ],
     },
     rewards: {
       girlAffection: { Iris: 1 },
-      playerStats: { mood: 2 },
+      girlStats: { Iris: { lust: 3 } },
+      playerStats: { mood: 1 },
     },
   },
 
   {
-    id: "iris_workplace_copy_room",
-    name: "Office Confession",
+    id: "iris_ch2_post_confrontation_daily_kiss",
+    name: "No More Pretending",
     type: "encounter",
     characterName: "Iris",
-    probability: 25,
-    probabilityByNeeds: true,
+    probability: 54,
+    probabilityByGirlStat: {
+      girlName: "Iris",
+      stat: "lust",
+      multiplier: 0.8,
+      max: 94,
+    },
+    maxTriggersPerDay: 1,
     conditions: {
-      locations: ["Iris' Office"],
-      hourRange: { min: 11, max: 17 },
-      requiredFlags: ["irisCh2Ev2_Done"],
-      blockedFlags: ["irisCh2Ev3_Done", "irisDatePlanned", "irisCh2Complete"],
+      locations: IRIS_KISS_LOCATIONS_WITH_UNIVERSITY,
+      hourRange: { min: 9, max: 23 },
+      requiredFlags: ["irisCh2Ev3_Done"],
+      blockedFlags: ["irisDatePlanned", "irisCh2Complete"],
       requiredCharactersPresent: ["Iris"],
+      minGirlStat: {
+        girlName: "Iris",
+        stat: "lust",
+        value: 15,
+      },
     },
     dialogue: {
-      id: "iris_workplace_copy_room_dialogue",
+      id: "iris_ch2_post_confrontation_daily_kiss_dialogue",
       lines: [
         {
           speaker: null,
-          text: "You step into Iris' office as she is organizing papers by the printer. She looks up and smiles before she remembers where she is.",
+          text: "Iris steps into your path, steadier now, but no less intense when she looks at you.",
         },
         {
           speaker: "Iris",
-          text: "Hi. I should not be happy to see you here.",
-          expression: "shy",
-        },
-        {
-          speaker: "You",
-          text: "And yet you are.",
-        },
-        {
-          speaker: null,
-          text: "The copier hums, masking your voices. Iris inches closer, careful but drawn in.",
-        },
-        {
-          speaker: "Iris",
-          text: "We are going to get in trouble.",
+          text: "I am done acting like this did not happen.",
           expression: "neutral",
         },
         {
-          speaker: "You",
-          text: "Then let us be quick.",
-        },
-        {
           speaker: null,
-          text: "She gives you a soft, fleeting kiss and immediately steps back to her papers.",
+          text: "She kisses you in full view of the moment, then exhales like a weight finally lifted.",
+          expression: "kissingMC",
         },
       ],
     },
     rewards: {
       girlAffection: { Iris: 1 },
-      playerStats: { mood: 2 },
-    },
-  },
-
-  {
-    id: "iris_workplace_parking_lot",
-    name: "Parking Lot Goodbye",
-    type: "encounter",
-    characterName: "Iris",
-    probability: 25,
-    probabilityByNeeds: true,
-    conditions: {
-      locations: ["University Parking Lot"],
-      hourRange: { min: 15, max: 19 },
-      requiredFlags: ["irisCh2Ev2_Done"],
-      blockedFlags: ["irisCh2Ev3_Done", "irisDatePlanned", "irisCh2Complete"],
-      requiredCharactersPresent: ["Iris"],
-    },
-    dialogue: {
-      id: "iris_workplace_parking_lot_dialogue",
-      lines: [
-        {
-          speaker: null,
-          text: "You spot Iris by her car, arms full of books. She pauses when she sees you and waits for the lot to clear.",
-        },
-        {
-          speaker: "Iris",
-          text: "We should not do this out here.",
-          expression: "neutral",
-        },
-        {
-          speaker: "You",
-          text: "Then say goodbye and walk away.",
-        },
-        {
-          speaker: null,
-          text: "She steps in close anyway, eyes soft.",
-        },
-        {
-          speaker: "Iris",
-          text: "I cannot seem to.",
-          expression: "shy",
-        },
-        {
-          speaker: null,
-          text: "She gives you a small, careful kiss, then backs away with a nervous smile.",
-        },
-      ],
-    },
-    rewards: {
-      girlAffection: { Iris: 1 },
-      playerStats: { mood: 2 },
+      girlStats: { Iris: { lust: 3 } },
+      playerStats: { mood: 1 },
     },
   },
 
@@ -369,13 +326,25 @@ export const randomEvents: RandomEvent[] = [
     name: "Claimed In Passing",
     type: "encounter",
     characterName: "Iris",
-    probability: 62,
+    probability: 56,
+    probabilityByGirlStat: {
+      girlName: "Iris",
+      stat: "lust",
+      multiplier: 0.8,
+      max: 95,
+    },
     maxTriggersPerDay: 1,
     conditions: {
-      locations: ["University Hallway", "University Parking Lot", "Cafe", "Mall"],
+      locations: IRIS_KISS_LOCATIONS_WITH_UNIVERSITY,
       hourRange: { min: 9, max: 22 },
       requiredCharactersPresent: ["Iris"],
       requiredFlags: ["irisDomAcceptedKissLoopActive", "irisDatePlanned"],
+      blockedFlags: ["irisCh2Complete"],
+      minGirlStat: {
+        girlName: "Iris",
+        stat: "lust",
+        value: 15,
+      },
     },
     dialogue: {
       id: "iris_dom_accepted_daily_kiss_dialogue",
@@ -402,6 +371,7 @@ export const randomEvents: RandomEvent[] = [
     },
     rewards: {
       girlAffection: { Iris: 1 },
+      girlStats: { Iris: { lust: 3 } },
       playerStats: { mood: 1 },
     },
   },
@@ -664,13 +634,25 @@ export const randomEvents: RandomEvent[] = [
     name: "Exclusive Habit",
     type: "encounter",
     characterName: "Iris",
-    probability: 62,
+    probability: 56,
+    probabilityByGirlStat: {
+      girlName: "Iris",
+      stat: "lust",
+      multiplier: 0.8,
+      max: 95,
+    },
     maxTriggersPerDay: 1,
     conditions: {
-      locations: ["University Hallway", "University Parking Lot", "Cafe", "Mall"],
-      hourRange: { min: 9, max: 22 },
+      locations: IRIS_KISS_LOCATIONS_WITH_UNIVERSITY,
+      hourRange: { min: 9, max: 23 },
       requiredCharactersPresent: ["Iris"],
       requiredFlags: ["irisDomDeniedExclusive", "irisDatePlanned"],
+      blockedFlags: ["irisCh2Complete"],
+      minGirlStat: {
+        girlName: "Iris",
+        stat: "lust",
+        value: 15,
+      },
     },
     dialogue: {
       id: "iris_dom_denied_player_kiss_exclusive_dialogue",
@@ -688,6 +670,7 @@ export const randomEvents: RandomEvent[] = [
     },
     rewards: {
       girlAffection: { Iris: 1 },
+      girlStats: { Iris: { lust: 3 } },
       playerStats: { mood: 1 },
     },
   },
@@ -697,13 +680,25 @@ export const randomEvents: RandomEvent[] = [
     name: "Shared Current",
     type: "encounter",
     characterName: "Iris",
-    probability: 62,
+    probability: 56,
+    probabilityByGirlStat: {
+      girlName: "Iris",
+      stat: "lust",
+      multiplier: 0.8,
+      max: 95,
+    },
     maxTriggersPerDay: 1,
     conditions: {
-      locations: ["University Hallway", "University Parking Lot", "Cafe", "Mall", "City"],
+      locations: IRIS_KISS_LOCATIONS_WITH_UNIVERSITY,
       hourRange: { min: 9, max: 23 },
       requiredCharactersPresent: ["Iris"],
       requiredFlags: ["irisDomDeniedExplore", "irisDatePlanned"],
+      blockedFlags: ["irisCh2Complete"],
+      minGirlStat: {
+        girlName: "Iris",
+        stat: "lust",
+        value: 15,
+      },
     },
     dialogue: {
       id: "iris_dom_denied_player_kiss_shared_dialogue",
@@ -725,6 +720,7 @@ export const randomEvents: RandomEvent[] = [
     },
     rewards: {
       girlAffection: { Iris: 1 },
+      girlStats: { Iris: { lust: 3 } },
       playerStats: { mood: 1 },
     },
   },
@@ -734,13 +730,24 @@ export const randomEvents: RandomEvent[] = [
     name: "Still Ours",
     type: "encounter",
     characterName: "Iris",
-    probability: 65,
+    probability: 60,
+    probabilityByGirlStat: {
+      girlName: "Iris",
+      stat: "lust",
+      multiplier: 0.8,
+      max: 96,
+    },
     maxTriggersPerDay: 1,
     conditions: {
-      locations: ["University Hallway", "University Parking Lot", "Cafe", "Mall"],
+      locations: IRIS_KISS_LOCATIONS_WITH_UNIVERSITY,
       hourRange: { min: 9, max: 22 },
       requiredCharactersPresent: ["Iris"],
       requiredFlags: ["irisCh2Complete", "irisDatePlanned"],
+      minGirlStat: {
+        girlName: "Iris",
+        stat: "lust",
+        value: 15,
+      },
     },
     dialogue: {
       id: "iris_post_ch2_player_kiss_daily_dialogue",
@@ -759,6 +766,7 @@ export const randomEvents: RandomEvent[] = [
     },
     rewards: {
       girlAffection: { Iris: 1 },
+      girlStats: { Iris: { lust: 3 } },
       playerStats: { mood: 1 },
     },
   },

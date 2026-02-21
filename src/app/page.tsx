@@ -2537,23 +2537,25 @@ export default function GamePage() {
 
     if (rewards.girlAffection) {
       Object.entries(rewards.girlAffection).forEach(([girlName, change]) => {
-        const override = girlStatsOverrides[girlName] || {};
-        const girl = girls.find((g) => g.name === girlName);
-        if (!girl) return;
-
-        const currentStats = { ...girl.stats, ...override };
-        const newAffection = (currentStats.affection ?? 0) + change;
-        const cappedStats = clampGirlStatsToCaps(girlName, {
-          ...currentStats,
-          affection: newAffection,
-        });
-        setGirlStatsOverrides((prev) => ({
-          ...prev,
-          [girlName]: cappedStats,
-        }));
+        applyGirlStatDelta(girlName, { affection: change });
         console.log(
           `💕 ${girlName} affection: ${change > 0 ? "+" : ""}${change}`,
         );
+      });
+    }
+
+    if (rewards.girlStats) {
+      Object.entries(rewards.girlStats).forEach(([girlName, delta]) => {
+        if (!delta) return;
+        applyGirlStatDelta(girlName, delta);
+
+        const summary = Object.entries(delta)
+          .filter(([, value]) => typeof value === "number")
+          .map(([stat, value]) => `${stat}: ${value > 0 ? "+" : ""}${value}`)
+          .join(", ");
+        if (summary) {
+          console.log(`📈 ${girlName} stats: ${summary}`);
+        }
       });
     }
 
