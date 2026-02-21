@@ -17,6 +17,7 @@ type LocationCategory =
 type RelationshipStance = "neutral" | "shy" | "flirty" | "love" | "intimate";
 const EXPRESSION_ASSET_ALIASES: Record<string, string> = {
   love: "seductive",
+  intimate: "seductive",
   confident: "flirty",
   kissingmc: "kissingMC",
 };

@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import Image from "next/image";
+import Image from "@/components/FallbackImage";
 
 interface Props {
   onLogin: (username: string, password: string) => boolean;

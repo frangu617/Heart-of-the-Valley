@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/FallbackImage";
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Dialogue,

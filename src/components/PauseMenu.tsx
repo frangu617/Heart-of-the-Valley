@@ -62,7 +62,7 @@ export default function PauseMenu({
           </button>
 
           <button
-            onClick={() => handleClose(onMainMenu)}
+            onClick={onMainMenu}
             className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold text-xl py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
           >
             <span>🏠</span>

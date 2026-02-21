@@ -8,6 +8,7 @@ interface Props {
   dayOfWeek: DayOfWeek;
   darkMode?: boolean;
   onSave?: () => void;
+  className?: string;
 }
 
 type StatBarProps = {
@@ -71,17 +72,18 @@ export default function StatsPanel({
   dayOfWeek,
   darkMode = true,
   onSave,
+  className = "",
 }: Props) {
   const timeOfDayLabel = getTimeOfDayLabel(hour);
   const hungerBarValue = Math.max(0, Math.min(100, 100 - stats.hunger));
 
   return (
     <div
-      className={`rounded-2xl shadow-xl p-6 space-y-4 border-2 sticky top-4 transition-colors duration-300 min-w-[180px] min-h-[600px] max-h-[calc(100vh-2rem)] overflow-y-auto ${
+      className={`rounded-2xl shadow-xl p-6 space-y-4 border-2 transition-colors duration-300 min-w-[180px] min-h-[600px] max-h-[calc(100vh-8rem)] overflow-y-auto ${
         darkMode
           ? "bg-gray-800 border-purple-700"
           : "bg-white border-purple-100"
-      }`}
+      } ${className}`}
     >
       {/* Time Display */}
       <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-4 text-white text-center">

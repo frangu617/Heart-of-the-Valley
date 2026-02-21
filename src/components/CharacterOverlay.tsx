@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/FallbackImage";
 // src/components/CharacterOverlay.tsx - Updated with event system
 import { Girl, GirlStats, PlayerStats } from "../data/characters";
 import { Interaction, interactionMenu } from "../data/interactions";

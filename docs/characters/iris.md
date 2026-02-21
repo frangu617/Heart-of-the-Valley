@@ -69,6 +69,9 @@
 4. Pre-date convergence beat (new): route-specific fallout and recommitment before the date.
 5. Nightclub date and the mystery girl sighting raise stakes.
 
+**Readable Story Version**
+- Chapter 2 choose-your-own-adventure draft: `docs/characters/iris-chapter2-cyoa.md`
+
 **Current Implementation Status (2026-02-13)**
 - Completed in code:
 - Chapter 1 Iris chain is implemented (event1 through event6).

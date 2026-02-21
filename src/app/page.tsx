@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+  type ReactNode,
+} from "react";
 import { createPortal } from "react-dom";
 
 // Components
@@ -14,7 +21,6 @@ import PauseMenu from "../components/PauseMenu";
 import DialogueBox from "../components/DialogueBox";
 import PhoneMenu from "../components/PhoneMenu";
 import TutorialOverlay from "../components/TutorialOverlay";
-import GameHeader from "../components/GameHeader";
 import SceneView from "../components/SceneView";
 import LocationPanels from "../components/LocationPanels";
 import RightSidebar from "../components/RightSidebar";
@@ -501,6 +507,35 @@ const getDialogueCharacterImageLocationOverride = (
 
   return undefined;
 };
+
+type IconHoverButtonProps = {
+  label: string;
+  onClick: () => void;
+  children: ReactNode;
+  className?: string;
+};
+
+const IconHoverButton = ({
+  label,
+  onClick,
+  children,
+  className = "",
+}: IconHoverButtonProps) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-label={label}
+    title={label}
+    className={`group flex h-11 w-11 shrink-0 items-center overflow-hidden rounded-lg border border-purple-500/70 bg-purple-900/60 px-3 text-purple-100 shadow-md transition-all duration-200 hover:w-32 hover:bg-purple-800/70 focus-visible:w-32 focus-visible:bg-purple-800/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 ${className}`}
+  >
+    <span className="flex h-5 w-5 shrink-0 items-center justify-center">
+      {children}
+    </span>
+    <span className="ml-2 whitespace-nowrap text-sm font-semibold opacity-0 translate-x-2 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100">
+      {label}
+    </span>
+  </button>
+);
 
 export default function GamePage() {
   // States
@@ -3246,20 +3281,11 @@ export default function GamePage() {
           : "bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50"
       }`}
     >
-      <GameHeader
-        darkMode={darkMode}
-        isMobile={isMobile}
-        onShowTutorial={() => setShowTutorial(true)}
-        onShowPhone={() => setShowPhone(true)}
-        onOpenMenu={() => setGameState("paused")}
-        onLogout={handleLogout}
-      />
-
       <div className="container mx-auto px-2 md:px-4 py-4 md:py-8">
         <div className="grid grid-cols-1 lg:[grid-template-columns:240px_minmax(0,1fr)_320px] gap-6">
           {/* Left Sidebar */}
           {!isMobile && (
-            <div className="hidden lg:block">
+            <div className="hidden self-start lg:block lg:sticky lg:top-4">
               <StatsPanel
                 stats={player}
                 hour={hour}
@@ -3267,11 +3293,124 @@ export default function GamePage() {
                 darkMode={darkMode}
                 onSave={saveGame}
               />
+              <div className="mt-4 flex items-center gap-2 overflow-visible">
+                <IconHoverButton
+                  label="Help"
+                  onClick={() => setShowTutorial(true)}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                </IconHoverButton>
+                <IconHoverButton
+                  label="Phone"
+                  onClick={() => setShowPhone(true)}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="7" y="2" width="10" height="20" rx="2" ry="2" />
+                    <path d="M11 18h2" />
+                  </svg>
+                </IconHoverButton>
+                <IconHoverButton
+                  label="Menu"
+                  onClick={() => setGameState("paused")}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M4 6h16" />
+                    <path d="M4 12h16" />
+                    <path d="M4 18h16" />
+                  </svg>
+                </IconHoverButton>
+              </div>
             </div>
           )}
 
           {/* Main */}
           <div className="space-y-6 min-w-0">
+            {isMobile && (
+              <div className="flex items-center gap-2 overflow-visible">
+                <IconHoverButton
+                  label="Help"
+                  onClick={() => setShowTutorial(true)}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                </IconHoverButton>
+                <IconHoverButton
+                  label="Phone"
+                  onClick={() => setShowPhone(true)}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="7" y="2" width="10" height="20" rx="2" ry="2" />
+                    <path d="M11 18h2" />
+                  </svg>
+                </IconHoverButton>
+                <IconHoverButton
+                  label="Menu"
+                  onClick={() => setGameState("paused")}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M4 6h16" />
+                    <path d="M4 12h16" />
+                    <path d="M4 18h16" />
+                  </svg>
+                </IconHoverButton>
+              </div>
+            )}
+
             {/* Scene */}
             <SceneView
               darkMode={darkMode}
@@ -3413,6 +3552,7 @@ export default function GamePage() {
           darkMode={darkMode}
           onClose={() => setShowPhone(false)}
           onSave={saveGame}
+          onLogout={handleLogout}
           isMobile={isMobile}
           dayOfWeek={dayOfWeek}
           quests={questItems}

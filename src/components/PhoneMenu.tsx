@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import Image from "next/image";
+import Image from "@/components/FallbackImage";
 import { getTimeOfDayLabel } from "@/lib/time";
 import { giftById } from "@/data/gifts";
 import { PlayerStats } from "../data/characters";
@@ -23,6 +23,7 @@ interface Props {
   darkMode?: boolean;
   onClose: () => void;
   onSave?: () => void;
+  onLogout?: () => void;
   isMobile?: boolean;
   dayOfWeek?: DayOfWeek;
   quests?: QuestItem[];
@@ -140,6 +141,7 @@ export default function PhoneMenu({
   darkMode = true,
   onClose,
   onSave,
+  onLogout,
   isMobile = false,
   dayOfWeek,
   quests = [],
@@ -312,6 +314,14 @@ export default function PhoneMenu({
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
                 >
                   💾 Quick Save
+                </button>
+              )}
+              {onLogout && (
+                <button
+                  onClick={onLogout}
+                  className="w-full bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-700 hover:to-red-800 text-white font-bold py-3 px-4 rounded-xl transition-all duration-200 shadow-lg"
+                >
+                  Log Out
                 </button>
               )}
             </div>

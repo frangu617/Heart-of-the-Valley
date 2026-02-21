@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/FallbackImage";
 import { useEffect, useMemo, useState } from "react";
 import { getCharacterImage } from "../lib/images";
 import type { Girl } from "../data/characters";
@@ -6,7 +6,10 @@ import { getSceneCharacterObjectPosition } from "@/lib/portraitFraming";
 import { TESTING_LOCATION_NAME } from "@/data/locations";
 
 const toCasualFallbackImage = (imagePath: string) =>
-  imagePath.replace(/\/(date|work)\//, "/casual/");
+  imagePath.replace(
+    /\/(home|gym|university|beach|city|casual|date|work|nun)\//,
+    "/casual/",
+  );
 
 type Props = {
   darkMode: boolean;
@@ -188,6 +191,9 @@ export default function SceneView({
                     }}
                     onError={() => {
                       if (!isUsingFallback && fallbackImgPath !== baseImgPath) {
+                        console.warn(
+                          `[SceneView] Missing character image for ${girl.name}: ${baseImgPath}. Falling back to ${fallbackImgPath}.`,
+                        );
                         setGirlsUsingCasualFallback((prev) => {
                           if (prev.has(girl.name)) return prev;
                           const next = new Set(prev);
@@ -196,6 +202,9 @@ export default function SceneView({
                         });
                         return;
                       }
+                      console.warn(
+                        `[SceneView] Missing fallback character image for ${girl.name}: ${imgPath}.`,
+                      );
                       if (!isTestingRoom) return;
                       setMissingTestRoomGirls((prev) => {
                         if (prev.has(girl.name)) return prev;
