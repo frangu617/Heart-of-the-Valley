@@ -770,6 +770,175 @@ export const randomEvents: RandomEvent[] = [
     },
   },
 
+  {
+    id: "ruby_decline_push_floor",
+    name: "Ruby Checks In (Gym Floor)",
+    type: "encounter",
+    characterName: "Ruby",
+    probability: 22,
+    maxTriggersPerDay: 1,
+    conditions: {
+      locations: ["Gym"],
+      hourRange: { min: 6, max: 22 },
+      requiredCharactersPresent: ["Ruby"],
+      requiredFlags: ["rubyTrainerDeclined"],
+      blockedFlags: ["rubyTrainerAccepted", "ruby_chapter_1_completed"],
+    },
+    dialogue: {
+      id: "ruby_decline_push_floor_dialogue",
+      lines: [
+        {
+          speaker: null,
+          text: "Ruby spots you between sets and jogs over, towel over her shoulder and a determined grin on her face.",
+        },
+        {
+          speaker: "Ruby",
+          text: "You still owe me that training session, by the way.",
+          expression: "happy",
+        },
+        {
+          speaker: "Ruby",
+          text: "I am not letting your wrists lose this fight.",
+          expression: "neutral",
+        },
+        {
+          speaker: "You",
+          text: "How do you answer?",
+          choices: [
+            {
+              text: "Fine. One real session. You lead.",
+              affectionChange: 1,
+              dominanceChange: 1,
+              setFlags: ["rubyTrainerAccepted"],
+            },
+            {
+              text: "Not today. Ask me another time.",
+              affectionChange: 0,
+              dominanceChange: -1,
+            },
+            {
+              text: "No promises. I train solo.",
+              affectionChange: -1,
+              dominanceChange: 1,
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  {
+    id: "ruby_decline_push_treadmill",
+    name: "Ruby Checks In (Treadmill Lane)",
+    type: "encounter",
+    characterName: "Ruby",
+    probability: 18,
+    maxTriggersPerDay: 1,
+    conditions: {
+      locations: ["Gym"],
+      hourRange: { min: 6, max: 22 },
+      requiredCharactersPresent: ["Ruby"],
+      requiredFlags: ["rubyTrainerDeclined"],
+      blockedFlags: ["rubyTrainerAccepted", "ruby_chapter_1_completed"],
+    },
+    dialogue: {
+      id: "ruby_decline_push_treadmill_dialogue",
+      lines: [
+        {
+          speaker: null,
+          text: "Ruby paces beside your treadmill for a few strides, matching your speed with irritating ease.",
+        },
+        {
+          speaker: "Ruby",
+          text: "Counteroffer. Thirty minutes. Form, mobility, done.",
+          expression: "neutral",
+        },
+        {
+          speaker: "Ruby",
+          text: "You are not escaping me forever.",
+          expression: "happy",
+        },
+        {
+          speaker: "You",
+          text: "Your call?",
+          choices: [
+            {
+              text: "All right. Book me in.",
+              affectionChange: 1,
+              lustChange: 1,
+              setFlags: ["rubyTrainerAccepted"],
+            },
+            {
+              text: "Later. I am not in coach mode yet.",
+              affectionChange: 0,
+            },
+            {
+              text: "Drop it, Ruby.",
+              affectionChange: -1,
+              dominanceChange: 1,
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  {
+    id: "ruby_decline_push_lockers",
+    name: "Ruby Checks In (Locker Hall)",
+    type: "encounter",
+    characterName: "Ruby",
+    probability: 16,
+    maxTriggersPerDay: 1,
+    conditions: {
+      locations: ["Gym"],
+      hourRange: { min: 6, max: 22 },
+      requiredCharactersPresent: ["Ruby"],
+      requiredFlags: ["rubyTrainerDeclined"],
+      blockedFlags: ["rubyTrainerAccepted", "ruby_chapter_1_completed"],
+    },
+    dialogue: {
+      id: "ruby_decline_push_lockers_dialogue",
+      lines: [
+        {
+          speaker: null,
+          text: "You round the locker hall corner and nearly run into Ruby, who is carrying bands and a clipboard like she planned this ambush.",
+        },
+        {
+          speaker: "Ruby",
+          text: "One session. If you hate it, I shut up forever.",
+          expression: "neutral",
+        },
+        {
+          speaker: "Ruby",
+          text: "That is my final offer, mystery rookie.",
+          expression: "happy",
+        },
+        {
+          speaker: "You",
+          text: "What do you do?",
+          choices: [
+            {
+              text: "Deal. One session, no excuses.",
+              affectionChange: 1,
+              dominanceChange: 1,
+              setFlags: ["rubyTrainerAccepted"],
+            },
+            {
+              text: "I need more time.",
+              affectionChange: 0,
+            },
+            {
+              text: "No. Keep your schedule for someone else.",
+              affectionChange: -1,
+              dominanceChange: 1,
+            },
+          ],
+        },
+      ],
+    },
+  },
+
   // === ACTIVITY EVENTS ===
   {
     id: "beach_day_dawn",

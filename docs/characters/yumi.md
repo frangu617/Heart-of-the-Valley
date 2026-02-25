@@ -3,8 +3,8 @@
 **Core Identity**
 - Role: Student and tutoring regular, programmer by talent, streamer by desire.
 - Age: Mid-20s (23-27).
-- Snapshot: Disciplined, intelligent, outwardly modest and academically driven, inwardly divided between selves she compartmentalizes with alarming effectiveness.
-- Sin Lens (Subtle): Pride expressed as conditional self-worth and the need to be the best.
+- Snapshot: Disciplined, intelligent, outwardly modest and academically driven, inwardly divided by comparison and self-measurement.
+- Sin Lens (Primary): Envy. She envies her mother's effortless perfection and tries to reproduce it in controlled, low-key ways.
 - Dominant Vibe: Quiet focus with flashes of confidence.
 - Contradiction: Wants independence, but craves reassurance.
 
@@ -30,15 +30,15 @@
 - Sexuality has existed safely behind a screen, curated and controlled.
 - Streamer persona acts bold because it feels powerful; real self hesitates because it feels vulnerable.
 
-**Body Image and Pride**
-- Proud of her body; she tracks, trains, refines.
+**Body Image and Envy**
+- Proud of her body; she tracks, trains, and refines.
 - Chose physical enhancements, especially breasts, as control rather than shame. No regret.
-- Pride is fragile around her mother.
+- What reads as pride is often defensive polish over envy.
 
-**Relationship With Her Mother (Internalized Conflict)**
-- Mother embodies effortless confidence and unselfconscious femininity.
-- She does not compete or judge, which makes Yumi's envy worse.
-- This undermines Yumi's belief that effort equals worth.
+**Relationship With Her Mother (Core Conflict)**
+- Shizune appears effortlessly perfect in beauty, composure, and social ease.
+- Yumi envies that ease and quietly copies pieces of it: voice, posture, grooming, emotional pacing.
+- She does not want to replace her mother. She wants to stop feeling lesser.
 
 **Voice And Behavior**
 - Speech: Formal and respectful in public, with small flashes of humor.
@@ -52,9 +52,9 @@
 - That makes him uniquely dangerous to her identity.
 
 **Core Flaw (Reframed)**
-- Conditional self-worth.
-- Value must be earned. Desire must be justified. Confidence must be performed.
-- Her fear is not rejection, but being seen as unnecessary.
+- Comparison addiction.
+- Value must be earned against an internal benchmark she keeps moving.
+- Her fear is not rejection, but being visibly second-best.
 
 **Motivations**
 - School represents her future; streaming represents her present.
@@ -69,7 +69,7 @@
 **Design Notes (Guiding Tone)**
 - Her online sexual confidence should contrast sharply with physical hesitation.
 - Her intelligence and ambition are real, not compensatory.
-- Body pride is genuine but destabilized by comparison, not shame.
+- Envy should be quiet, controlled, and deeply personal rather than openly competitive.
 - Player influence should feel like identity alignment, not domination.
 
 **Story Outline**
@@ -83,3 +83,4 @@
 
 **Stable Diffusion**
 - Prompt: ((Japanese woman)), ((massive breasts:1.5)),((fake breasts)), ((slim body:1.0)), tiny waist, blue eyes, white shirt, blue plaid neck bow, plaid skirt, blue plaid, pleated skirt, high socks, loafers, ((black hair)) , ((plain green background)), mid-drift, fit body, (confident:1.5), (abs:0.3), shirt bursting open, ((barely visible black bra under shirt:0.8)), glasses, medium long hair, ((front view:1.2)), thick lips, looking at viewer, ((tiny skirt)), ((full body)), ((slender legs))
+

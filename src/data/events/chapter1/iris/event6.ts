@@ -123,8 +123,18 @@ const irisFinaleDomSuccess: Dialogue = {
     { speaker: "Iris", text: "I... oh god.", expression: "surprised" },
     {
       speaker: "Iris",
+      text: "I had two drinks and my brain shut off for a second.",
+      expression: "surprised",
+    },
+    {
+      speaker: "Iris",
       text: "I didn't mean to... I mean, I did, but...",
       expression: "surprised",
+    },
+    {
+      speaker: "Iris",
+      text: "I want this. I just do not want us to start as another bad habit.",
+      expression: "sad",
     },
     { speaker: null, text: "She panics, turning on her heel." },
     { speaker: "Iris", text: "I have to go!", expression: "surprised" },
@@ -307,7 +317,17 @@ const irisFinaleSubSuccess: Dialogue = {
       speaker: null,
       text: "She touches her lips, looking at you with a mix of desire and total panic.",
     },
-    { speaker: "Iris", text: "I can't... this is...", expression: "surprised" },
+    { speaker: "Iris", text: "I can't... this is exactly how I mess things up.", expression: "surprised" },
+    {
+      speaker: "Iris",
+      text: "I had a couple drinks and now I am doing the impulsive version of me again.",
+      expression: "sad",
+    },
+    {
+      speaker: "Iris",
+      text: "I wanted this kiss. Just not like this.",
+      expression: "sad",
+    },
     { speaker: null, text: "Overwhelmed, she spins around." },
     { speaker: "Iris", text: "Goodnight!", expression: "surprised" },
     {
@@ -396,7 +416,11 @@ export const irisEvent6Events: CharacterEvent[] = [
         },
         {
           speaker: null,
-          text: "It's Iris. She steps out, looking tired, maybe heading to check the mail one last time.",
+          text: "It's Iris. She steps out with her heels in one hand and her jacket over the other arm, like she just got back from a late drink.",
+        },
+        {
+          speaker: null,
+          text: "When she gets closer, there is a faint trace of gin and citrus on her breath.",
         },
         {
           speaker: null,
@@ -467,7 +491,11 @@ export const irisEvent6Events: CharacterEvent[] = [
         },
         {
           speaker: null,
-          text: "It's Iris. She steps out, looking tired, maybe heading to check the mail one last time.",
+          text: "It's Iris. She steps out with her heels in one hand and her jacket over the other arm, like she just got back from a late drink.",
+        },
+        {
+          speaker: null,
+          text: "When she gets closer, there is a faint trace of wine on her breath.",
         },
         {
           speaker: null,
@@ -479,7 +507,7 @@ export const irisEvent6Events: CharacterEvent[] = [
         },
         {
           speaker: "Iris",
-          text: "I... I couldn't sleep. I was just going to get some water.",
+          text: "I... I just got back. I was going to get some water before bed.",
           expression: "shy",
         },
         { speaker: "You", text: "Late night for both of us then." },

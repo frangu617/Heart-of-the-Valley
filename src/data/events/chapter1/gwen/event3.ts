@@ -4,40 +4,150 @@ import { CharacterEvent } from "../../types";
 // Event 3: Quick Apology
 // Description: Gwen stops by after the door mixup.
 
-const gwenEvent3ApologySupportive: Dialogue = {
-  id: "gwen_event_3_apology_supportive",
+const gwenEvent3ApologyWarm: Dialogue = {
+  id: "gwen_event_3_apology_warm",
   lines: [
-    { speaker: "You", text: "You're good. It was a weird night." },
+    { speaker: "You", text: "You're good. Rough nights happen." },
     {
       speaker: "Gwen",
-      text: "Good. I don't like owing people.",
+      text: "Thanks. I hate messy exits.",
+      expression: "happy",
+    },
+    {
+      speaker: "Gwen",
+      text: "You handled it better than most people would.",
       expression: "neutral",
     },
     { speaker: "You", text: "Call it even." },
-    { speaker: "Gwen", text: "It is now.", expression: "happy" },
+    { speaker: "Gwen", text: "Even, then.", expression: "happy" },
+    {
+      speaker: null,
+      text: "She lifts her coffee like a peace offering, shoulders finally relaxing.",
+    },
+    {
+      speaker: "You",
+      text: "How do you leave the reset?",
+      choices: [
+        {
+          text: "Offer to grab real coffee later.",
+          affectionChange: 2,
+          dominanceChange: -1,
+        },
+        {
+          text: "Check in. You looked rattled last night.",
+          affectionChange: 1,
+          moodChange: 1,
+        },
+        {
+          text: "Tease lightly. We survived the door boss fight.",
+          affectionChange: 0,
+          lustChange: 1,
+        },
+      ],
+    },
+    {
+      speaker: "Gwen",
+      text: "I can work with that. Thanks for not making it weird.",
+      expression: "happy",
+    },
   ],
 };
 
-const gwenEvent3ApologyIrritated: Dialogue = {
-  id: "gwen_event_3_apology_irritated",
+const gwenEvent3ApologyCurious: Dialogue = {
+  id: "gwen_event_3_apology_curious",
   lines: [
-    { speaker: "You", text: "You woke me up. Don't do that again." },
+    { speaker: "You", text: "We're fine. But that looked like one hell of a shift." },
     {
       speaker: "Gwen",
-      text: "Noted.",
+      text: "It was loud, long, and profitable.",
       expression: "neutral",
     },
     {
       speaker: "Gwen",
-      text: "Won't happen.",
+      text: "Music, lights, too many people pretending they know me.",
+      expression: "happy",
+    },
+    {
+      speaker: "Gwen",
+      text: "Maybe one day you get the full story. Not in the hallway, though.",
+      expression: "neutral",
+    },
+    {
+      speaker: "You",
+      text: "How do you follow that?",
+      choices: [
+        {
+          text: "What part of it do you actually enjoy?",
+          affectionChange: 1,
+          lustChange: 1,
+        },
+        {
+          text: "What part drains you most?",
+          affectionChange: 1,
+          moodChange: 1,
+        },
+        {
+          text: "No pressure. You can tell me when you want.",
+          affectionChange: 2,
+          dominanceChange: -1,
+        },
+      ],
+    },
+    {
+      speaker: "Gwen",
+      text: "Good answer. Curiosity I can handle. Interrogation, not so much.",
+      expression: "happy",
+    },
+  ],
+};
+
+const gwenEvent3ApologyFirm: Dialogue = {
+  id: "gwen_event_3_apology_firm",
+  lines: [
+    { speaker: "You", text: "We are good. But do not hit my door like that again." },
+    {
+      speaker: "Gwen",
+      text: "Fair boundary.",
+      expression: "neutral",
+    },
+    {
+      speaker: "Gwen",
+      text: "I keep my chaos on my side of the hall from now on.",
+      expression: "neutral",
+    },
+    {
+      speaker: "You",
+      text: "How firm do you stay?",
+      choices: [
+        {
+          text: "Keep it strict. No more late-night knocks.",
+          affectionChange: 0,
+          dominanceChange: 1,
+        },
+        {
+          text: "Soften it. Boundaries, not hostility.",
+          affectionChange: 1,
+          dominanceChange: -1,
+        },
+        {
+          text: "Set process. Text before you knock next time.",
+          affectionChange: 1,
+          dominanceChange: 1,
+        },
+      ],
+    },
+    {
+      speaker: "Gwen",
+      text: "Fair. I can do rules when the rules make sense.",
       expression: "neutral",
     },
   ],
 };
 
 export const gwenEvent3Dialogues: Record<string, Dialogue> = {
-  gwen_event_3_apology_supportive: gwenEvent3ApologySupportive,
-  gwen_event_3_apology_irritated: gwenEvent3ApologyIrritated,
+  gwen_event_3_apology_warm: gwenEvent3ApologyWarm,
+  gwen_event_3_apology_curious: gwenEvent3ApologyCurious,
+  gwen_event_3_apology_firm: gwenEvent3ApologyFirm,
 };
 
 export const gwenEvent3Events: CharacterEvent[] = [
@@ -52,7 +162,7 @@ export const gwenEvent3Events: CharacterEvent[] = [
     priority: 220,
     repeatable: false,
     conditions: {
-      minAffection: 10,
+      minAffection: 0,
       minHour: 8,
       maxHour: 20,
       requiredLocation: "Hallway",
@@ -67,7 +177,7 @@ export const gwenEvent3Events: CharacterEvent[] = [
         },
         {
           speaker: null,
-          text: "Gwen stands there in sunglasses, hair up, a coffee in hand.",
+          text: "Gwen stands there in sunglasses, hair up, a coffee in hand, a trace of glitter still at her temple.",
         },
         {
           speaker: "Gwen",
@@ -87,17 +197,46 @@ export const gwenEvent3Events: CharacterEvent[] = [
         },
         {
           speaker: "You",
+          text: "How do you hold this moment?",
+          choices: [
+            {
+              text: "Step into the hallway so she doesn't feel cornered.",
+              affectionChange: 1,
+              dominanceChange: -1,
+            },
+            {
+              text: "Stay in the doorway and keep it brief.",
+              affectionChange: 0,
+              dominanceChange: 1,
+            },
+            {
+              text: "Offer five minutes and fresh coffee inside.",
+              affectionChange: 1,
+              lustChange: 1,
+            },
+          ],
+        },
+        {
+          speaker: "You",
           text: "How do you respond?",
           choices: [
             {
-              text: "We're good.",
-              affectionChange: 1,
-              nextDialogueId: "gwen_event_3_apology_supportive",
+              text: "Be warm. You are good.",
+              affectionChange: 2,
+              dominanceChange: -1,
+              nextDialogueId: "gwen_event_3_apology_warm",
             },
             {
-              text: "Don't let it happen again.",
-              affectionChange: -1,
-              nextDialogueId: "gwen_event_3_apology_irritated",
+              text: "Be curious. Rough shift?",
+              affectionChange: 1,
+              lustChange: 1,
+              nextDialogueId: "gwen_event_3_apology_curious",
+            },
+            {
+              text: "Set a boundary. Not again.",
+              affectionChange: 0,
+              dominanceChange: 1,
+              nextDialogueId: "gwen_event_3_apology_firm",
             },
           ],
         },

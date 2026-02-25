@@ -4,109 +4,180 @@ import { CharacterEvent } from "../../types";
 // Event 1: Hallway Intro
 // Description: Meet Gwen for the first time in the hallway.
 
-const gwenIntroPlayAlong: Dialogue = {
-  id: "gwen_intro_play_along",
+const gwenIntroHelpFirst: Dialogue = {
+  id: "gwen_intro_help_first",
   lines: [
-    { speaker: "You", text: "I was going to ask what the price was." },
-    { speaker: "Gwen", text: "See? It's working already.", expression: "annoyed" },
-    { speaker: null, text: "She checks you with a quick, appraising look." },
+    { speaker: null, text: "You crouch first, collecting keys and receipts before they slide under the radiator." },
     {
       speaker: "Gwen",
-      text: "Alright, mystery neighbor. You're a good sport.",
+      text: "Wow. Most people just watch the chaos and pretend they were never here.",
       expression: "happy",
-      nextDialogueId: "gwen_intro_after_choice",
-    },
-  ],
-};
-
-const gwenIntroCallOut: Dialogue = {
-  id: "gwen_intro_call_out",
-  lines: [
-    { speaker: "You", text: "You don't have to run a line on me. Just tell me what you need." },
-    {
-      speaker: "Gwen",
-      text: "I do what works. Saves time and gets answers.",
-      expression: "annoyed",
     },
     {
       speaker: "Gwen",
-      text: "I keep weird hours. I prefer the neighbor knowing that up front.",
-      expression: "neutral",
-      nextDialogueId: "gwen_intro_after_choice",
-    },
-  ],
-};
-
-const gwenIntroNeighborly: Dialogue = {
-  id: "gwen_intro_neighborly",
-  lines: [
-    { speaker: "You", text: "No worries. I'm not the complaint type." },
-    { speaker: "Gwen", text: "Good. I'll keep the power tools to a minimum.", expression: "happy" },
-    {
-      speaker: "Gwen",
-      text: "You and I will get along just fine.",
-      expression: "neutral",
-      nextDialogueId: "gwen_intro_after_choice",
-    },
-  ],
-};
-
-const gwenIntroAfterChoice: Dialogue = {
-  id: "gwen_intro_after_choice",
-  lines: [
-    {
-      speaker: "Gwen",
-      text: "Let's reset. Neighborly help is free. The other stuff depends on my mood.",
+      text: "You might actually be useful to have across the hall.",
       expression: "happy",
+      nextDialogueId: "gwen_intro_after_first",
+    },
+  ],
+};
+
+const gwenIntroPlayfulFirst: Dialogue = {
+  id: "gwen_intro_playful_first",
+  lines: [
+    { speaker: null, text: "You catch one heel before it hits the floor and offer it back with a small grin." },
+    {
+      speaker: "Gwen",
+      text: "Careful. You make that look practiced.",
+      expression: "happy",
+    },
+    {
+      speaker: "Gwen",
+      text: "Rough shift, loud night, still standing. I call that a win.",
+      expression: "neutral",
+      nextDialogueId: "gwen_intro_after_first",
+    },
+  ],
+};
+
+const gwenIntroWatchfulFirst: Dialogue = {
+  id: "gwen_intro_watchful_first",
+  lines: [
+    { speaker: null, text: "You step back and let her gather herself before moving in." },
+    {
+      speaker: "Gwen",
+      text: "Thanks for not crowding me. Not everyone gets that hint.",
+      expression: "neutral",
+    },
+    {
+      speaker: "Gwen",
+      text: "Quiet neighbors are underrated.",
+      expression: "neutral",
+      nextDialogueId: "gwen_intro_after_first",
+    },
+  ],
+};
+
+const gwenIntroAfterFirst: Dialogue = {
+  id: "gwen_intro_after_first",
+  lines: [
+    { speaker: "Gwen", text: "I am Gwen, by the way. Down the hall, right side.", expression: "happy" },
+    {
+      speaker: null,
+      text: "Up close, you notice faint glitter at her collarbone, stage makeup not fully scrubbed, and a garment bag zipped tight.",
+    },
+    {
+      speaker: "Gwen",
+      text: "If you hear me coming in late, I am not dying. Just weird shifts.",
+      expression: "neutral",
+    },
+    {
+      speaker: "Gwen",
+      text: "I try to keep it quiet in the building. Emphasis on try.",
+      expression: "shy",
     },
     {
       speaker: "You",
-      text: "And what do you do when you're not rescuing neighbors?",
+      text: "How do you answer?",
+      choices: [
+        {
+          text: "No judgment. Your hours are your business.",
+          affectionChange: 2,
+          dominanceChange: -1,
+          nextDialogueId: "gwen_intro_respectful",
+        },
+        {
+          text: "I am curious, but I can mind my lane.",
+          affectionChange: 1,
+          lustChange: 1,
+          nextDialogueId: "gwen_intro_curious",
+        },
+        {
+          text: "Just keep it quiet after midnight and we are good.",
+          affectionChange: 0,
+          dominanceChange: 1,
+          nextDialogueId: "gwen_intro_boundary",
+        },
+      ],
+    },
+  ],
+};
+
+const gwenIntroRespectful: Dialogue = {
+  id: "gwen_intro_respectful",
+  lines: [
+    { speaker: "You", text: "No judgment. We are neighbors, not parole officers." },
+    {
+      speaker: "Gwen",
+      text: "That is weirdly refreshing.",
+      expression: "happy",
     },
     {
       speaker: "Gwen",
-      text: "Night shift work. Lots of music. Lots of lights.",
+      text: "Most people start playing detective by day two.",
       expression: "neutral",
     },
     {
       speaker: "Gwen",
-      text: "Lot of people who don't know how to look without staring.",
-      expression: "annoyed",
-    },
-    { speaker: "You", text: "That sounds... busy." },
-    {
-      speaker: "Gwen",
-      text: "Oh, it is. But it pays the rent and the weird hobbies.",
-      expression: "excited",
-    },
-    {
-      speaker: "Gwen",
-      text: "You'll probably hear me coming home at dumb hours sometimes. Just pretend I'm a very normal, very responsible adult.",
+      text: "Maybe we will get along just fine.",
       expression: "happy",
     },
-    {
-      speaker: "You",
-      text: "I won't judge your hours if you don't judge mine.",
-    },
-    { speaker: "Gwen", text: "Deal.", expression: "happy" },
+  ],
+};
+
+const gwenIntroCurious: Dialogue = {
+  id: "gwen_intro_curious",
+  lines: [
+    { speaker: "You", text: "I am curious, but I can mind my lane." },
     {
       speaker: "Gwen",
-      text: "Anyway... welcome to the building, mystery neighbor.",
+      text: "Curious is fine. Entitled is where people fail.",
+      expression: "neutral",
+    },
+    {
+      speaker: "Gwen",
+      text: "Ask me on an easy day and I might answer more than you expect.",
       expression: "happy",
     },
     {
       speaker: "Gwen",
-      text: "Try not to stay one for too long.",
+      text: "Welcome to the building, mystery neighbor.",
       expression: "happy",
     },
+  ],
+};
+
+const gwenIntroBoundary: Dialogue = {
+  id: "gwen_intro_boundary",
+  lines: [
+    { speaker: "You", text: "Just keep it quiet after midnight and we are good." },
+    {
+      speaker: "Gwen",
+      text: "Fair line. I can work with fair.",
+      expression: "neutral",
+    },
+    {
+      speaker: "Gwen",
+      text: "I run loud outside these walls, not in them.",
+      expression: "neutral",
+    },
+    {
+      speaker: "Gwen",
+      text: "Deal?",
+      expression: "neutral",
+    },
+    { speaker: "You", text: "Deal." },
   ],
 };
 
 export const gwenEvent1Dialogues: Record<string, Dialogue> = {
-  gwen_intro_play_along: gwenIntroPlayAlong,
-  gwen_intro_call_out: gwenIntroCallOut,
-  gwen_intro_neighborly: gwenIntroNeighborly,
-  gwen_intro_after_choice: gwenIntroAfterChoice,
+  gwen_intro_help_first: gwenIntroHelpFirst,
+  gwen_intro_playful_first: gwenIntroPlayfulFirst,
+  gwen_intro_watchful_first: gwenIntroWatchfulFirst,
+  gwen_intro_after_first: gwenIntroAfterFirst,
+  gwen_intro_respectful: gwenIntroRespectful,
+  gwen_intro_curious: gwenIntroCurious,
+  gwen_intro_boundary: gwenIntroBoundary,
 };
 
 export const gwenEvent1Events: CharacterEvent[] = [
@@ -132,82 +203,42 @@ export const gwenEvent1Events: CharacterEvent[] = [
       lines: [
         {
           speaker: null,
-          text: "You push open the door to your building's hallway and nearly collide with someone stepping out at the same time.",
+          text: "You push into the hallway and nearly collide with a woman balancing a tote bag, a garment bag, and a shoe box at the same time.",
         },
         {
           speaker: "Gwen",
-          text: "Whoa--! Hey--sorry! That was almost a full-on hallway tackle.",
-          expression: "neutral",
-        },
-        {
-          speaker: "Gwen",
-          text: "You must be the new guy. I thought I heard someone moving in.",
-          expression: "happy",
-        },
-        { speaker: "You", text: "Yeah. Just getting settled." },
-        {
-          speaker: "Gwen",
-          text: "Nice. Fresh blood. That's always fun.",
-          expression: "excited",
-        },
-        {
-          speaker: null,
-          text: "She says it a little too brightly, like she's testing a line.",
-        },
-        {
-          speaker: "Gwen",
-          text: "I mean--new neighbors are good. For the building. Strong start, Gwen.",
-          expression: "neutral",
-        },
-        { speaker: "You", text: "I'll pretend I didn't hear that." },
-        { speaker: "Gwen", text: "Appreciated. I'm Gwen.", expression: "happy" },
-        {
-          speaker: "Gwen",
-          text: "I live right down the hall. If you get lost, locked out... lonely...",
+          text: "Whoa, hey! Sorry. That was almost a full hallway wipeout.",
           expression: "neutral",
         },
         {
           speaker: null,
-          text: "Her smile goes a touch too polished, like she wants the line to land.",
+          text: "One heel drops out of the box, her keys slip, and everything starts sliding in different directions.",
         },
         {
           speaker: "Gwen",
-          text: "I'm an occasional rescuer of lone neighbors.",
-          expression: "excited",
-        },
-        { speaker: "Gwen", text: "For a price.", expression: "happy" },
-        {
-          speaker: null,
-          text: "She holds your gaze, the flirt settling into place.",
-        },
-        {
-          speaker: "Gwen",
-          text: "It's my job to make first impressions land.",
-          expression: "neutral",
-        },
-        {
-          speaker: "Gwen",
-          text: "Truth is, I keep weird hours. Better you know that now.",
-          expression: "neutral",
+          text: "Oh no. Not like this. First impression disaster.",
+          expression: "surprised",
         },
         {
           speaker: "You",
-          text: "How do you respond?",
+          text: "How do you handle it?",
           choices: [
             {
-              text: "Play along with the flirt.",
+              text: "Step in and help her gather the mess.",
+              affectionChange: 2,
+              dominanceChange: 1,
+              nextDialogueId: "gwen_intro_help_first",
+            },
+            {
+              text: "Hand her the heel with a grin. Rough shift?",
               affectionChange: 1,
-              nextDialogueId: "gwen_intro_play_along",
+              lustChange: 1,
+              nextDialogueId: "gwen_intro_playful_first",
             },
             {
-              text: "Call it out gently.",
+              text: "Give her space and let her reset.",
               affectionChange: 0,
-              nextDialogueId: "gwen_intro_call_out",
-            },
-            {
-              text: "Keep it neighborly.",
-              affectionChange: 0,
-              nextDialogueId: "gwen_intro_neighborly",
+              nextDialogueId: "gwen_intro_watchful_first",
             },
           ],
         },

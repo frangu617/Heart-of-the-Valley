@@ -96,6 +96,7 @@ export const rubyEvent2Events: CharacterEvent[] = [
       maxHour: 24,
       requiredLocation: "Gym",
       requiredPreviousEvents: ["ruby_trainer_offer_event"],
+      requiredFlags: ["rubyTrainerAccepted"],
     },
     dialogue: {
       id: "ruby_ch1_ev2_first_session",
@@ -152,7 +153,7 @@ export const rubyEvent2Events: CharacterEvent[] = [
     },
     rewards: {
       girlStats: { affection: 2 },
-      setFlags: ["rubyTrainerAccepted", "rubyCh1Ev2Done"],
+      setFlags: ["rubyCh1Ev2Done"],
     },
   },
 ];

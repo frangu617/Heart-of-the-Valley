@@ -2,10 +2,10 @@
 
 **Core Identity**
 - Role: Gwen's older cousin / former roommate / nightlife partner.
-- Core Sin: Gluttony (numbing, not indulgent).
+- Vice Motif: Numbing excess (adjacent to gluttony, but not the primary sin seat).
 - Snapshot: Excess made mundane. Consumes to avoid emptiness, not to chase thrill.
 
-**Gluttony Reframed**
+**Excess Reframed**
 - Not hunger for pleasure. Fear of silence.
 - Consumes because being still, alone, or feeling nothing terrifies her.
 - Repeats familiar comforts. Overconsumes routine.
@@ -37,4 +37,5 @@
 - Sadness should feel old, not fresh.
 
 **Summary Sentence**
-- Marisol embodies gluttony as numbing repetition; tied to Gwen's world, she consumes endlessly not to feel pleasure, but to avoid emptiness—and risks becoming the future Gwen doesn't want to see.
+- Marisol is Gwen's warning mirror: a woman locked in stagnant excess, consuming endlessly not for thrill but to avoid emptiness.
+

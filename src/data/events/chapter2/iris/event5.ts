@@ -13,7 +13,7 @@ const iris_ch2_date_encounter_sub: Dialogue = {
     },
     {
       speaker: null,
-      text: "A woman with Iris's dark hair is waiting near the spot, back to you.",
+      text: "You spot Iris waiting near your meeting point, back to you.",
     },
     { speaker: "You", text: "Iris?" },
     {
@@ -24,18 +24,186 @@ const iris_ch2_date_encounter_sub: Dialogue = {
     { speaker: "You", text: "Oh, I'm so sorry. I thought you were someone else." },
     {
       speaker: null,
-      text: "She doesn't respond. She just gives you a slow, knowing smile before turning and melting back into the crowd.",
+      text: "She doesn't respond. Up close, she is the spitting image of Iris, just younger. She gives you a slow, knowing smile before turning and melting back into the crowd.",
     },
   ],
 };
 
-const iris_ch2_date_after_encounter: Dialogue = {
-  id: "iris_ch2_date_after_encounter",
+const iris_ch2_date_after_encounter_sub: Dialogue = {
+  id: "iris_ch2_date_after_encounter_sub",
   lines: [
+    {
+      speaker: null,
+      text: "Iris slides in beside you, cheeks warm and breath a little quick.",
+    },
     {
       speaker: "Iris",
       text: "Hey! Sorry I'm a minute late. This place is packed. Did I miss anything?",
       expression: "happy",
+    },
+    {
+      speaker: "Iris",
+      text: "I saw you with someone for a second. I didn't get a good look... who was she?",
+      expression: "shy",
+    },
+    {
+      speaker: "Iris",
+      text: "I know I shouldn't care this fast. I just... noticed.",
+      expression: "shy",
+    },
+    {
+      speaker: "Iris",
+      text: "I had a drink while I waited at the door. Then one more. I get brave too fast when I am buzzed.",
+      expression: "shy",
+    },
+    {
+      speaker: "Iris",
+      text: "I am trying not to do the old thing where I act on impulse and panic tomorrow.",
+      expression: "neutral",
+    },
+    {
+      speaker: "You",
+      text: "What do you tell her?",
+      choices: [
+        { text: "You won't believe this, but I just saw your twin.", affectionChange: 1 },
+        { text: "Nothing, just admiring the view.", affectionChange: 0 },
+      ],
+    },
+    {
+      speaker: null,
+      text: "She steps in close enough that her perfume cuts through the smoke and bass.",
+    },
+    {
+      speaker: "You",
+      text: "How do you greet her?",
+      choices: [
+        {
+          text: "Offer your arm and smile.",
+          affectionChange: 1,
+        },
+        {
+          text: "Let your eyes linger. You look dangerous tonight.",
+          affectionChange: 0,
+          lustChange: 1,
+        },
+        {
+          text: "Brush her fingers. Been waiting for this all day.",
+          affectionChange: 1,
+          lustChange: 1,
+        },
+      ],
+    },
+    {
+      speaker: "Iris",
+      text: "Then do not waste the night.",
+      expression: "happy",
+    },
+  ],
+};
+
+const iris_ch2_date_after_encounter_dom: Dialogue = {
+  id: "iris_ch2_date_after_encounter_dom",
+  lines: [
+    {
+      speaker: null,
+      text: "Iris steps into your space with an easy sway, smile a touch looser than usual.",
+    },
+    {
+      speaker: "Iris",
+      text: "Hey! Sorry I'm a minute late. This place is packed. Did I miss anything?",
+      expression: "happy",
+    },
+    {
+      speaker: "Iris",
+      text: "I caught you talking to someone at the bar. I didn't get a good look.",
+      expression: "seductive",
+    },
+    {
+      speaker: "Iris",
+      text: "Wait, who was that? I didn't get a good look... if she's cute, maybe I should buy her a drink and steal her number.",
+      expression: "happy",
+    },
+    {
+      speaker: "Iris",
+      text: "I had two quick cocktails before I got here, so my filter is basically gone.",
+      expression: "seductive",
+    },
+    {
+      speaker: "Iris",
+      text: "If I start getting reckless, remind me I said I wanted this to be real, not just heat.",
+      expression: "neutral",
+    },
+    {
+      speaker: "You",
+      text: "What do you tell her?",
+      choices: [
+        { text: "You won't believe this, but I just saw your twin.", affectionChange: 1 },
+        { text: "Nothing, just admiring the view.", affectionChange: 0 },
+      ],
+    },
+    {
+      speaker: null,
+      text: "She steps in close enough that her perfume cuts through the smoke and bass.",
+    },
+    {
+      speaker: "You",
+      text: "How do you greet her?",
+      choices: [
+        {
+          text: "Offer your arm and smile.",
+          affectionChange: 1,
+        },
+        {
+          text: "Let your eyes linger. You look dangerous tonight.",
+          affectionChange: 0,
+          lustChange: 1,
+        },
+        {
+          text: "Brush her fingers. Been waiting for this all day.",
+          affectionChange: 1,
+          lustChange: 1,
+        },
+      ],
+    },
+    {
+      speaker: "Iris",
+      text: "Then do not waste the night.",
+      expression: "happy",
+    },
+  ],
+};
+
+const iris_ch2_date_after_encounter_neutral: Dialogue = {
+  id: "iris_ch2_date_after_encounter_neutral",
+  lines: [
+    {
+      speaker: null,
+      text: "Iris reaches you with a soft laugh, shoulders relaxed in a way that is not entirely sober.",
+    },
+    {
+      speaker: "Iris",
+      text: "Hey! Sorry I'm a minute late. This place is packed. Did I miss anything?",
+      expression: "happy",
+    },
+    {
+      speaker: "Iris",
+      text: "I saw you talking to someone at the bar. I didn't get a good look.",
+      expression: "neutral",
+    },
+    {
+      speaker: "Iris",
+      text: "Who was she?",
+      expression: "neutral",
+    },
+    {
+      speaker: "Iris",
+      text: "I had one drink while waiting for coat check. Maybe two. My guard is lower than usual.",
+      expression: "neutral",
+    },
+    {
+      speaker: "Iris",
+      text: "I like being open with you. I just do not want to slip back into old habits.",
+      expression: "shy",
     },
     {
       speaker: "You",
@@ -86,7 +254,7 @@ const iris_ch2_date_encounter_dom: Dialogue = {
     },
     {
       speaker: null,
-      text: "You spot a familiar silhouette and walk up behind her with a hand at her lower back.",
+      text: "You spot Iris's silhouette and walk up behind her with a hand at her lower back.",
     },
     { speaker: "You", text: "There you are." },
     {
@@ -97,7 +265,7 @@ const iris_ch2_date_encounter_dom: Dialogue = {
     { speaker: "You", text: "Oh. My mistake. I thought you were someone else." },
     {
       speaker: null,
-      text: "She doesn't respond. She just gives you a slow, amused smile before turning and vanishing into the crowd.",
+      text: "She doesn't respond. Up close, she is the spitting image of Iris, only younger and sharper around the eyes. She gives you a slow, amused smile before turning and vanishing into the crowd.",
     },
   ],
 };
@@ -111,7 +279,7 @@ const iris_ch2_date_encounter_neutral: Dialogue = {
     },
     {
       speaker: null,
-      text: "Someone with the same dark hair is leaning there, and you step up beside her.",
+      text: "You spot Iris leaning at the counter and step up beside her.",
     },
     { speaker: "You", text: "Hey-ready to order?" },
     {
@@ -122,14 +290,16 @@ const iris_ch2_date_encounter_neutral: Dialogue = {
     { speaker: "You", text: "Sorry about that. I mistook you for my date." },
     {
       speaker: null,
-      text: "She doesn't respond. She just gives you a small, friendly smile before turning and walking away.",
+      text: "She doesn't respond. Up close, she is the spitting image of Iris, just younger. She gives you a small, friendly smile before turning and walking away.",
     },
   ],
 };
 
 export const irisEvent5Dialogues: Record<string, Dialogue> = {
   iris_ch2_date_encounter_sub,
-  iris_ch2_date_after_encounter,
+  iris_ch2_date_after_encounter_sub,
+  iris_ch2_date_after_encounter_dom,
+  iris_ch2_date_after_encounter_neutral,
   iris_ch2_date_encounter_dom,
   iris_ch2_date_encounter_neutral,
 };
@@ -163,17 +333,17 @@ export const irisEvent5Events: CharacterEvent[] = [
         },
         {
           speaker: null,
-          text: "You spot someone who looks like Iris from behind and walk over.",
+          text: "You spot Iris from behind and walk over.",
           nextDialogueId: "iris_ch2_date_encounter_sub",
         },
         {
           speaker: null,
           text: "A moment later, Iris shows up.",
-          nextDialogueId: "iris_ch2_date_after_encounter",
+          nextDialogueId: "iris_ch2_date_after_encounter_sub",
         },
         {
           speaker: "Iris",
-          text: "It's... a lot. I have not been in a room this loud in years.",
+          text: "It's... a lot. I have not been in a room this loud in years. The two drinks I had made walking in easier, though.",
           expression: "shy",
         },
         {
@@ -227,7 +397,7 @@ export const irisEvent5Events: CharacterEvent[] = [
         },
         {
           speaker: null,
-          text: "By the time you walk her home, she lingers at her door and kisses you slowly, trusting and unhurried.",
+          text: "By the time you walk her home, she lingers at her door and kisses you slowly, trusting and unhurried, then rests her forehead against yours before stepping inside.",
         },
       ],
     },
@@ -264,18 +434,23 @@ export const irisEvent5Events: CharacterEvent[] = [
         },
         {
           speaker: null,
-          text: "You spot a familiar silhouette and close the distance.",
+          text: "You spot Iris's silhouette and close the distance.",
           nextDialogueId: "iris_ch2_date_encounter_dom",
         },
         {
           speaker: null,
           text: "A moment later, Iris shows up.",
-          nextDialogueId: "iris_ch2_date_after_encounter",
+          nextDialogueId: "iris_ch2_date_after_encounter_dom",
         },
         {
           speaker: "Iris",
           text: "I hope you can keep up, Professor.",
           expression: "seductive",
+        },
+        {
+          speaker: "Iris",
+          text: "Fair warning: I had a couple drinks before I got here, so I am feeling very honest and very bold.",
+          expression: "happy",
         },
         {
           speaker: "You",
@@ -328,7 +503,7 @@ export const irisEvent5Events: CharacterEvent[] = [
         },
         {
           speaker: null,
-          text: "The date stays electric to the end, finishing with a fierce, possessive kiss at her door that leaves both of you breathless.",
+          text: "The date stays electric to the end, finishing with a fierce, possessive kiss at her door that leaves both of you breathless before she pulls back with a shaky laugh and calls it there for tonight.",
         },
       ],
     },
@@ -363,18 +538,23 @@ export const irisEvent5Events: CharacterEvent[] = [
         { speaker: null, text: "You get there early and wait by the counter." },
         {
           speaker: null,
-          text: "Someone with the same dark hair is leaning there, and you step up beside her.",
+          text: "You spot Iris leaning there and step up beside her.",
           nextDialogueId: "iris_ch2_date_encounter_neutral",
         },
         {
           speaker: null,
           text: "A moment later, Iris shows up.",
-          nextDialogueId: "iris_ch2_date_after_encounter",
+          nextDialogueId: "iris_ch2_date_after_encounter_neutral",
         },
         {
           speaker: "Iris",
           text: "This is fun! It's nice to just feel like a normal person out on a Friday night.",
           expression: "happy",
+        },
+        {
+          speaker: "Iris",
+          text: "I did have a drink while waiting for you. Maybe two. So if I am extra direct tonight, that is why.",
+          expression: "neutral",
         },
         {
           speaker: "You",
@@ -422,7 +602,7 @@ export const irisEvent5Events: CharacterEvent[] = [
         },
         {
           speaker: null,
-          text: "The date ends with a soft, intimate kiss at her door, lingering just long enough to promise more.",
+          text: "The date ends with a soft, intimate kiss at her door, lingering just long enough to promise more before she smiles and chooses to leave it there.",
         },
       ],
     },

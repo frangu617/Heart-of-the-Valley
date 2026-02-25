@@ -33,6 +33,11 @@ const rubyCh1Ev1Decline: Dialogue = {
     },
     {
       speaker: "Ruby",
+      text: "And yes, I will keep asking until you give me one real session.",
+      expression: "happy",
+    },
+    {
+      speaker: "Ruby",
       text: "Try not to wreck your shoulders before that.",
       expression: "neutral",
     },

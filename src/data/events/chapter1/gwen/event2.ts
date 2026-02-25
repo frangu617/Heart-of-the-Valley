@@ -4,52 +4,157 @@ import { CharacterEvent } from "../../types";
 // Event 2: Door Mixup
 // Description: Gwen mistakes your door for hers after a late night.
 
-const gwenEvent2DoorSupportive: Dialogue = {
-  id: "gwen_event_2_door_supportive",
+const gwenEvent2DoorPrivateHelp: Dialogue = {
+  id: "gwen_event_2_door_private_help",
   lines: [
-    { speaker: "You", text: "Come on. Let's get you to the right door." },
+    { speaker: "You", text: "Come on. Quietly. Let's get you to the right door before anyone sees this." },
+    {
+      speaker: null,
+      text: "You take her key ring and guide her two doors down while she steadies herself with one hand on your sleeve.",
+    },
     {
       speaker: "Gwen",
-      text: "You're annoyingly helpful, you know that?",
+      text: "You are annoyingly decent, you know that?",
       expression: "happy",
     },
     {
       speaker: "Gwen",
-      text: "Don't tell anyone about this. I have a reputation to maintain.",
+      text: "Thank you for keeping this private. I really do not need hallway gossip on top of my shift.",
       expression: "neutral",
     },
-    { speaker: "You", text: "Your secret's safe." },
+    {
+      speaker: "You",
+      text: "How do you answer her?",
+      choices: [
+        {
+          text: "Your secret is safe with me.",
+          affectionChange: 1,
+          dominanceChange: -1,
+        },
+        {
+          text: "Fine, but you owe me coffee tomorrow.",
+          affectionChange: 1,
+          lustChange: 1,
+        },
+        {
+          text: "Then next time, call a ride before this point.",
+          affectionChange: 0,
+          dominanceChange: 1,
+        },
+      ],
+    },
+    {
+      speaker: "Gwen",
+      text: "Deal. And... thank you, seriously.",
+      expression: "shy",
+    },
     {
       speaker: null,
-      text: "She gets her key into the right lock on the first try this time, shooting you a quick, triumphant grin before slipping inside.",
+      text: "At her actual door, she gets the lock on the second try, then gives you a grateful look before slipping inside.",
     },
   ],
 };
 
-const gwenEvent2DoorAngry: Dialogue = {
-  id: "gwen_event_2_door_angry",
+const gwenEvent2DoorTeasingHelp: Dialogue = {
+  id: "gwen_event_2_door_teasing_help",
   lines: [
-    { speaker: "You", text: "You just woke me up. Don't do that again." },
+    { speaker: "You", text: "Come on, superstar. Wrong stage. Right door is two down." },
     {
-      speaker: "Gwen",
-      text: "Yeah. Fine.",
-      expression: "annoyed",
+      speaker: null,
+      text: "She laughs under her breath and lets you steer her down the hall, shoulder brushing yours.",
     },
     {
       speaker: "Gwen",
-      text: "We're square.",
+      text: "You are kind and obnoxious. That is a dangerous combination.",
+      expression: "happy",
+    },
+    {
+      speaker: "Gwen",
+      text: "I owe you one. And yes, I will remember this in the morning.",
       expression: "neutral",
     },
     {
+      speaker: "You",
+      text: "What do you throw back?",
+      choices: [
+        {
+          text: "Great. Breakfast debt, 9 AM.",
+          affectionChange: 1,
+        },
+        {
+          text: "Just avoid trying to seduce the wrong door next time.",
+          affectionChange: 0,
+          lustChange: 1,
+        },
+        {
+          text: "Text first before midnight chaos.",
+          affectionChange: 0,
+          dominanceChange: 1,
+        },
+      ],
+    },
+    {
+      speaker: "Gwen",
+      text: "I cannot promise graceful, but I can promise I will text.",
+      expression: "happy",
+    },
+    {
       speaker: null,
-      text: "She gets her key into the right lock on the first try this time and slips inside without looking back.",
+      text: "She catches the frame before she falls into her apartment, flashes you a crooked grin, then disappears inside.",
+    },
+  ],
+};
+
+const gwenEvent2DoorHardLine: Dialogue = {
+  id: "gwen_event_2_door_hard_line",
+  lines: [
+    { speaker: "You", text: "You woke me up. Get it together and keep it down." },
+    {
+      speaker: null,
+      text: "The humor drains from her face as she straightens, visibly sobering.",
+    },
+    {
+      speaker: "Gwen",
+      text: "Fair. I crossed a line tonight.",
+      expression: "neutral",
+    },
+    {
+      speaker: "Gwen",
+      text: "It will not happen again.",
+      expression: "neutral",
+    },
+    {
+      speaker: "You",
+      text: "How do you leave it?",
+      choices: [
+        {
+          text: "Good. That is all I needed.",
+          affectionChange: 0,
+          dominanceChange: 1,
+        },
+        {
+          text: "You okay to get inside?",
+          affectionChange: 1,
+          dominanceChange: -1,
+        },
+        {
+          text: "Drink water and sleep. We reset tomorrow.",
+          affectionChange: 0,
+          dominanceChange: 0,
+        },
+      ],
+    },
+    {
+      speaker: null,
+      text: "She moves to the correct door on her own and slips inside without another word.",
     },
   ],
 };
 
 export const gwenEvent2Dialogues: Record<string, Dialogue> = {
-  gwen_event_2_door_supportive: gwenEvent2DoorSupportive,
-  gwen_event_2_door_angry: gwenEvent2DoorAngry,
+  gwen_event_2_door_private_help: gwenEvent2DoorPrivateHelp,
+  gwen_event_2_door_teasing_help: gwenEvent2DoorTeasingHelp,
+  gwen_event_2_door_hard_line: gwenEvent2DoorHardLine,
 };
 
 export const gwenEvent2Events: CharacterEvent[] = [
@@ -64,7 +169,7 @@ export const gwenEvent2Events: CharacterEvent[] = [
     priority: 235,
     repeatable: false,
     conditions: {
-      minAffection: 5,
+      minAffection: 0,
       minHour: 22,
       maxHour: 24,
       requiredLocation: "Hallway",
@@ -79,64 +184,71 @@ export const gwenEvent2Events: CharacterEvent[] = [
         },
         {
           speaker: null,
-          text: "You crack it open to find Gwen swaying slightly, purse on one arm, keys in the other, squinting at your lock like it owes her money.",
+          text: "You crack it open to find Gwen in yesterday's makeup and a half-zipped jacket, heels dangling from one hand, squinting at your lock like it owes her rent.",
         },
         { speaker: "Gwen", text: "Okay, door. Don't do this to me right now.", expression: "annoyed" },
         { speaker: "You", text: "Uh... Gwen?" },
         {
           speaker: "Gwen",
-          text: "Why are you in my apartment?",
-          expression: "annoyed",
+          text: "Please tell me this is my door and reality is broken.",
+          expression: "neutral",
         },
         { speaker: "You", text: "I'm not. This is my door." },
         {
+          speaker: null,
+          text: "A folded wad of cash peeks from her purse before she shoves it deeper inside.",
+        },
+        {
           speaker: "Gwen",
-          text: "No, it isn't. My door does this sticky thing. It's... a feature.",
+          text: "Right. Great. So I am doing this in front of the one neighbor I actually like.",
           expression: "neutral",
-        },
-        {
-          speaker: null,
-          text: "She leans in, peering past you like she's expecting to see her living room behind you.",
-        },
-        { speaker: "You", text: "You're on the wrong side of the hall." },
-        {
-          speaker: "Gwen",
-          text: "I'm on the right side of the night.",
-          expression: "happy",
-        },
-        { speaker: "You", text: "You're also a little drunk." },
-        {
-          speaker: "Gwen",
-          text: "I'm... socially lubricated. There's a difference.",
-          expression: "neutral",
-        },
-        {
-          speaker: null,
-          text: "She frowns at the number on the door, then at you, then at the number again.",
-        },
-        {
-          speaker: "Gwen",
-          text: "Fine. Maybe you're in my apartment adjacent.",
-          expression: "annoyed",
-        },
-        { speaker: "You", text: "Close enough. Let me walk you to the right one." },
-        {
-          speaker: null,
-          text: "She hesitates, then allows it, letting you guide her two steps down the hall.",
         },
         {
           speaker: "You",
-          text: "What do you do?",
+          text: "How do you respond first?",
           choices: [
             {
-              text: "Be understanding and walk her to the right door.",
+              text: "Keep your voice low. You are okay.",
               affectionChange: 1,
-              nextDialogueId: "gwen_event_2_door_supportive",
+              dominanceChange: -1,
             },
             {
-              text: "Get on her for waking you up.",
+              text: "You are kind of adorable when your guard drops.",
+              affectionChange: 0,
+              lustChange: 1,
+            },
+            {
+              text: "Focus. Wrong door, two down.",
+              affectionChange: 0,
+              dominanceChange: 1,
+            },
+          ],
+        },
+        {
+          speaker: null,
+          text: "She studies the number on your door, grimaces, then gestures vaguely down the hall.",
+        },
+        { speaker: "Gwen", text: "Can we pretend this never happened?", expression: "shy" },
+        {
+          speaker: "You",
+          text: "How do you handle her?",
+          choices: [
+            {
+              text: "Keep it private and walk her to her door.",
+              affectionChange: 2,
+              nextDialogueId: "gwen_event_2_door_private_help",
+            },
+            {
+              text: "Steady her, but tease her through it.",
+              affectionChange: 1,
+              lustChange: 1,
+              nextDialogueId: "gwen_event_2_door_teasing_help",
+            },
+            {
+              text: "Set a hard boundary about the noise.",
               affectionChange: -1,
-              nextDialogueId: "gwen_event_2_door_angry",
+              dominanceChange: 1,
+              nextDialogueId: "gwen_event_2_door_hard_line",
             },
           ],
         },
