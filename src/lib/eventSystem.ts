@@ -13,6 +13,21 @@ import { calculateGameTime } from "./time";
 // Re-export for existing imports
 export { calculateGameTime } from "./time";
 
+const getGameDayFromGameTime = (gameTime: number) =>
+  Math.floor(gameTime / 24);
+
+const isHistoryOnCurrentDay = (
+  history: EventHistory,
+  currentDayCount: number,
+  currentDay: DayOfWeek,
+) => {
+  const gameTime = history.lastTriggered?.gameTime;
+  if (typeof gameTime === "number" && Number.isFinite(gameTime)) {
+    return getGameDayFromGameTime(gameTime) === currentDayCount;
+  }
+  return history.lastTriggered.day === currentDay;
+};
+
 /**
  * Check if an event's conditions are met
  */
@@ -24,7 +39,8 @@ export function checkEventConditions(
   day: DayOfWeek,
   hour: number,
   completedEvents: string[],
-  gameplayFlags?: Set<GameplayFlag>
+  gameplayFlags?: Set<GameplayFlag>,
+  eventId?: string
 ): boolean {
   // Check girl stats
   if (
@@ -111,7 +127,8 @@ export function checkEventConditions(
   if (conditions.requiredFlags && gameplayFlags) {
     for (const flag of conditions.requiredFlags) {
       if (!gameplayFlags.has(flag)) {
-        console.log(`❌ Event blocked: missing flag '${flag}'`);
+        const context = eventId ? ` (${eventId})` : "";
+        console.log(`❌ Event blocked${context}: missing flag '${flag}'`);
         return false;
       }
     }
@@ -121,7 +138,8 @@ export function checkEventConditions(
   if (conditions.blockedByFlags && gameplayFlags) {
     for (const flag of conditions.blockedByFlags) {
       if (gameplayFlags.has(flag)) {
-        console.log(`❌ Event blocked: has flag '${flag}'`);
+        const context = eventId ? ` (${eventId})` : "";
+        console.log(`❌ Event blocked${context}: has flag '${flag}'`);
         return false;
       }
     }
@@ -155,9 +173,11 @@ export function findTriggeredEvent(
   day: DayOfWeek,
   hour: number,
   eventState: CharacterEventState | undefined,
-  gameplayFlags?: Set<GameplayFlag>
+  gameplayFlags?: Set<GameplayFlag>,
+  currentDayCount?: number,
 ): CharacterEvent | null {
-  const currentGameTime = calculateGameTime(day, hour);
+  const currentGameTime = calculateGameTime(day, hour, currentDayCount);
+  const currentGameDay = Math.floor(currentGameTime / 24);
 
   // Get list of completed events
   const completedEvents =
@@ -172,9 +192,13 @@ export function findTriggeredEvent(
   const completedStoryCount = storyHistory.filter(
     (h) => h.timesTriggered > 0
   ).length;
-  const storyTriggeredToday = storyHistory.some((h) => h.lastTriggered.day === day);
+  const storyTriggeredToday = storyHistory.some((h) =>
+    isHistoryOnCurrentDay(h, currentGameDay, day),
+  );
   const eventTriggeredToday =
-    eventState?.eventHistory.some((h) => h.lastTriggered.day === day) ?? false;
+    eventState?.eventHistory.some((h) =>
+      isHistoryOnCurrentDay(h, currentGameDay, day),
+    ) ?? false;
 
   if (eventTriggeredToday) {
     return null;
@@ -218,7 +242,8 @@ export function findTriggeredEvent(
         day,
         hour,
         completedEvents,
-        gameplayFlags
+        gameplayFlags,
+        event.id
       )
     ) {
       return event;
@@ -235,9 +260,10 @@ export function recordEventTrigger(
   eventState: CharacterEventState,
   eventId: string,
   day: DayOfWeek,
-  hour: number
+  hour: number,
+  currentDayCount?: number,
 ): CharacterEventState {
-  const gameTime = calculateGameTime(day, hour);
+  const gameTime = calculateGameTime(day, hour, currentDayCount);
   const existingHistory = eventState.eventHistory.find(
     (h) => h.eventId === eventId
   );

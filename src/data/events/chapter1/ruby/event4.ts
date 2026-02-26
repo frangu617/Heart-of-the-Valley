@@ -169,7 +169,7 @@ export const rubyEvent4Events: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 5,
-      minHour: 18,
+      minHour: 22,
       maxHour: 24,
       requiredLocation: "Bar",
       requiredFlags: ["rubyTrainerAccepted", "rubyCh1Ev3Done"],
@@ -232,7 +232,7 @@ export const rubyEvent4Events: CharacterEvent[] = [
     repeatable: false,
     conditions: {
       minAffection: 5,
-      minHour: 18,
+      minHour: 22,
       maxHour: 24,
       requiredLocation: "Bar",
       requiredFlags: ["rubyTrainerAccepted", "rubyCh1Ev3Done"],

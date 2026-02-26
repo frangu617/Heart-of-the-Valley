@@ -69,6 +69,9 @@
 4. Pre-date convergence beat (new): route-specific fallout and recommitment before the date.
 5. Nightclub date and the mystery girl sighting raise stakes.
 
+**Readable Story Version**
+- Chapter 2 choose-your-own-adventure draft: `docs/characters/iris-chapter2-cyoa.md`
+
 **Current Implementation Status (2026-02-13)**
 - Completed in code:
 - Chapter 1 Iris chain is implemented (event1 through event6).
@@ -202,6 +205,7 @@
 
 **Stable Diffusion**
 - Prompt: one woman, ((she is slender)), (( she has a slim body)), ((big breasts)), purple hair, ponytail, amber eyes, glasses, messy hair, woman has a tired look, woman has a tiny waist, mature woman, chroma key green background, college professor outfit, conservative outfit, full body, wide hips, chroma key green background, holding a cup of coffee, white skirt or pants, pink top
+- Prompt: 1 woman, dark purple hair, hair in a messy ponytail, glasses, yellow eyes, big breasts, tiny waist, hips, pink  vest, cleavage, tight white skirt, ((low-rise skirt)), black sheer tights, platform heels, looking at the viewer, no undershirt, lips, no belly, mature woman, (toned body: 0.6), solid green background, studio lighting, slight smile
 - Steps: 40
 - Sampler: DPM++ 2M SDE
 - Schedule type: Karras

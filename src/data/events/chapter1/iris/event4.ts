@@ -74,7 +74,7 @@ const irisHallwayInviteDom: Dialogue = {
         {
           text: "Head home",
           affectionChange: 1,
-          setFlags: ["irisDomPath"],
+          setFlags: ["irisDomPath", "irisApartmentUnlocked"],
         },
       ],
     },
@@ -183,7 +183,7 @@ const irisHallwayInviteSubFlirt: Dialogue = {
         {
           text: "Head home",
           affectionChange: 0,
-          setFlags: ["irisSubPath"],
+          setFlags: ["irisSubPath", "irisApartmentUnlocked"],
         },
       ],
     },
@@ -213,7 +213,7 @@ const irisHallwayInviteSubFriendly: Dialogue = {
         {
           text: "Head home",
           affectionChange: 0,
-          setFlags: ["irisSubPath"],
+          setFlags: ["irisSubPath", "irisApartmentUnlocked"],
         },
       ],
     },

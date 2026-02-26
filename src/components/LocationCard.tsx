@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/FallbackImage";
 import { Location } from "../data/locations";
 import { Girl } from "../data/characters";
 import { getLocationImagePath } from "../lib/images";

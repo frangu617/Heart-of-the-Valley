@@ -1,9 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+  type ReactNode,
+} from "react";
 import { createPortal } from "react-dom";
 
 // Components
+import LoginScreen from "@/components/LoginScreen";
 import NameInput from "@/components/NameInput";
 import StatsPanel from "../components/StatsPanel";
 import CharacterOverlay from "../components/CharacterOverlay";
@@ -13,7 +21,6 @@ import PauseMenu from "../components/PauseMenu";
 import DialogueBox from "../components/DialogueBox";
 import PhoneMenu from "../components/PhoneMenu";
 import TutorialOverlay from "../components/TutorialOverlay";
-import GameHeader from "../components/GameHeader";
 import SceneView from "../components/SceneView";
 import LocationPanels from "../components/LocationPanels";
 import RightSidebar from "../components/RightSidebar";
@@ -21,24 +28,57 @@ import RightSidebar from "../components/RightSidebar";
 // Lib
 import { getScheduledLocation } from "../lib/schedule";
 import { getCharacterImage, getLocationBackground } from "../lib/images";
-import { checkRandomEvent } from "../lib/randomEventSystem";
+import {
+  checkRandomEvent,
+  getScheduledNonStoryRandomEventForContext,
+  rollDailyNonStoryRandomEventIds,
+} from "../lib/randomEventSystem";
 import { getCharacterEvents } from "../data/events/chapter1/index";
 import { checkEventConditions, isEventOnCooldown } from "../lib/eventSystem";
 import { calculateGameTime, getTimeOfDay } from "../lib/time";
 import { applyCharacterEventRewards } from "../lib/rewards";
-import { applyPlayerStatDelta, withDerivedMood } from "../lib/playerStats";
+import {
+  applyPlayerStatDelta,
+  STARVING_HUNGER_THRESHOLD,
+  withDerivedMood,
+} from "../lib/playerStats";
+import {
+  AUTH_SESSION_KEY,
+  SINGLE_USER_ACCOUNT,
+  buildAuthSession,
+  isValidAuthSession,
+  verifyCredentials,
+} from "../lib/auth";
+import {
+  GAME_CONFIRM_EVENT,
+  GAME_NOTICE_EVENT,
+  askGameConfirm,
+  showGameNotice,
+  type GameConfirmPayload,
+  type GameNoticePayload,
+  type GameNoticeTone,
+} from "@/lib/gameUi";
+import { startImageManifestPreload } from "@/lib/imagePreload";
 
 // Data / Types
 
-import { locationDescriptions, locationGraph } from "../data/locations";
+import {
+  locationDescriptions,
+  locationGraph,
+  TESTING_LOCATION_NAME,
+  TESTING_ENVIRONMENT_LOCATION_BY_ID,
+  type TestingEnvironment,
+} from "../data/locations";
 import {
   PlayerStats,
   defaultPlayerStats,
   Girl,
   girls as baseGirls,
+  testingOnlyGirls,
   GirlStats,
 } from "../data/characters";
 import {
+  DAYS_OF_WEEK,
   DayOfWeek,
   START_DAY,
   START_HOUR,
@@ -78,6 +118,7 @@ type QuestItem = {
   title: string;
   description?: string;
   location?: string;
+  timing?: string;
   characterName?: string;
   priority: number;
 };
@@ -101,17 +142,66 @@ type SaveData = {
   dailyWorkoutState: DailyWorkoutState;
   rubyWorkoutTotal: number;
   randomEventDailyCounts: Record<string, number>;
+  dayCount: number;
+  dailyNonStoryRandomEventIds: string[];
+  nonStoryRandomEventLastTriggeredDay: Record<string, number>;
+  hungerProgressRemainder: number;
   textSpeed: "normal" | "instant";
   timestamp: string;
 };
 
+type GameNoticeItem = {
+  id: number;
+  message: string;
+  tone: GameNoticeTone;
+};
+
+type PendingGameConfirm = {
+  id: number;
+  message: string;
+  confirmLabel: string;
+  cancelLabel: string;
+  resolve: (confirmed: boolean) => void;
+};
+
+type EventDebugReport = {
+  event: CharacterEvent;
+  timing: string;
+  targetLocation: string;
+  reasons: string[];
+  isReady: boolean;
+};
+
 type GameState = "mainMenu" | "nameInput" | "intro" | "playing" | "paused" | "dialogue";
+type SpendTimeOptions = {
+  skipHungerGain?: boolean;
+  hungerGainMultiplier?: number;
+};
 
 const MANUAL_SAVE_KEY = "datingSimSave";
 const AUTO_SAVE_KEY = "datingSimAutoSave";
+const HUNGER_GAIN_PER_HOUR = 80 / 6;
+const SOBRIETY_BLACKOUT_THRESHOLD = 0;
 
 const clampValue = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
+
+const getEventTimingHint = (event: CharacterEvent) => {
+  const { minHour, maxHour, specificDay } = event.conditions;
+  const dayPart = specificDay ? specificDay : "Any day";
+
+  let timePart = "Any time";
+  if (minHour !== undefined && maxHour !== undefined) {
+    timePart =
+      minHour === 0 && maxHour === 24 ? "Any time" : `${minHour}:00-${maxHour}:00`;
+  } else if (minHour !== undefined) {
+    timePart = `After ${minHour}:00`;
+  } else if (maxHour !== undefined) {
+    timePart = `Before ${maxHour}:00`;
+  }
+
+  return `${dayPart}, ${timePart}`;
+};
 
 const getMetFlagForGirl = (girlName: string): GameplayFlag | null => {
   switch (girlName.toLowerCase()) {
@@ -130,9 +220,329 @@ const getMetFlagForGirl = (girlName: string): GameplayFlag | null => {
   }
 };
 
+const hasCompletedEvent = (
+  eventState: CharacterEventState | undefined,
+  eventId: string,
+) =>
+  eventState?.eventHistory.some(
+    (entry) => entry.eventId === eventId && entry.timesTriggered > 0,
+  ) ?? false;
+
+const inferMissingPathFlags = (
+  flags: Set<GameplayFlag>,
+  eventStates: Record<string, CharacterEventState>,
+): Set<GameplayFlag> => {
+  const nextFlags = new Set(flags);
+  const yumiState = eventStates.Yumi;
+  const irisState = eventStates.Iris;
+  const gwenState = eventStates.Gwen;
+
+  if (!nextFlags.has("yumiDomPath") && !nextFlags.has("yumiSubPath")) {
+    const yumiDomInHistory =
+      hasCompletedEvent(yumiState, "yumi_chapter_1_finale_dom") ||
+      hasCompletedEvent(yumiState, "yumi_classroom_flirt_dom") ||
+      hasCompletedEvent(yumiState, "yumi_tutoring_event_2_dom");
+    const yumiSubInHistory =
+      hasCompletedEvent(yumiState, "yumi_chapter_1_finale_sub") ||
+      hasCompletedEvent(yumiState, "yumi_classroom_flirt_sub") ||
+      hasCompletedEvent(yumiState, "yumi_tutoring_event_2_sub");
+
+    if (
+      yumiDomInHistory ||
+      nextFlags.has("yumi_relationship_secret_dom") ||
+      nextFlags.has("yumi_relationship_stalled")
+    ) {
+      nextFlags.add("yumiDomPath");
+    } else if (
+      yumiSubInHistory ||
+      nextFlags.has("yumi_relationship_secret")
+    ) {
+      nextFlags.add("yumiSubPath");
+    }
+  }
+
+  if (!nextFlags.has("irisDomPath") && !nextFlags.has("irisSubPath")) {
+    const irisDomInHistory =
+      hasCompletedEvent(irisState, "iris_chapter_1_finale_dom") ||
+      hasCompletedEvent(irisState, "iris_mall_bump_dom");
+    const irisSubInHistory =
+      hasCompletedEvent(irisState, "iris_chapter_1_finale_sub") ||
+      hasCompletedEvent(irisState, "iris_mall_bump_sub");
+
+    if (
+      irisDomInHistory ||
+      nextFlags.has("irisDomAcceptedKissLoopActive") ||
+      nextFlags.has("irisDomDeniedKissLoopActive") ||
+      nextFlags.has("irisDomDeniedExclusive") ||
+      nextFlags.has("irisDomDeniedExplore")
+    ) {
+      nextFlags.add("irisDomPath");
+    } else if (irisSubInHistory) {
+      nextFlags.add("irisSubPath");
+    }
+  }
+
+  if (
+    nextFlags.has("irisCh2Complete") &&
+    !nextFlags.has("irisKissOthersChoiceMade")
+  ) {
+    if (
+      nextFlags.has("irisNtrSeeded") ||
+      nextFlags.has("irisDomDeniedExplore")
+    ) {
+      nextFlags.add("irisKissOthersChoiceMade");
+      nextFlags.add("irisKissOthersEnabled");
+    } else if (nextFlags.has("irisDomDeniedExclusive")) {
+      nextFlags.add("irisKissOthersChoiceMade");
+    }
+  }
+
+  if (!nextFlags.has("gwenDomPath") && !nextFlags.has("gwenSubPath")) {
+    if (hasCompletedEvent(gwenState, "gwen_chapter_1_finale")) {
+      nextFlags.add("gwenDomPath");
+    } else if (hasCompletedEvent(gwenState, "gwen_chapter_1_finale_sub")) {
+      nextFlags.add("gwenSubPath");
+    }
+  }
+
+  if (!nextFlags.has("irisCoffeeAccepted") && !nextFlags.has("irisCoffeeDeclined")) {
+    if (hasCompletedEvent(irisState, "iris_coffee_meetup_event")) {
+      nextFlags.add("irisCoffeeAccepted");
+    } else if (hasCompletedEvent(irisState, "iris_coffee_forced_meet_event")) {
+      nextFlags.add("irisCoffeeDeclined");
+    }
+  }
+
+  if (
+    hasCompletedEvent(irisState, "iris_coffee_meetup_event") ||
+    hasCompletedEvent(irisState, "iris_coffee_forced_meet_event")
+  ) {
+    nextFlags.add("irisCoffeeMet");
+  }
+
+  if (
+    !nextFlags.has("irisApartmentUnlocked") &&
+    (hasCompletedEvent(irisState, "iris_hallway_invite_event") ||
+      nextFlags.has("irisDomPath") ||
+      nextFlags.has("irisSubPath"))
+  ) {
+    nextFlags.add("irisApartmentUnlocked");
+  }
+
+  return nextFlags;
+};
+
+const areFlagsEqual = (
+  left: Set<GameplayFlag>,
+  right: Set<GameplayFlag>,
+) => {
+  if (left.size !== right.size) return false;
+  for (const flag of left) {
+    if (!right.has(flag)) return false;
+  }
+  return true;
+};
+
+const getDayCountFromGameTime = (gameTime: number) =>
+  Math.floor(gameTime / 24);
+
+const isEventHistoryFromCurrentDay = (
+  history: EventHistory,
+  currentDayCount: number,
+  currentDay: DayOfWeek,
+) => {
+  const gameTime = history.lastTriggered?.gameTime;
+  if (typeof gameTime === "number" && Number.isFinite(gameTime)) {
+    return getDayCountFromGameTime(gameTime) === currentDayCount;
+  }
+  return history.lastTriggered.day === currentDay;
+};
+
+const getAdvancedDay = (day: DayOfWeek, daysToAdvance: number): DayOfWeek => {
+  const normalizedAdvance = Math.max(0, Math.floor(daysToAdvance));
+  const startIndex = DAYS_OF_WEEK.indexOf(day);
+  if (startIndex === -1) return day;
+  const nextIndex = (startIndex + normalizedAdvance) % DAYS_OF_WEEK.length;
+  return DAYS_OF_WEEK[nextIndex];
+};
+
+const normalizeEventStateGameTime = (
+  history: EventHistory,
+  currentDay: DayOfWeek,
+  currentDayCount: number,
+): number => {
+  const recorded = history.lastTriggered?.gameTime;
+  if (typeof recorded !== "number" || !Number.isFinite(recorded)) {
+    const currentDayIndex = DAYS_OF_WEEK.indexOf(currentDay);
+    const eventDayIndex = DAYS_OF_WEEK.indexOf(history.lastTriggered.day as DayOfWeek);
+    const dayDelta =
+      currentDayIndex >= 0 && eventDayIndex >= 0
+        ? (currentDayIndex - eventDayIndex + DAYS_OF_WEEK.length) %
+          DAYS_OF_WEEK.length
+        : 0;
+    const estimatedDayCount = Math.max(0, currentDayCount - dayDelta);
+    return estimatedDayCount * 24 + history.lastTriggered.hour;
+  }
+  return recorded;
+};
+
+const normalizeEventStateTimestamps = (
+  eventStates: Record<string, CharacterEventState>,
+  currentDay: DayOfWeek,
+  currentDayCount: number,
+) => {
+  const normalizedStates: Record<string, CharacterEventState> = {};
+
+  Object.entries(eventStates).forEach(([characterName, state]) => {
+    const normalizedHistory = state.eventHistory.map((history) => {
+      const normalizedGameTime = normalizeEventStateGameTime(
+        history,
+        currentDay,
+        currentDayCount,
+      );
+      return {
+        ...history,
+        lastTriggered: {
+          ...history.lastTriggered,
+          gameTime: normalizedGameTime,
+        },
+      };
+    });
+    const latestGameTime = normalizedHistory.reduce(
+      (latest, history) => Math.max(latest, history.lastTriggered.gameTime),
+      state.lastInteractionTime ?? 0,
+    );
+
+    normalizedStates[characterName] = {
+      ...state,
+      eventHistory: normalizedHistory,
+      lastInteractionTime: latestGameTime,
+    };
+  });
+
+  return normalizedStates;
+};
+
+const GWEN_DOOR_MIXUP_CASUAL_DIALOGUE_IDS = new Set([
+  "gwen_event_2_door_mixup",
+  "gwen_event_2_door_supportive",
+  "gwen_event_2_door_angry",
+]);
+const IRIS_HOME_DIALOGUE_IDS = new Set([
+  "iris_hallway_invite_dom",
+  "iris_hallway_invite_sub",
+  "iris_hallway_invite_sub_flirt",
+  "iris_hallway_invite_sub_friendly",
+]);
+const IRIS_APARTMENT_LOCATION_NAMES = new Set([
+  "Iris' Living Room",
+  "Iris' Bedroom",
+  "Iris' Bathroom",
+  "Iris' Kitchen",
+  "Dawn's bedroom",
+]);
+const UNIVERSITY_LOCATION_NAMES = new Set([
+  "University",
+  "University Hallway",
+  "Classroom",
+  "Office",
+  "Iris' Office",
+  "Men's Bathroom",
+  "Women's Bathroom",
+  "University Parking Lot",
+]);
+const NIGHTLIFE_LOCATION_NAMES = new Set(["Bar", "Nightclub", "Strip Club"]);
+const CAFE_AND_GYM_CLOSING_HOUR = 22;
+const MALL_CLOSING_HOUR = 20;
+const CAR_STORE_CLOSING_HOUR = 21;
+const CHAPTER_TWO_UNLOCK_FLAG_BY_CHARACTER: Partial<
+  Record<string, GameplayFlag>
+> = {
+  Iris: "irisCh1FinaleComplete",
+  Dawn: "hasMetDawn",
+  Gwen: "gwen_chapter_1_completed",
+  Ruby: "ruby_chapter_1_completed",
+  Yumi: "yumi_chapter_1_completed",
+};
+const NOTICE_CLASS_BY_TONE: Record<GameNoticeTone, string> = {
+  info: "border-purple-400 bg-purple-900/90 text-purple-100",
+  success: "border-green-400 bg-green-900/90 text-green-100",
+  warning: "border-yellow-400 bg-yellow-900/90 text-yellow-100",
+  error: "border-red-400 bg-red-900/90 text-red-100",
+};
+const DEBUG_FAST_TRAVEL_LOCATIONS = Array.from(
+  new Set([
+    ...Object.keys(locationGraph),
+    ...Object.values(locationGraph).flatMap((links) => links.map((loc) => loc.name)),
+  ]),
+).sort((left, right) => left.localeCompare(right));
+
+const isNightlifeOpenAtHour = (hour: number) => hour >= 22 || hour < 2;
+const isChapterTwoOrHigher = (
+  characterName: string,
+  flags: Set<GameplayFlag>,
+) => {
+  const requiredFlag = CHAPTER_TWO_UNLOCK_FLAG_BY_CHARACTER[characterName];
+  const normalizedCharacterName = characterName.toLowerCase();
+  const hasFlag = (flag: string) => (flags as Set<string>).has(flag);
+
+  return (
+    (requiredFlag ? flags.has(requiredFlag) : false) ||
+    hasFlag(`${normalizedCharacterName}_chapter_1_completed`) ||
+    hasFlag(`${normalizedCharacterName}_chapter_2_started`) ||
+    hasFlag(`${normalizedCharacterName}_chapter_2_completed`) ||
+    hasFlag(`${normalizedCharacterName}_chapter_3_completed`) ||
+    hasFlag(`${normalizedCharacterName}_chapter_4_completed`)
+  );
+};
+
+const getDialogueCharacterImageLocationOverride = (
+  dialogueId: string,
+): string | undefined => {
+  if (GWEN_DOOR_MIXUP_CASUAL_DIALOGUE_IDS.has(dialogueId)) {
+    return "City";
+  }
+  if (IRIS_HOME_DIALOGUE_IDS.has(dialogueId)) {
+    return "Iris' Living Room";
+  }
+
+  return undefined;
+};
+
+type IconHoverButtonProps = {
+  label: string;
+  onClick: () => void;
+  children: ReactNode;
+  className?: string;
+};
+
+const IconHoverButton = ({
+  label,
+  onClick,
+  children,
+  className = "",
+}: IconHoverButtonProps) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-label={label}
+    title={label}
+    className={`group flex h-11 w-11 shrink-0 items-center overflow-hidden rounded-lg border border-purple-500/70 bg-purple-900/60 px-3 text-purple-100 shadow-md transition-all duration-200 hover:w-32 hover:bg-purple-800/70 focus-visible:w-32 focus-visible:bg-purple-800/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 ${className}`}
+  >
+    <span className="flex h-5 w-5 shrink-0 items-center justify-center">
+      {children}
+    </span>
+    <span className="ml-2 whitespace-nowrap text-sm font-semibold opacity-0 translate-x-2 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100">
+      {label}
+    </span>
+  </button>
+);
+
 export default function GamePage() {
   // States
   const [gameState, setGameState] = useState<GameState>("mainMenu");
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [authChecked, setAuthChecked] = useState<boolean>(false);
   const [player, setPlayer] = useState<PlayerStats>(defaultPlayerStats);
   const [currentLocation, setCurrentLocation] = useState<string>("Bedroom");
   const [hour, setHour] = useState<number>(START_HOUR);
@@ -147,6 +557,8 @@ export default function GamePage() {
   const [currentDialogue, setCurrentDialogue] = useState<Dialogue | null>(null);
   const [dialogueCharacterImage, setDialogueCharacterImage] =
     useState<string>("");
+  const [dialogueCharacterImageLocationOverride, setDialogueCharacterImageLocationOverride] =
+    useState<string | null>(null);
   const [dialogueGirlEffects, setDialogueGirlEffects] =
     useState<Partial<GirlStats> | null>(null);
   const [dialogueGirlName, setDialogueGirlName] = useState<string>("");
@@ -182,7 +594,123 @@ export default function GamePage() {
     },
   );
   const [rubyWorkoutTotal, setRubyWorkoutTotal] = useState<number>(0);
+  const [testingEnvironment, setTestingEnvironment] =
+    useState<TestingEnvironment>("casual");
+  const [gameNotices, setGameNotices] = useState<GameNoticeItem[]>([]);
+  const [activeGameConfirm, setActiveGameConfirm] =
+    useState<PendingGameConfirm | null>(null);
+  const [showDebugPanel, setShowDebugPanel] = useState<boolean>(false);
+  const [debugCharacterName, setDebugCharacterName] = useState<string>("Yumi");
+  const [debugEventId, setDebugEventId] = useState<string>("");
+  const [debugTravelLocation, setDebugTravelLocation] =
+    useState<string>("Bedroom");
+  const [debugFreezeVitals, setDebugFreezeVitals] = useState<boolean>(false);
+  const noticeIdRef = useRef(0);
+  const confirmIdRef = useRef(0);
+  const confirmQueueRef = useRef<PendingGameConfirm[]>([]);
+  const irisKissOthersPromptedRef = useRef(false);
   const pendingAutoSaveRef = useRef(false);
+  const imagePreloadStartedRef = useRef(false);
+
+  const applyDebugVitalsProtection = useCallback(
+    (nextPlayer: PlayerStats, previousPlayer: PlayerStats): PlayerStats => {
+      if (!debugFreezeVitals) {
+        return nextPlayer;
+      }
+
+      return withDerivedMood({
+        ...nextPlayer,
+        energy: Math.max(nextPlayer.energy, previousPlayer.energy),
+        hunger: Math.min(nextPlayer.hunger, previousPlayer.hunger),
+      });
+    },
+    [debugFreezeVitals],
+  );
+
+  const setPlayerWithDebugProtection = useCallback(
+    (update: PlayerStats | ((previousPlayer: PlayerStats) => PlayerStats)) => {
+      setPlayer((previousPlayer) => {
+        const nextPlayer =
+          typeof update === "function"
+            ? (update as (previousPlayer: PlayerStats) => PlayerStats)(
+                previousPlayer,
+              )
+            : update;
+        return applyDebugVitalsProtection(nextPlayer, previousPlayer);
+      });
+    },
+    [applyDebugVitalsProtection],
+  );
+
+  const resolveGameConfirm = useCallback((confirmed: boolean) => {
+    setActiveGameConfirm((current) => {
+      if (!current) return null;
+      current.resolve(confirmed);
+      return confirmQueueRef.current.shift() ?? null;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (imagePreloadStartedRef.current) return;
+    imagePreloadStartedRef.current = true;
+    startImageManifestPreload();
+  }, []);
+
+  useEffect(() => {
+    const handleNoticeEvent = (event: Event) => {
+      const detail = (event as CustomEvent<GameNoticePayload>).detail;
+      if (!detail?.message) return;
+
+      const id = noticeIdRef.current++;
+      const notice: GameNoticeItem = {
+        id,
+        message: detail.message,
+        tone: detail.tone ?? "info",
+      };
+      const durationMs = Math.max(1200, detail.durationMs ?? 3000);
+
+      setGameNotices((prev) => [...prev, notice]);
+      window.setTimeout(() => {
+        setGameNotices((prev) => prev.filter((item) => item.id !== id));
+      }, durationMs);
+    };
+
+    const handleConfirmEvent = (event: Event) => {
+      const detail = (event as CustomEvent<GameConfirmPayload>).detail;
+      if (!detail?.message || typeof detail.resolve !== "function") return;
+
+      const request: PendingGameConfirm = {
+        id: confirmIdRef.current++,
+        message: detail.message,
+        confirmLabel: detail.confirmLabel ?? "Confirm",
+        cancelLabel: detail.cancelLabel ?? "Cancel",
+        resolve: detail.resolve,
+      };
+
+      setActiveGameConfirm((current) => {
+        if (!current) return request;
+        confirmQueueRef.current.push(request);
+        return current;
+      });
+    };
+
+    window.addEventListener(GAME_NOTICE_EVENT, handleNoticeEvent as EventListener);
+    window.addEventListener(
+      GAME_CONFIRM_EVENT,
+      handleConfirmEvent as EventListener,
+    );
+
+    return () => {
+      window.removeEventListener(
+        GAME_NOTICE_EVENT,
+        handleNoticeEvent as EventListener,
+      );
+      window.removeEventListener(
+        GAME_CONFIRM_EVENT,
+        handleConfirmEvent as EventListener,
+      );
+    };
+  }, []);
 
   const getProgressionCount = useCallback(
     (girlName: string) => {
@@ -201,9 +729,9 @@ export default function GamePage() {
       let affectionCap = clampValue(progressionCount * 5, 0, 100);
       if (girlName === "Iris") {
         if (gameplayFlags.has("irisCh2Ev2_Done")) {
-          affectionCap = 20;
+          affectionCap = Math.max(affectionCap, 20);
         } else if (gameplayFlags.has("irisCh2Ev1_Done")) {
-          affectionCap = 15;
+          affectionCap = Math.max(affectionCap, 15);
         }
       }
       const lustCap = clampValue(Math.floor(affectionCap * 1.25), 0, 100);
@@ -296,23 +824,75 @@ export default function GamePage() {
   const [randomEventDailyCounts, setRandomEventDailyCounts] = useState<
     Record<string, number>
   >({});
+  const [dayCount, setDayCount] = useState<number>(0);
+  const [dailyNonStoryRandomEventIds, setDailyNonStoryRandomEventIds] =
+    useState<string[]>([]);
+  const [nonStoryRandomEventLastTriggeredDay, setNonStoryRandomEventLastTriggeredDay] =
+    useState<Record<string, number>>({});
+  const [hungerProgressRemainder, setHungerProgressRemainder] =
+    useState<number>(0);
 
   // time
-  const spendTime = (amount: number) => {
+  const spendTime = (
+    amount: number,
+    basePlayer?: PlayerStats,
+    options?: SpendTimeOptions,
+  ) => {
     const newHour = hour + amount;
+    const wrappedHour = ((newHour % MAX_HOUR) + MAX_HOUR) % MAX_HOUR;
+    const daysElapsed = Math.floor(newHour / MAX_HOUR);
+    const incomingPlayer = basePlayer ?? player;
+    const effectivePlayer = applyDebugVitalsProtection(incomingPlayer, player);
+    const skipHungerGain = (options?.skipHungerGain ?? false) || debugFreezeVitals;
+    const hungerGainMultiplier = Math.max(
+      0,
+      options?.hungerGainMultiplier ?? 1,
+    );
+    const elapsedHours = amount;
+    const rawHungerGain = skipHungerGain
+      ? hungerProgressRemainder
+      : elapsedHours * HUNGER_GAIN_PER_HOUR * hungerGainMultiplier +
+        hungerProgressRemainder;
+    const hungerGain = skipHungerGain ? 0 : Math.floor(rawHungerGain);
+    const nextHunger = skipHungerGain
+      ? effectivePlayer.hunger
+      : Math.min(100, effectivePlayer.hunger + hungerGain);
+    const nextHungerRemainder = skipHungerGain
+      ? hungerProgressRemainder
+      : nextHunger >= 100
+        ? 0
+        : rawHungerGain - hungerGain;
 
-    if (newHour >= MAX_HOUR) {
-      const nextDay = getNextDay(dayOfWeek);
-      setHour(START_HOUR);
+    if (!skipHungerGain) {
+      setHungerProgressRemainder(nextHungerRemainder);
+    }
+
+    if (daysElapsed > 0) {
+      const nextDay = getAdvancedDay(dayOfWeek, daysElapsed);
+      const nextDayCount = dayCount + daysElapsed;
+      const nextDayRestedPlayer = withDerivedMood({
+        ...effectivePlayer,
+        energy: Math.min(100, effectivePlayer.energy + 30),
+        hunger: nextHunger,
+        sobriety: 100,
+      });
+      const nextDayNonStoryRandomEvents = rollDailyNonStoryRandomEventIds({
+        day: nextDay,
+        player: nextDayRestedPlayer,
+        gameplayFlags,
+        girls,
+        cooldownByEventId: nonStoryRandomEventLastTriggeredDay,
+        currentDayCount: nextDayCount,
+        maxEventsPerDay: 2,
+        cooldownDays: 7,
+      });
+
+      setHour(wrappedHour);
       setDayOfWeek(nextDay);
+      setDayCount(nextDayCount);
+      setDailyNonStoryRandomEventIds(nextDayNonStoryRandomEvents);
 
-      setPlayer((prev) =>
-        withDerivedMood({
-          ...prev,
-          energy: Math.min(100, prev.energy + 30),
-          hunger: Math.min(100, prev.hunger + 20),
-        })
-      );
+      setPlayerWithDebugProtection(nextDayRestedPlayer);
 
       // Clear selected girl when day changes
       setSelectedGirl(null);
@@ -325,11 +905,91 @@ export default function GamePage() {
         withoutRuby: 0,
       });
 
-      alert(`A new day begins! It's ${nextDay} morning.`);
+      if (nextDayNonStoryRandomEvents.length > 0) {
+        console.log(
+          `🎲 Daily non-story random events scheduled (${nextDayNonStoryRandomEvents.length}):`,
+          nextDayNonStoryRandomEvents.join(", "),
+        );
+      } else {
+        console.log("🎲 No non-story random events scheduled for today.");
+      }
+
+      showGameNotice(`A new day begins! It's ${nextDay} at ${wrappedHour}:00.`, {
+        tone: "info",
+        durationMs: 3500,
+      });
     } else {
       setHour(newHour);
+      setPlayerWithDebugProtection(
+        withDerivedMood({
+          ...effectivePlayer,
+          hunger: nextHunger,
+        }),
+      );
     }
   };
+
+  const handleSobrietyBlackout = useCallback(
+    (playerAtBlackout: PlayerStats) => {
+      if (playerAtBlackout.sobriety > SOBRIETY_BLACKOUT_THRESHOLD) {
+        return;
+      }
+
+      const nextDay = getNextDay(dayOfWeek);
+      const nextDayCount = dayCount + 1;
+      const recoveredPlayer = withDerivedMood({
+        ...playerAtBlackout,
+        energy: Math.min(100, playerAtBlackout.energy + 40),
+        hunger: Math.floor(playerAtBlackout.hunger / 2),
+        sobriety: 100,
+      });
+      const nextDayNonStoryRandomEvents = rollDailyNonStoryRandomEventIds({
+        day: nextDay,
+        player: recoveredPlayer,
+        gameplayFlags,
+        girls: baseGirls,
+        cooldownByEventId: nonStoryRandomEventLastTriggeredDay,
+        currentDayCount: nextDayCount,
+        maxEventsPerDay: 2,
+        cooldownDays: 7,
+      });
+
+      setPlayerWithDebugProtection(recoveredPlayer);
+      setCurrentLocation("Bedroom");
+      setHour(START_HOUR);
+      setDayOfWeek(nextDay);
+      setDayCount(nextDayCount);
+      setDailyNonStoryRandomEventIds(nextDayNonStoryRandomEvents);
+      setHungerProgressRemainder(0);
+
+      setSelectedGirl(null);
+      setInteractionHistory({});
+      setRandomEventDailyCounts({});
+      setCurrentRandomEvent(null);
+      setDailyWorkoutState({
+        day: nextDay,
+        total: 0,
+        withRuby: 0,
+        withoutRuby: 0,
+      });
+
+      pendingAutoSaveRef.current = true;
+      showGameNotice(
+        "You drank too much, passed out, and woke up in your bed at 8:00 AM.",
+        {
+          tone: "warning",
+          durationMs: 4000,
+        },
+      );
+    },
+    [
+      dayCount,
+      dayOfWeek,
+      gameplayFlags,
+      nonStoryRandomEventLastTriggeredDay,
+      setPlayerWithDebugProtection,
+    ],
+  );
 
   // Schedule a new encounter
   const scheduleEncounter = (encounter: ScheduledEncounter) => {
@@ -470,13 +1130,16 @@ export default function GamePage() {
 
         const characterImage = getCharacterImage(
           girls.find((g) => g.name === encounter.characterName)!,
-          currentLocation,
+          getDialogueCharacterImageLocationOverride(characterEvent.id) ??
+            currentLocation,
           hour,
         );
         startDialogue(
           characterEvent.dialogue,
           characterImage,
           characterEvent.rewards?.girlStats ?? null,
+          encounter.characterName,
+          getDialogueCharacterImageLocationOverride(characterEvent.id),
         );
 
         const updatedPlayer = applyCharacterEventRewards(
@@ -493,7 +1156,7 @@ export default function GamePage() {
           },
         );
         if (updatedPlayer !== player) {
-          setPlayer(updatedPlayer);
+          setPlayerWithDebugProtection(updatedPlayer);
         }
 
         return true;
@@ -519,6 +1182,26 @@ export default function GamePage() {
   // mount
   useEffect(() => {
     setIsMounted(true);
+
+    const rawSession = localStorage.getItem(AUTH_SESSION_KEY);
+    if (!rawSession) {
+      setIsAuthenticated(false);
+    } else {
+      try {
+        const parsed = JSON.parse(rawSession) as unknown;
+        if (isValidAuthSession(parsed)) {
+          setIsAuthenticated(true);
+        } else {
+          localStorage.removeItem(AUTH_SESSION_KEY);
+          setIsAuthenticated(false);
+        }
+      } catch {
+        localStorage.removeItem(AUTH_SESSION_KEY);
+        setIsAuthenticated(false);
+      }
+    }
+    setAuthChecked(true);
+
     const manualSave = localStorage.getItem(MANUAL_SAVE_KEY);
     const autoSave = localStorage.getItem(AUTO_SAVE_KEY);
     setHasManualSave(!!manualSave);
@@ -577,6 +1260,28 @@ export default function GamePage() {
   }, [gameplayFlags]);
   // girls with schedules + overrides
   const girls = useMemo(() => {
+    const withResolvedStats = (girl: Girl, resolvedLocation: string): Girl => {
+      const override = girlStatsOverrides[girl.name];
+      const mergedStats = override ? { ...girl.stats, ...override } : girl.stats;
+      return {
+        ...girl,
+        location: resolvedLocation,
+        stats: clampGirlStatsToCaps(girl.name, mergedStats),
+      };
+    };
+
+    // Testing location: show every girl at once, always.
+    if (currentLocation === TESTING_LOCATION_NAME) {
+      const testingStudioGirls = [...baseGirls, ...testingOnlyGirls].filter(
+        (girl, index, allGirls) =>
+          allGirls.findIndex((candidate) => candidate.name === girl.name) ===
+          index,
+      );
+      return testingStudioGirls.map((girl) =>
+        withResolvedStats(girl, TESTING_LOCATION_NAME),
+      );
+    }
+
     return baseGirls
       .filter((girl) => {
         // Iris is always available
@@ -601,17 +1306,10 @@ export default function GamePage() {
           dayOfWeek,
           hour,
         );
-        const override = girlStatsOverrides[girl.name];
-        const mergedStats = override
-          ? { ...girl.stats, ...override }
-          : girl.stats;
-        return {
-          ...girl,
-          location: scheduledLocation || girl.location,
-          stats: clampGirlStatsToCaps(girl.name, mergedStats),
-        };
+        return withResolvedStats(girl, scheduledLocation || girl.location);
       });
   }, [
+    currentLocation,
     dayOfWeek,
     hour,
     girlStatsOverrides,
@@ -630,6 +1328,324 @@ export default function GamePage() {
       }
     }
   }, [girls, selectedGirl, currentLocation]);
+
+  const debugCharacterOptions = useMemo(
+    () => girls.map((girl) => girl.name),
+    [girls],
+  );
+
+  const debugCharacterEvents = useMemo(
+    () =>
+      debugCharacterName ? getCharacterEvents(debugCharacterName) : [],
+    [debugCharacterName],
+  );
+
+  const activeFlags = useMemo(
+    () => Array.from(gameplayFlags).sort((a, b) => a.localeCompare(b)),
+    [gameplayFlags],
+  );
+
+  const maxDebugCharacterStats = useCallback(() => {
+    if (!debugCharacterName) return;
+
+    const baseGirl =
+      baseGirls.find((candidate) => candidate.name === debugCharacterName) ??
+      testingOnlyGirls.find((candidate) => candidate.name === debugCharacterName) ??
+      girls.find((candidate) => candidate.name === debugCharacterName);
+
+    if (!baseGirl) {
+      showGameNotice(`Could not find character: ${debugCharacterName}`, {
+        tone: "error",
+      });
+      return;
+    }
+
+    setGirlStatsOverrides((prev) => {
+      const currentStats = {
+        ...baseGirl.stats,
+        ...(prev[debugCharacterName] ?? {}),
+      };
+      const maxedStats = clampGirlStatsToCaps(debugCharacterName, {
+        ...currentStats,
+        affection: 100,
+        lust: 100,
+        mood: 100,
+        love: 100,
+        dominance: 100,
+      });
+      return { ...prev, [debugCharacterName]: maxedStats };
+    });
+
+    const { affectionCap, lustCap } = getRelationshipCaps(debugCharacterName);
+    showGameNotice(
+      `${debugCharacterName} maxed to current caps (Affection ${affectionCap}, Lust ${lustCap}).`,
+      { tone: "success" },
+    );
+  }, [
+    clampGirlStatsToCaps,
+    debugCharacterName,
+    getRelationshipCaps,
+    girls,
+  ]);
+
+  const grantDebugMoney = useCallback(() => {
+    setPlayerWithDebugProtection((prev) =>
+      withDerivedMood({
+        ...prev,
+        money: 99999,
+      }),
+    );
+    showGameNotice("Money set to $99,999 for testing.", { tone: "success" });
+  }, [setPlayerWithDebugProtection]);
+
+  useEffect(() => {
+    if (selectedGirl) {
+      setDebugCharacterName(selectedGirl.name);
+    }
+  }, [selectedGirl]);
+
+  useEffect(() => {
+    if (debugCharacterOptions.length === 0) return;
+    if (!debugCharacterOptions.includes(debugCharacterName)) {
+      setDebugCharacterName(debugCharacterOptions[0]);
+    }
+  }, [debugCharacterOptions, debugCharacterName]);
+
+  useEffect(() => {
+    if (
+      debugEventId &&
+      debugCharacterEvents.some((event) => event.id === debugEventId)
+    ) {
+      return;
+    }
+    setDebugEventId(debugCharacterEvents[0]?.id ?? "");
+  }, [debugCharacterEvents, debugEventId]);
+
+  useEffect(() => {
+    setDebugTravelLocation(currentLocation);
+  }, [currentLocation]);
+
+  const debugEventReport = useMemo<EventDebugReport | null>(() => {
+    if (!debugCharacterName || !debugEventId) return null;
+
+    const event = debugCharacterEvents.find(
+      (candidate) => candidate.id === debugEventId,
+    );
+    if (!event) return null;
+
+    const girl =
+      girls.find((candidate) => candidate.name === debugCharacterName) ??
+      baseGirls.find((candidate) => candidate.name === debugCharacterName);
+    if (!girl) return null;
+
+    const eventState = characterEventStates[debugCharacterName] ?? {
+      characterName: debugCharacterName,
+      eventHistory: [],
+      lastInteractionTime: 0,
+    };
+
+    const completedEvents = eventState.eventHistory
+      .filter((h) => h.timesTriggered > 0)
+      .map((h) => h.eventId);
+    const storyEventIds = new Set(
+      debugCharacterEvents
+        .filter((candidate) => !candidate.repeatable)
+        .map((candidate) => candidate.id),
+    );
+    const storyHistory = eventState.eventHistory.filter((h) =>
+      storyEventIds.has(h.eventId),
+    );
+    const completedStoryCount = storyHistory.filter(
+      (h) => h.timesTriggered > 0,
+    ).length;
+    const currentGameTime = calculateGameTime(dayOfWeek, hour, dayCount);
+    const currentGameDay = getDayCountFromGameTime(currentGameTime);
+    const storyTriggeredToday = storyHistory.some((h) =>
+      isEventHistoryFromCurrentDay(h, currentGameDay, dayOfWeek),
+    );
+    const eventTriggeredToday = eventState.eventHistory.some((h) =>
+      isEventHistoryFromCurrentDay(h, currentGameDay, dayOfWeek),
+    );
+    const history = eventState.eventHistory.find((h) => h.eventId === event.id);
+    const targetLocation = event.conditions.requiredLocation ?? girl.location;
+    const timing = getEventTimingHint(event);
+    const reasons: string[] = [];
+    const conditions = event.conditions;
+
+    if (!event.repeatable && completedEvents.includes(event.id)) {
+      reasons.push("Already completed (non-repeatable event).");
+    }
+
+    if (eventTriggeredToday) {
+      reasons.push(`${debugCharacterName} already had an event today.`);
+    }
+
+    if (!event.repeatable && storyTriggeredToday) {
+      reasons.push(
+        `${debugCharacterName} already had a story event today.`,
+      );
+    }
+
+    if (!event.repeatable && completedStoryCount > 0) {
+      const requiredAffection = completedStoryCount * 5;
+      if (girl.stats.affection < requiredAffection) {
+        reasons.push(
+          `Needs affection ${requiredAffection} (current ${girl.stats.affection}).`,
+        );
+      }
+    }
+
+    if (isEventOnCooldown(event, history, currentGameTime)) {
+      const cooldownHours = event.cooldownHours ?? 0;
+      const elapsedHours = history
+        ? currentGameTime - history.lastTriggered.gameTime
+        : 0;
+      const remainingHours = Math.max(1, Math.ceil(cooldownHours - elapsedHours));
+      reasons.push(`Cooldown active: ${remainingHours}h remaining.`);
+    }
+
+    if (conditions.minAffection !== undefined && girl.stats.affection < conditions.minAffection) {
+      reasons.push(
+        `Requires affection >= ${conditions.minAffection} (current ${girl.stats.affection}).`,
+      );
+    }
+    if (conditions.minLust !== undefined && girl.stats.lust < conditions.minLust) {
+      reasons.push(`Requires lust >= ${conditions.minLust} (current ${girl.stats.lust}).`);
+    }
+    if (conditions.minLove !== undefined && girl.stats.love < conditions.minLove) {
+      reasons.push(`Requires love >= ${conditions.minLove} (current ${girl.stats.love}).`);
+    }
+    if (conditions.minMood !== undefined && girl.stats.mood < conditions.minMood) {
+      reasons.push(`Requires mood >= ${conditions.minMood} (current ${girl.stats.mood}).`);
+    }
+    if (
+      conditions.minDominance !== undefined &&
+      (girl.stats.dominance ?? 0) < conditions.minDominance
+    ) {
+      reasons.push(
+        `Requires dominance >= ${conditions.minDominance} (current ${girl.stats.dominance ?? 0}).`,
+      );
+    }
+    if (conditions.maxAffection !== undefined && girl.stats.affection > conditions.maxAffection) {
+      reasons.push(
+        `Requires affection <= ${conditions.maxAffection} (current ${girl.stats.affection}).`,
+      );
+    }
+    if (conditions.maxLust !== undefined && girl.stats.lust > conditions.maxLust) {
+      reasons.push(`Requires lust <= ${conditions.maxLust} (current ${girl.stats.lust}).`);
+    }
+    if (
+      conditions.maxDominance !== undefined &&
+      (girl.stats.dominance ?? 0) > conditions.maxDominance
+    ) {
+      reasons.push(
+        `Requires dominance <= ${conditions.maxDominance} (current ${girl.stats.dominance ?? 0}).`,
+      );
+    }
+
+    if (
+      conditions.minPlayerIntelligence !== undefined &&
+      player.intelligence < conditions.minPlayerIntelligence
+    ) {
+      reasons.push(
+        `Requires player intelligence >= ${conditions.minPlayerIntelligence} (current ${player.intelligence}).`,
+      );
+    }
+    if (
+      conditions.minPlayerFitness !== undefined &&
+      player.fitness < conditions.minPlayerFitness
+    ) {
+      reasons.push(
+        `Requires player fitness >= ${conditions.minPlayerFitness} (current ${player.fitness}).`,
+      );
+    }
+    if (
+      conditions.minPlayerStyle !== undefined &&
+      player.style < conditions.minPlayerStyle
+    ) {
+      reasons.push(
+        `Requires player style >= ${conditions.minPlayerStyle} (current ${player.style}).`,
+      );
+    }
+    if (
+      conditions.minPlayerMoney !== undefined &&
+      player.money < conditions.minPlayerMoney
+    ) {
+      reasons.push(
+        `Requires player money >= ${conditions.minPlayerMoney} (current ${player.money}).`,
+      );
+    }
+
+    if (conditions.minHour !== undefined && hour < conditions.minHour) {
+      reasons.push(`Requires time after ${conditions.minHour}:00 (current ${hour}:00).`);
+    }
+    if (conditions.maxHour !== undefined && hour >= conditions.maxHour) {
+      reasons.push(`Requires time before ${conditions.maxHour}:00 (current ${hour}:00).`);
+    }
+    if (conditions.specificDay !== undefined && dayOfWeek !== conditions.specificDay) {
+      reasons.push(`Requires day ${conditions.specificDay} (current ${dayOfWeek}).`);
+    }
+    if (
+      conditions.requiredLocation !== undefined &&
+      currentLocation !== conditions.requiredLocation
+    ) {
+      reasons.push(
+        `Requires location ${conditions.requiredLocation} (current ${currentLocation}).`,
+      );
+    }
+
+    if (conditions.requiredPreviousEvents) {
+      conditions.requiredPreviousEvents.forEach((requiredEvent) => {
+        if (!completedEvents.includes(requiredEvent)) {
+          reasons.push(`Missing prerequisite event: ${requiredEvent}.`);
+        }
+      });
+    }
+
+    if (conditions.blockedByEvents) {
+      conditions.blockedByEvents.forEach((blockedEvent) => {
+        if (completedEvents.includes(blockedEvent)) {
+          reasons.push(`Blocked by completed event: ${blockedEvent}.`);
+        }
+      });
+    }
+
+    if (conditions.requiredFlags) {
+      conditions.requiredFlags.forEach((flag) => {
+        if (!gameplayFlags.has(flag)) {
+          reasons.push(`Missing required flag: ${flag}.`);
+        }
+      });
+    }
+
+    if (conditions.blockedByFlags) {
+      conditions.blockedByFlags.forEach((flag) => {
+        if (gameplayFlags.has(flag)) {
+          reasons.push(`Blocked by active flag: ${flag}.`);
+        }
+      });
+    }
+
+    return {
+      event,
+      timing,
+      targetLocation,
+      reasons,
+      isReady: reasons.length === 0,
+    };
+  }, [
+    characterEventStates,
+    currentLocation,
+    dayCount,
+    dayOfWeek,
+    debugCharacterEvents,
+    debugCharacterName,
+    debugEventId,
+    gameplayFlags,
+    girls,
+    hour,
+    player,
+  ]);
 
   //function to set a flag
   const setFlag = useCallback((flag: GameplayFlag) => {
@@ -666,6 +1682,10 @@ export default function GamePage() {
       dailyWorkoutState,
       rubyWorkoutTotal,
       randomEventDailyCounts,
+      dayCount,
+      dailyNonStoryRandomEventIds,
+      nonStoryRandomEventLastTriggeredDay,
+      hungerProgressRemainder,
       textSpeed,
       timestamp: new Date().toISOString(),
     }),
@@ -683,19 +1703,39 @@ export default function GamePage() {
       dailyWorkoutState,
       rubyWorkoutTotal,
       randomEventDailyCounts,
+      dayCount,
+      dailyNonStoryRandomEventIds,
+      nonStoryRandomEventLastTriggeredDay,
+      hungerProgressRemainder,
       textSpeed,
     ],
   );
 
   const applySaveData = useCallback((data: SaveData) => {
-    setPlayer(withDerivedMood(data.player));
+    const loadedPlayer = withDerivedMood({
+      ...defaultPlayerStats,
+      ...data.player,
+    });
+    const loadedDay = data.dayOfWeek ?? START_DAY;
+    const loadedDayCount = data.dayCount ?? 0;
+    const loadedEventStates = normalizeEventStateTimestamps(
+      data.characterEventStates ?? {},
+      loadedDay,
+      loadedDayCount,
+    );
+    const loadedFlags = inferMissingPathFlags(
+      new Set(data.gameplayFlags ?? []),
+      loadedEventStates,
+    );
+    const loadedCooldowns = data.nonStoryRandomEventLastTriggeredDay ?? {};
+
+    setPlayer(loadedPlayer);
     setCurrentLocation(data.currentLocation);
     setHour(data.hour);
-    const loadedDay = data.dayOfWeek ?? START_DAY;
     setDayOfWeek(loadedDay);
     setMetCharacters(new Set(data.metCharacters ?? []));
     setGirlStatsOverrides(data.girlStatsOverrides ?? {});
-    setCharacterEventStates(data.characterEventStates ?? {});
+    setCharacterEventStates(loadedEventStates);
     setCharacterUnlocks(
       data.characterUnlocks ?? {
         Yumi: false,
@@ -705,8 +1745,24 @@ export default function GamePage() {
       },
     );
     setScheduledEncounters(data.scheduledEncounters ?? []); // This loads dates too
-    setGameplayFlags(new Set(data.gameplayFlags ?? []));
+    setGameplayFlags(loadedFlags);
     setRandomEventDailyCounts(data.randomEventDailyCounts ?? {});
+    setDayCount(loadedDayCount);
+    setNonStoryRandomEventLastTriggeredDay(loadedCooldowns);
+    setHungerProgressRemainder(data.hungerProgressRemainder ?? 0);
+    setDailyNonStoryRandomEventIds(
+      data.dailyNonStoryRandomEventIds ??
+        rollDailyNonStoryRandomEventIds({
+          day: loadedDay,
+          player: loadedPlayer,
+          gameplayFlags: loadedFlags,
+          girls: baseGirls,
+          cooldownByEventId: loadedCooldowns,
+          currentDayCount: loadedDayCount,
+          maxEventsPerDay: 2,
+          cooldownDays: 7,
+        }),
+    );
     if (data.dailyWorkoutState && data.dailyWorkoutState.day === loadedDay) {
       setDailyWorkoutState(data.dailyWorkoutState);
     } else {
@@ -725,6 +1781,75 @@ export default function GamePage() {
     setGameState("playing");
   }, [setHour, setDayOfWeek]);
 
+  useEffect(() => {
+    setGameplayFlags((currentFlags) => {
+      const migratedFlags = inferMissingPathFlags(
+        currentFlags,
+        characterEventStates,
+      );
+      if (areFlagsEqual(currentFlags, migratedFlags)) {
+        return currentFlags;
+      }
+      return migratedFlags;
+    });
+  }, [characterEventStates]);
+
+  const shouldPromptIrisKissOthersChoice =
+    gameState === "playing" &&
+    gameplayFlags.has("irisCh2Complete") &&
+    !gameplayFlags.has("irisKissOthersChoiceMade");
+
+  useEffect(() => {
+    if (!shouldPromptIrisKissOthersChoice) {
+      irisKissOthersPromptedRef.current = false;
+      return;
+    }
+
+    if (irisKissOthersPromptedRef.current) {
+      return;
+    }
+    irisKissOthersPromptedRef.current = true;
+
+    let cancelled = false;
+    const promptForChoice = async () => {
+      const allowKissingOthers = await askGameConfirm(
+        "Iris asks for a little freedom: should she be allowed to kiss other people sometimes?",
+        {
+          confirmLabel: "Yes, allow it",
+          cancelLabel: "No, keep it exclusive",
+        },
+      );
+
+      if (cancelled) return;
+
+      setGameplayFlags((prev) => {
+        if (prev.has("irisKissOthersChoiceMade")) {
+          return prev;
+        }
+
+        const next = new Set(prev);
+        next.add("irisKissOthersChoiceMade");
+        if (allowKissingOthers) {
+          next.add("irisKissOthersEnabled");
+        }
+        return next;
+      });
+
+      showGameNotice(
+        allowKissingOthers
+          ? "Iris may now have random encounters kissing other people."
+          : "Iris will stay focused on kissing only you in random encounters.",
+        { tone: allowKissingOthers ? "warning" : "success" },
+      );
+    };
+
+    promptForChoice();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [shouldPromptIrisKissOthersChoice]);
+
   const writeSaveData = useCallback((key: string, data: SaveData) => {
     localStorage.setItem(key, JSON.stringify(data));
   }, []);
@@ -733,7 +1858,7 @@ export default function GamePage() {
     const saveData = buildSaveData();
     writeSaveData(MANUAL_SAVE_KEY, saveData);
     setHasManualSave(true);
-    alert("Game saved! 💾");
+    showGameNotice("Game saved! 💾", { tone: "success" });
   };
 
   const autoSaveGame = useCallback(() => {
@@ -785,14 +1910,17 @@ export default function GamePage() {
   //   setCurrentDialogue(introDialogue);
   // };
 
-  const newGame = () => {
+  const newGame = async () => {
     // If there's save data, confirm before proceeding
     if (hasAnySaveData) {
-      if (
-        !confirm(
-          "Starting a new game will overwrite your manual save and auto-save. Continue?",
-        )
-      ) {
+      const confirmed = await askGameConfirm(
+        "Starting a new game will overwrite your manual save and auto-save. Continue?",
+        {
+          confirmLabel: "Start New Game",
+          cancelLabel: "Cancel",
+        },
+      );
+      if (!confirmed) {
         return; // User cancelled
       }
     }
@@ -814,10 +1942,14 @@ export default function GamePage() {
       characterImage: string = "",
       girlEffects: Partial<GirlStats> | null = null,
       characterName?: string,
+      characterImageLocationOverride?: string,
     ) => {
       setIsDialogueClosing(false);
       setCurrentDialogue(dialogue);
       setDialogueCharacterImage(characterImage);
+      setDialogueCharacterImageLocationOverride(
+        characterImageLocationOverride ?? null,
+      );
       setDialogueGirlEffects(girlEffects);
       setDialogueGirlName(characterName || "");
       setGameState("dialogue");
@@ -862,11 +1994,13 @@ export default function GamePage() {
       if (chosenOption?.unlockCharacters) {
         chosenOption.unlockCharacters.forEach((characterName) => {
           const name = characterName as keyof typeof characterUnlocks;
-          if (!characterUnlocks[name]) {
-            setCharacterUnlocks((prev) => ({ ...prev, [name]: true }));
-            alert(`✨ ${characterName} is now available!`);
-          }
-        });
+            if (!characterUnlocks[name]) {
+              setCharacterUnlocks((prev) => ({ ...prev, [name]: true }));
+              showGameNotice(`✨ ${characterName} is now available!`, {
+                tone: "success",
+              });
+            }
+          });
       }
 
       // Handle girl stat changes
@@ -911,6 +2045,7 @@ export default function GamePage() {
       // Clean up dialogue state
       setCurrentDialogue(null);
       setDialogueCharacterImage("");
+      setDialogueCharacterImageLocationOverride(null);
       setDialogueGirlEffects(null);
       setDialogueGirlName("");
       setSelectedGirl(null);
@@ -994,6 +2129,7 @@ export default function GamePage() {
       setCurrentRandomEvent(null);
       setCurrentDialogue(null);
       setDialogueCharacterImage("");
+      setDialogueCharacterImageLocationOverride(null);
       setDialogueGirlEffects(null);
       setDialogueGirlName("");
       setGameState("playing");
@@ -1006,6 +2142,8 @@ export default function GamePage() {
     // First, try to find in character dialogues
     let foundDialogue: Dialogue | null = null;
     let characterImage = "";
+    const dialogueImageLocationOverride =
+      getDialogueCharacterImageLocationOverride(id);
 
     // Search through all character dialogues
     for (const [characterName, dialogues] of Object.entries(
@@ -1016,7 +2154,11 @@ export default function GamePage() {
         // Get the character image for this dialogue
         const girl = girls.find((g) => g.name === characterName);
         if (girl) {
-          characterImage = getCharacterImage(girl, currentLocation, hour);
+          characterImage = getCharacterImage(
+            girl,
+            dialogueImageLocationOverride ?? currentLocation,
+            hour,
+          );
         }
         console.log(`✅ Found dialogue '${id}' for character ${characterName}`);
         break;
@@ -1032,7 +2174,11 @@ export default function GamePage() {
         if (ev.characterName) {
           const girl = girls.find((g) => g.name === ev.characterName);
           if (girl) {
-            characterImage = getCharacterImage(girl, currentLocation, hour);
+            characterImage = getCharacterImage(
+              girl,
+              dialogueImageLocationOverride ?? currentLocation,
+              hour,
+            );
           }
         }
         console.log(`✅ Found dialogue '${id}' in random events`);
@@ -1047,7 +2193,13 @@ export default function GamePage() {
 
     // Start the dialogue
     const randomSpeaker = randomEvents.find((e) => e.id === id)?.characterName;
-    startDialogue(foundDialogue, characterImage, null, randomSpeaker);
+    startDialogue(
+      foundDialogue,
+      characterImage,
+      null,
+      randomSpeaker,
+      dialogueImageLocationOverride,
+    );
   };
 
   const onEventTriggered = useCallback(
@@ -1060,7 +2212,7 @@ export default function GamePage() {
         lastInteractionTime: 0,
       };
 
-      const gameTime = calculateGameTime(dayOfWeek, hour);
+      const gameTime = calculateGameTime(dayOfWeek, hour, dayCount);
       const lastTriggered = { day: dayOfWeek, hour, gameTime };
 
       const idx = prevState.eventHistory.findIndex(
@@ -1093,7 +2245,7 @@ export default function GamePage() {
         [name]: newState,
       }));
     },
-    [selectedGirl, characterEventStates, dayOfWeek, hour],
+    [selectedGirl, characterEventStates, dayOfWeek, dayCount, hour],
   );
 
   const triggerSpecificEvent = useCallback(
@@ -1148,17 +2300,30 @@ export default function GamePage() {
           hour,
           completedEvents,
           gameplayFlags,
+          triggerable.id,
         )
       ) {
         return;
       }
 
       setCurrentRandomEvent(null);
-      const characterImage = getCharacterImage(girl, locationToCheck, hour);
+      const dialogueImageLocationOverride =
+        getDialogueCharacterImageLocationOverride(triggerable.id);
+      const characterImage = getCharacterImage(
+        girl,
+        dialogueImageLocationOverride ?? locationToCheck,
+        hour,
+      );
       onEventTriggered(triggerable.id, characterName);
-      startDialogue(triggerable.dialogue, characterImage, null, characterName);
+      startDialogue(
+        triggerable.dialogue,
+        characterImage,
+        null,
+        characterName,
+        dialogueImageLocationOverride,
+      );
 
-      setPlayer((prev) =>
+      setPlayerWithDebugProtection((prev) =>
         applyCharacterEventRewards(prev, triggerable.rewards, {
           onSetFlag: setFlag,
           onUnlockCharacter: (name) => {
@@ -1183,7 +2348,7 @@ export default function GamePage() {
       setCharacterUnlocks,
       setCurrentRandomEvent,
       setFlag,
-      setPlayer,
+      setPlayerWithDebugProtection,
       startDialogue,
     ],
   );
@@ -1200,7 +2365,15 @@ export default function GamePage() {
 
   const triggerLocationEvent = (location: string) => {
     const availableEvents = pendingEvents
-      .filter((event) => event.location === location)
+      .filter((event) => {
+        if (event.location !== location) return false;
+
+        const eventDefinition = getCharacterEvents(event.characterName).find(
+          (candidate) => candidate.id === event.eventId,
+        );
+        // Keep movement auto-trigger behavior for location-bound events only.
+        return Boolean(eventDefinition?.conditions.requiredLocation);
+      })
       .sort((a, b) => b.priority - a.priority);
 
     if (availableEvents.length === 0) return false;
@@ -1214,9 +2387,21 @@ export default function GamePage() {
     if (!girl) return false;
 
     setCurrentRandomEvent(null);
-    const characterImage = getCharacterImage(girl, location, hour);
+    const dialogueImageLocationOverride =
+      getDialogueCharacterImageLocationOverride(triggerable.id);
+    const characterImage = getCharacterImage(
+      girl,
+      dialogueImageLocationOverride ?? location,
+      hour,
+    );
     onEventTriggered(triggerable.id, girl.name);
-    startDialogue(triggerable.dialogue, characterImage, null, girl.name);
+    startDialogue(
+      triggerable.dialogue,
+      characterImage,
+      null,
+      girl.name,
+      dialogueImageLocationOverride,
+    );
 
     const updatedPlayer = applyCharacterEventRewards(
       player,
@@ -1232,7 +2417,7 @@ export default function GamePage() {
       },
     );
     if (updatedPlayer !== player) {
-      setPlayer(updatedPlayer);
+      setPlayerWithDebugProtection(updatedPlayer);
     }
 
     return true;
@@ -1262,6 +2447,11 @@ export default function GamePage() {
       setCurrentLocation(location);
       setSelectedGirl(null);
       pendingAutoSaveRef.current = true;
+      setPlayerWithDebugProtection((prev) =>
+        prev.hunger >= STARVING_HUNGER_THRESHOLD
+          ? applyPlayerStatDelta(prev, { energy: -1 })
+          : prev,
+      );
 
       if (
         location === "Hallway" &&
@@ -1306,8 +2496,40 @@ export default function GamePage() {
       //   }
       // }
 
-      // random event roll
-      const randomEvent = checkRandomEvent(
+      // Daily pre-rolled non-story random events trigger first.
+      const dailyNonStoryEvent = getScheduledNonStoryRandomEventForContext(
+        dailyNonStoryRandomEventIds,
+        location,
+        hour,
+        dayOfWeek,
+        player,
+        gameplayFlags,
+        girls,
+      );
+      if (dailyNonStoryEvent) {
+        console.log(`🎲 Daily random event: ${dailyNonStoryEvent.name}`);
+        setDailyNonStoryRandomEventIds((prev) =>
+          prev.filter((eventId) => eventId !== dailyNonStoryEvent.id),
+        );
+        setNonStoryRandomEventLastTriggeredDay((prev) => ({
+          ...prev,
+          [dailyNonStoryEvent.id]: dayCount,
+        }));
+        setCurrentRandomEvent(dailyNonStoryEvent);
+        recordRandomEventTrigger(dailyNonStoryEvent.id);
+        startDialogue(
+          dailyNonStoryEvent.dialogue,
+          "",
+          null,
+          dailyNonStoryEvent.characterName,
+        );
+        applyRandomEventRewards(dailyNonStoryEvent.rewards);
+        finishTransition();
+        return;
+      }
+
+      // Story-related random events continue to roll on movement.
+      const storyRandomEvent = checkRandomEvent(
         location,
         hour,
         dayOfWeek,
@@ -1315,18 +2537,22 @@ export default function GamePage() {
         gameplayFlags,
         girls,
         randomEventDailyCounts,
+        {
+          includeStoryRelated: true,
+          includeNonStoryRelated: false,
+        },
       );
-      if (randomEvent) {
-        console.log(`Random event: ${randomEvent.name}`);
-        setCurrentRandomEvent(randomEvent);
-        recordRandomEventTrigger(randomEvent.id);
+      if (storyRandomEvent) {
+        console.log(`Random event: ${storyRandomEvent.name}`);
+        setCurrentRandomEvent(storyRandomEvent);
+        recordRandomEventTrigger(storyRandomEvent.id);
         startDialogue(
-          randomEvent.dialogue,
+          storyRandomEvent.dialogue,
           "",
           null,
-          randomEvent.characterName,
+          storyRandomEvent.characterName,
         );
-        applyRandomEventRewards(randomEvent.rewards);
+        applyRandomEventRewards(storyRandomEvent.rewards);
       }
 
       finishTransition();
@@ -1354,46 +2580,78 @@ export default function GamePage() {
 
     if (rewards.girlAffection) {
       Object.entries(rewards.girlAffection).forEach(([girlName, change]) => {
-        const override = girlStatsOverrides[girlName] || {};
-        const girl = girls.find((g) => g.name === girlName);
-        if (!girl) return;
-
-        const currentStats = { ...girl.stats, ...override };
-        const newAffection = (currentStats.affection ?? 0) + change;
-        const cappedStats = clampGirlStatsToCaps(girlName, {
-          ...currentStats,
-          affection: newAffection,
-        });
-        setGirlStatsOverrides((prev) => ({
-          ...prev,
-          [girlName]: cappedStats,
-        }));
+        applyGirlStatDelta(girlName, { affection: change });
         console.log(
           `💕 ${girlName} affection: ${change > 0 ? "+" : ""}${change}`,
         );
       });
     }
 
-    setPlayer(updated);
+    if (rewards.girlStats) {
+      Object.entries(rewards.girlStats).forEach(([girlName, delta]) => {
+        if (!delta) return;
+        applyGirlStatDelta(girlName, delta);
+
+        const summary = Object.entries(delta)
+          .filter(([, value]) => typeof value === "number")
+          .map(([stat, value]) => `${stat}: ${value > 0 ? "+" : ""}${value}`)
+          .join(", ");
+        if (summary) {
+          console.log(`📈 ${girlName} stats: ${summary}`);
+        }
+      });
+    }
+
+    setPlayerWithDebugProtection(updated);
   };
 
   const getCurrentLocationImage = () =>
     getLocationBackground(currentLocation, hour);
+  const currentCharacterImageLocation =
+    currentLocation === TESTING_LOCATION_NAME
+      ? TESTING_ENVIRONMENT_LOCATION_BY_ID[testingEnvironment]
+      : currentLocation;
   const timeOfDay = getTimeOfDay(hour);
   const presentGirls = girls.filter((g) => g.location === currentLocation);
+  const irisCurrentLocation = girls.find((girl) => girl.name === "Iris")?.location;
+  const irisIsInApartment = irisCurrentLocation
+    ? IRIS_APARTMENT_LOCATION_NAMES.has(irisCurrentLocation)
+    : false;
   const availableLocations = useMemo(() => {
     const options = locationGraph[currentLocation] ?? [];
-    return options.filter((loc) => {
-      const isNightLife = ["Bar", "Nightclub", "Strip Club"].includes(loc.name);
-      const isDaytimeOnly = ["Cafe", "Gym", "Mall", "Car Store"].includes(
-        loc.name,
-      );
-      const isNightTime = hour >= 21;
+    const universityClosed =
+      dayOfWeek === "Sunday" ||
+      (dayOfWeek === "Saturday" ? hour >= 16 : hour >= 21);
+    const currentlyAtUniversity =
+      UNIVERSITY_LOCATION_NAMES.has(currentLocation);
+    const currentlyInIrisApartment =
+      IRIS_APARTMENT_LOCATION_NAMES.has(currentLocation);
 
-      if (!isNightTime && isNightLife) {
+    return options.filter((loc) => {
+      const isNightLife = NIGHTLIFE_LOCATION_NAMES.has(loc.name);
+
+      if (
+        universityClosed &&
+        !currentlyAtUniversity &&
+        UNIVERSITY_LOCATION_NAMES.has(loc.name)
+      ) {
         return false;
       }
-      if (isNightTime && isDaytimeOnly) {
+
+      if (isNightLife && !isNightlifeOpenAtHour(hour)) {
+        return false;
+      }
+
+      if (
+        (loc.name === "Cafe" || loc.name === "Gym") &&
+        hour >= CAFE_AND_GYM_CLOSING_HOUR
+      ) {
+        return false;
+      }
+      if (loc.name === "Mall" && hour >= MALL_CLOSING_HOUR) {
+        return false;
+      }
+      if (loc.name === "Car Store" && hour >= CAR_STORE_CLOSING_HOUR) {
         return false;
       }
 
@@ -1402,37 +2660,63 @@ export default function GamePage() {
         return false;
       }
 
-      const irisApartmentLocations = [
-        "Iris' Living Room",
-        "Iris' Bedroom",
-        "Iris' Bathroom",
-        "Iris' Kitchen",
-        "Dawn's bedroom",
-      ];
       if (
-        irisApartmentLocations.includes(loc.name) &&
-        !gameplayFlags.has("irisApartmentUnlocked")
+        IRIS_APARTMENT_LOCATION_NAMES.has(loc.name) &&
+        !currentlyInIrisApartment &&
+        (!gameplayFlags.has("irisApartmentUnlocked") || !irisIsInApartment)
       ) {
         return false;
       }
 
       return true;
     });
-  }, [currentLocation, gameplayFlags, hour]);
+  }, [currentLocation, dayOfWeek, gameplayFlags, hour, irisIsInApartment]);
 
-  const returnToMainMenu = () => {
-    if (!confirm("Return to main menu? Any unsaved progress will be lost."))
-      return;
+  useEffect(() => {
+    if (gameState !== "playing") return;
+    if (!IRIS_APARTMENT_LOCATION_NAMES.has(currentLocation)) return;
+    if (irisIsInApartment) return;
+
+    setCurrentLocation("Hallway");
+    setSelectedGirl(null);
+    showGameNotice("Iris isn't home right now. You head back to the hallway.", {
+      tone: "info",
+    });
+  }, [currentLocation, gameState, irisIsInApartment]);
+
+  const returnToMainMenu = async () => {
+    const confirmed = await askGameConfirm(
+      "Return to main menu? Any unsaved progress will be lost.",
+      {
+        confirmLabel: "Return",
+        cancelLabel: "Stay",
+      },
+    );
+    if (!confirmed) return;
     setGameState("mainMenu");
     setSelectedGirl(null);
   };
   //handler for name submission
   const handleNameSubmit = (playerName: string) => {
+    const nextPlayer = withDerivedMood({ ...defaultPlayerStats, name: playerName });
+    const initialDayCount = 0;
+    const initialDailyNonStoryRandomEvents = rollDailyNonStoryRandomEventIds({
+      day: START_DAY,
+      player: nextPlayer,
+      gameplayFlags: new Set(),
+      girls: baseGirls,
+      cooldownByEventId: {},
+      currentDayCount: initialDayCount,
+      maxEventsPerDay: 2,
+      cooldownDays: 7,
+    });
+
     // Reset everything to initial state
-    setPlayer(withDerivedMood({ ...defaultPlayerStats, name: playerName }));
+    setPlayer(nextPlayer);
     setCurrentLocation("Bedroom");
     setHour(START_HOUR);
     setDayOfWeek(START_DAY);
+    setDayCount(initialDayCount);
     setSelectedGirl(null);
     setMetCharacters(new Set());
     setGirlStatsOverrides({});
@@ -1446,6 +2730,9 @@ export default function GamePage() {
     setScheduledEncounters([]);
     setInteractionHistory({});
     setRandomEventDailyCounts({});
+    setDailyNonStoryRandomEventIds(initialDailyNonStoryRandomEvents);
+    setNonStoryRandomEventLastTriggeredDay({});
+    setHungerProgressRemainder(0);
     setGameplayFlags(new Set());
     setCurrentRandomEvent(null);
     setDailyWorkoutState({
@@ -1472,7 +2759,8 @@ export default function GamePage() {
         eventHistory: [],
         lastInteractionTime: 0,
       };
-      const currentGameTime = calculateGameTime(dayOfWeek, hour);
+      const currentGameTime = calculateGameTime(dayOfWeek, hour, dayCount);
+      const currentGameDay = getDayCountFromGameTime(currentGameTime);
       const completedEvents =
         eventState.eventHistory
           .filter((h) => h.timesTriggered > 0)
@@ -1486,11 +2774,11 @@ export default function GamePage() {
       const completedStoryCount = storyHistory.filter(
         (h) => h.timesTriggered > 0,
       ).length;
-      const storyTriggeredToday = storyHistory.some(
-        (h) => h.lastTriggered.day === dayOfWeek,
+      const storyTriggeredToday = storyHistory.some((h) =>
+        isEventHistoryFromCurrentDay(h, currentGameDay, dayOfWeek),
       );
-      const eventTriggeredToday = eventState.eventHistory.some(
-        (h) => h.lastTriggered.day === dayOfWeek,
+      const eventTriggeredToday = eventState.eventHistory.some((h) =>
+        isEventHistoryFromCurrentDay(h, currentGameDay, dayOfWeek),
       );
       if (eventTriggeredToday) {
         return;
@@ -1521,8 +2809,7 @@ export default function GamePage() {
           continue;
         }
 
-        const locationToCheck =
-          event.conditions.requiredLocation ?? currentLocation;
+        const locationToCheck = event.conditions.requiredLocation ?? girl.location;
         if (
           checkEventConditions(
             event.conditions,
@@ -1533,6 +2820,7 @@ export default function GamePage() {
             hour,
             completedEvents,
             gameplayFlags,
+            event.id,
           )
         ) {
           triggerable = event;
@@ -1540,11 +2828,11 @@ export default function GamePage() {
         }
       }
 
-      if (triggerable?.conditions.requiredLocation) {
+      if (triggerable) {
         pending.push({
           characterName: girl.name,
           eventId: triggerable.id,
-          location: triggerable.conditions.requiredLocation,
+          location: triggerable.conditions.requiredLocation ?? girl.location,
           priority: triggerable.priority,
         });
       }
@@ -1555,6 +2843,7 @@ export default function GamePage() {
     girls,
     player,
     dayOfWeek,
+    dayCount,
     hour,
     characterEventStates,
     gameplayFlags,
@@ -1593,6 +2882,7 @@ export default function GamePage() {
         title: event.quest?.title ?? event.name,
         description: event.quest?.description,
         location: pending.location ?? event.conditions.requiredLocation,
+        timing: getEventTimingHint(event),
         characterName: pending.characterName,
         priority: pending.priority,
       });
@@ -1623,8 +2913,15 @@ export default function GamePage() {
       const completedStoryCount = storyHistory.filter(
         (h) => h.timesTriggered > 0,
       ).length;
+      const currentGameTime = calculateGameTime(dayOfWeek, hour, dayCount);
 
       let guideEvent: CharacterEvent | null = null;
+      let cooldownGuide:
+        | {
+            event: CharacterEvent;
+            remainingHours: number;
+          }
+        | null = null;
       const sortedEvents = [...events].sort((a, b) => b.priority - a.priority);
 
       for (const event of sortedEvents) {
@@ -1644,21 +2941,52 @@ export default function GamePage() {
         delete relaxedConditions.specificDay;
         delete relaxedConditions.requiredLocation;
 
-        if (
-          checkEventConditions(
-            relaxedConditions,
-            girl,
-            player,
-            currentLocation,
-            dayOfWeek,
-            hour,
-            completedEvents,
-            gameplayFlags,
-          )
-        ) {
-          guideEvent = event;
+        if (!checkEventConditions(
+          relaxedConditions,
+          girl,
+          player,
+          currentLocation,
+          dayOfWeek,
+          hour,
+          completedEvents,
+          gameplayFlags,
+          event.id,
+        )) {
+          continue;
+        }
+
+        const history = eventState.eventHistory.find(
+          (h) => h.eventId === event.id,
+        );
+        if (isEventOnCooldown(event, history, currentGameTime)) {
+          const cooldownHours = event.cooldownHours ?? 0;
+          const elapsedHours = history
+            ? currentGameTime - history.lastTriggered.gameTime
+            : 0;
+          const remainingHours = Math.max(
+            1,
+            Math.ceil(cooldownHours - elapsedHours),
+          );
+          cooldownGuide = { event, remainingHours };
           break;
         }
+
+        guideEvent = event;
+        break;
+      }
+
+      if (cooldownGuide) {
+        const { event, remainingHours } = cooldownGuide;
+        items.push({
+          id: `${event.id}_cooldown`,
+          title: event.quest?.title ?? event.name,
+          description: `Be patient. ${girl.name} needs a little time before this can continue (${remainingHours}h remaining).`,
+          location: event.conditions.requiredLocation ?? girl.location,
+          timing: getEventTimingHint(event),
+          characterName: girl.name,
+          priority: event.priority,
+        });
+        return;
       }
 
       if (guideEvent) {
@@ -1666,7 +2994,8 @@ export default function GamePage() {
           id: guideEvent.id,
           title: guideEvent.quest?.title ?? guideEvent.name,
           description: guideEvent.quest?.description,
-          location: guideEvent.conditions.requiredLocation,
+          location: guideEvent.conditions.requiredLocation ?? girl.location,
+          timing: getEventTimingHint(guideEvent),
           characterName: girl.name,
           priority: guideEvent.priority,
         });
@@ -1689,30 +3018,142 @@ export default function GamePage() {
     gameplayFlags,
     player,
     dayOfWeek,
+    dayCount,
     hour,
     currentLocation,
   ]);
 
   const hasInteractedToday = useCallback(
     (girlName: string, actionLabel: string) => {
-      const key = `${dayOfWeek}:${girlName}`;
+      const key = `${dayCount}:${girlName}`;
       const set = interactionHistory[key];
       return set ? set.has(actionLabel) : false;
     },
-    [dayOfWeek, interactionHistory],
+    [dayCount, interactionHistory],
   );
 
   const recordInteraction = useCallback(
     (girlName: string, actionLabel: string) => {
-      const key = `${dayOfWeek}:${girlName}`;
+      const key = `${dayCount}:${girlName}`;
       setInteractionHistory((prev) => {
         const current = prev[key] ? new Set(prev[key]) : new Set<string>();
         current.add(actionLabel);
         return { ...prev, [key]: current };
       });
+
+      if (currentLocation === TESTING_LOCATION_NAME) {
+        return;
+      }
+
+      const girlsAtLocation = girls.filter((girl) => girl.location === currentLocation);
+      if (girlsAtLocation.length < 2) {
+        return;
+      }
+
+      const witnessingGirls = girlsAtLocation.filter(
+        (girl) =>
+          girl.name !== girlName &&
+          isChapterTwoOrHigher(girl.name, gameplayFlags),
+      );
+      if (witnessingGirls.length === 0) {
+        return;
+      }
+
+      witnessingGirls.forEach((girl) => {
+        applyGirlStatDelta(girl.name, { affection: -1, lust: -1 });
+      });
     },
-    [dayOfWeek],
+    [
+      applyGirlStatDelta,
+      currentLocation,
+      dayCount,
+      gameplayFlags,
+      girls,
+    ],
   );
+
+  const handleLogin = useCallback((username: string, password: string) => {
+    if (!verifyCredentials(username, password)) {
+      return false;
+    }
+
+    localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(buildAuthSession()));
+    setIsAuthenticated(true);
+    return true;
+  }, []);
+
+  const handleLogout = useCallback(async () => {
+    const confirmed = await askGameConfirm(
+      "Log out and return to the login screen?",
+      {
+        confirmLabel: "Log out",
+        cancelLabel: "Stay",
+      },
+    );
+    if (!confirmed) return;
+
+    localStorage.removeItem(AUTH_SESSION_KEY);
+    setIsAuthenticated(false);
+    setShowPhone(false);
+    setShowTutorial(false);
+    showGameNotice("Logged out.", { tone: "info" });
+  }, []);
+
+  const gameFeedbackOverlays = (
+    <>
+      {gameNotices.length > 0 && (
+        <div className="pointer-events-none fixed right-4 top-4 z-[1900] flex max-w-sm flex-col gap-2">
+          {gameNotices.map((notice) => (
+            <div
+              key={notice.id}
+              className={`rounded-xl border px-4 py-3 text-sm shadow-lg backdrop-blur ${NOTICE_CLASS_BY_TONE[notice.tone]}`}
+            >
+              {notice.message}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {activeGameConfirm && (
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/70 p-4">
+          <div className="w-full max-w-md rounded-2xl border-2 border-purple-700 bg-gray-900 p-5 shadow-2xl">
+            <h3 className="text-lg font-bold text-purple-300">Confirm Action</h3>
+            <p className="mt-2 text-sm text-gray-200">{activeGameConfirm.message}</p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => resolveGameConfirm(false)}
+                className="rounded-lg border border-gray-600 px-4 py-2 text-sm font-semibold text-gray-200 hover:bg-gray-800"
+              >
+                {activeGameConfirm.cancelLabel}
+              </button>
+              <button
+                type="button"
+                onClick={() => resolveGameConfirm(true)}
+                className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-500"
+              >
+                {activeGameConfirm.confirmLabel}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+
+  if (!authChecked) {
+    return null;
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <LoginScreen
+        onLogin={handleLogin}
+        communicationEmail={SINGLE_USER_ACCOUNT.email}
+        darkMode={darkMode}
+      />
+    );
+  }
 
   if (gameState == "nameInput") {
     return <NameInput onNameSubmit={handleNameSubmit} darkMode={darkMode} />;
@@ -1721,14 +3162,17 @@ export default function GamePage() {
   // screens
   if (gameState === "mainMenu") {
     return (
-      <MainMenu
-        onNewGame={newGame}
-        onContinue={loadAutoSave}
-        onLoad={loadGame}
-        hasAutoSave={hasAutoSave}
-        hasManualSave={hasManualSave}
-        darkMode={darkMode}
-      />
+      <>
+        <MainMenu
+          onNewGame={newGame}
+          onContinue={loadAutoSave}
+          onLoad={loadGame}
+          hasAutoSave={hasAutoSave}
+          hasManualSave={hasManualSave}
+          darkMode={darkMode}
+        />
+        {gameFeedbackOverlays}
+      </>
     );
   }
 
@@ -1757,6 +3201,7 @@ export default function GamePage() {
                     setGameState("playing");
                     setCurrentDialogue(null);
                     setDialogueCharacterImage("");
+                    setDialogueCharacterImageLocationOverride(null);
                     setDialogueGirlEffects(null);
                     setDialogueGirlName("");
                     setSelectedGirl(null);
@@ -1768,6 +3213,9 @@ export default function GamePage() {
           isMobile={isMobile}
           textSpeed={textSpeed}
           locationImage={getCurrentLocationImage()}
+          characterImageLocation={
+            dialogueCharacterImageLocationOverride ?? currentCharacterImageLocation
+          }
           // midgroundImage={getCurrentLocationImage()}
           // midgroundOpacity={0.3}
           // midgroundBlend="normal"
@@ -1801,19 +3249,21 @@ export default function GamePage() {
               <CharacterOverlay
                 girl={selectedGirl}
                 location={currentLocation}
+                characterImageLocation={currentCharacterImageLocation}
                 player={player}
                 gameplayFlags={gameplayFlags}
-                setPlayer={setPlayer}
+                setPlayer={setPlayerWithDebugProtection}
                 spendTime={spendTime}
                 onClose={() => setSelectedGirl(null)}
                 onStartDialogue={startDialogue}
                 dayOfWeek={dayOfWeek}
+                dayCount={dayCount}
                 hour={hour}
                 eventState={
                   characterEventStates[selectedGirl.name] ?? {
                     characterName: selectedGirl.name,
                     eventHistory: [] as EventHistory[],
-                    lastInteractionTime: calculateGameTime(dayOfWeek, hour),
+                    lastInteractionTime: calculateGameTime(dayOfWeek, hour, dayCount),
                   }
                 }
                 onEventTriggered={onEventTriggered}
@@ -1839,19 +3289,11 @@ export default function GamePage() {
           : "bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50"
       }`}
     >
-      <GameHeader
-        darkMode={darkMode}
-        isMobile={isMobile}
-        onShowTutorial={() => setShowTutorial(true)}
-        onShowPhone={() => setShowPhone(true)}
-        onOpenMenu={() => setGameState("paused")}
-      />
-
       <div className="container mx-auto px-2 md:px-4 py-4 md:py-8">
         <div className="grid grid-cols-1 lg:[grid-template-columns:240px_minmax(0,1fr)_320px] gap-6">
           {/* Left Sidebar */}
           {!isMobile && (
-            <div className="hidden lg:block">
+            <div className="hidden self-start lg:block lg:sticky lg:top-4">
               <StatsPanel
                 stats={player}
                 hour={hour}
@@ -1859,15 +3301,129 @@ export default function GamePage() {
                 darkMode={darkMode}
                 onSave={saveGame}
               />
+              <div className="mt-4 flex items-center gap-2 overflow-visible">
+                <IconHoverButton
+                  label="Help"
+                  onClick={() => setShowTutorial(true)}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                </IconHoverButton>
+                <IconHoverButton
+                  label="Phone"
+                  onClick={() => setShowPhone(true)}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="7" y="2" width="10" height="20" rx="2" ry="2" />
+                    <path d="M11 18h2" />
+                  </svg>
+                </IconHoverButton>
+                <IconHoverButton
+                  label="Menu"
+                  onClick={() => setGameState("paused")}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M4 6h16" />
+                    <path d="M4 12h16" />
+                    <path d="M4 18h16" />
+                  </svg>
+                </IconHoverButton>
+              </div>
             </div>
           )}
 
           {/* Main */}
           <div className="space-y-6 min-w-0">
+            {isMobile && (
+              <div className="flex items-center gap-2 overflow-visible">
+                <IconHoverButton
+                  label="Help"
+                  onClick={() => setShowTutorial(true)}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                </IconHoverButton>
+                <IconHoverButton
+                  label="Phone"
+                  onClick={() => setShowPhone(true)}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="7" y="2" width="10" height="20" rx="2" ry="2" />
+                    <path d="M11 18h2" />
+                  </svg>
+                </IconHoverButton>
+                <IconHoverButton
+                  label="Menu"
+                  onClick={() => setGameState("paused")}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M4 6h16" />
+                    <path d="M4 12h16" />
+                    <path d="M4 18h16" />
+                  </svg>
+                </IconHoverButton>
+              </div>
+            )}
+
             {/* Scene */}
             <SceneView
               darkMode={darkMode}
               currentLocation={currentLocation}
+              characterImageLocation={currentCharacterImageLocation}
               timeOfDay={timeOfDay}
               locationDescriptions={locationDescriptions}
               getCurrentLocationImage={getCurrentLocationImage}
@@ -1896,7 +3452,7 @@ export default function GamePage() {
               onLogWorkout={logWorkout}
               onAdjustGirlStats={applyGirlStatDelta}
               player={player}
-              setPlayer={setPlayer}
+              setPlayer={setPlayerWithDebugProtection}
               spendTime={spendTime}
               onTriggerEvent={triggerSpecificEvent}
               onSetFlag={setFlag}
@@ -1906,26 +3462,31 @@ export default function GamePage() {
               scheduledEncounters={scheduledEncounters}
               pendingEvents={pendingEvents}
               isLocationTransitioning={isLocationTransitioning}
+              testingEnvironment={testingEnvironment}
+              onSetTestingEnvironment={setTestingEnvironment}
+              onPassOut={handleSobrietyBlackout}
             />
           </div>
 
           <RightSidebar
             selectedGirl={selectedGirl}
             currentLocation={currentLocation}
+            characterImageLocation={currentCharacterImageLocation}
             player={player}
             gameplayFlags={gameplayFlags}
-            setPlayer={setPlayer}
+            setPlayer={setPlayerWithDebugProtection}
             spendTime={spendTime}
             onCloseSelectedGirl={() => setSelectedGirl(null)}
             onStartDialogue={startDialogue}
             dayOfWeek={dayOfWeek}
+            dayCount={dayCount}
             hour={hour}
             eventState={
               selectedGirl
                 ? characterEventStates[selectedGirl.name] ?? {
                     characterName: selectedGirl.name,
                     eventHistory: [] as EventHistory[],
-                    lastInteractionTime: calculateGameTime(dayOfWeek, hour),
+                    lastInteractionTime: calculateGameTime(dayOfWeek, hour, dayCount),
                   }
                 : null
             }
@@ -1941,6 +3502,9 @@ export default function GamePage() {
             dailyWorkoutState={dailyWorkoutState}
             onLogWorkout={logWorkout}
             onAdjustGirlStats={applyGirlStatDelta}
+            testingEnvironment={testingEnvironment}
+            onSetTestingEnvironment={setTestingEnvironment}
+            onPassOut={handleSobrietyBlackout}
           />
         </div>
       </div>
@@ -1971,6 +3535,9 @@ export default function GamePage() {
           isMobile={isMobile}
           textSpeed={textSpeed}
           locationImage={getCurrentLocationImage()}
+          characterImageLocation={
+            dialogueCharacterImageLocationOverride ?? currentCharacterImageLocation
+          }
           currentLocation={currentLocation}
           currentHour={hour}
           currentDay={dayOfWeek}
@@ -1993,6 +3560,7 @@ export default function GamePage() {
           darkMode={darkMode}
           onClose={() => setShowPhone(false)}
           onSave={saveGame}
+          onLogout={handleLogout}
           isMobile={isMobile}
           dayOfWeek={dayOfWeek}
           quests={questItems}
@@ -2008,11 +3576,179 @@ export default function GamePage() {
         />
       )}
 
+      {!isMobile && (
+        <div className="fixed bottom-4 left-4 z-[1800]">
+          <button
+            type="button"
+            onClick={() => setShowDebugPanel((prev) => !prev)}
+            className="rounded-lg border border-cyan-400 bg-cyan-900/90 px-3 py-2 text-xs font-semibold text-cyan-100 shadow-lg hover:bg-cyan-800/90"
+          >
+            {showDebugPanel ? "Hide Debug" : "Show Debug"}
+          </button>
+        </div>
+      )}
+
+      {showDebugPanel &&
+        !isMobile && (
+          <div className="fixed bottom-16 left-4 z-[1800] w-[380px] max-h-[70vh] overflow-hidden rounded-xl border border-cyan-500 bg-gray-900/95 shadow-2xl backdrop-blur">
+            <div className="border-b border-cyan-700 px-3 py-2 text-sm font-bold text-cyan-200">
+              Event Debugger
+            </div>
+            <div className="space-y-3 overflow-y-auto p-3 text-xs text-gray-200">
+              <div className="space-y-1 rounded border border-cyan-700/60 bg-cyan-900/20 p-2">
+                <div className="font-semibold text-cyan-200">Fast Travel</div>
+                <div className="flex gap-2">
+                  <select
+                    value={debugTravelLocation}
+                    onChange={(event) => setDebugTravelLocation(event.target.value)}
+                    className="min-w-0 flex-1 rounded border border-gray-700 bg-gray-800 px-2 py-1 text-xs"
+                  >
+                    {DEBUG_FAST_TRAVEL_LOCATIONS.map((locationName) => (
+                      <option key={locationName} value={locationName}>
+                        {locationName}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => moveTo(debugTravelLocation)}
+                    disabled={
+                      isLocationTransitioning ||
+                      debugTravelLocation === currentLocation
+                    }
+                    className={`rounded border px-2 py-1 text-xs font-semibold transition ${
+                      isLocationTransitioning ||
+                      debugTravelLocation === currentLocation
+                        ? "cursor-not-allowed border-gray-700 bg-gray-800 text-gray-500"
+                        : "border-cyan-400 bg-cyan-900/80 text-cyan-100 hover:bg-cyan-800/90"
+                    }`}
+                  >
+                    Go
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-1 rounded border border-cyan-700/60 bg-cyan-900/20 p-2">
+                <label className="flex items-center gap-2 text-cyan-100">
+                  <input
+                    type="checkbox"
+                    checked={debugFreezeVitals}
+                    onChange={(event) => setDebugFreezeVitals(event.target.checked)}
+                    className="h-4 w-4 accent-cyan-400"
+                  />
+                  <span className="font-semibold">Freeze Hunger/Energy Loss</span>
+                </label>
+                <div className="text-[11px] text-cyan-300/90">
+                  While enabled, hunger will not increase and energy will not decrease.
+                </div>
+              </div>
+
+              <div className="space-y-1 rounded border border-cyan-700/60 bg-cyan-900/20 p-2">
+                <div className="font-semibold text-cyan-200">Economy</div>
+                <button
+                  type="button"
+                  onClick={grantDebugMoney}
+                  className="w-full rounded border border-cyan-400 bg-cyan-900/80 px-2 py-1 text-left text-xs font-semibold text-cyan-100 transition hover:bg-cyan-800/90"
+                >
+                  Set Money: 99,999
+                </button>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-cyan-300">Character</label>
+                <select
+                  value={debugCharacterName}
+                  onChange={(event) => setDebugCharacterName(event.target.value)}
+                  className="w-full rounded border border-gray-700 bg-gray-800 px-2 py-1 text-xs"
+                >
+                  {debugCharacterOptions.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={maxDebugCharacterStats}
+                  disabled={!debugCharacterName}
+                  className={`w-full rounded border px-2 py-1 text-left text-xs font-semibold transition ${
+                    !debugCharacterName
+                      ? "cursor-not-allowed border-gray-700 bg-gray-800 text-gray-500"
+                      : "border-cyan-400 bg-cyan-900/80 text-cyan-100 hover:bg-cyan-800/90"
+                  }`}
+                >
+                  Max Selected Character Stats
+                </button>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-cyan-300">Event</label>
+                <select
+                  value={debugEventId}
+                  onChange={(event) => setDebugEventId(event.target.value)}
+                  className="w-full rounded border border-gray-700 bg-gray-800 px-2 py-1 text-xs"
+                >
+                  {debugCharacterEvents.map((event) => (
+                    <option key={event.id} value={event.id}>
+                      {event.name} ({event.id})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {debugEventReport ? (
+                <div className="space-y-2 rounded border border-gray-700 bg-gray-800 p-2">
+                  <div className="font-semibold text-cyan-200">
+                    {debugEventReport.event.name}
+                  </div>
+                  <div>Event ID: {debugEventReport.event.id}</div>
+                  <div>Target Location: {debugEventReport.targetLocation}</div>
+                  <div>Timing: {debugEventReport.timing}</div>
+                  <div className={debugEventReport.isReady ? "text-green-300" : "text-red-300"}>
+                    Status: {debugEventReport.isReady ? "Ready" : "Blocked"}
+                  </div>
+                  {debugEventReport.reasons.length > 0 ? (
+                    <div className="space-y-1">
+                      <div className="font-semibold text-red-300">Blockers</div>
+                      {debugEventReport.reasons.map((reason, index) => (
+                        <div key={`${debugEventReport.event.id}_reason_${index}`}>
+                          - {reason}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-green-300">
+                      No blockers detected by the current state checks.
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="rounded border border-gray-700 bg-gray-800 p-2 text-gray-400">
+                  No event selected.
+                </div>
+              )}
+
+              <div className="rounded border border-gray-700 bg-gray-800 p-2">
+                <div className="mb-1 font-semibold text-cyan-200">
+                  Active Flags ({activeFlags.length})
+                </div>
+                {activeFlags.length > 0 ? (
+                  <div className="max-h-40 space-y-0.5 overflow-y-auto pr-1 text-[11px]">
+                    {activeFlags.map((flag) => (
+                      <div key={flag}>{flag}</div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-gray-400">No active gameplay flags.</div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+      {gameFeedbackOverlays}
+
       {mobileCharacterOverlay}
     </div>
   );
 }
-
-
-
-

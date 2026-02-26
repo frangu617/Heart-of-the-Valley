@@ -14,9 +14,27 @@ export function getTimeOfDay(hour: number): TimeOfDay {
 }
 
 /**
+ * User-facing label for time of day.
+ * Keeps "early morning" distinct while image/event buckets remain stable.
+ */
+export function getTimeOfDayLabel(hour: number): string {
+  if (hour >= 3 && hour < 6) return "Early Morning";
+  const timeOfDay = getTimeOfDay(hour);
+  return timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1);
+}
+
+/**
  * Calculate total game hours elapsed given a day + hour.
  */
-export function calculateGameTime(day: DayOfWeek, hour: number): number {
+export function calculateGameTime(
+  day: DayOfWeek,
+  hour: number,
+  dayCount?: number,
+): number {
+  if (typeof dayCount === "number" && Number.isFinite(dayCount)) {
+    return Math.max(0, Math.floor(dayCount)) * 24 + hour;
+  }
+
   const dayIndex = Math.max(0, DAYS_OF_WEEK.indexOf(day));
   return dayIndex * 24 + hour;
 }

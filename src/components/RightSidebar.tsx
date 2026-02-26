@@ -7,6 +7,7 @@ import type { Girl, GirlStats, PlayerStats } from "../data/characters";
 import type { DayOfWeek } from "../data/gameConstants";
 import type { CharacterEventState, GameplayFlag } from "../data/events/types";
 import type { Dialogue } from "../data/dialogues";
+import type { TestingEnvironment } from "../data/locations";
 
 type Props = {
   selectedGirl: Girl | null;
@@ -14,7 +15,11 @@ type Props = {
   player: PlayerStats;
   gameplayFlags: Set<GameplayFlag>;
   setPlayer: Dispatch<SetStateAction<PlayerStats>>;
-  spendTime: (amount: number) => void;
+  spendTime: (
+    amount: number,
+    basePlayer?: PlayerStats,
+    options?: { skipHungerGain?: boolean; hungerGainMultiplier?: number },
+  ) => void;
   onCloseSelectedGirl: () => void;
   onStartDialogue: (
     dialogue: Dialogue,
@@ -22,6 +27,7 @@ type Props = {
     girlEffects?: Partial<GirlStats>
   ) => void;
   dayOfWeek: DayOfWeek;
+  dayCount: number;
   hour: number;
   eventState: CharacterEventState | null;
   onEventTriggered: (eventId: string, girlName?: string) => void;
@@ -44,6 +50,10 @@ type Props = {
   dailyWorkoutState: DailyWorkoutState;
   onLogWorkout: (withRuby: boolean) => void;
   onAdjustGirlStats: (girlName: string, delta: Partial<GirlStats>) => void;
+  characterImageLocation?: string;
+  testingEnvironment?: TestingEnvironment;
+  onSetTestingEnvironment?: (environment: TestingEnvironment) => void;
+  onPassOut: (playerAtBlackout: PlayerStats) => void;
 };
 
 export default function RightSidebar({
@@ -56,6 +66,7 @@ export default function RightSidebar({
   onCloseSelectedGirl,
   onStartDialogue,
   dayOfWeek,
+  dayCount,
   hour,
   eventState,
   onEventTriggered,
@@ -70,6 +81,10 @@ export default function RightSidebar({
   dailyWorkoutState,
   onLogWorkout,
   onAdjustGirlStats,
+  characterImageLocation,
+  testingEnvironment,
+  onSetTestingEnvironment,
+  onPassOut,
 }: Props) {
   if (selectedGirl && eventState) {
     return (
@@ -84,6 +99,7 @@ export default function RightSidebar({
           onClose={onCloseSelectedGirl}
           onStartDialogue={onStartDialogue}
           dayOfWeek={dayOfWeek}
+          dayCount={dayCount}
           hour={hour}
           eventState={eventState}
           onEventTriggered={onEventTriggered}
@@ -93,6 +109,7 @@ export default function RightSidebar({
           onInteractionLogged={onInteractionLogged}
           onSetFlag={onSetFlag}
           onUnlockCharacter={onUnlockCharacter}
+          characterImageLocation={characterImageLocation}
           variant="sidebar"
         />
       </div>
@@ -115,6 +132,9 @@ export default function RightSidebar({
         dailyWorkoutState={dailyWorkoutState}
         onLogWorkout={onLogWorkout}
         onAdjustGirlStats={onAdjustGirlStats}
+        testingEnvironment={testingEnvironment}
+        onSetTestingEnvironment={onSetTestingEnvironment}
+        onPassOut={onPassOut}
       />
     </div>
   );

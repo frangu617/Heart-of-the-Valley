@@ -10,11 +10,16 @@ type LocationCategory =
   | "beach"
   | "city"
   | "casual"
-  | "date";
+  | "date"
+  | "work"
+  | "nun";
 
-type RelationshipStance = "neutral" | "shy" | "confident" | "love" | "intimate";
+type RelationshipStance = "neutral" | "shy" | "flirty" | "love" | "intimate";
 const EXPRESSION_ASSET_ALIASES: Record<string, string> = {
-  love: "seductvie",
+  love: "seductive",
+  intimate: "seductive",
+  confident: "flirty",
+  kissingmc: "kissingMC",
 };
 
 export const resolveExpressionAssetName = (expression: string) =>
@@ -39,6 +44,8 @@ const locationToCategory: Record<string, LocationCategory> = {
   Street: "casual",
   Hallway: "home",
   "Strip Club": "date",
+  Nightclub: "date",
+  Convent: "nun",
   // Iris's apartment
   "Iris' Living Room": "home",
   "Iris' Bedroom": "home",
@@ -60,7 +67,7 @@ export function getRelationshipStance(girl: Girl): RelationshipStance {
 
   if (love >= 60) return "love";
   if (affection >= 50 && lust >= 40) return "intimate";
-  if (affection >= 30) return "confident";
+  if (affection >= 30) return "flirty";
   if (affection >= 15 || lust >= 20) return "shy";
   return "neutral";
 }
@@ -84,6 +91,9 @@ export function getCharacterImage(
   // After 7 PM, use home/pajama outfits
   if (girl.name === "Iris" && location === "Hallway") {
     category = "casual";
+  } else if (girl.name === "Gwen" && location === "Strip Club") {
+    // Gwen uses her strip-club-specific work outfit if available.
+    category = "work";
   } else if (homeLocations.has(location)) {
     if (hour < 19) {
       category = "casual";
@@ -112,6 +122,8 @@ export function getOutfitDescription(location: string, hour: number): string {
     city: "stylish casual outfit",
     casual: "everyday casual clothes",
     date: "elegant date outfit",
+    work: "work/performance outfit",
+    nun: "religious habit attire",
   };
 
   return descriptions[category];
@@ -132,8 +144,14 @@ const LOCATION_IMAGE_EXTENSIONS: Record<
   bar: { afternoon: "jpg" },
 };
 
-const normalizeLocationKey = (location: string) =>
-  location.toLowerCase().replace(/\s+/g, "_").replace(/'/g, "");
+const LOCATION_KEY_ALIASES: Record<string, string> = {
+  testing_studio: "city",
+};
+
+const normalizeLocationKey = (location: string) => {
+  const key = location.toLowerCase().replace(/\s+/g, "_").replace(/'/g, "");
+  return LOCATION_KEY_ALIASES[key] ?? key;
+};
 
 export function getLocationImagePath(
   location: string,

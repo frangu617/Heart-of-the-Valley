@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/FallbackImage";
 // src/components/CharacterOverlay.tsx - Updated with event system
 import { Girl, GirlStats, PlayerStats } from "../data/characters";
 import { Interaction, interactionMenu } from "../data/interactions";
@@ -13,20 +13,29 @@ import { CharacterEventState, GameplayFlag } from "@/data/events/types";
 import { findTriggeredEvent } from "@/lib/eventSystem";
 import { getCharacterEvents } from "@/data/events/chapter1";
 import { applyCharacterEventRewards } from "@/lib/rewards";
-import { applyPlayerStatDelta } from "@/lib/playerStats";
+import {
+  applyPlayerStatDelta,
+  STARVING_HUNGER_THRESHOLD,
+} from "@/lib/playerStats";
+import { showGameNotice } from "@/lib/gameUi";
 // import { firstMeetingDialogues } from "../data/dialogues/index";
 import DatePlanner from "./DatePlanner";
 import { DateLocation } from "@/data/dates";
-import { getCharacterImage, resolveExpressionAssetName } from "@/lib/images";
+import { getCharacterImage } from "@/lib/images";
 import GiftModal from "./GiftModal";
 import { Gift, getGiftEntriesFromInventory } from "@/data/gifts";
+import { getPortraitVerticalOffsetPx } from "@/lib/portraitFraming";
+import { TESTING_LOCATION_NAME } from "@/data/locations";
 // import { get } from "http";
 
 const ALWAYS_VISIBLE_INTERACTIONS = new Set(["Chat", "Flirt", "Give Gift"]);
-const KISS_LUST_REQUIREMENT = 15;
+const IRIS_KISS_EXPRESSION = "kissingMC";
+const KISS_AFFECTION_REQUIREMENT = 15;
+const KISS_LUST_REQUIREMENT = 25;
 const KISS_REJECTION_EFFECTS: Partial<GirlStats> = { affection: -2, lust: -2 };
 const KISS_UNLOCK_FLAG_BY_CHARACTER: Partial<Record<string, GameplayFlag>> = {
   Iris: "irisCh1FinaleComplete",
+  Dawn: "hasMetDawn",
   Gwen: "gwen_chapter_1_completed",
   Ruby: "ruby_chapter_1_completed",
   Yumi: "yumi_chapter_1_completed",
@@ -37,7 +46,35 @@ const CHAPTER_ONE_FINALE_EVENT_IDS_BY_CHARACTER: Partial<Record<string, string[]
   Ruby: ["ruby_ch1_ev5_mall_sub", "ruby_ch1_ev5_mall_dom"],
   Yumi: ["yumi_chapter_1_finale_dom", "yumi_chapter_1_finale_sub"],
 };
+const CHAPTER_TWO_UNLOCK_FLAG_BY_CHARACTER: Partial<Record<string, GameplayFlag>> = {
+  Iris: "irisCh1FinaleComplete",
+  Dawn: "hasMetDawn",
+  Gwen: "gwen_chapter_1_completed",
+  Ruby: "ruby_chapter_1_completed",
+  Yumi: "yumi_chapter_1_completed",
+};
+const CHAPTER_THREE_UNLOCK_FLAG_BY_CHARACTER: Partial<Record<string, GameplayFlag>> = {
+  Iris: "irisCh2Complete",
+  Yumi: "yumi_chapter_2_completed",
+};
 const SHOW_DATE_PLANNER_ACTION = false;
+const TEST_CHAT_EMOTIONS = [
+  "neutral",
+  "happy",
+  "sad",
+  "shy",
+  "love",
+  "annoyed",
+  "angry",
+  "surprised",
+  "excited",
+  "seductive",
+  "smug",
+  "blushing",
+  "hopeful",
+  "worried",
+] as const;
+type InteractionChapter = 1 | 2 | 3 | 4 | 5;
 
 const hasKissUnlockedByFlag = (
   characterName: string,
@@ -46,6 +83,12 @@ const hasKissUnlockedByFlag = (
   const requiredFlag = KISS_UNLOCK_FLAG_BY_CHARACTER[characterName];
   if (!requiredFlag) return false;
   return gameplayFlags.has(requiredFlag);
+};
+
+const shouldUseIrisKissEventImage = (eventId: string, dialogueId?: string): boolean => {
+  const normalizedEventId = eventId.toLowerCase();
+  const normalizedDialogueId = dialogueId?.toLowerCase() ?? "";
+  return normalizedEventId.includes("kiss") || normalizedDialogueId.includes("kiss");
 };
 
 const hasCompletedChapterOneByHistory = (
@@ -63,13 +106,95 @@ const hasCompletedChapterOneByHistory = (
   );
 };
 
+const getCharacterInteractionChapter = (
+  characterName: string,
+  gameplayFlags: Set<GameplayFlag>,
+  eventState: CharacterEventState
+): InteractionChapter => {
+  // Allow future chapter flag names without blocking interaction routing.
+  const hasFlag = (flag: string) => (gameplayFlags as Set<string>).has(flag);
+  const normalizedCharacterName = characterName.toLowerCase();
+  const chapterTwoFlag = CHAPTER_TWO_UNLOCK_FLAG_BY_CHARACTER[characterName];
+  const chapterThreeFlag = CHAPTER_THREE_UNLOCK_FLAG_BY_CHARACTER[characterName];
+
+  const chapterTwoReached =
+    (chapterTwoFlag ? gameplayFlags.has(chapterTwoFlag) : false) ||
+    hasCompletedChapterOneByHistory(characterName, eventState) ||
+    hasFlag(`${normalizedCharacterName}_chapter_1_completed`);
+
+  const chapterThreeReached =
+    (chapterThreeFlag ? gameplayFlags.has(chapterThreeFlag) : false) ||
+    hasFlag(`${normalizedCharacterName}_chapter_2_completed`);
+
+  const chapterFourReached = hasFlag(
+    `${normalizedCharacterName}_chapter_3_completed`
+  );
+  const chapterFiveReached = hasFlag(
+    `${normalizedCharacterName}_chapter_4_completed`
+  );
+
+  if (chapterFiveReached) return 5;
+  if (chapterFourReached) return 4;
+  if (chapterThreeReached) return 3;
+  if (chapterTwoReached) return 2;
+  return 1;
+};
+
+const getChapterAwareInteractionDialogue = (
+  characterName: string,
+  actionLabel: string,
+  gameplayFlags: Set<GameplayFlag>,
+  eventState: CharacterEventState
+): Dialogue => {
+  const dialogueSet = characterDialogues[characterName];
+  if (!dialogueSet) {
+    return getDefaultDialogue(characterName, actionLabel);
+  }
+
+  const chapter = getCharacterInteractionChapter(
+    characterName,
+    gameplayFlags,
+    eventState
+  );
+  const chapterKey = `${actionLabel}_Chapter${chapter}`;
+  if (dialogueSet[chapterKey]) {
+    return dialogueSet[chapterKey];
+  }
+
+  for (let fallbackChapter = chapter - 1; fallbackChapter >= 1; fallbackChapter -= 1) {
+    const fallbackKey = `${actionLabel}_Chapter${fallbackChapter}`;
+    if (dialogueSet[fallbackKey]) {
+      return dialogueSet[fallbackKey];
+    }
+  }
+
+  if (dialogueSet[actionLabel]) {
+    return dialogueSet[actionLabel];
+  }
+
+  return getDefaultDialogue(characterName, actionLabel);
+};
+
+const getTestEmotionDialogue = (characterName: string): Dialogue => ({
+  id: `${characterName.toLowerCase()}_test_emotions`,
+  lines: TEST_CHAT_EMOTIONS.map((emotion) => ({
+    speaker: characterName,
+    text: `this is a test, this is ${emotion}`,
+    expression: emotion,
+  })),
+});
+
 interface Props {
   girl: Girl;
   location: string;
   player: PlayerStats;
   gameplayFlags: Set<GameplayFlag>;
   setPlayer: Dispatch<SetStateAction<PlayerStats>>;
-  spendTime: (amount: number) => void;
+  spendTime: (
+    amount: number,
+    basePlayer?: PlayerStats,
+    options?: { skipHungerGain?: boolean; hungerGainMultiplier?: number },
+  ) => void;
   onClose: () => void;
   onStartDialogue: (
     dialogue: Dialogue,
@@ -77,6 +202,7 @@ interface Props {
     girlEffects?: Partial<GirlStats>
   ) => void;
   dayOfWeek: DayOfWeek;
+  dayCount: number;
   hour: number;
   eventState: CharacterEventState;
   onEventTriggered: (eventId: string, girlName?: string) => void;
@@ -94,6 +220,7 @@ interface Props {
   onUnlockCharacter?: (characterName: string) => void
   hasInteractedToday?: (girlName: string, actionLabel: string) => boolean;
   onInteractionLogged?: (girlName: string, actionLabel: string) => void;
+  characterImageLocation?: string;
   variant?: "sidebar" | "modal";
 }
 
@@ -106,6 +233,7 @@ export default function CharacterOverlay({
   onClose,
   onStartDialogue,
   dayOfWeek,
+  dayCount,
   hour,
   eventState,
   onEventTriggered,
@@ -116,6 +244,7 @@ export default function CharacterOverlay({
   onUnlockCharacter,
   hasInteractedToday,
   onInteractionLogged,
+  characterImageLocation,
   variant = "sidebar",
 }: Props) {
   const [showDatePlanner, setShowDatePlanner] = useState(false);
@@ -132,6 +261,8 @@ export default function CharacterOverlay({
   });
   const giftEntries = getGiftEntriesFromInventory(player.inventory);
   const hasGifts = giftEntries.length > 0;
+  const resolvedCharacterImageLocation = characterImageLocation ?? location;
+  const isPlayerStarving = player.hunger >= STARVING_HUNGER_THRESHOLD;
   // Check for triggered events when component mounts or dependencies change
   // Check for first meeting or triggered events
   //Date handler
@@ -141,6 +272,14 @@ export default function CharacterOverlay({
     dateHour: number,
     activities: string[]
   ) => {
+    if (isPlayerStarving) {
+      showGameNotice("You're too hungry to do that right now. Eat something first.", {
+        tone: "warning",
+      });
+      setShowDatePlanner(false);
+      return;
+    }
+
     // Check if she accepts (random chance based on affection)
     const acceptanceChance = Math.min(
       95,
@@ -149,8 +288,9 @@ export default function CharacterOverlay({
     const roll = Math.random() * 100;
 
     if (roll > acceptanceChance) {
-      alert(
-        `${girl.name} politely declines. Maybe try again when you're closer?`
+      showGameNotice(
+        `${girl.name} politely declines. Maybe try again when you're closer?`,
+        { tone: "info" },
       );
       setShowDatePlanner(false);
       return;
@@ -170,8 +310,9 @@ export default function CharacterOverlay({
     // Call parent's schedule function
     onScheduleDate(dateEvent);
 
-    alert(
-      `${girl.name} happily agrees! The date is set for ${day} at ${dateHour}:00!`
+    showGameNotice(
+      `${girl.name} happily agrees! The date is set for ${day} at ${dateHour}:00!`,
+      { tone: "success" },
     );
     setShowDatePlanner(false);
     spendTime(1); // Planning takes time
@@ -180,14 +321,14 @@ export default function CharacterOverlay({
   const handleGiveGift = (gift: Gift) => {
     const giftIndex = player.inventory.findIndex((item) => item === gift.id);
     if (giftIndex === -1) {
-      alert("You do not have that gift.");
+      showGameNotice("You do not have that gift.", { tone: "warning" });
       return;
     }
 
     const nextInventory = [...player.inventory];
     nextInventory.splice(giftIndex, 1);
-    setPlayer({ ...player, inventory: nextInventory });
-    spendTime(pendingGiftAction?.timeCost ?? 1);
+    const nextPlayer = { ...player, inventory: nextInventory };
+    spendTime(pendingGiftAction?.timeCost ?? 1, nextPlayer);
 
     const dialogue: Dialogue = {
       id: `give_gift_${gift.id.replace(/\s+/g, "_").toLowerCase()}`,
@@ -206,7 +347,7 @@ export default function CharacterOverlay({
 
     const characterImage = getCharacterImage(
       girl,
-      location,
+      resolvedCharacterImageLocation,
       hour,
       getFacialExpression()
     );
@@ -232,6 +373,10 @@ export default function CharacterOverlay({
   }, [girl.stats]);
   
   useEffect(() => {
+    if (location === TESTING_LOCATION_NAME) {
+      return;
+    }
+
     // Check for other triggered events
     const events = getCharacterEvents(girl.name);
     const triggeredEvent = findTriggeredEvent(
@@ -242,13 +387,22 @@ export default function CharacterOverlay({
       dayOfWeek,
       hour,
       eventState,
-      gameplayFlags
+      gameplayFlags,
+      dayCount,
     );
 
     if (triggeredEvent) {
       console.log(`🎉 Event triggered: ${triggeredEvent.name}`);
 
-      const characterImage = getCharacterImage(girl, location, hour, getFacialExpression());
+      const shouldUseKissImage =
+        girl.name === "Iris" &&
+        shouldUseIrisKissEventImage(triggeredEvent.id, triggeredEvent.dialogue?.id);
+      const characterImage = getCharacterImage(
+        girl,
+        resolvedCharacterImageLocation,
+        hour,
+        shouldUseKissImage ? IRIS_KISS_EXPRESSION : getFacialExpression()
+      );
       onEventTriggered(triggeredEvent.id, girl.name);
       onStartDialogue(
         triggeredEvent.dialogue,
@@ -278,17 +432,43 @@ export default function CharacterOverlay({
         setPlayer(updatedPlayer);
       }
     }
-  }, [girl, player, location, dayOfWeek, hour, eventState, gameplayFlags, getFacialExpression, onEventTriggered, onStartDialogue, onSetFlag, onUnlockCharacter, setPlayer]);
+  }, [girl, player, location, dayOfWeek, dayCount, hour, eventState, gameplayFlags, getFacialExpression, onEventTriggered, onStartDialogue, onSetFlag, onUnlockCharacter, resolvedCharacterImageLocation, setPlayer]);
   const interact = (action: Interaction) => {
+    const isSandboxChat =
+      location === TESTING_LOCATION_NAME && action.label === "Chat";
+
+    if (!isSandboxChat && isPlayerStarving) {
+      showGameNotice("You're too hungry to do that right now. Eat something first.", {
+        tone: "warning",
+      });
+      return;
+    }
+
+    if (
+      location === "Classroom" &&
+      girl.name === "Iris" &&
+      !isSandboxChat
+    ) {
+      showGameNotice("Iris is busy teaching right now.", { tone: "warning" });
+      return;
+    }
+
     // ... rest of your existing interact function stays the same
-    if (hasInteractedToday && hasInteractedToday(girl.name, action.label)) {
-      alert(`You've already done "${action.label}" with ${girl.name} today. Try again tomorrow.`);
+    if (
+      !isSandboxChat &&
+      hasInteractedToday &&
+      hasInteractedToday(girl.name, action.label)
+    ) {
+      showGameNotice(
+        `You've already done "${action.label}" with ${girl.name} today. Try again tomorrow.`,
+        { tone: "info" },
+      );
       return;
     }
 
     if (action.label === "Give Gift") {
       if (!hasGifts) {
-        alert("You do not have any gifts to give.");
+        showGameNotice("You do not have any gifts to give.", { tone: "warning" });
         return;
       }
       setPendingGiftAction(action);
@@ -300,19 +480,25 @@ export default function CharacterOverlay({
       action.requiresItem &&
       !player.inventory.includes(action.requiresItem)
     ) {
-      alert(`You need a ${action.requiresItem} for this action!`);
+      showGameNotice(`You need a ${action.requiresItem} for this action!`, {
+        tone: "warning",
+      });
       return;
     }
 
     if (action.locationContext && action.locationContext !== location) {
-      alert(`This action can only be done at ${action.locationContext}`);
+      showGameNotice(
+        `This action can only be done at ${action.locationContext}`,
+        { tone: "warning" },
+      );
       return;
     }
 
     if (action.label === "Kiss") {
       if (!kissUnlocked) {
-        alert(
-          `Kiss unlocks for ${girl.name} after finishing their Chapter 1 story.`
+        showGameNotice(
+          `Kiss unlocks for ${girl.name} after finishing their Chapter 1 story.`,
+          { tone: "info" },
         );
         return;
       }
@@ -320,7 +506,7 @@ export default function CharacterOverlay({
       if (girl.stats.lust < KISS_LUST_REQUIREMENT) {
         const characterImage = getCharacterImage(
           girl,
-          location,
+          resolvedCharacterImageLocation,
           hour,
           getFacialExpression()
         );
@@ -357,7 +543,9 @@ export default function CharacterOverlay({
         schoolLocations.has(location) &&
         !gameplayFlags.has("irisSchoolKissUnlocked")
       ) {
-        alert("Iris isn't ready to be that open at school.");
+        showGameNotice("Iris isn't ready to be that open at school.", {
+          tone: "info",
+        });
         return;
       }
     }
@@ -365,14 +553,20 @@ export default function CharacterOverlay({
     // Check affection requirements for intimate actions
     if (action.label === "Flirt") {
       if (girl.stats.affection < 10) {
-        alert(`${girl.name} doesn't seem comfortable with that right now...`);
+        showGameNotice(
+          `${girl.name} doesn't seem comfortable with that right now...`,
+          { tone: "info" },
+        );
         return;
       }
     }
 
     if (action.label === "Kiss") {
-      if (girl.stats.affection < 40 || girl.stats.mood < 50) {
-        alert(`${girl.name} pulls away. The timing doesn't seem right...`);
+      if (girl.stats.affection < KISS_AFFECTION_REQUIREMENT) {
+        showGameNotice(
+          `${girl.name} pulls away. Build affection to ${KISS_AFFECTION_REQUIREMENT} first.`,
+          { tone: "info" },
+        );
         return;
       }
     }
@@ -380,24 +574,45 @@ export default function CharacterOverlay({
     // Check mood requirements for positive interactions
     if (
       girl.stats.mood < 30 &&
-      (action.label === "Flirt" || action.label === "Kiss")
+      action.label === "Flirt"
     ) {
-      alert(`${girl.name} doesn't seem in the mood for that right now...`);
+      showGameNotice(`${girl.name} doesn't seem in the mood for that right now...`, {
+        tone: "info",
+      });
       return;
     }
 
-    // Apply stat effects
-    const updatedStats = action.statEffects
-      ? applyPlayerStatDelta(player, action.statEffects)
-      : player;
-    setPlayer(updatedStats);
-    spendTime(action.timeCost);
+    // Apply stat effects outside sandbox chat
+    if (!isSandboxChat) {
+      const updatedStats = action.statEffects
+        ? applyPlayerStatDelta(player, action.statEffects)
+        : player;
+      spendTime(action.timeCost, updatedStats, {
+        skipHungerGain:
+          typeof action.statEffects?.hunger === "number" &&
+          action.statEffects.hunger < 0,
+      });
+    }
 
     // Get dialogue for this interaction
-    const dialogue =
-      characterDialogues[girl.name]?.[action.label] ||
-      getDefaultDialogue(girl.name, action.label);
-    const characterImage = getCharacterImage(girl, location, hour, getFacialExpression());
+    const dialogue = isSandboxChat
+      ? getTestEmotionDialogue(girl.name)
+      : getChapterAwareInteractionDialogue(
+          girl.name,
+          action.label,
+          gameplayFlags,
+          eventState
+        );
+    const interactionExpression =
+      action.label === "Kiss" && girl.name === "Iris"
+        ? IRIS_KISS_EXPRESSION
+        : getFacialExpression();
+    const characterImage = getCharacterImage(
+      girl,
+      resolvedCharacterImageLocation,
+      hour,
+      interactionExpression
+    );
 
     // Show what stats will change
     if (action.girlEffects) {
@@ -419,8 +634,12 @@ export default function CharacterOverlay({
       console.log(`✨ ${action.label} with ${girl.name}: ${changes}`);
     }
 
-    onStartDialogue(dialogue, characterImage, action.girlEffects);
-    if (onInteractionLogged) {
+    onStartDialogue(
+      dialogue,
+      characterImage,
+      isSandboxChat ? undefined : action.girlEffects,
+    );
+    if (!isSandboxChat && onInteractionLogged) {
       onInteractionLogged(girl.name, action.label);
     }
   };
@@ -461,8 +680,10 @@ export default function CharacterOverlay({
     }
   };
 
-  const expression = getFacialExpression();
-  const portraitExpression = resolveExpressionAssetName(expression);
+  const overlayPortraitSrc = `/images/characters/${girl.name.toLowerCase()}/faces/portrait.webp`;
+  const shouldHideDawnFace = girl.name === "Dawn" && !gameplayFlags.has("hasMetDawn");
+  const overlayPortraitOffsetPx =
+    getPortraitVerticalOffsetPx(girl.name) + (shouldHideDawnFace ? -30 : 0);
 
   const containerPosition =
     variant === "modal" ? "relative" : "sticky top-4";
@@ -489,14 +710,12 @@ export default function CharacterOverlay({
           <div className="absolute inset-0 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full blur-lg group-hover:blur-xl transition-all"></div>
           <div className="relative w-50 h-60 rounded-full border-4 border-white shadow-xl overflow-hidden">
             <Image
-              src={`/images/characters/${girl.name.toLowerCase()}/casual/${portraitExpression}.webp`}
-              alt={`${girl.name} - ${expression}`}
+              src={overlayPortraitSrc}
+              alt={`${girl.name} portrait`}
               layout="fill"
               objectFit="cover"
               style={{
-                objectPosition: "center 20%", // Show top portion (face)
-                transform: "scale(2)", // Zoom in 1.8x
-                transformOrigin: "center 0%", // Zoom from top
+                objectPosition: `center calc(50% + ${overlayPortraitOffsetPx}px)`,
               }}
             />
           </div>
@@ -547,7 +766,16 @@ export default function CharacterOverlay({
         </h4>
         {SHOW_DATE_PLANNER_ACTION && (
           <button
-          onClick={() => setShowDatePlanner(true)}
+          onClick={() => {
+            if (isPlayerStarving) {
+              showGameNotice(
+                "You're too hungry to do that right now. Eat something first.",
+                { tone: "warning" },
+              );
+              return;
+            }
+            setShowDatePlanner(true);
+          }}
           className="relative overflow-hidden group w-full bg-gradient-to-r from-red-400 to-pink-600 hover:from-red-500 hover:to-pink-700 shadow-md hover:shadow-lg transform hover:scale-102 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 text-sm"
         >
           <div className="flex items-center justify-between relative z-10">
@@ -562,16 +790,20 @@ export default function CharacterOverlay({
         )}
 
         {visibleInteractions.map((action) => {
+          const isSandboxChat =
+            location === TESTING_LOCATION_NAME && action.label === "Chat";
           const giftDisabled = action.label === "Give Gift" && !hasGifts;
           const isDisabled = Boolean(
             (action.requiresItem &&
               !player.inventory.includes(action.requiresItem)) ||
               (action.locationContext && action.locationContext !== location) ||
-              (hasInteractedToday &&
+              (!isSandboxChat &&
+                hasInteractedToday &&
                 hasInteractedToday(girl.name, action.label)) ||
               giftDisabled
           );
           const usedToday =
+            !isSandboxChat &&
             hasInteractedToday &&
             hasInteractedToday(girl.name, action.label);
 

@@ -82,3 +82,4 @@
 
 **Stable Diffusion**
 - Prompt: 1 woman, blonde, mature, blue eyes, tiny skirt, pleated skirt, purple skirt, purple leather corset, big breasts, platform heels, ((slender body)), short hair, cropped jacket, green highlights on clothes, green highlights on hair
+- Prompt: 1 woman, blonde hair, a-cut haircut, green eyes, big breasts, tiny waist, hips, purple corset, purple jacket, cleavage, ((low-rise skirt)), purple leather pleated skirt, platform heels, looking at the viewer, lips, no belly, (toned body: 0.6), solid green background, studio lighting, slight smile, lime green hair tips

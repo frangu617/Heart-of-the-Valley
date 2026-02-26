@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/FallbackImage";
 
 type Props = {
   darkMode: boolean;
@@ -6,6 +6,7 @@ type Props = {
   onShowTutorial: () => void;
   onShowPhone: () => void;
   onOpenMenu: () => void;
+  onLogout: () => void;
 };
 
 export default function GameHeader({
@@ -14,6 +15,7 @@ export default function GameHeader({
   onShowTutorial,
   onShowPhone,
   onOpenMenu,
+  onLogout,
 }: Props) {
   return (
     <header
@@ -91,6 +93,27 @@ export default function GameHeader({
                 <path d="M4 18h16" />
               </svg>
             </button>
+            <button
+              type="button"
+              onClick={onLogout}
+              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center"
+              aria-label="Log out"
+              title="Log out"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+            </button>
           </div>
         </div>
       ) : (
@@ -166,6 +189,26 @@ export default function GameHeader({
                 <path d="M4 18h16" />
               </svg>
               <span className="hidden md:inline">Menu</span>
+            </button>
+            <button
+              onClick={onLogout}
+              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 md:px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2"
+              title="Log out"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
         </div>

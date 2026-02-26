@@ -8,12 +8,33 @@ export type Location = {
   image: string;
 };
 
+export const TESTING_LOCATION_NAME = "Testing Studio";
+export type TestingEnvironment =
+  | "casual"
+  | "university"
+  | "gym"
+  | "home"
+  | "date"
+  | "nun";
+export const TESTING_ENVIRONMENT_LOCATION_BY_ID: Record<
+  TestingEnvironment,
+  string
+> = {
+  casual: "City",
+  university: "University",
+  gym: "Gym",
+  home: "Living Room",
+  date: "Strip Club",
+  nun: "Convent",
+};
+
 export const locationGraph: Record<string, Location[]> = {
   //Home locations
   Bedroom: [
     { name: "Bathroom", cost: 0, time: 0, image: "bathroom.png" },
     { name: "Living Room", cost: 0, time: 0, image: "livingroom.png" },
     { name: "Kitchen", cost: 0, time: 0, image: "kitchen.png" },
+    { name: "Testing Studio", cost: 0, time: 0, image: "city.png" },
   ],
   Bathroom: [
     { name: "Bedroom", cost: 0, time: 0, image: "bedroom.png" },
@@ -112,7 +133,12 @@ export const locationGraph: Record<string, Location[]> = {
     { name: "Bar", cost: 0, time: 0, image: "bar.png" },
     { name: "Nightclub", cost: 0, time: 0, image: "nightclub.png" },
     { name: "Strip Club", cost: 0, time: 0, image: "stripclub.png" },
+    { name: "Testing Studio", cost: 0, time: 0, image: "city.png" },
     { name: "Street", cost: 0, time: 0, image: "street.png" },
+  ],
+  "Testing Studio": [
+    { name: "Bedroom", cost: 0, time: 0, image: "bedroom.png" },
+    { name: "City", cost: 0, time: 0, image: "city.png" },
   ],
   Cafe: [{ name: "City", cost: 0, time: 0, image: "city.png" }],
   Gym: [{ name: "City", cost: 0, time: 0, image: "city.png" }],
@@ -254,6 +280,14 @@ export const locationDescriptions: Record<string, LocationDescription> = {
     evening: "Neon signs flicker to life as the city prepares for nightlife.",
     night: "The city that never sleeps is at its most alive.",
   },
+  "Testing Studio": {
+    default:
+      "Debug sandbox: every girl is always here so you can quickly test portraits, overlays, and interactions.",
+    morning: "Debug sandbox is active. Everyone is available for testing.",
+    afternoon: "Debug sandbox is active. Everyone is available for testing.",
+    evening: "Debug sandbox is active. Everyone is available for testing.",
+    night: "Debug sandbox is active. Everyone is available for testing.",
+  },
   Cafe: {
     default: "The aroma of freshly brewed coffee welcomes you.",
     morning: "Morning regulars sip their lattes and read the news.",
@@ -372,6 +406,7 @@ export const getQuickActions = (
 
 // Location activities
 export type LocationActivity = {
+  id?: string;
   name: string;
   icon: string;
   description: string;
@@ -391,7 +426,7 @@ export const locationActivities: Record<string, LocationActivity[]> = {
       icon: "😴",
       description: "Rest and recover energy",
       timeCost: 4,
-      statEffects: { energy: 50, mood: 10, hunger: -10 },
+      statEffects: { energy: 50, mood: 10 },
     },
     {
       name: "Take a Nap",
@@ -438,7 +473,7 @@ export const locationActivities: Record<string, LocationActivity[]> = {
       icon: "🍳",
       description: "Cook a nutritious meal",
       timeCost: 1,
-      statEffects: { hunger: -40, mood: 10, energy: -10, money: -10 },
+      statEffects: { hunger: -80, mood: 10, money: -10 },
       requirements: { minMoney: 10 },
     },
     {
@@ -446,7 +481,7 @@ export const locationActivities: Record<string, LocationActivity[]> = {
       icon: "🥪",
       description: "Quick snack to reduce hunger",
       timeCost: 1,
-      statEffects: { hunger: -20, energy: -5, money: -5 },
+      statEffects: { hunger: -30, money: -5 },
       requirements: { minMoney: 5 },
     },
     {
@@ -487,7 +522,7 @@ export const locationActivities: Record<string, LocationActivity[]> = {
       icon: "🏋️",
       description: "Exercise to improve fitness",
       timeCost: 2,
-      statEffects: { fitness: 5, energy: -25, mood: 10, hunger: -15 },
+      statEffects: { fitness: 5, energy: -25, mood: 10 },
       requirements: { minEnergy: 30 },
     },
     {
@@ -508,12 +543,76 @@ export const locationActivities: Record<string, LocationActivity[]> = {
   ],
   Cafe: [
     {
-      name: "Buy Coffee",
+      name: "Espresso (To-Go)",
       icon: "☕",
-      description: "Get a coffee to go",
+      description: "Quick strong shot to take with you",
       timeCost: 1,
-      statEffects: { energy: 15, mood: 10, money: -5 },
+      statEffects: { energy: 10, mood: 3, money: -3 },
+      requirements: { minMoney: 3 },
+    },
+    {
+      name: "Latte (To-Go)",
+      icon: "🥤",
+      description: "Creamy coffee for the road",
+      timeCost: 1,
+      statEffects: { energy: 13, mood: 4, money: -5 },
       requirements: { minMoney: 5 },
+    },
+    {
+      name: "Cappuccino (For Here)",
+      icon: "☕",
+      description: "Sit down and enjoy a warm cappuccino",
+      timeCost: 1,
+      statEffects: { energy: 16, mood: 6, money: -7 },
+      requirements: { minMoney: 7 },
+    },
+    {
+      name: "Iced Mocha (For Here)",
+      icon: "🧋",
+      description: "Sweet cold coffee with a bigger kick",
+      timeCost: 1,
+      statEffects: { energy: 19, mood: 8, money: -9 },
+      requirements: { minMoney: 9 },
+    },
+    {
+      name: "Cookie (To-Go)",
+      icon: "🍪",
+      description: "A quick bite to carry with you",
+      timeCost: 1,
+      statEffects: { hunger: -15, mood: 2, money: -4 },
+      requirements: { minMoney: 4 },
+    },
+    {
+      name: "Croissant (To-Go)",
+      icon: "🥐",
+      description: "Buttery pastry for light hunger",
+      timeCost: 1,
+      statEffects: { hunger: -20, mood: 3, money: -6 },
+      requirements: { minMoney: 6 },
+    },
+    {
+      name: "Blueberry Muffin (To-Go)",
+      icon: "🧁",
+      description: "Filling snack with extra calories",
+      timeCost: 1,
+      statEffects: { hunger: -30, mood: 4, money: -8 },
+      requirements: { minMoney: 8 },
+    },
+    {
+      name: "Slice of Cake (To-Go)",
+      icon: "🍰",
+      description: "Sweet and heavy snack for bigger hunger",
+      timeCost: 1,
+      statEffects: { hunger: -40, mood: 6, money: -11 },
+      requirements: { minMoney: 11 },
+    },
+    {
+      name: "Sandwich Meal (For Here)",
+      icon: "🥪",
+      description: "A full cafe meal that fills you up",
+      timeCost: 1,
+      statEffects: { hunger: -50, mood: 8, money: -15 },
+      requirements: { minMoney: 15 },
     },
     {
       name: "Read & Relax",
@@ -592,6 +691,65 @@ export const locationActivities: Record<string, LocationActivity[]> = {
       statEffects: { mood: 10, energy: -15 },
     },
   ],
+  Bar: [
+    {
+      name: "Drink Beer",
+      icon: "🍺",
+      description: "A light drink to relax",
+      timeCost: 1,
+      statEffects: { mood: 8, money: -8, sobriety: -20 },
+      requirements: { minMoney: 8 },
+    },
+    {
+      name: "Drink Whiskey",
+      icon: "🥃",
+      description: "A stronger drink that hits harder",
+      timeCost: 1,
+      statEffects: { mood: 10, energy: -2, money: -14, sobriety: -30 },
+      requirements: { minMoney: 14 },
+    },
+    {
+      name: "House Cocktail",
+      icon: "🍹",
+      description: "A mixed drink with a smooth buzz",
+      timeCost: 1,
+      statEffects: { mood: 12, money: -16, sobriety: -25 },
+      requirements: { minMoney: 16 },
+    },
+  ],
+  Nightclub: [
+    {
+      name: "Vodka Soda",
+      icon: "🍸",
+      description: "A crisp drink from the bar",
+      timeCost: 1,
+      statEffects: { mood: 10, money: -12, sobriety: -22 },
+      requirements: { minMoney: 12 },
+    },
+    {
+      name: "Tequila Shot",
+      icon: "🥃",
+      description: "Fast and strong",
+      timeCost: 1,
+      statEffects: { mood: 8, money: -10, sobriety: -28 },
+      requirements: { minMoney: 10 },
+    },
+    {
+      name: "Energy Cocktail",
+      icon: "🍹",
+      description: "Keeps you moving for longer",
+      timeCost: 1,
+      statEffects: { energy: 5, mood: 12, money: -18, sobriety: -24 },
+      requirements: { minMoney: 18 },
+    },
+    {
+      name: "Dance",
+      icon: "🕺",
+      description: "Hit the dance floor",
+      timeCost: 1,
+      statEffects: { mood: 18, energy: -15, style: 1 },
+    },
+  ],
   University: [
     {
       name: "Check Schedule",
@@ -599,6 +757,14 @@ export const locationActivities: Record<string, LocationActivity[]> = {
       description: "Review your teaching schedule",
       timeCost: 0,
       statEffects: { mood: 5 },
+    },
+    {
+      name: "Cafeteria Meal",
+      icon: "🍽️",
+      description: "Grab a full meal on campus",
+      timeCost: 1,
+      statEffects: { hunger: -80, mood: 10, money: -10 },
+      requirements: { minMoney: 10 },
     },
   ],
   Classroom: [
@@ -674,8 +840,58 @@ export const locationActivities: Record<string, LocationActivity[]> = {
       icon: "🍸",
       description: "Relax with a drink at the bar",
       timeCost: 1,
-      statEffects: { mood: 5, energy: -5, money: -20 },
+      statEffects: { mood: 5, energy: -5, money: -20, sobriety: -25 },
       requirements: { minMoney: 20 },
+    },
+  ],
+  [TESTING_LOCATION_NAME]: [
+    {
+      id: "test_env_casual",
+      name: "Preview Casual",
+      icon: "👕",
+      description: "Preview casual outfit category.",
+      timeCost: 0,
+      statEffects: {},
+    },
+    {
+      id: "test_env_university",
+      name: "Preview University",
+      icon: "🎓",
+      description: "Preview university outfit category.",
+      timeCost: 0,
+      statEffects: {},
+    },
+    {
+      id: "test_env_gym",
+      name: "Preview Gym",
+      icon: "🏋️",
+      description: "Preview gym outfit category.",
+      timeCost: 0,
+      statEffects: {},
+    },
+    {
+      id: "test_env_home",
+      name: "Preview Home",
+      icon: "🏠",
+      description: "Preview home outfit category.",
+      timeCost: 0,
+      statEffects: {},
+    },
+    {
+      id: "test_env_date",
+      name: "Preview Date",
+      icon: "💃",
+      description: "Preview date outfit category.",
+      timeCost: 0,
+      statEffects: {},
+    },
+    {
+      id: "test_env_nun",
+      name: "Preview Nun",
+      icon: "⛪",
+      description: "Preview nun outfit category.",
+      timeCost: 0,
+      statEffects: {},
     },
   ],
 };

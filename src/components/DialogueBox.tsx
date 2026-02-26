@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/FallbackImage";
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Dialogue,
@@ -9,6 +9,7 @@ import { PlayerStats, GirlStats } from "@/data/characters";
 import { getCharacterImage } from "@/lib/images";
 import { Girl } from "@/data/characters";
 import { getTimeOfDay } from "@/lib/time";
+import { getDialogueCharacterObjectPosition } from "@/lib/portraitFraming";
 
 interface Props {
   dialogue: Dialogue;
@@ -30,6 +31,7 @@ interface Props {
   isMobile?: boolean;
   locationImage?: string;
   currentLocation?: string;
+  characterImageLocation?: string;
   currentHour?: number;
   currentDay?: string;
   playerStats?: PlayerStats;
@@ -331,6 +333,11 @@ const DIALOGUE_THEMES: Record<string, DialogueTheme> = {
 };
 
 const normalizeName = (value?: string) => value?.trim().toLowerCase() ?? "";
+const toCasualFallbackImage = (imagePath: string) =>
+  imagePath.replace(/\/(date|work)\//, "/casual/");
+const IRIS_KISS_ACTION_PATTERN = /\bkiss(?:es|ed|ing)?\b/i;
+const IRIS_KISS_NON_ACTION_PATTERN =
+  /\b(about the kiss|liked the kiss|say about the kiss|since the kiss|what did it feel like)\b/i;
 
 const resolveThemeKey = (
   characterName?: string,
@@ -350,6 +357,37 @@ const resolveThemeKey = (
   return speakerKey;
 };
 
+const inferExpressionFromLine = (
+  characterName: string | undefined,
+  lineExpression: string | undefined,
+  lineText: string | undefined,
+  lineSpeaker: string | null | undefined
+): string | undefined => {
+  if (lineExpression) {
+    return lineExpression;
+  }
+  if (!lineText) {
+    return undefined;
+  }
+
+  if (normalizeName(characterName) !== "iris") {
+    return undefined;
+  }
+  if (lineSpeaker !== null) {
+    return undefined;
+  }
+
+  const normalizedText = lineText.toLowerCase();
+  if (
+    IRIS_KISS_ACTION_PATTERN.test(normalizedText) &&
+    !IRIS_KISS_NON_ACTION_PATTERN.test(normalizedText)
+  ) {
+    return "kissingMC";
+  }
+
+  return undefined;
+};
+
 export default function DialogueBox({
   dialogue,
   onComplete,
@@ -361,6 +399,7 @@ export default function DialogueBox({
   isMobile = false,
   locationImage,
   currentLocation,
+  characterImageLocation,
   currentHour,
   currentDay,
   playerStats,
@@ -373,6 +412,8 @@ export default function DialogueBox({
   const [displayedText, setDisplayedText] = useState("");
   const [isTyping, setIsTyping] = useState(true);
   const [showContinue, setShowContinue] = useState(false);
+  const [usePortraitCasualFallback, setUsePortraitCasualFallback] =
+    useState(false);
   const [accumulatedStatChanges, setAccumulatedStatChanges] = useState<{
     affection?: number;
     mood?: number;
@@ -545,6 +586,19 @@ export default function DialogueBox({
   }, [dialogue.id]);
 
   useEffect(() => {
+    setUsePortraitCasualFallback(false);
+  }, [
+    dialogue.id,
+    currentLineIndex,
+    characterImage,
+    characterName,
+    characterImageLocation,
+    currentLocation,
+    currentHour,
+    currentLine?.expression,
+  ]);
+
+  useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (isClosing) return;
       if (currentLine?.choices) return;
@@ -572,22 +626,30 @@ export default function DialogueBox({
   );
 
   const getCurrentCharacterImage = () => {
-    if (!characterName || !currentLine?.expression) {
+    const resolvedExpression = inferExpressionFromLine(
+      characterName,
+      currentLine?.expression,
+      currentLine?.text,
+      currentLine?.speaker
+    );
+    if (!characterName || !resolvedExpression) {
       return characterImage; // fallback to original
     }
 
     // If we don't have location/hour info, fall back to original
-    if (!currentLocation || currentHour === undefined) {
+    const resolvedCharacterImageLocation =
+      characterImageLocation || currentLocation;
+    if (!resolvedCharacterImageLocation || currentHour === undefined) {
       return characterImage;
     }
 
     const name = characterName;
-    const expression = currentLine.expression || "neutral";
+    const expression = resolvedExpression;
 
     // Create a minimal Girl object for the getCharacterImage function
     const mockGirl: Girl = {
       name: name,
-      location: currentLocation,
+      location: resolvedCharacterImageLocation,
       relationship: "Single",
       personality: "",
       stats: {
@@ -602,15 +664,29 @@ export default function DialogueBox({
     // Use the existing location-aware image selection logic
     return getCharacterImage(
       mockGirl,
-      currentLocation,
+      resolvedCharacterImageLocation,
       currentHour,
       expression
     );
   };
 
   const dynamicCharacterImage = getCurrentCharacterImage();
-  const portraitSrc = dynamicCharacterImage || characterImage || "";
-  const showMobilePortrait = !isNarration && !isPlayerSpeaking && characterImage;
+  const basePortraitSrc = dynamicCharacterImage || characterImage || "";
+  const fallbackPortraitSrc = toCasualFallbackImage(basePortraitSrc);
+  const portraitSrc = usePortraitCasualFallback
+    ? fallbackPortraitSrc
+    : basePortraitSrc;
+  const hasPortrait = Boolean(portraitSrc);
+  const handlePortraitError = () => {
+    if (!usePortraitCasualFallback && fallbackPortraitSrc !== basePortraitSrc) {
+      setUsePortraitCasualFallback(true);
+    }
+  };
+  const portraitObjectPosition = getDialogueCharacterObjectPosition(
+    characterName ?? currentLine?.speaker ?? undefined,
+    20
+  );
+  const showMobilePortrait = !isNarration && !isPlayerSpeaking && hasPortrait;
   const mobilePortrait = showMobilePortrait ? (
     <div className="relative animate-fadeIn pointer-events-none">
       <div className="relative w-[280px] h-[420px] rounded-xl overflow-hidden shadow-2xl border-4 border-white/80">
@@ -624,10 +700,11 @@ export default function DialogueBox({
           objectFit="cover"
           className="absolute inset-0"
           style={{
-            objectPosition: "center 20%",
+            objectPosition: portraitObjectPosition,
             transform: "scale(1.8)",
             transformOrigin: "center 0%",
           }}
+          onError={handlePortraitError}
         />
         {currentLine.speaker && (
           <div
@@ -832,7 +909,7 @@ export default function DialogueBox({
       {/* ===== MOBILE: Portrait rendered in dialogue stack ===== */}
 
       {/* ===== CHARACTER PORTRAIT CARD (z-20) ===== */}
-      {!isNarration && !isPlayerSpeaking && characterImage && !isMobile && (
+      {!isNarration && !isPlayerSpeaking && hasPortrait && !isMobile && (
         <div className="absolute bottom-62 left-0 right-0 flex justify-center items-end pointer-events-none z-20 px-4">
           <div className="relative animate-fadeIn">
             <div className="relative w-[400px] h-[600px] rounded-2xl overflow-hidden shadow-2xl border-4 border-white/80">
@@ -846,10 +923,11 @@ export default function DialogueBox({
                 objectFit="cover"
                 className="absolute inset-0"
                 style={{
-                  objectPosition: "center 20%",
+                  objectPosition: portraitObjectPosition,
                   transform: "scale(1.9)",
                   transformOrigin: "center 0%",
                 }}
+                onError={handlePortraitError}
               />
               {currentLine.speaker && (
                 <div

@@ -77,6 +77,7 @@
 
 **Stable Diffusion**
 - Prompt: (masterpiece, best quality, high resolution, 1girl, solo, full body, anime style), 18 years old, ((long wavy purple hair)), amber eyes, fair skin, medium sized breasts, orange tube top, cleavage, wide hips, white pleated skirt, cream tights, black heels, feminine and pure aesthetic, chroma key green background, cinematic shading, plain green background
+- Prompt: 1 woman, dark purple hair, long curly hair, flat hair bangs, yellow eyes, big breasts, tiny waist, hips, dark red corset, cleavage, tight black micro skirt, ((low-rise skirt)), leather skirt  black fishnet tights, platform heels, looking at the viewer, lips, no belly, (toned body: 0.8), plain green background, studio lighting, slight smile
 - Steps: 40
 - Sampler: DPM++ 2M SDE
 - Schedule type: Karras

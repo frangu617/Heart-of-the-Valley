@@ -59,3 +59,5 @@
 **Summary Sentence**
 - Shizune is Yumi's mother, a school psychologist by day and dominatrix therapist by night, whose polished humility masks deep pride in her beauty and control; her effortless composure becomes the standard Yumi envies and tries to match.
 
+**Visual Prompt Description**
+- score_9, score_8_up, (masterpiece), (high quality), high fidelity anime art, 1girl, solo, (mature female archetype), jet black hair, low side ponytail, thick blunt bangs, closed eyes, gentle happy smile, sexy pose, one hand on hip, (naturally alluring without trying), innocent vibe, (huge breasts:1.1), (enormous breasts), clothes stretching tightly, wearing white v-neck t-shirt with black trim, beige khaki shorts, long shorts, standing in a cozy living room, daylight, soft shadows, (full body:1.2), (toned body:1.2), (slim body), wearing slippers, wide hips, tiny waist

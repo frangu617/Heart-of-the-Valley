@@ -56,7 +56,7 @@ export const interactionMenu: Interaction[] = [
     label: "Cook Together",
     timeCost: 2,
     locationContext: "Kitchen",
-    statEffects: { hunger: -20 },
+    statEffects: { hunger: -80 },
     girlEffects: { affection: +6 },
   },
 ];
