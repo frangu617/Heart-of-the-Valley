@@ -68,6 +68,7 @@ export type Dialogue = {
 import { irisDialogues } from "./iris";
 import { irisStoryDialogues as irisStoryDialoguesCh1 } from "../events/chapter1/iris";
 import { irisStoryDialogues as irisStoryDialoguesCh2 } from "../events/chapter2/iris";
+import { irisStoryDialogues as irisStoryDialoguesCh3 } from "../events/chapter3/iris";
 import { dawnDialogues } from "./dawn";
 import { gwenDialogues } from "./gwen";
 import { gwenStoryDialogues } from "../events/chapter1/gwen";
@@ -98,6 +99,7 @@ export const characterDialogues: Record<string, Record<string, Dialogue>> = {
     ...irisDialogues,
     ...irisStoryDialoguesCh1,
     ...irisStoryDialoguesCh2,
+    ...irisStoryDialoguesCh3,
   },
   Dawn: dawnDialogues,
   Gwen: { ...gwenDialogues, ...gwenStoryDialogues },

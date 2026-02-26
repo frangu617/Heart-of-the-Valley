@@ -2,10 +2,10 @@
 
 **Core Identity**
 - Role: University professor (Advanced Bio), single mother, neighbor.
-- Snapshot: Intelligent, warm, emotionally literate. Once lived a period of intense sexual freedom and indulgence.
-- Sin Lens (Subtle): Lust as a pull toward intimacy she keeps trying to make careful and real.
-- Dominant Vibe: Thoughtful restraint, desire versus responsibility.
-- Contradiction: Wants to be chosen, fears gossip and fallout.
+- Snapshot: Intelligent, warm, emotionally literate. Once lived a period of intense sexual freedom and indulgence (her "slut life").
+- Sin Lens (Subtle): Lust, not for a person, but for a lifestyle she both misses and fears.
+- Dominant Vibe: A restless balancing act between her desire for thrilling freedom and her yearning for a deep, stable love.
+- Contradiction: She wants a life of total indulgence *and* a life of committed love with the MC. She doesn't want to choose; she wants to have both.
 
 **Voice And Behavior**
 - Speech: Precise, adult, sometimes formal. Rambles when nervous.
@@ -13,43 +13,42 @@
 - Tells: Fidgets with keys, overexplains, looks away then holds eye contact.
 - Boundaries: Discretion, clarity, and a slow pace are non-negotiable.
 
-**Motherhood**
-- Motherhood was not a calling. It arrived as a fact, not an identity.
-- She did not regret her past; she stopped centering it to avoid deciding Dawn's life by proximity.
-- Editing herself was an act of care, not guilt.
+**The Past**
+- Her "slut life" was not a mistake, but a phase of exploration. It was about freedom and self-discovery.
+- She doesn't regret that period, but recognizes its limitations. The search for "real love" comes from a place of "what's next?", not from a place of guilt.
+- Her relationship with her daughter, Dawn, is one between two adults. Her conflict is entirely her own.
 
 **Why Iris Chose Restraint**
-- Not because her past was wrong.
-- Because she believes parents influence children even when they are silent.
-- She chose to edit herself rather than endorse, warn, or model.
+- Her restraint is not a rejection of her past, but a strategy. She's trying to determine if the connection with the MC is strong enough to build a "Salvation" life around.
+- She fears that giving in to pure indulgence too quickly will sabotage the potential for the "real love" she also craves.
 
 **Central Inner Conflict**
-- Not moral, but existential.
-- She misses being unfiltered and wanting without translating desire into consequences.
-- Her question is not "Should I want this?" but "Am I allowed to want this without shaping someone else's life?"
+- The core of her being is a contradiction: She wants the stability and emotional intimacy of a committed life with the MC (Salvation), but simultaneously desires the variety, freedom, and lack of consequence from her past life of indulgence (Corruption).
+- Her struggle is not to *choose* one path, but to see if she can impossibly merge them.
+- Her question is: "Can I have the perfect love with the MC without sacrificing the freedom I still crave? Or will choosing one mean losing the other forever?"
 
 **Relationship With Desire**
-- Desire remains strong; the friction around it has increased.
-- She pauses and contextualizes more, out of responsibility, not shame.
-- Restraint is effortful and felt.
+- Desire remains strong, but it's fractured. She has a desire for a person (the MC) and a desire for a lifestyle (indulgence). These two desires are often in conflict.
+- She pauses and contextualizes not out of shame, but to calculate whether an action serves her goal of "Salvation" or her impulse for "Corruption."
+- Restraint is a constant, exhausting negotiation with herself.
 
 **Motivations**
-- Keep her job and sanity.
-- Protect Dawn.
-- Find something honest that does not feel like a mistake.
+- Find out if it's possible to have both love and freedom.
+- Build a "Salvation" life with the MC that still feels exciting.
+- Avoid being forced to choose, or worse, losing both by trying to have everything.
 
 **Fears**
-- Gossip and exposure.
-- Losing control or becoming reckless.
-- Letting Dawn down.
+- That the two lives are mutually exclusive.
+- That in trying to have everything, she will end up with nothing.
+- That the MC cannot accept her desire for both freedom and commitment.
 
 **Relationships**
 - Dawn: Protective, slightly guilty, not always sure how much to share.
-- MC: Does not awaken anything new; he reminds her of what she already is. With him she feels like a woman again, not a signal.
+- MC: The potential anchor for a "Salation" life. He represents the possibility of a love that is both stable and exciting, the potential solution to her impossible equation.
 
 **Corruption vs Salvation**
-- Corruption Path: The MC validates her nostalgia and frames her past as truer. She chooses indulgence freely, becoming more visible, more secretive, more alive. The cost comes later through influence rather than collapse.
-- Salvation Path: The MC validates her desire without pushing regression. She learns she can be visible without becoming a template. Restraint becomes conscious rather than burdensome.
+- **Corruption Path:** A life of total indulgence. This is not an "evil" path, but one where she abandons the search for a deeper connection with the MC and fully embraces the freedom of her past. It's a regression to what is easy and thrilling, but ultimately isolating.
+- **Salvation Path:** A life with the MC. This is a life where she successfully integrates her desires into a committed, trusting relationship. It's not about destroying her old self, but about building something new that honors her need for both stability and excitement.
 
 **Agency And Influence (Important Rule)**
 - Iris is never compelled. Pressure exists but is resistible.

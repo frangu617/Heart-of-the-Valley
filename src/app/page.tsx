@@ -178,6 +178,17 @@ type SpendTimeOptions = {
   hungerGainMultiplier?: number;
 };
 
+type IrisSkipCheckpoint =
+  | "ch1_complete"
+  | "ch2_after_ev3"
+  | "ch2_complete"
+  | "ch3_after_ev1";
+type IrisRouteChoice = "dom" | "sub" | "middle";
+type IrisCoffeeChoice = "accepted" | "declined";
+type IrisPublicChoice = "accept" | "refuse";
+type IrisDomDeniedResolution = "exclusive" | "explore";
+type IrisC3Outcome = "keep_locked" | "shift_success" | "shift_failed";
+
 const MANUAL_SAVE_KEY = "datingSimSave";
 const AUTO_SAVE_KEY = "datingSimAutoSave";
 const HUNGER_GAIN_PER_HOUR = 80 / 6;
@@ -476,8 +487,75 @@ const DEBUG_FAST_TRAVEL_LOCATIONS = Array.from(
     ...Object.values(locationGraph).flatMap((links) => links.map((loc) => loc.name)),
   ]),
 ).sort((left, right) => left.localeCompare(right));
+const IRIS_SKIP_CHECKPOINT_ORDER: IrisSkipCheckpoint[] = [
+  "ch1_complete",
+  "ch2_after_ev3",
+  "ch2_complete",
+  "ch3_after_ev1",
+];
+const IRIS_SKIP_CHECKPOINT_LABEL: Record<IrisSkipCheckpoint, string> = {
+  ch1_complete: "Chapter 1 Complete",
+  ch2_after_ev3: "Chapter 2 - After Event 3",
+  ch2_complete: "Chapter 2 Complete",
+  ch3_after_ev1: "Chapter 3 - After Event 1",
+};
+const IRIS_ROUTE_LABEL: Record<IrisRouteChoice, string> = {
+  dom: "Dom",
+  sub: "Sub",
+  middle: "Middle",
+};
+const IRIS_SKIP_MANAGED_FLAGS: GameplayFlag[] = [
+  "hasMetIris",
+  "irisNeedsNewShirt",
+  "irisCoffeeAccepted",
+  "irisCoffeeDeclined",
+  "irisCoffeeMet",
+  "irisApartmentUnlocked",
+  "irisDomPath",
+  "irisSubPath",
+  "irisCh1FinaleComplete",
+  "irisCh2Ev1_Done",
+  "irisCh2Ev2_Done",
+  "irisCh2Ev3_Done",
+  "irisCh2Ev4_Done",
+  "irisSchoolKissUnlocked",
+  "irisPublicRefused",
+  "irisDatePlanned",
+  "irisDomAcceptedKissLoopActive",
+  "irisDomDeniedKissLoopActive",
+  "irisDomDeniedSeen1",
+  "irisDomDeniedSeen2",
+  "irisDomDeniedSeen3",
+  "irisDomDeniedExclusive",
+  "irisDomDeniedExplore",
+  "irisNtrSeeded",
+  "irisKissOthersChoiceMade",
+  "irisKissOthersEnabled",
+  "irisCh2Complete",
+  "metMysteryGirl",
+  "irisCh3Ev1_Done",
+  "irisC3PathOriginDom",
+  "irisC3PathOriginSub",
+  "irisC3PathOriginMiddle",
+  "irisC3PathCurrentDom",
+  "irisC3PathCurrentSub",
+  "irisC3PathCurrentMiddle",
+  "irisC3PathLocked",
+  "irisC3PathShiftAttempted",
+  "irisC3PathShiftSucceeded",
+  "playerKissedAnotherGirl",
+];
 
 const isNightlifeOpenAtHour = (hour: number) => hour >= 22 || hour < 2;
+const isIrisCheckpointAtLeast = (
+  current: IrisSkipCheckpoint,
+  threshold: IrisSkipCheckpoint,
+) =>
+  IRIS_SKIP_CHECKPOINT_ORDER.indexOf(current) >=
+  IRIS_SKIP_CHECKPOINT_ORDER.indexOf(threshold);
+const getChapter2RouteKey = (route: IrisRouteChoice) =>
+  route === "middle" ? "neutral" : route;
+
 const isChapterTwoOrHigher = (
   characterName: string,
   flags: Set<GameplayFlag>,
@@ -605,6 +683,21 @@ export default function GamePage() {
   const [debugTravelLocation, setDebugTravelLocation] =
     useState<string>("Bedroom");
   const [debugFreezeVitals, setDebugFreezeVitals] = useState<boolean>(false);
+  const [debugIrisSkipCheckpoint, setDebugIrisSkipCheckpoint] =
+    useState<IrisSkipCheckpoint>("ch2_complete");
+  const [debugIrisRoute, setDebugIrisRoute] = useState<IrisRouteChoice>("middle");
+  const [debugIrisCoffeeChoice, setDebugIrisCoffeeChoice] =
+    useState<IrisCoffeeChoice>("accepted");
+  const [debugIrisPublicChoice, setDebugIrisPublicChoice] =
+    useState<IrisPublicChoice>("accept");
+  const [debugIrisDomDeniedResolution, setDebugIrisDomDeniedResolution] =
+    useState<IrisDomDeniedResolution>("exclusive");
+  const [debugIrisC3Outcome, setDebugIrisC3Outcome] =
+    useState<IrisC3Outcome>("keep_locked");
+  const [debugIrisC3TargetRoute, setDebugIrisC3TargetRoute] =
+    useState<IrisRouteChoice>("middle");
+  const [debugIrisKissedAnotherGirl, setDebugIrisKissedAnotherGirl] =
+    useState<boolean>(false);
   const noticeIdRef = useRef(0);
   const confirmIdRef = useRef(0);
   const confirmQueueRef = useRef<PendingGameConfirm[]>([]);
@@ -1398,6 +1491,274 @@ export default function GamePage() {
     showGameNotice("Money set to $99,999 for testing.", { tone: "success" });
   }, [setPlayerWithDebugProtection]);
 
+  const debugIrisRouteOptions = useMemo<IrisRouteChoice[]>(
+    () =>
+      isIrisCheckpointAtLeast(debugIrisSkipCheckpoint, "ch2_after_ev3")
+        ? ["dom", "sub", "middle"]
+        : ["dom", "sub"],
+    [debugIrisSkipCheckpoint],
+  );
+
+  const showIrisPublicChoiceControl = useMemo(
+    () => isIrisCheckpointAtLeast(debugIrisSkipCheckpoint, "ch2_after_ev3"),
+    [debugIrisSkipCheckpoint],
+  );
+
+  const showIrisDomDeniedResolutionControl = useMemo(
+    () =>
+      isIrisCheckpointAtLeast(debugIrisSkipCheckpoint, "ch2_complete") &&
+      debugIrisRoute === "dom" &&
+      debugIrisPublicChoice === "refuse",
+    [debugIrisPublicChoice, debugIrisRoute, debugIrisSkipCheckpoint],
+  );
+
+  const showIrisC3Controls = debugIrisSkipCheckpoint === "ch3_after_ev1";
+
+  const applyIrisStorySkip = useCallback(() => {
+    if (
+      debugIrisSkipCheckpoint === "ch1_complete" &&
+      debugIrisRoute === "middle"
+    ) {
+      showGameNotice(
+        "Chapter 1 Iris only supports dom or sub. Pick one route.",
+        { tone: "error" },
+      );
+      return;
+    }
+
+    const chapter1Route: "dom" | "sub" = debugIrisRoute === "dom" ? "dom" : "sub";
+    const chapter2RouteKey = getChapter2RouteKey(debugIrisRoute);
+    const shouldIncludeCh2 = isIrisCheckpointAtLeast(
+      debugIrisSkipCheckpoint,
+      "ch2_after_ev3",
+    );
+    const shouldIncludeCh2Complete = isIrisCheckpointAtLeast(
+      debugIrisSkipCheckpoint,
+      "ch2_complete",
+    );
+    const shouldIncludeCh3 = isIrisCheckpointAtLeast(
+      debugIrisSkipCheckpoint,
+      "ch3_after_ev1",
+    );
+
+    const completedEventIds: string[] = [
+      "iris_university_intro",
+      debugIrisCoffeeChoice === "accepted"
+        ? "iris_coffee_meetup_event"
+        : "iris_coffee_forced_meet_event",
+      "iris_hallway_invite_event",
+      chapter1Route === "dom" ? "iris_mall_bump_dom" : "iris_mall_bump_sub",
+      chapter1Route === "dom"
+        ? "iris_chapter_1_finale_dom"
+        : "iris_chapter_1_finale_sub",
+    ];
+
+    if (shouldIncludeCh2) {
+      completedEventIds.push(
+        "iris_ch2_ev1",
+        `iris_ch2_ev2_${chapter2RouteKey}`,
+        `iris_ch2_ev3_${chapter2RouteKey}`,
+      );
+    }
+
+    if (shouldIncludeCh2Complete) {
+      if (debugIrisRoute === "dom") {
+        completedEventIds.push(
+          debugIrisPublicChoice === "accept"
+            ? "iris_ch2_ev4_dom_accepted"
+            : "iris_ch2_ev4_dom_denied_start",
+        );
+      } else if (debugIrisRoute === "sub") {
+        completedEventIds.push(
+          debugIrisPublicChoice === "accept"
+            ? "iris_ch2_ev4_sub_accepted"
+            : "iris_ch2_ev4_sub_denied",
+        );
+      } else {
+        completedEventIds.push(
+          debugIrisPublicChoice === "accept"
+            ? "iris_ch2_ev4_balanced_accepted"
+            : "iris_ch2_ev4_balanced_denied",
+        );
+      }
+
+      completedEventIds.push(`iris_ch2_ev5_${chapter2RouteKey}_date`);
+    }
+
+    if (shouldIncludeCh3) {
+      const chapter3RouteKey = getChapter2RouteKey(debugIrisRoute);
+      const chapter3EventId = debugIrisKissedAnotherGirl
+        ? `iris_c3_ev1_${chapter3RouteKey}_kissed_other`
+        : `iris_c3_ev1_${chapter3RouteKey}`;
+      completedEventIds.push(chapter3EventId);
+    }
+
+    const currentGameTime = calculateGameTime(dayOfWeek, hour, dayCount);
+    const irisHistory: EventHistory[] = completedEventIds.map((eventId, index) => ({
+      eventId,
+      lastTriggered: {
+        day: START_DAY,
+        hour: 0,
+        gameTime: currentGameTime - 240 - index,
+      },
+      timesTriggered: 1,
+    }));
+
+    const irisCurrentRouteAfterC3: IrisRouteChoice =
+      shouldIncludeCh3 && debugIrisC3Outcome === "shift_success"
+        ? debugIrisC3TargetRoute
+        : debugIrisRoute;
+    const irisDominance =
+      irisCurrentRouteAfterC3 === "dom"
+        ? 35
+        : irisCurrentRouteAfterC3 === "sub"
+          ? -35
+          : 0;
+
+    setCharacterEventStates((prev) => ({
+      ...prev,
+      Iris: {
+        characterName: "Iris",
+        eventHistory: irisHistory,
+        lastInteractionTime: prev.Iris?.lastInteractionTime ?? currentGameTime,
+      },
+    }));
+
+    setGameplayFlags((prev) => {
+      const next = new Set(prev);
+      IRIS_SKIP_MANAGED_FLAGS.forEach((flag) => next.delete(flag));
+
+      next.add("hasMetIris");
+      next.add("irisNeedsNewShirt");
+      next.add("irisCoffeeMet");
+      next.add("irisApartmentUnlocked");
+      next.add("irisCh1FinaleComplete");
+
+      if (debugIrisCoffeeChoice === "accepted") {
+        next.add("irisCoffeeAccepted");
+      } else {
+        next.add("irisCoffeeDeclined");
+      }
+
+      if (chapter1Route === "dom") {
+        next.add("irisDomPath");
+      } else {
+        next.add("irisSubPath");
+      }
+
+      if (shouldIncludeCh2) {
+        next.add("irisCh2Ev1_Done");
+        next.add("irisCh2Ev2_Done");
+        next.add("irisCh2Ev3_Done");
+        if (debugIrisPublicChoice === "accept") {
+          next.add("irisSchoolKissUnlocked");
+        } else {
+          next.add("irisPublicRefused");
+        }
+      }
+
+      if (shouldIncludeCh2Complete) {
+        next.add("irisCh2Ev4_Done");
+        next.add("irisDatePlanned");
+        next.add("irisCh2Complete");
+        next.add("metMysteryGirl");
+
+        if (debugIrisRoute === "dom") {
+          if (debugIrisPublicChoice === "accept") {
+            next.add("irisDomAcceptedKissLoopActive");
+          } else {
+            next.add("irisDomDeniedKissLoopActive");
+            next.add("irisKissOthersChoiceMade");
+            if (debugIrisDomDeniedResolution === "exclusive") {
+              next.add("irisDomDeniedExclusive");
+            } else {
+              next.add("irisDomDeniedExplore");
+              next.add("irisNtrSeeded");
+              next.add("irisKissOthersEnabled");
+            }
+          }
+        }
+      }
+
+      if (shouldIncludeCh3 && debugIrisKissedAnotherGirl) {
+        next.add("playerKissedAnotherGirl");
+      }
+
+      if (shouldIncludeCh3) {
+        next.add("irisCh3Ev1_Done");
+        if (debugIrisRoute === "dom") next.add("irisC3PathOriginDom");
+        if (debugIrisRoute === "sub") next.add("irisC3PathOriginSub");
+        if (debugIrisRoute === "middle") next.add("irisC3PathOriginMiddle");
+
+        if (irisCurrentRouteAfterC3 === "dom") next.add("irisC3PathCurrentDom");
+        if (irisCurrentRouteAfterC3 === "sub") next.add("irisC3PathCurrentSub");
+        if (irisCurrentRouteAfterC3 === "middle")
+          next.add("irisC3PathCurrentMiddle");
+
+        if (debugIrisC3Outcome === "keep_locked") {
+          next.add("irisC3PathLocked");
+        } else if (debugIrisC3Outcome === "shift_success") {
+          next.add("irisC3PathShiftAttempted");
+          next.add("irisC3PathShiftSucceeded");
+        } else {
+          next.add("irisC3PathShiftAttempted");
+        }
+      }
+
+      return next;
+    });
+
+    setGirlStatsOverrides((prev) => {
+      const next: Record<string, Partial<GirlStats>> = { ...prev };
+      girls.forEach((girl) => {
+        next[girl.name] = {
+          affection: 100,
+          lust: 100,
+          mood: 100,
+          love: 100,
+          dominance: girl.name === "Iris" ? irisDominance : 0,
+        };
+      });
+      return next;
+    });
+
+    setPlayerWithDebugProtection((prev) =>
+      withDerivedMood({
+        ...prev,
+        energy: 100,
+        mood: 100,
+        hunger: 0,
+        hygiene: 100,
+        sobriety: 100,
+        fitness: 50,
+        intelligence: 50,
+        style: 50,
+        money: 99999,
+      }),
+    );
+
+    setMetCharacters((prev) => new Set([...prev, "Iris"]));
+
+    showGameNotice(
+      `Iris skip applied: ${IRIS_SKIP_CHECKPOINT_LABEL[debugIrisSkipCheckpoint]} (${IRIS_ROUTE_LABEL[debugIrisRoute]} route).`,
+      { tone: "success" },
+    );
+  }, [
+    dayCount,
+    dayOfWeek,
+    debugIrisC3Outcome,
+    debugIrisC3TargetRoute,
+    debugIrisCoffeeChoice,
+    debugIrisDomDeniedResolution,
+    debugIrisKissedAnotherGirl,
+    debugIrisPublicChoice,
+    debugIrisRoute,
+    debugIrisSkipCheckpoint,
+    girls,
+    hour,
+    setPlayerWithDebugProtection,
+  ]);
+
   useEffect(() => {
     if (selectedGirl) {
       setDebugCharacterName(selectedGirl.name);
@@ -1410,6 +1771,12 @@ export default function GamePage() {
       setDebugCharacterName(debugCharacterOptions[0]);
     }
   }, [debugCharacterOptions, debugCharacterName]);
+
+  useEffect(() => {
+    if (!debugIrisRouteOptions.includes(debugIrisRoute)) {
+      setDebugIrisRoute(debugIrisRouteOptions[0]);
+    }
+  }, [debugIrisRoute, debugIrisRouteOptions]);
 
   useEffect(() => {
     if (
@@ -3652,6 +4019,164 @@ export default function GamePage() {
                 >
                   Set Money: 99,999
                 </button>
+              </div>
+
+              <div className="space-y-2 rounded border border-cyan-700/60 bg-cyan-900/20 p-2">
+                <div className="font-semibold text-cyan-200">Iris Story Skip</div>
+
+                <div className="space-y-1">
+                  <label className="block text-cyan-300">Checkpoint</label>
+                  <select
+                    value={debugIrisSkipCheckpoint}
+                    onChange={(event) =>
+                      setDebugIrisSkipCheckpoint(
+                        event.target.value as IrisSkipCheckpoint,
+                      )
+                    }
+                    className="w-full rounded border border-gray-700 bg-gray-800 px-2 py-1 text-xs"
+                  >
+                    {IRIS_SKIP_CHECKPOINT_ORDER.map((checkpoint) => (
+                      <option key={checkpoint} value={checkpoint}>
+                        {IRIS_SKIP_CHECKPOINT_LABEL[checkpoint]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-cyan-300">Iris Route</label>
+                  <select
+                    value={debugIrisRoute}
+                    onChange={(event) =>
+                      setDebugIrisRoute(event.target.value as IrisRouteChoice)
+                    }
+                    className="w-full rounded border border-gray-700 bg-gray-800 px-2 py-1 text-xs"
+                  >
+                    {debugIrisRouteOptions.map((route) => (
+                      <option key={route} value={route}>
+                        {IRIS_ROUTE_LABEL[route]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-cyan-300">Chapter 1 Coffee Path</label>
+                  <select
+                    value={debugIrisCoffeeChoice}
+                    onChange={(event) =>
+                      setDebugIrisCoffeeChoice(
+                        event.target.value as IrisCoffeeChoice,
+                      )
+                    }
+                    className="w-full rounded border border-gray-700 bg-gray-800 px-2 py-1 text-xs"
+                  >
+                    <option value="accepted">Accepted coffee invite</option>
+                    <option value="declined">Declined (forced meetup)</option>
+                  </select>
+                </div>
+
+                {showIrisPublicChoiceControl && (
+                  <div className="space-y-1">
+                    <label className="block text-cyan-300">Event 3 Public Choice</label>
+                    <select
+                      value={debugIrisPublicChoice}
+                      onChange={(event) =>
+                        setDebugIrisPublicChoice(
+                          event.target.value as IrisPublicChoice,
+                        )
+                      }
+                      className="w-full rounded border border-gray-700 bg-gray-800 px-2 py-1 text-xs"
+                    >
+                      <option value="accept">Accepted (school kiss unlocked)</option>
+                      <option value="refuse">Refused (public denied)</option>
+                    </select>
+                  </div>
+                )}
+
+                {showIrisDomDeniedResolutionControl && (
+                  <div className="space-y-1">
+                    <label className="block text-cyan-300">Dom Denied Resolution</label>
+                    <select
+                      value={debugIrisDomDeniedResolution}
+                      onChange={(event) =>
+                        setDebugIrisDomDeniedResolution(
+                          event.target.value as IrisDomDeniedResolution,
+                        )
+                      }
+                      className="w-full rounded border border-gray-700 bg-gray-800 px-2 py-1 text-xs"
+                    >
+                      <option value="exclusive">Exclusive recommit</option>
+                      <option value="explore">Explore/open lane</option>
+                    </select>
+                  </div>
+                )}
+
+                {showIrisC3Controls && (
+                  <>
+                    <div className="space-y-1">
+                      <label className="block text-cyan-300">Chapter 3 Event 1 Outcome</label>
+                      <select
+                        value={debugIrisC3Outcome}
+                        onChange={(event) =>
+                          setDebugIrisC3Outcome(
+                            event.target.value as IrisC3Outcome,
+                          )
+                        }
+                        className="w-full rounded border border-gray-700 bg-gray-800 px-2 py-1 text-xs"
+                      >
+                        <option value="keep_locked">Kept route (locked)</option>
+                        <option value="shift_success">Tried to change (success)</option>
+                        <option value="shift_failed">Tried to change (failed)</option>
+                      </select>
+                    </div>
+
+                    {debugIrisC3Outcome === "shift_success" && (
+                      <div className="space-y-1">
+                        <label className="block text-cyan-300">Shifted To</label>
+                        <select
+                          value={debugIrisC3TargetRoute}
+                          onChange={(event) =>
+                            setDebugIrisC3TargetRoute(
+                              event.target.value as IrisRouteChoice,
+                            )
+                          }
+                          className="w-full rounded border border-gray-700 bg-gray-800 px-2 py-1 text-xs"
+                        >
+                          <option value="dom">Dom</option>
+                          <option value="sub">Sub</option>
+                          <option value="middle">Middle</option>
+                        </select>
+                      </div>
+                    )}
+
+                    <label className="flex items-center gap-2 text-cyan-100">
+                      <input
+                        type="checkbox"
+                        checked={debugIrisKissedAnotherGirl}
+                        onChange={(event) =>
+                          setDebugIrisKissedAnotherGirl(event.target.checked)
+                        }
+                        className="h-4 w-4 accent-cyan-400"
+                      />
+                      <span className="font-semibold">
+                        Mark "player kissed another girl"
+                      </span>
+                    </label>
+                  </>
+                )}
+
+                <button
+                  type="button"
+                  onClick={applyIrisStorySkip}
+                  className="w-full rounded border border-cyan-400 bg-cyan-900/80 px-2 py-1 text-left text-xs font-semibold text-cyan-100 transition hover:bg-cyan-800/90"
+                >
+                  Apply Iris Skip + Max Stats
+                </button>
+
+                <div className="text-[11px] text-cyan-300/90">
+                  Sets checkpoint flags, branch flags, Iris event history, and maxed player/girl stats.
+                </div>
               </div>
 
               <div className="space-y-1">
