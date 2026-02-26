@@ -74,6 +74,7 @@ const rubyCh1Ev5MallDom: Dialogue = {
         },
         {
           text: "Good. Burn it off with me on the dance floor.",
+          affectionChange: 0,
           lustChange: 2,
           dominanceChange: 1,
           nextDialogueId: "ruby_ch1_ev5_dom_heat",
