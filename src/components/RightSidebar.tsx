@@ -18,7 +18,11 @@ type Props = {
   spendTime: (
     amount: number,
     basePlayer?: PlayerStats,
-    options?: { skipHungerGain?: boolean; hungerGainMultiplier?: number },
+    options?: {
+      skipHungerGain?: boolean;
+      hungerGainMultiplier?: number;
+      scaleBasePlayerWithTime?: boolean;
+    },
   ) => void;
   onCloseSelectedGirl: () => void;
   onStartDialogue: (

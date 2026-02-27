@@ -26,6 +26,7 @@ import GiftModal from "./GiftModal";
 import { Gift, getGiftEntriesFromInventory } from "@/data/gifts";
 import { getPortraitVerticalOffsetPx } from "@/lib/portraitFraming";
 import { TESTING_LOCATION_NAME } from "@/data/locations";
+import { injectDawnIntelLines } from "@/lib/dawnMystery";
 // import { get } from "http";
 
 const ALWAYS_VISIBLE_INTERACTIONS = new Set(["Chat", "Flirt", "Give Gift"]);
@@ -193,7 +194,11 @@ interface Props {
   spendTime: (
     amount: number,
     basePlayer?: PlayerStats,
-    options?: { skipHungerGain?: boolean; hungerGainMultiplier?: number },
+    options?: {
+      skipHungerGain?: boolean;
+      hungerGainMultiplier?: number;
+      scaleBasePlayerWithTime?: boolean;
+    },
   ) => void;
   onClose: () => void;
   onStartDialogue: (
@@ -252,13 +257,18 @@ export default function CharacterOverlay({
   const [pendingGiftAction, setPendingGiftAction] = useState<Interaction | null>(
     null
   );
+  const dawnIdentityKnown =
+    gameplayFlags.has("metDawn") || gameplayFlags.has("hasMetDawn");
+  const isDawnMysteryState = girl.name === "Dawn" && !dawnIdentityKnown;
   const kissUnlocked =
     hasKissUnlockedByFlag(girl.name, gameplayFlags) ||
     hasCompletedChapterOneByHistory(girl.name, eventState);
-  const visibleInteractions = interactionMenu.filter((action) => {
-    if (action.label === "Kiss") return kissUnlocked;
-    return ALWAYS_VISIBLE_INTERACTIONS.has(action.label);
-  });
+  const visibleInteractions = isDawnMysteryState
+    ? []
+    : interactionMenu.filter((action) => {
+        if (action.label === "Kiss") return kissUnlocked;
+        return ALWAYS_VISIBLE_INTERACTIONS.has(action.label);
+      });
   const giftEntries = getGiftEntriesFromInventory(player.inventory);
   const hasGifts = giftEntries.length > 0;
   const resolvedCharacterImageLocation = characterImageLocation ?? location;
@@ -405,7 +415,7 @@ export default function CharacterOverlay({
       );
       onEventTriggered(triggeredEvent.id, girl.name);
       onStartDialogue(
-        triggeredEvent.dialogue,
+        injectDawnIntelLines(triggeredEvent.dialogue, gameplayFlags),
         characterImage,
         triggeredEvent.rewards?.girlStats
       );
@@ -436,6 +446,14 @@ export default function CharacterOverlay({
   const interact = (action: Interaction) => {
     const isSandboxChat =
       location === TESTING_LOCATION_NAME && action.label === "Chat";
+
+    if (isDawnMysteryState) {
+      showGameNotice(
+        "She watches you without introducing herself. No contact info. Not yet.",
+        { tone: "info" },
+      );
+      return;
+    }
 
     if (!isSandboxChat && isPlayerStarving) {
       showGameNotice("You're too hungry to do that right now. Eat something first.", {
@@ -582,6 +600,22 @@ export default function CharacterOverlay({
       return;
     }
 
+    const shouldQueueDawnSummon =
+      action.label === "Kiss" &&
+      girl.name === "Iris" &&
+      gameplayFlags.has("irisCh3Ev2_Done") &&
+      !gameplayFlags.has("dawnSummonQueued") &&
+      !gameplayFlags.has("dawnSummonTriggered");
+
+    if (shouldQueueDawnSummon) {
+      onSetFlag?.("dawnSummonQueued");
+      onSetFlag?.("dawnSummonQueuedFromKiss");
+      onEventTriggered("iris_c3_ev2_kiss_arm", "Iris");
+      showGameNotice("A blocked caller registers in your phone log.", {
+        tone: "warning",
+      });
+    }
+
     // Apply stat effects outside sandbox chat
     if (!isSandboxChat) {
       const updatedStats = action.statEffects
@@ -684,6 +718,9 @@ export default function CharacterOverlay({
   const shouldHideDawnFace = girl.name === "Dawn" && !gameplayFlags.has("hasMetDawn");
   const overlayPortraitOffsetPx =
     getPortraitVerticalOffsetPx(girl.name) + (shouldHideDawnFace ? -30 : 0);
+  const displayGirlName = isDawnMysteryState ? "???" : girl.name;
+  const displayPersonality = isDawnMysteryState ? "Unknown" : girl.personality;
+  const displayRelationship = isDawnMysteryState ? "Unknown" : girl.relationship;
 
   const containerPosition =
     variant === "modal" ? "relative" : "sticky top-4";
@@ -721,13 +758,13 @@ export default function CharacterOverlay({
           </div>
         </div>
 
-        <h3 className="text-2xl font-bold text-purple-500 mb-1">{girl.name}</h3>
+        <h3 className="text-2xl font-bold text-purple-500 mb-1">{displayGirlName}</h3>
         <p className="text-gray-500 italic mb-2 text-sm">
-          &quot;{girl.personality}&quot;
+          &quot;{displayPersonality}&quot;
         </p>
 
         <div className="px-4 py-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full text-white font-semibold text-xs shadow-lg">
-          {girl.relationship}
+          {displayRelationship}
         </div>
       </div>
       <div className="bg-white rounded-xl p-4 mb-4 space-y-2 shadow-md">
@@ -738,20 +775,26 @@ export default function CharacterOverlay({
           <div className="flex justify-between items-center px-2 py-1 bg-pink-50 rounded">
             <span className="font-semibold text-gray-700">💕 Affection</span>
             <span className="font-bold text-pink-600">
-              {girl.stats.affection}
+              {isDawnMysteryState ? "??" : girl.stats.affection}
             </span>
           </div>
           <div className="flex justify-between items-center px-2 py-1 bg-red-50 rounded">
             <span className="font-semibold text-gray-700">🔥 Lust</span>
-            <span className="font-bold text-red-600">{girl.stats.lust}</span>
+            <span className="font-bold text-red-600">
+              {isDawnMysteryState ? "??" : girl.stats.lust}
+            </span>
           </div>
           <div className="flex justify-between items-center px-2 py-1 bg-yellow-50 rounded">
             <span className="font-semibold text-gray-700">😊 Mood</span>
-            <span className="font-bold text-yellow-600">{girl.stats.mood}</span>
+            <span className="font-bold text-yellow-600">
+              {isDawnMysteryState ? "??" : girl.stats.mood}
+            </span>
           </div>
           <div className="flex justify-between items-center px-2 py-1 bg-purple-50 rounded col-span-2">
             <span className="font-semibold text-gray-700">💖 Love</span>
-            <span className="font-bold text-purple-600">{girl.stats.love}</span>
+            <span className="font-bold text-purple-600">
+              {isDawnMysteryState ? "??" : girl.stats.love}
+            </span>
           </div>
         </div>
       </div>
@@ -787,6 +830,12 @@ export default function CharacterOverlay({
           </div>
           <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity"></div>
           </button>
+        )}
+
+        {isDawnMysteryState && (
+          <div className="rounded-lg border border-yellow-300 bg-yellow-50 px-3 py-2 text-xs text-yellow-900">
+            She has not shared her name or number yet. You cannot interact with her right now.
+          </div>
         )}
 
         {visibleInteractions.map((action) => {
@@ -849,7 +898,7 @@ export default function CharacterOverlay({
       <div className="mt-4 bg-white rounded-lg p-3 border-2 border-purple-200 shadow">
         <p className="text-xs text-gray-600 text-center">
           <span className="font-semibold text-purple-600">💡</span> Different
-          actions affect {girl.name}&apos;s feelings toward you!
+          actions affect {displayGirlName}&apos;s feelings toward you!
         </p>
       </div>
       {SHOW_DATE_PLANNER_ACTION && showDatePlanner && (

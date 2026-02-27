@@ -5,6 +5,7 @@ import type { GirlStats } from "../characters";
 
 export type GameplayFlag =
   | "hasMetIris"
+  | "hasSeenDawn"
   | "hasMetDawn"
   | "hasMetGwen"
   | "hasMetYumi"
@@ -43,6 +44,7 @@ export type GameplayFlag =
   | "irisKissOthersEnabled"
   | "irisCh2Complete"
   | "irisCh3Ev1_Done"
+  | "irisCh3Ev2_Done"
   | "irisC3PathOriginDom"
   | "irisC3PathOriginSub"
   | "irisC3PathOriginMiddle"
@@ -52,6 +54,12 @@ export type GameplayFlag =
   | "irisC3PathLocked"
   | "irisC3PathShiftAttempted"
   | "irisC3PathShiftSucceeded"
+  | "dawnFallbackReady"
+  | "dawnIrritatedFallbackSeen"
+  | "dawnSummonQueued"
+  | "dawnSummonQueuedFromKiss"
+  | "dawnSummonQueuedTonight"
+  | "dawnSummonTriggered"
   | "playerKissedAnotherGirl"
   | "metMysteryGirl"
   | "iris_intro_done"

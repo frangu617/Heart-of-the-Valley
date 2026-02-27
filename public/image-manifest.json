@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-02-26T01:00:07.176Z",
-  "count": 483,
+  "generatedAt": "2026-02-27T01:16:23.448Z",
+  "count": 486,
   "images": [
     "/images/characters/dawn/casual/angry.jpg",
     "/images/characters/dawn/casual/annoyed.jpg",
@@ -116,6 +116,7 @@
     "/images/characters/gwen/home/neutral.webp",
     "/images/characters/gwen/home/sad.png",
     "/images/characters/gwen/home/sad.webp",
+    "/images/characters/gwen/work/grok-image-d1f85ce3-6fe7-4ea5-967c-1d294325b69b.jpg",
     "/images/characters/gwen/work/image.jpg",
     "/images/characters/iris/beach/angry.png",
     "/images/characters/iris/beach/angry.webp",
@@ -325,6 +326,7 @@
     "/images/characters/yumi/casual/flirty.webp",
     "/images/characters/yumi/casual/happy.jpg",
     "/images/characters/yumi/casual/happy.webp",
+    "/images/characters/yumi/casual/kissMC.jpg",
     "/images/characters/yumi/casual/love.jpg",
     "/images/characters/yumi/casual/neutral.jpg",
     "/images/characters/yumi/casual/neutral.webp",
@@ -346,6 +348,7 @@
     "/images/characters/yumi/gym/excited.webp",
     "/images/characters/yumi/gym/happy.png",
     "/images/characters/yumi/gym/happy.webp",
+    "/images/characters/yumi/gym/neutral.jpg",
     "/images/characters/yumi/gym/neutral.png",
     "/images/characters/yumi/gym/neutral.webp",
     "/images/characters/yumi/gym/sad.png",

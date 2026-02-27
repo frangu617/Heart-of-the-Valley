@@ -44,7 +44,11 @@ type Props = {
   spendTime: (
     hours: number,
     basePlayer?: PlayerStats,
-    options?: { skipHungerGain?: boolean; hungerGainMultiplier?: number },
+    options?: {
+      skipHungerGain?: boolean;
+      hungerGainMultiplier?: number;
+      scaleBasePlayerWithTime?: boolean;
+    },
   ) => void;
   onTriggerEvent: (girlName: string, eventId: string, location?: string) => void;
   onSetFlag: (flag: GameplayFlag) => void;

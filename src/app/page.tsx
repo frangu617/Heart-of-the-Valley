@@ -59,6 +59,8 @@ import {
   type GameNoticeTone,
 } from "@/lib/gameUi";
 import { startImageManifestPreload } from "@/lib/imagePreload";
+import { injectDawnIntelLines } from "@/lib/dawnMystery";
+import { iris_c3_ev2_dawn_summon_call } from "@/data/events/chapter3/iris/event2";
 
 // Data / Types
 
@@ -176,6 +178,7 @@ type GameState = "mainMenu" | "nameInput" | "intro" | "playing" | "paused" | "di
 type SpendTimeOptions = {
   skipHungerGain?: boolean;
   hungerGainMultiplier?: number;
+  scaleBasePlayerWithTime?: boolean;
 };
 
 type IrisSkipCheckpoint =
@@ -506,6 +509,7 @@ const IRIS_ROUTE_LABEL: Record<IrisRouteChoice, string> = {
 };
 const IRIS_SKIP_MANAGED_FLAGS: GameplayFlag[] = [
   "hasMetIris",
+  "hasSeenDawn",
   "irisNeedsNewShirt",
   "irisCoffeeAccepted",
   "irisCoffeeDeclined",
@@ -534,6 +538,7 @@ const IRIS_SKIP_MANAGED_FLAGS: GameplayFlag[] = [
   "irisCh2Complete",
   "metMysteryGirl",
   "irisCh3Ev1_Done",
+  "irisCh3Ev2_Done",
   "irisC3PathOriginDom",
   "irisC3PathOriginSub",
   "irisC3PathOriginMiddle",
@@ -543,6 +548,12 @@ const IRIS_SKIP_MANAGED_FLAGS: GameplayFlag[] = [
   "irisC3PathLocked",
   "irisC3PathShiftAttempted",
   "irisC3PathShiftSucceeded",
+  "dawnFallbackReady",
+  "dawnIrritatedFallbackSeen",
+  "dawnSummonQueued",
+  "dawnSummonQueuedFromKiss",
+  "dawnSummonQueuedTonight",
+  "dawnSummonTriggered",
   "playerKissedAnotherGirl",
 ];
 
@@ -702,6 +713,8 @@ export default function GamePage() {
   const confirmIdRef = useRef(0);
   const confirmQueueRef = useRef<PendingGameConfirm[]>([]);
   const irisKissOthersPromptedRef = useRef(false);
+  const dawnFallbackAutoTriggeredRef = useRef(false);
+  const dawnSummonAutoTriggeredRef = useRef(false);
   const pendingAutoSaveRef = useRef(false);
   const imagePreloadStartedRef = useRef(false);
 
@@ -925,23 +938,131 @@ export default function GamePage() {
   const [hungerProgressRemainder, setHungerProgressRemainder] =
     useState<number>(0);
 
+  const getIrisEventGameTime = useCallback(
+    (eventId: string): number | null => {
+      const irisState = characterEventStates.Iris;
+      const history = irisState?.eventHistory.find(
+        (entry) => entry.eventId === eventId && entry.timesTriggered > 0,
+      );
+      if (!history) return null;
+
+      const gameTime = history.lastTriggered?.gameTime;
+      return typeof gameTime === "number" && Number.isFinite(gameTime)
+        ? gameTime
+        : null;
+    },
+    [characterEventStates],
+  );
+
+  const getDawnSummonTargetGameTime = useCallback((): number | null => {
+    if (
+      !gameplayFlags.has("dawnSummonQueued") ||
+      gameplayFlags.has("dawnSummonTriggered")
+    ) {
+      return null;
+    }
+
+    if (gameplayFlags.has("dawnSummonQueuedTonight")) {
+      const fallbackTime = getIrisEventGameTime("iris_c3_ev2_dawn_callout_fallback");
+      if (fallbackTime === null) return null;
+      const fallbackDay = Math.floor(fallbackTime / 24);
+      const fallbackHour = fallbackTime % 24;
+      const targetDay = fallbackHour < 23 ? fallbackDay : fallbackDay + 1;
+      return targetDay * 24 + 23;
+    }
+
+    if (gameplayFlags.has("dawnSummonQueuedFromKiss")) {
+      const kissArmTime = getIrisEventGameTime("iris_c3_ev2_kiss_arm");
+      if (kissArmTime === null) return null;
+      const kissDay = Math.floor(kissArmTime / 24);
+      return (kissDay + 1) * 24 + 23;
+    }
+
+    return null;
+  }, [gameplayFlags, getIrisEventGameTime]);
+
+  const getHoursUntilDawnSummon = useCallback(
+    (requestedHours: number): number | null => {
+      if (requestedHours <= 0) return null;
+
+      const targetGameTime = getDawnSummonTargetGameTime();
+      if (targetGameTime === null) return null;
+
+      const currentGameTime = calculateGameTime(dayOfWeek, hour, dayCount);
+      if (targetGameTime <= currentGameTime) return null;
+
+      const deltaHours = targetGameTime - currentGameTime;
+      if (deltaHours <= requestedHours) {
+        return deltaHours;
+      }
+      return null;
+    },
+    [dayCount, dayOfWeek, getDawnSummonTargetGameTime, hour],
+  );
+
   // time
   const spendTime = (
     amount: number,
     basePlayer?: PlayerStats,
     options?: SpendTimeOptions,
   ) => {
-    const newHour = hour + amount;
+    const summonInterruptHours = getHoursUntilDawnSummon(amount);
+    const effectiveAmount =
+      summonInterruptHours !== null && summonInterruptHours > 0
+        ? summonInterruptHours
+        : amount;
+    const newHour = hour + effectiveAmount;
     const wrappedHour = ((newHour % MAX_HOUR) + MAX_HOUR) % MAX_HOUR;
     const daysElapsed = Math.floor(newHour / MAX_HOUR);
-    const incomingPlayer = basePlayer ?? player;
+    const scaleBasePlayerWithTime = options?.scaleBasePlayerWithTime ?? false;
+    let incomingPlayer = basePlayer ?? player;
+    if (
+      scaleBasePlayerWithTime &&
+      basePlayer &&
+      amount > 0 &&
+      effectiveAmount < amount
+    ) {
+      const ratio = effectiveAmount / amount;
+      const scaleStat = (
+        stat: keyof Pick<
+          PlayerStats,
+          | "energy"
+          | "mood"
+          | "hunger"
+          | "hygiene"
+          | "sobriety"
+          | "fitness"
+          | "intelligence"
+          | "style"
+          | "money"
+        >,
+      ) => {
+        const start = player[stat];
+        const target = basePlayer[stat];
+        const delta = target - start;
+        return Math.round(start + delta * ratio);
+      };
+
+      incomingPlayer = {
+        ...basePlayer,
+        energy: scaleStat("energy"),
+        mood: scaleStat("mood"),
+        hunger: scaleStat("hunger"),
+        hygiene: scaleStat("hygiene"),
+        sobriety: scaleStat("sobriety"),
+        fitness: scaleStat("fitness"),
+        intelligence: scaleStat("intelligence"),
+        style: scaleStat("style"),
+        money: scaleStat("money"),
+      };
+    }
     const effectivePlayer = applyDebugVitalsProtection(incomingPlayer, player);
     const skipHungerGain = (options?.skipHungerGain ?? false) || debugFreezeVitals;
     const hungerGainMultiplier = Math.max(
       0,
       options?.hungerGainMultiplier ?? 1,
     );
-    const elapsedHours = amount;
+    const elapsedHours = effectiveAmount;
     const rawHungerGain = skipHungerGain
       ? hungerProgressRemainder
       : elapsedHours * HUNGER_GAIN_PER_HOUR * hungerGainMultiplier +
@@ -1228,7 +1349,7 @@ export default function GamePage() {
           hour,
         );
         startDialogue(
-          characterEvent.dialogue,
+          injectDawnIntelLines(characterEvent.dialogue, gameplayFlags),
           characterImage,
           characterEvent.rewards?.girlStats ?? null,
           encounter.characterName,
@@ -1335,7 +1456,7 @@ export default function GamePage() {
       const next = {
         Yumi: gameplayFlags.has("hasMetYumi"),
         Gwen: gameplayFlags.has("hasMetGwen"),
-        Dawn: gameplayFlags.has("hasMetDawn"),
+        Dawn: gameplayFlags.has("hasMetDawn") || gameplayFlags.has("hasSeenDawn"),
         Ruby: gameplayFlags.has("hasMetRuby"),
       };
 
@@ -2683,7 +2804,7 @@ export default function GamePage() {
       );
       onEventTriggered(triggerable.id, characterName);
       startDialogue(
-        triggerable.dialogue,
+        injectDawnIntelLines(triggerable.dialogue, gameplayFlags),
         characterImage,
         null,
         characterName,
@@ -2719,6 +2840,127 @@ export default function GamePage() {
       startDialogue,
     ],
   );
+
+  useEffect(() => {
+    if (
+      !gameplayFlags.has("irisCh3Ev2_Done") ||
+      gameplayFlags.has("dawnFallbackReady") ||
+      gameplayFlags.has("dawnSummonQueued") ||
+      gameplayFlags.has("dawnSummonTriggered") ||
+      gameplayFlags.has("dawnIrritatedFallbackSeen")
+    ) {
+      return;
+    }
+
+    const calloutTime = getIrisEventGameTime("iris_c3_ev2_dawn_callout");
+    if (calloutTime === null) return;
+
+    const currentGameTime = calculateGameTime(dayOfWeek, hour, dayCount);
+    if (currentGameTime - calloutTime >= 72) {
+      setFlag("dawnFallbackReady");
+    }
+  }, [
+    dayCount,
+    dayOfWeek,
+    gameplayFlags,
+    getIrisEventGameTime,
+    hour,
+    setFlag,
+  ]);
+
+  useEffect(() => {
+    const shouldAutoTriggerFallback =
+      gameState === "playing" &&
+      gameplayFlags.has("dawnFallbackReady") &&
+      !gameplayFlags.has("dawnIrritatedFallbackSeen") &&
+      !gameplayFlags.has("dawnSummonQueued") &&
+      !gameplayFlags.has("dawnSummonTriggered");
+
+    if (!shouldAutoTriggerFallback) {
+      dawnFallbackAutoTriggeredRef.current = false;
+      return;
+    }
+
+    if (currentDialogue) return;
+    if (dawnFallbackAutoTriggeredRef.current) return;
+    dawnFallbackAutoTriggeredRef.current = true;
+
+    triggerSpecificEvent("Iris", "iris_c3_ev2_dawn_callout_fallback");
+  }, [currentDialogue, gameState, gameplayFlags, triggerSpecificEvent]);
+
+  useEffect(() => {
+    const summonTargetGameTime = getDawnSummonTargetGameTime();
+    const shouldCheckSummon =
+      gameState === "playing" &&
+      summonTargetGameTime !== null &&
+      !gameplayFlags.has("dawnSummonTriggered");
+
+    if (!shouldCheckSummon) {
+      dawnSummonAutoTriggeredRef.current = false;
+      return;
+    }
+
+    if (currentDialogue) return;
+
+    const currentGameTime = calculateGameTime(dayOfWeek, hour, dayCount);
+    if (currentGameTime < summonTargetGameTime) return;
+    if (hour !== 23 && currentGameTime === summonTargetGameTime) return;
+    if (dawnSummonAutoTriggeredRef.current) return;
+    dawnSummonAutoTriggeredRef.current = true;
+
+    const dawnBase = baseGirls.find((girl) => girl.name === "Dawn");
+    const dawnStats = clampGirlStatsToCaps("Dawn", {
+      ...(dawnBase?.stats ?? {
+        affection: 0,
+        lust: 0,
+        mood: 50,
+        love: 0,
+        dominance: 0,
+      }),
+      ...(girlStatsOverrides.Dawn ?? {}),
+    });
+    const dawnImageGirl: Girl = {
+      name: "Dawn",
+      location: "Nightclub",
+      relationship: "Single",
+      personality: "Confident",
+      stats: dawnStats,
+    };
+
+    setCurrentLocation("Nightclub");
+    setSelectedGirl(null);
+    setFlag("dawnSummonTriggered");
+    setFlag("hasSeenDawn");
+    setFlag("hasMetDawn");
+    setFlag("metDawn");
+    setCharacterUnlocks((prev) =>
+      prev.Dawn ? prev : { ...prev, Dawn: true },
+    );
+    setMetCharacters((prev) => new Set([...prev, "Dawn"]));
+    onEventTriggered("iris_c3_ev2_dawn_summon_call", "Iris");
+
+    const dawnCharacterImage = getCharacterImage(dawnImageGirl, "Nightclub", hour);
+    startDialogue(
+      iris_c3_ev2_dawn_summon_call,
+      dawnCharacterImage,
+      null,
+      "Dawn",
+      "Nightclub",
+    );
+  }, [
+    clampGirlStatsToCaps,
+    currentDialogue,
+    dayCount,
+    dayOfWeek,
+    gameState,
+    gameplayFlags,
+    getDawnSummonTargetGameTime,
+    girlStatsOverrides.Dawn,
+    hour,
+    onEventTriggered,
+    setFlag,
+    startDialogue,
+  ]);
 
   //pending Events tracker
   const [pendingEvents, setPendingEvents] = useState<
@@ -2763,7 +3005,7 @@ export default function GamePage() {
     );
     onEventTriggered(triggerable.id, girl.name);
     startDialogue(
-      triggerable.dialogue,
+      injectDawnIntelLines(triggerable.dialogue, gameplayFlags),
       characterImage,
       null,
       girl.name,
@@ -3924,6 +4166,7 @@ export default function GamePage() {
           player={player}
           hour={hour}
           girls={girls}
+          gameplayFlags={gameplayFlags}
           darkMode={darkMode}
           onClose={() => setShowPhone(false)}
           onSave={saveGame}
@@ -4160,7 +4403,7 @@ export default function GamePage() {
                         className="h-4 w-4 accent-cyan-400"
                       />
                       <span className="font-semibold">
-                        Mark "player kissed another girl"
+                        Mark &quot;player kissed another girl&quot;
                       </span>
                     </label>
                   </>

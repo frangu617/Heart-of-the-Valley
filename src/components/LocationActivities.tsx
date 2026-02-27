@@ -42,7 +42,11 @@ type Props = {
   spendTime: (
     amount: number,
     basePlayer?: PlayerStats,
-    options?: { skipHungerGain?: boolean; hungerGainMultiplier?: number },
+    options?: {
+      skipHungerGain?: boolean;
+      hungerGainMultiplier?: number;
+      scaleBasePlayerWithTime?: boolean;
+    },
   ) => void;
   darkMode?: boolean;
   dayOfWeek: DayOfWeek;
@@ -348,6 +352,7 @@ export default function LocationActivitiesPanel({
     spendTime(act.timeCost ?? 1, next, {
       skipHungerGain: isEatingActivity,
       hungerGainMultiplier: isSleepActivity(act) ? 0.25 : 1,
+      scaleBasePlayerWithTime: isSleepActivity(act),
     });
 
     //Unlock Ruby when working out at Gym

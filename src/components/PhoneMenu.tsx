@@ -6,6 +6,7 @@ import { PlayerStats } from "../data/characters";
 import { Girl } from "../data/characters";
 import { DayOfWeek } from "../data/gameConstants";
 import { getPortraitObjectPosition } from "@/lib/portraitFraming";
+import type { GameplayFlag } from "@/data/events/types";
 
 type QuestItem = {
   id: string;
@@ -20,6 +21,7 @@ interface Props {
   player: PlayerStats;
   hour: number;
   girls: Girl[];
+  gameplayFlags?: Set<GameplayFlag>;
   darkMode?: boolean;
   onClose: () => void;
   onSave?: () => void;
@@ -138,6 +140,7 @@ export default function PhoneMenu({
   player,
   hour,
   girls,
+  gameplayFlags = new Set<GameplayFlag>(),
   darkMode = true,
   onClose,
   onSave,
@@ -194,6 +197,11 @@ export default function PhoneMenu({
         };
       });
   }, [player.inventory]);
+
+  const isIdentityHidden = (girl: Girl) =>
+    girl.name === "Dawn" &&
+    !gameplayFlags.has("metDawn") &&
+    !gameplayFlags.has("hasMetDawn");
 
   return (
     <div
@@ -513,7 +521,14 @@ export default function PhoneMenu({
               >
                 Contacts
               </h3>
-              {girls.map((girl) => (
+              {girls.map((girl) => {
+                const hiddenIdentity = isIdentityHidden(girl);
+                const displayName = hiddenIdentity ? "???" : girl.name;
+                const displayPersonality = hiddenIdentity
+                  ? "Unknown"
+                  : girl.personality;
+                const displayLocation = hiddenIdentity ? "Unknown" : girl.location;
+                return (
                 <div
                   key={girl.name}
                   className={`
@@ -535,7 +550,7 @@ export default function PhoneMenu({
                   >
                     <Image
                       src={`/images/characters/${girl.name.toLowerCase()}/faces/portrait.webp`}
-                      alt={`${girl.name} portrait`}
+                      alt={`${displayName} portrait`}
                       layout="fill"
                       objectFit="cover"
                       style={{
@@ -549,14 +564,14 @@ export default function PhoneMenu({
                           darkMode ? "text-gray-200" : "text-gray-800"
                         }`}
                       >
-                        {girl.name}
+                        {displayName}
                       </h4>
                       <p
                         className={`text-xs ${
                           darkMode ? "text-gray-400" : "text-gray-600"
                         }`}
                       >
-                        {girl.personality}
+                        {displayPersonality}
                       </p>
                     </div>
                   </div>
@@ -577,7 +592,7 @@ export default function PhoneMenu({
                           darkMode ? "text-pink-400" : "text-pink-600"
                         }`}
                       >
-                        {girl.stats.affection}
+                        {hiddenIdentity ? "??" : girl.stats.affection}
                       </span>
                     </div>
                     <div
@@ -595,7 +610,7 @@ export default function PhoneMenu({
                           darkMode ? "text-red-400" : "text-red-600"
                         }`}
                       >
-                        {girl.stats.lust}
+                        {hiddenIdentity ? "??" : girl.stats.lust}
                       </span>
                     </div>
                     <div
@@ -613,7 +628,7 @@ export default function PhoneMenu({
                           darkMode ? "text-purple-400" : "text-purple-600"
                         }`}
                       >
-                        {girl.stats.love}
+                        {hiddenIdentity ? "??" : girl.stats.love}
                       </span>
                     </div>
                   </div>
@@ -624,10 +639,10 @@ export default function PhoneMenu({
                     }`}
                   >
                     📍 Currently at:{" "}
-                    <span className="font-semibold">{girl.location}</span>
+                    <span className="font-semibold">{displayLocation}</span>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
 
@@ -642,7 +657,10 @@ export default function PhoneMenu({
                 Photo Gallery
               </h3>
               <div className="grid grid-cols-2 gap-3">
-                {girls.map((girl) => (
+                {girls.map((girl) => {
+                  const hiddenIdentity = isIdentityHidden(girl);
+                  const displayName = hiddenIdentity ? "???" : girl.name;
+                  return (
                   <div key={girl.name} className="relative group">
                     <div
                       className={`
@@ -652,7 +670,7 @@ export default function PhoneMenu({
                     >
                       <Image
                         src={`/images/characters/${girl.name.toLowerCase()}/faces/portrait.webp`}
-                        alt={girl.name}
+                        alt={displayName}
                         layout="fill"
                         objectFit="cover"
                         style={{
@@ -665,10 +683,10 @@ export default function PhoneMenu({
                         darkMode ? "text-gray-300" : "text-gray-700"
                       }`}
                     >
-                      {girl.name}
+                      {displayName}
                     </p>
                   </div>
-                ))}
+                )})}
               </div>
             </div>
           )}
