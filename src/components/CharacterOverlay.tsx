@@ -29,7 +29,12 @@ import { TESTING_LOCATION_NAME } from "@/data/locations";
 import { injectDawnIntelLines } from "@/lib/dawnMystery";
 // import { get } from "http";
 
-const ALWAYS_VISIBLE_INTERACTIONS = new Set(["Chat", "Flirt", "Give Gift"]);
+const ALWAYS_VISIBLE_INTERACTIONS = new Set([
+  "Chat",
+  "Flirt",
+  "Give Gift",
+  "Sext",
+]);
 const IRIS_KISS_EXPRESSION = "kissingMC";
 const KISS_AFFECTION_REQUIREMENT = 15;
 const KISS_LUST_REQUIREMENT = 25;
@@ -58,7 +63,6 @@ const CHAPTER_THREE_UNLOCK_FLAG_BY_CHARACTER: Partial<Record<string, GameplayFla
   Iris: "irisCh2Complete",
   Yumi: "yumi_chapter_2_completed",
 };
-const SHOW_DATE_PLANNER_ACTION = false;
 const TEST_CHAT_EMOTIONS = [
   "neutral",
   "happy",
@@ -185,6 +189,243 @@ const getTestEmotionDialogue = (characterName: string): Dialogue => ({
   })),
 });
 
+const getChapterTierLabel = (chapter: InteractionChapter) =>
+  chapter <= 1 ? "early" : chapter <= 3 ? "mid" : "late";
+
+const getSextDialogue = (
+  characterName: string,
+  chapter: InteractionChapter,
+): Dialogue => {
+  const tier = getChapterTierLabel(chapter);
+  const id = `${characterName.toLowerCase()}_sext_ch${chapter}`;
+
+  if (characterName === "Iris") {
+    if (tier === "early") {
+      return {
+        id,
+        lines: [
+          { speaker: "You", text: "You test the waters with a suggestive message." },
+          {
+            speaker: "Iris",
+            text: "Careful. I am not ready to go that far yet.",
+            expression: "shy",
+          },
+        ],
+      };
+    }
+    if (tier === "mid") {
+      return {
+        id,
+        lines: [
+          { speaker: "You", text: "You send something a little less innocent." },
+          {
+            speaker: "Iris",
+            text: "You are going to make me lose focus if you keep that up.",
+            expression: "seductive",
+          },
+        ],
+      };
+    }
+    return {
+      id,
+      lines: [
+        { speaker: "You", text: "Your message is direct and deliberate." },
+        {
+          speaker: "Iris",
+          text: "Good. Keep that tone for tonight.",
+          expression: "seductive",
+        },
+      ],
+    };
+  }
+
+  if (characterName === "Yumi") {
+    if (tier === "early") {
+      return {
+        id,
+        lines: [
+          { speaker: "You", text: "You send a teasing line and wait." },
+          {
+            speaker: "Yumi",
+            text: "That is... a lot for where we are right now.",
+            expression: "shy",
+          },
+        ],
+      };
+    }
+    if (tier === "mid") {
+      return {
+        id,
+        lines: [
+          { speaker: "You", text: "You keep the message bold but controlled." },
+          {
+            speaker: "Yumi",
+            text: "You know exactly what you are doing to me.",
+            expression: "seductive",
+          },
+        ],
+      };
+    }
+    return {
+      id,
+      lines: [
+        { speaker: "You", text: "You stop pretending and send what you want." },
+        {
+          speaker: "Yumi",
+          text: "I am done playing shy. Keep going.",
+          expression: "seductive",
+        },
+      ],
+    };
+  }
+
+  if (characterName === "Gwen") {
+    if (tier === "early") {
+      return {
+        id,
+        lines: [
+          { speaker: "You", text: "You send a risky tease." },
+          {
+            speaker: "Gwen",
+            text: "Ambitious. You are not there yet.",
+            expression: "neutral",
+          },
+        ],
+      };
+    }
+    if (tier === "mid") {
+      return {
+        id,
+        lines: [
+          { speaker: "You", text: "You push the tone hotter." },
+          {
+            speaker: "Gwen",
+            text: "There we go. I knew you had a spine.",
+            expression: "seductive",
+          },
+        ],
+      };
+    }
+    return {
+      id,
+      lines: [
+        { speaker: "You", text: "You send a message that leaves no ambiguity." },
+        {
+          speaker: "Gwen",
+          text: "Good. No half-measures.",
+          expression: "seductive",
+        },
+      ],
+    };
+  }
+
+  if (characterName === "Ruby") {
+    if (tier === "early") {
+      return {
+        id,
+        lines: [
+          { speaker: "You", text: "You test a flirtier text than usual." },
+          {
+            speaker: "Ruby",
+            text: "Whoa. Slow down a little.",
+            expression: "shy",
+          },
+        ],
+      };
+    }
+    if (tier === "mid") {
+      return {
+        id,
+        lines: [
+          { speaker: "You", text: "You text something spicy." },
+          {
+            speaker: "Ruby",
+            text: "Okay... that definitely worked on me.",
+            expression: "seductive",
+          },
+        ],
+      };
+    }
+    return {
+      id,
+      lines: [
+        { speaker: "You", text: "You text with confidence and no backpedal." },
+        {
+          speaker: "Ruby",
+          text: "You are not letting me sleep early tonight, huh?",
+          expression: "seductive",
+        },
+      ],
+    };
+  }
+
+  if (tier === "early") {
+    return {
+      id,
+      lines: [
+        { speaker: "You", text: "You send a suggestive message." },
+        {
+          speaker: "Dawn",
+          text: "Not yet. Build it first.",
+          expression: "neutral",
+        },
+      ],
+    };
+  }
+  if (tier === "mid") {
+    return {
+      id,
+      lines: [
+        { speaker: "You", text: "You send something less polite." },
+        {
+          speaker: "Dawn",
+          text: "Better. Keep going.",
+          expression: "seductive",
+        },
+      ],
+    };
+  }
+  return {
+    id,
+    lines: [
+      { speaker: "You", text: "You send exactly what you are thinking." },
+      {
+        speaker: "Dawn",
+        text: "That is the honesty I wanted from you.",
+        expression: "seductive",
+      },
+    ],
+  };
+};
+
+const getGiftThanksLine = (characterName: string, chapter: InteractionChapter) => {
+  const tier = getChapterTierLabel(chapter);
+
+  if (characterName === "Iris") {
+    if (tier === "early") return "You didn't have to. That was thoughtful.";
+    if (tier === "mid") return "You remember the small things. I notice that.";
+    return "You always know exactly how to make me soften.";
+  }
+  if (characterName === "Yumi") {
+    if (tier === "early") return "This is really kind of you.";
+    if (tier === "mid") return "You keep surprising me in the best way.";
+    return "You spoil me, and I'm not complaining.";
+  }
+  if (characterName === "Gwen") {
+    if (tier === "early") return "Okay, this is cute. I like it.";
+    if (tier === "mid") return "You brought me this? Yeah, you're dangerous.";
+    return "This is exactly my taste. You know me too well.";
+  }
+  if (characterName === "Ruby") {
+    if (tier === "early") return "Thanks... seriously, this means a lot.";
+    if (tier === "mid") return "You made my whole mood better with this.";
+    return "You always know how to take care of me.";
+  }
+  if (tier === "early") return "Interesting choice. I approve.";
+  if (tier === "mid") return "You are paying attention. Good.";
+  return "Perfect. You understand leverage and affection.";
+};
+
 interface Props {
   girl: Girl;
   location: string;
@@ -214,7 +455,7 @@ interface Props {
   darkMode?: boolean; 
   onScheduleDate: (date: {
     characterName: string;
-    location: string;
+    location: DateLocation;
     day: DayOfWeek;
     hour: number;
     activities: string[];
@@ -260,9 +501,15 @@ export default function CharacterOverlay({
   const dawnIdentityKnown =
     gameplayFlags.has("metDawn") || gameplayFlags.has("hasMetDawn");
   const isDawnMysteryState = girl.name === "Dawn" && !dawnIdentityKnown;
+  const interactionChapter = getCharacterInteractionChapter(
+    girl.name,
+    gameplayFlags,
+    eventState,
+  );
   const kissUnlocked =
     hasKissUnlockedByFlag(girl.name, gameplayFlags) ||
     hasCompletedChapterOneByHistory(girl.name, eventState);
+  const canUseDatePlanner = !isDawnMysteryState;
   const visibleInteractions = isDawnMysteryState
     ? []
     : interactionMenu.filter((action) => {
@@ -349,7 +596,7 @@ export default function CharacterOverlay({
         },
         {
           speaker: girl.name,
-          text: "Thank you!",
+          text: getGiftThanksLine(girl.name, interactionChapter),
           expression: "happy",
         },
       ],
@@ -568,6 +815,24 @@ export default function CharacterOverlay({
       }
     }
 
+    if (action.label === "Sext") {
+      if (interactionChapter < 2) {
+        showGameNotice(
+          `${girl.name} is not comfortable with that yet. Build more closeness first.`,
+          { tone: "info" },
+        );
+        return;
+      }
+
+      if (girl.stats.affection < 20 || girl.stats.lust < 15) {
+        showGameNotice(
+          `${girl.name} isn't ready for sexting yet. Try again after deeper connection.`,
+          { tone: "info" },
+        );
+        return;
+      }
+    }
+
     // Check affection requirements for intimate actions
     if (action.label === "Flirt") {
       if (girl.stats.affection < 10) {
@@ -631,6 +896,8 @@ export default function CharacterOverlay({
     // Get dialogue for this interaction
     const dialogue = isSandboxChat
       ? getTestEmotionDialogue(girl.name)
+      : action.label === "Sext"
+        ? getSextDialogue(girl.name, interactionChapter)
       : getChapterAwareInteractionDialogue(
           girl.name,
           action.label,
@@ -638,7 +905,9 @@ export default function CharacterOverlay({
           eventState
         );
     const interactionExpression =
-      action.label === "Kiss" && girl.name === "Iris"
+      action.label === "Sext"
+        ? "seductive"
+      : action.label === "Kiss" && girl.name === "Iris"
         ? IRIS_KISS_EXPRESSION
         : getFacialExpression();
     const characterImage = getCharacterImage(
@@ -807,9 +1076,15 @@ export default function CharacterOverlay({
           {" "}
           💝 Actions
         </h4>
-        {SHOW_DATE_PLANNER_ACTION && (
-          <button
+                <button
           onClick={() => {
+            if (!canUseDatePlanner) {
+              showGameNotice(
+                "Date planning is not available for this character yet.",
+                { tone: "info" },
+              );
+              return;
+            }
             if (isPlayerStarving) {
               showGameNotice(
                 "You're too hungry to do that right now. Eat something first.",
@@ -819,18 +1094,25 @@ export default function CharacterOverlay({
             }
             setShowDatePlanner(true);
           }}
-          className="relative overflow-hidden group w-full bg-gradient-to-r from-red-400 to-pink-600 hover:from-red-500 hover:to-pink-700 shadow-md hover:shadow-lg transform hover:scale-102 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 text-sm"
+          className={`relative overflow-hidden group w-full shadow-md hover:shadow-lg transform hover:scale-102 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 text-sm ${
+            canUseDatePlanner
+              ? "bg-gradient-to-r from-red-400 to-pink-600 hover:from-red-500 hover:to-pink-700"
+              : "bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-500 hover:to-gray-600"
+          }`}
         >
           <div className="flex items-center justify-between relative z-10">
             <span className="flex items-center gap-2">
-              <span className="text-lg">💕</span>
+              <span className="text-lg">Date</span>
               <span>Ask on Date</span>
             </span>
-            <span className="text-xs opacity-75">Plan</span>
+            <span className="text-xs opacity-75">
+              {canUseDatePlanner ? "Plan" : "Locked"}
+            </span>
           </div>
-          <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity"></div>
-          </button>
-        )}
+          {canUseDatePlanner && (
+            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity"></div>
+          )}
+        </button>
 
         {isDawnMysteryState && (
           <div className="rounded-lg border border-yellow-300 bg-yellow-50 px-3 py-2 text-xs text-yellow-900">
@@ -901,7 +1183,7 @@ export default function CharacterOverlay({
           actions affect {displayGirlName}&apos;s feelings toward you!
         </p>
       </div>
-      {SHOW_DATE_PLANNER_ACTION && showDatePlanner && (
+      {showDatePlanner && (
         <DatePlanner
           girl={girl}
           currentDay={dayOfWeek}
@@ -928,3 +1210,5 @@ export default function CharacterOverlay({
     </div>
   );
 }
+
+

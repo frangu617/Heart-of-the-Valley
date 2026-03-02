@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "@/components/FallbackImage";
 import { getTimeOfDayLabel } from "@/lib/time";
 import { giftById } from "@/data/gifts";
@@ -7,6 +7,11 @@ import { Girl } from "../data/characters";
 import { DayOfWeek } from "../data/gameConstants";
 import { getPortraitObjectPosition } from "@/lib/portraitFraming";
 import type { GameplayFlag } from "@/data/events/types";
+import type {
+  GalleryUnlock,
+  PhoneMessage,
+  PhoneMessageAction,
+} from "@/lib/phoneMessages";
 
 type QuestItem = {
   id: string;
@@ -22,6 +27,12 @@ interface Props {
   hour: number;
   girls: Girl[];
   gameplayFlags?: Set<GameplayFlag>;
+  messagesByCharacter?: Record<string, PhoneMessage[]>;
+  galleryUnlocks?: GalleryUnlock[];
+  onSendMessageAction?: (
+    characterName: string,
+    action: PhoneMessageAction,
+  ) => void;
   darkMode?: boolean;
   onClose: () => void;
   onSave?: () => void;
@@ -38,6 +49,13 @@ type PhoneTab =
   | "gallery"
   | "messages"
   | "todo";
+
+const MESSAGE_ACTION_ORDER: PhoneMessageAction[] = [
+  "chat",
+  "flirt",
+  "sext",
+  "date",
+];
 
 type InventoryEntry = {
   id: string;
@@ -141,6 +159,9 @@ export default function PhoneMenu({
   hour,
   girls,
   gameplayFlags = new Set<GameplayFlag>(),
+  messagesByCharacter = {},
+  galleryUnlocks = [],
+  onSendMessageAction,
   darkMode = true,
   onClose,
   onSave,
@@ -150,6 +171,7 @@ export default function PhoneMenu({
   quests = [],
 }: Props) {
   const [activeTab, setActiveTab] = useState<PhoneTab>("stats");
+  const [activeMessageContact, setActiveMessageContact] = useState<string>("");
   const [isClosing, setIsClosing] = useState(false);
   const closeDelayMs = 200;
   const hungerBarValue = Math.max(0, Math.min(100, 100 - player.hunger));
@@ -198,10 +220,43 @@ export default function PhoneMenu({
       });
   }, [player.inventory]);
 
-  const isIdentityHidden = (girl: Girl) =>
-    girl.name === "Dawn" &&
-    !gameplayFlags.has("metDawn") &&
-    !gameplayFlags.has("hasMetDawn");
+  const isIdentityHidden = useCallback(
+    (girl: Girl) =>
+      girl.name === "Dawn" &&
+      !gameplayFlags.has("metDawn") &&
+      !gameplayFlags.has("hasMetDawn"),
+    [gameplayFlags],
+  );
+
+  const messageContacts = useMemo(
+    () => girls.filter((girl) => !isIdentityHidden(girl)),
+    [girls, isIdentityHidden],
+  );
+
+  useEffect(() => {
+    if (messageContacts.length === 0) {
+      if (activeMessageContact) {
+        setActiveMessageContact("");
+      }
+      return;
+    }
+
+    if (!activeMessageContact) {
+      setActiveMessageContact(messageContacts[0].name);
+      return;
+    }
+
+    const stillExists = messageContacts.some(
+      (girl) => girl.name === activeMessageContact,
+    );
+    if (!stillExists) {
+      setActiveMessageContact(messageContacts[0].name);
+    }
+  }, [activeMessageContact, messageContacts]);
+
+  const activeThread = activeMessageContact
+    ? messagesByCharacter[activeMessageContact] ?? []
+    : [];
 
   return (
     <div
@@ -647,7 +702,7 @@ export default function PhoneMenu({
           )}
 
           {/* Gallery Tab */}
-          {activeTab === "gallery" && (
+                    {activeTab === "gallery" && (
             <div className="animate-slideUp">
               <h3
                 className={`text-lg font-bold mb-4 ${
@@ -656,38 +711,96 @@ export default function PhoneMenu({
               >
                 Photo Gallery
               </h3>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 mb-5">
                 {girls.map((girl) => {
                   const hiddenIdentity = isIdentityHidden(girl);
                   const displayName = hiddenIdentity ? "???" : girl.name;
                   return (
-                  <div key={girl.name} className="relative group">
-                    <div
-                      className={`
+                    <div key={girl.name} className="relative group">
+                      <div
+                        className={`
                       aspect-square rounded-xl overflow-hidden border-2
                       ${darkMode ? "border-purple-700" : "border-purple-300"}
                     `}
-                    >
-                      <Image
-                        src={`/images/characters/${girl.name.toLowerCase()}/faces/portrait.webp`}
-                        alt={displayName}
-                        layout="fill"
-                        objectFit="cover"
-                        style={{
-                          objectPosition: getPortraitObjectPosition(girl.name, 50),
-                        }}
-                      />
+                      >
+                        <Image
+                          src={`/images/characters/${girl.name.toLowerCase()}/faces/portrait.webp`}
+                          alt={displayName}
+                          layout="fill"
+                          objectFit="cover"
+                          style={{
+                            objectPosition: getPortraitObjectPosition(girl.name, 50),
+                          }}
+                        />
+                      </div>
+                      <p
+                        className={`text-center text-sm font-semibold mt-1 ${
+                          darkMode ? "text-gray-300" : "text-gray-700"
+                        }`}
+                      >
+                        {displayName}
+                      </p>
                     </div>
-                    <p
-                      className={`text-center text-sm font-semibold mt-1 ${
-                        darkMode ? "text-gray-300" : "text-gray-700"
+                  );
+                })}
+              </div>
+
+              <h4
+                className={`text-sm font-semibold mb-3 ${
+                  darkMode ? "text-purple-300" : "text-purple-700"
+                }`}
+              >
+                Saved Message Photos
+              </h4>
+              {galleryUnlocks.length === 0 ? (
+                <div
+                  className={`rounded-xl border-2 p-4 text-sm ${
+                    darkMode
+                      ? "border-gray-700 bg-gray-800 text-gray-400"
+                      : "border-gray-200 bg-gray-50 text-gray-600"
+                  }`}
+                >
+                  No photos received yet. Flirt or sext through Messages to unlock shots.
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {galleryUnlocks.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className={`rounded-xl border-2 overflow-hidden ${
+                        darkMode
+                          ? "border-purple-700 bg-gray-800"
+                          : "border-purple-200 bg-white"
                       }`}
                     >
-                      {displayName}
-                    </p>
-                  </div>
-                )})}
-              </div>
+                      <div className="relative h-32">
+                        <Image
+                          src={entry.imagePath}
+                          alt={entry.title}
+                          layout="fill"
+                          objectFit="cover"
+                        />
+                      </div>
+                      <div className="p-2">
+                        <div
+                          className={`text-xs font-semibold ${
+                            darkMode ? "text-gray-200" : "text-gray-800"
+                          }`}
+                        >
+                          {entry.characterName}
+                        </div>
+                        <div
+                          className={`text-[11px] ${
+                            darkMode ? "text-gray-400" : "text-gray-600"
+                          }`}
+                        >
+                          {entry.caption}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -701,18 +814,93 @@ export default function PhoneMenu({
               >
                 Messages
               </h3>
-              <div
-                className={`
-                text-center py-12
-                ${darkMode ? "text-gray-500" : "text-gray-400"}
-              `}
-              >
-                <div className="text-6xl mb-4">💬</div>
-                <p>Coming soon!</p>
-                <p className="text-sm mt-2">
-                  Future feature: Text characters directly
-                </p>
-              </div>
+              {messageContacts.length === 0 ? (
+                <div
+                  className={`rounded-xl border-2 p-4 text-sm ${
+                    darkMode
+                      ? "border-gray-700 bg-gray-800 text-gray-400"
+                      : "border-gray-200 bg-gray-50 text-gray-600"
+                  }`}
+                >
+                  No contacts available yet.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <select
+                    value={activeMessageContact}
+                    onChange={(event) => setActiveMessageContact(event.target.value)}
+                    className={`w-full p-3 rounded-xl border-2 text-sm ${
+                      darkMode
+                        ? "bg-gray-800 border-gray-700 text-gray-200"
+                        : "bg-white border-gray-300 text-gray-800"
+                    }`}
+                  >
+                    {messageContacts.map((girl) => (
+                      <option key={girl.name} value={girl.name}>
+                        {girl.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  <div
+                    className={`rounded-xl border-2 p-3 h-64 overflow-y-auto space-y-2 ${
+                      darkMode
+                        ? "bg-gray-900 border-purple-800"
+                        : "bg-gray-50 border-purple-200"
+                    }`}
+                  >
+                    {activeThread.length === 0 ? (
+                      <p
+                        className={`text-sm ${
+                          darkMode ? "text-gray-400" : "text-gray-600"
+                        }`}
+                      >
+                        Start the conversation.
+                      </p>
+                    ) : (
+                      activeThread.map((message) => (
+                        <div
+                          key={message.id}
+                          className={`rounded-lg px-3 py-2 text-sm ${
+                            message.sender === "player"
+                              ? "bg-purple-600 text-white ml-8"
+                              : darkMode
+                                ? "bg-gray-700 text-gray-100 mr-8"
+                                : "bg-white text-gray-800 border border-gray-200 mr-8"
+                          }`}
+                        >
+                          <div>{message.text}</div>
+                          <div className="mt-1 text-[10px] opacity-70">
+                            {message.dayOfWeek} {message.hour}:00
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {MESSAGE_ACTION_ORDER.map((action) => (
+                      <button
+                        key={action}
+                        type="button"
+                        onClick={() =>
+                          activeMessageContact &&
+                          onSendMessageAction?.(activeMessageContact, action)
+                        }
+                        className={`rounded-lg py-2 text-sm font-semibold transition ${
+                          darkMode
+                            ? "bg-purple-700 text-white hover:bg-purple-600"
+                            : "bg-purple-500 text-white hover:bg-purple-600"
+                        }`}
+                      >
+                        {action === "date"
+                          ? "Ask for Date"
+                          : action.charAt(0).toUpperCase() + action.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -846,3 +1034,4 @@ export default function PhoneMenu({
     </div>
   );
 }
+

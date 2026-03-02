@@ -8,6 +8,7 @@ import type { DayOfWeek } from "../data/gameConstants";
 import type { CharacterEventState, GameplayFlag } from "../data/events/types";
 import type { Dialogue } from "../data/dialogues";
 import type { TestingEnvironment } from "../data/locations";
+import type { DateLocation } from "@/data/dates";
 
 type Props = {
   selectedGirl: Girl | null;
@@ -38,7 +39,7 @@ type Props = {
   darkMode: boolean;
   onScheduleDate: (date: {
     characterName: string;
-    location: string;
+    location: DateLocation;
     day: DayOfWeek;
     hour: number;
     activities: string[];

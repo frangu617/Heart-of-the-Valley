@@ -1,7 +1,6 @@
 import type { Dialogue } from "../dialogues";
 import type { GirlStats, PlayerStats } from "../characters";
 
-// Date types
 export type DateLocation =
   | "Cafe"
   | "Beach"
@@ -10,17 +9,82 @@ export type DateLocation =
   | "Restaurant"
   | "Movies"
   | "Park"
-  | "Strip Club"
-  | "Gym"
-  | "Living Room";
+  | "Nightclub";
+
+export type DateLocationInfo = {
+  name: string;
+  cost: number;
+  description: string;
+  icon: string;
+};
+
+export const dateLocationInfo: Record<DateLocation, DateLocationInfo> = {
+  Cafe: {
+    name: "Cafe",
+    cost: 20,
+    description: "Low-pressure conversation over coffee.",
+    icon: "☕",
+  },
+  Beach: {
+    name: "Beach",
+    cost: 15,
+    description: "A relaxed daytime date by the water.",
+    icon: "🏖️",
+  },
+  Mall: {
+    name: "Mall",
+    cost: 30,
+    description: "Casual shopping and playful stops.",
+    icon: "🛍️",
+  },
+  City: {
+    name: "City",
+    cost: 25,
+    description: "Street food, lights, and a long walk.",
+    icon: "🌆",
+  },
+  Restaurant: {
+    name: "Restaurant",
+    cost: 60,
+    description: "A proper sit-down date night.",
+    icon: "🍽️",
+  },
+  Movies: {
+    name: "Movies",
+    cost: 35,
+    description: "A cinema date and post-movie talk.",
+    icon: "🎬",
+  },
+  Park: {
+    name: "Park",
+    cost: 10,
+    description: "Quiet walk, benches, and open conversation.",
+    icon: "🌳",
+  },
+  Nightclub: {
+    name: "Nightclub",
+    cost: 45,
+    description: "Music, dancing, and high-energy chemistry.",
+    icon: "🪩",
+  },
+};
+
+export const dateLocationOrder: DateLocation[] = [
+  "Cafe",
+  "Park",
+  "Movies",
+  "Restaurant",
+  "Beach",
+  "Mall",
+  "City",
+  "Nightclub",
+];
 
 export type DateActivity = {
   id: string;
   name: string;
   description: string;
   icon: string;
-
-  // Requirements to unlock this activity
   requirements?: {
     minAffection?: number;
     minLove?: number;
@@ -29,15 +93,11 @@ export type DateActivity = {
       value: number;
     };
   };
-
-  // Possible outcomes based on stats
   outcomes: DateOutcome[];
 };
 
 export type DateOutcome = {
   id: string;
-
-  // Conditions for this outcome
   conditions?: {
     minAffection?: number;
     minMood?: number;
@@ -45,14 +105,8 @@ export type DateOutcome = {
     minPlayerStyle?: number;
     minPlayerFitness?: number;
   };
-
-  // Probability weight (higher = more likely if conditions met)
   weight: number;
-
-  // What happens
   dialogue: Dialogue;
-
-  // Stat changes
   effects: {
     girlStats?: Partial<GirlStats>;
     playerStats?: Partial<PlayerStats>;
@@ -60,552 +114,567 @@ export type DateOutcome = {
   };
 };
 
-export type DatePlan = {
-  id: string;
-  characterName: string;
-  location: DateLocation;
-  scheduledDay: string;
-  scheduledHour: number;
-  activities: string[]; // activity IDs
-  cost: number;
-  status: "pending" | "accepted" | "rejected" | "completed";
-};
-
-// Date activities
+const line = (text: string) => ({ speaker: null, text });
 
 export const dateActivitiesByLocation: Record<DateLocation, DateActivity[]> = {
   Cafe: [
     {
-      id: "cafe_coffee_chat",
-      name: "Coffee & Conversation",
-      description: "Enjoy coffee and have a deep conversation",
+      id: "cafe_deep_talk",
+      name: "Coffee and Deep Talk",
+      description: "Sit down and actually talk without rushing.",
       icon: "☕",
       outcomes: [
         {
-          id: "cafe_great_connection",
-          conditions: { minPlayerIntelligence: 15, minAffection: 20 },
+          id: "cafe_opening_up",
+          conditions: { minAffection: 20, minPlayerIntelligence: 15 },
           weight: 3,
           dialogue: {
-            id: "cafe_great_dialogue",
+            id: "cafe_opening_up_dialogue",
             lines: [
-              {
-                speaker: null,
-                text: "You both order your drinks and find a cozy corner.",
-              },
-              {
-                speaker: null,
-                text: "The conversation flows naturally. You discuss books, ideas, life...",
-              },
+              line("You settle into a corner table while the crowd blurs around you."),
               {
                 speaker: "Girl",
-                text: "I love how you see the world. You're so thoughtful.",
-                expression: "love",
-              },
-              {
-                speaker: null,
-                text: "She leans in closer, her eyes sparkling with interest.",
-              },
-            ],
-          },
-          effects: {
-            girlStats: { affection: 10, love: 5 },
-            playerStats: { mood: 15 },
-          },
-        },
-        {
-          id: "cafe_awkward_silence",
-          conditions: { minPlayerIntelligence: 0 },
-          weight: 1,
-          dialogue: {
-            id: "cafe_awkward_dialogue",
-            lines: [
-              {
-                speaker: null,
-                text: "You sit down with your coffees, but the conversation feels stilted.",
-              },
-              {
-                speaker: "Girl",
-                text: "So... nice weather?",
-                expression: "neutral",
-              },
-              {
-                speaker: null,
-                text: "Awkward silences punctuate your attempts at conversation.",
-              },
-            ],
-          },
-          effects: {
-            girlStats: { affection: 2, mood: -5 },
-            playerStats: { mood: -5 },
-          },
-        },
-      ],
-    },
-    {
-      id: "cafe_study_together",
-      name: "Study Date",
-      description: "Help her with homework or work together",
-      icon: "📚",
-      requirements: {
-        minAffection: 15,
-        minPlayerStat: { stat: "intelligence", value: 20 },
-      },
-      outcomes: [
-        {
-          id: "study_impressive",
-          conditions: { minPlayerIntelligence: 25 },
-          weight: 2,
-          dialogue: {
-            id: "study_success",
-            lines: [
-              {
-                speaker: "Girl",
-                text: "Wow, you really know your stuff! This is so helpful!",
+                text: "This is nice. No noise, no pressure.",
                 expression: "happy",
               },
               {
-                speaker: null,
-                text: "She looks at you with newfound admiration.",
-              },
-            ],
-          },
-          effects: {
-            girlStats: { affection: 8, love: 5 },
-            playerStats: { intelligence: 1 },
-          },
-        },
-      ],
-    },
-  ],
-
-  Beach: [
-    {
-      id: "beach_swim",
-      name: "Go Swimming",
-      description: "Enjoy the water together",
-      icon: "🏊",
-      requirements: {
-        minAffection: 25,
-      },
-      outcomes: [
-        {
-          id: "beach_swim_fun",
-          conditions: { minPlayerFitness: 15, minMood: 40 },
-          weight: 3,
-          dialogue: {
-            id: "beach_swim_great",
-            lines: [
-              {
-                speaker: null,
-                text: "You race each other to the water, laughing as the waves crash around you.",
-                imageSlide: "/images/events/beach_swimming.png",
-              },
-              {
-                speaker: "Girl",
-                text: "You're pretty athletic! I like that.",
-                expression: "love",
-              },
-              {
-                speaker: null,
-                text: "She splashes you playfully, and you chase her through the waves.",
-              },
-            ],
-          },
-          effects: {
-            girlStats: { affection: 12, lust: 8, mood: 15 },
-            playerStats: { fitness: 2, mood: 20 },
-          },
-        },
-        {
-          id: "beach_swim_tired",
-          conditions: {},
-          weight: 1,
-          dialogue: {
-            id: "beach_swim_okay",
-            lines: [
-              {
-                speaker: null,
-                text: "You swim together, but you're getting tired quickly.",
-              },
-              {
-                speaker: "Girl",
-                text: "Let's head back to shore.",
-                expression: "neutral",
-              },
-            ],
-          },
-          effects: {
-            girlStats: { affection: 5, mood: 5 },
-            playerStats: { energy: -25, mood: 10 },
-          },
-        },
-      ],
-    },
-    {
-      id: "beach_walk",
-      name: "Romantic Beach Walk",
-      description: "Walk along the shore holding hands",
-      icon: "🚶",
-      requirements: {
-        minAffection: 30,
-      },
-      outcomes: [
-        {
-          id: "beach_walk_romantic",
-          conditions: { minAffection: 40, minPlayerStyle: 15 },
-          weight: 3,
-          dialogue: {
-            id: "beach_walk_perfect",
-            lines: [
-              {
-                speaker: null,
-                text: "You walk hand-in-hand along the shoreline as the sun sets.",
-                imageSlide: "/images/events/beach_sunset_walk.png",
-              },
-              {
-                speaker: "Girl",
-                text: "This is perfect. I'm so glad I came with you.",
-                expression: "love",
-              },
-              {
-                speaker: null,
-                text: "She leans her head on your shoulder as you walk.",
-              },
-              {
                 speaker: "You",
-                text: "What do you say?",
+                text: "How do you respond?",
                 choices: [
                   {
-                    text: "Kiss her",
-                    affectionChange: 15,
-                    moodChange: 20,
-                    condition: { minLove: 30 },
+                    text: "Ask about what has been weighing on her lately.",
+                    affectionChange: 4,
+                    moodChange: 3,
                   },
                   {
-                    text: "Hold her close",
-                    affectionChange: 10,
-                    moodChange: 15,
+                    text: "Share something personal first to open her up.",
+                    affectionChange: 5,
+                    moodChange: 2,
                   },
                   {
-                    text: "Enjoy the moment in silence",
-                    affectionChange: 8,
-                    moodChange: 10,
+                    text: "Keep it playful and light for now.",
+                    affectionChange: 2,
+                    moodChange: 1,
                   },
                 ],
               },
             ],
           },
           effects: {
-            girlStats: { affection: 15, love: 10 },
-            playerStats: { mood: 20 },
+            girlStats: { affection: 8, love: 4, mood: 4 },
+            playerStats: { mood: 8 },
+          },
+        },
+        {
+          id: "cafe_small_talk",
+          weight: 1,
+          dialogue: {
+            id: "cafe_small_talk_dialogue",
+            lines: [
+              line("The conversation starts slow, but comfortable enough."),
+              {
+                speaker: "Girl",
+                text: "I still had a good time just being here with you.",
+                expression: "shy",
+              },
+              {
+                speaker: "You",
+                text: "How do you steer the mood?",
+                choices: [
+                  {
+                    text: "Compliment her and thank her for coming.",
+                    affectionChange: 3,
+                  },
+                  {
+                    text: "Tease her gently to lighten things up.",
+                    affectionChange: 1,
+                    moodChange: 2,
+                    lustChange: 1,
+                  },
+                ],
+              },
+            ],
+          },
+          effects: {
+            girlStats: { affection: 4, mood: 2 },
+            playerStats: { mood: 4 },
           },
         },
       ],
     },
   ],
-
+  Beach: [
+    {
+      id: "beach_boardwalk",
+      name: "Boardwalk Walk",
+      description: "Walk and talk near the water.",
+      icon: "🚶",
+      outcomes: [
+        {
+          id: "beach_smooth_walk",
+          conditions: { minAffection: 25, minPlayerFitness: 12 },
+          weight: 3,
+          dialogue: {
+            id: "beach_smooth_walk_dialogue",
+            lines: [
+              line("You walk the shoreline while the wind keeps the heat off."),
+              {
+                speaker: "Girl",
+                text: "I could do this for hours.",
+                expression: "happy",
+              },
+              {
+                speaker: "You",
+                text: "What do you do next?",
+                choices: [
+                  {
+                    text: "Hold her hand and keep walking.",
+                    affectionChange: 4,
+                    moodChange: 2,
+                  },
+                  {
+                    text: "Challenge her to a playful race to the pier.",
+                    affectionChange: 2,
+                    moodChange: 4,
+                    lustChange: 1,
+                  },
+                ],
+              },
+            ],
+          },
+          effects: {
+            girlStats: { affection: 9, mood: 6, love: 3 },
+            playerStats: { mood: 10, fitness: 1 },
+          },
+        },
+        {
+          id: "beach_short_walk",
+          weight: 1,
+          dialogue: {
+            id: "beach_short_walk_dialogue",
+            lines: [
+              line("The weather turns and you cut the walk short."),
+              {
+                speaker: "Girl",
+                text: "Even short dates with you are still worth it.",
+                expression: "neutral",
+              },
+            ],
+          },
+          effects: {
+            girlStats: { affection: 4, mood: 2 },
+            playerStats: { mood: 3 },
+          },
+        },
+      ],
+    },
+  ],
   Mall: [
     {
       id: "mall_shopping",
-      name: "Shopping Together",
-      description: "Help her pick out clothes",
+      name: "Window Shopping",
+      description: "Browse stores and tease each other's taste.",
       icon: "🛍️",
       outcomes: [
         {
-          id: "mall_fashion_expert",
-          conditions: { minPlayerStyle: 20 },
-          weight: 2,
+          id: "mall_playful",
+          conditions: { minPlayerStyle: 15, minAffection: 18 },
+          weight: 3,
           dialogue: {
-            id: "mall_style_success",
+            id: "mall_playful_dialogue",
             lines: [
+              line("You bounce between stores and joke about impossible outfits."),
               {
                 speaker: "Girl",
-                text: "You have such great taste! This looks amazing!",
-                expression: "love",
+                text: "You actually have good taste. That is dangerous.",
+                expression: "happy",
+              },
+              {
+                speaker: "You",
+                text: "Your move?",
+                choices: [
+                  {
+                    text: "Pick something that matches her vibe perfectly.",
+                    affectionChange: 4,
+                    moodChange: 3,
+                  },
+                  {
+                    text: "Pick something bold and flirty.",
+                    lustChange: 2,
+                    affectionChange: 2,
+                  },
+                ],
               },
             ],
           },
           effects: {
-            girlStats: { affection: 10, mood: 12 },
-            playerStats: { style: 2 },
-            playerMoney: -50,
+            girlStats: { affection: 8, mood: 6 },
+            playerStats: { style: 1, mood: 8 },
+            playerMoney: -25,
+          },
+        },
+        {
+          id: "mall_quick_trip",
+          weight: 1,
+          dialogue: {
+            id: "mall_quick_trip_dialogue",
+            lines: [
+              line("You keep it simple, grab snacks, and people-watch."),
+              {
+                speaker: "Girl",
+                text: "Low-key but fun. I needed this.",
+                expression: "happy",
+              },
+            ],
+          },
+          effects: {
+            girlStats: { affection: 4, mood: 4 },
+            playerStats: { mood: 4 },
+            playerMoney: -12,
           },
         },
       ],
     },
   ],
-
+  City: [
+    {
+      id: "city_evening_walk",
+      name: "Evening City Walk",
+      description: "Street food, lights, and unplanned stops.",
+      icon: "🌆",
+      outcomes: [
+        {
+          id: "city_chemistry",
+          conditions: { minAffection: 22, minMood: 45 },
+          weight: 3,
+          dialogue: {
+            id: "city_chemistry_dialogue",
+            lines: [
+              line("The city is loud, but your pace with her feels easy."),
+              {
+                speaker: "Girl",
+                text: "I like this. It feels alive.",
+                expression: "happy",
+              },
+              {
+                speaker: "You",
+                text: "What do you suggest?",
+                choices: [
+                  {
+                    text: "Grab street food and keep walking.",
+                    moodChange: 4,
+                    affectionChange: 3,
+                  },
+                  {
+                    text: "Duck into a quieter side street for a closer moment.",
+                    lustChange: 2,
+                    affectionChange: 2,
+                  },
+                ],
+              },
+            ],
+          },
+          effects: {
+            girlStats: { affection: 8, mood: 6, lust: 3 },
+            playerStats: { mood: 10 },
+            playerMoney: -18,
+          },
+        },
+        {
+          id: "city_rushed",
+          weight: 1,
+          dialogue: {
+            id: "city_rushed_dialogue",
+            lines: [
+              line("The crowds are rough tonight, so you improvise a shorter route."),
+              {
+                speaker: "Girl",
+                text: "Not perfect, but I still liked being out with you.",
+                expression: "neutral",
+              },
+            ],
+          },
+          effects: {
+            girlStats: { affection: 4, mood: 2 },
+            playerStats: { mood: 3 },
+          },
+        },
+      ],
+    },
+  ],
   Restaurant: [
     {
       id: "restaurant_dinner",
-      name: "Fancy Dinner",
-      description: "Enjoy a nice meal together",
+      name: "Dinner Reservation",
+      description: "A proper table and uninterrupted time together.",
       icon: "🍽️",
       requirements: {
-        minPlayerStat: { stat: "money", value: 100 },
+        minAffection: 20,
+        minPlayerStat: { stat: "money", value: 80 },
       },
       outcomes: [
         {
-          id: "restaurant_classy",
-          conditions: { minPlayerStyle: 20, minAffection: 30 },
+          id: "restaurant_romantic",
+          conditions: { minAffection: 30, minPlayerStyle: 18 },
           weight: 3,
           dialogue: {
-            id: "restaurant_perfect",
+            id: "restaurant_romantic_dialogue",
             lines: [
-              {
-                speaker: null,
-                text: "The ambiance is perfect. Candlelight flickers between you.",
-                imageSlide: "/images/events/restaurant_date.png",
-              },
+              line("Candlelight and quiet music make the room feel small in a good way."),
               {
                 speaker: "Girl",
-                text: "This is really special. Thank you for bringing me here.",
+                text: "You really planned this well.",
                 expression: "love",
               },
-            ],
-          },
-          effects: {
-            girlStats: { affection: 20, love: 15 },
-            playerStats: { mood: 25 },
-            playerMoney: -100,
-          },
-        },
-      ],
-    },
-  ],
-
-  Movies: [
-    {
-      id: "movies_horror",
-      name: "Watch Horror Movie",
-      description: "She might grab onto you...",
-      icon: "😱",
-      outcomes: [
-        {
-          id: "movies_scared_cuddly",
-          conditions: { minAffection: 20 },
-          weight: 2,
-          dialogue: {
-            id: "movies_horror_success",
-            lines: [
               {
-                speaker: null,
-                text: "She jumps at every scare, pressing closer to you.",
-              },
-              {
-                speaker: "Girl",
-                text: "I feel safe with you...",
-                expression: "love",
+                speaker: "You",
+                text: "How do you handle the moment?",
+                choices: [
+                  {
+                    text: "Tell her directly what she means to you.",
+                    affectionChange: 5,
+                    moodChange: 2,
+                  },
+                  {
+                    text: "Keep it playful, but sincere.",
+                    affectionChange: 3,
+                    moodChange: 3,
+                  },
+                ],
               },
             ],
           },
           effects: {
-            girlStats: { affection: 12, lust: 8 },
-            playerStats: { mood: 15 },
-            playerMoney: -30,
+            girlStats: { affection: 10, love: 6, mood: 5 },
+            playerStats: { mood: 10 },
+            playerMoney: -55,
           },
         },
-      ],
-    },
-    {
-      id: "movies_romance",
-      name: "Watch Romance Movie",
-      description: "A heartwarming love story",
-      icon: "💕",
-      requirements: {
-        minAffection: 25,
-      },
-      outcomes: [
         {
-          id: "movies_romantic_mood",
-          conditions: { minAffection: 20 },
-          weight: 2,
-          dialogue: {
-            id: "movies_romance_success",
-            lines: [
-              {
-                speaker: null,
-                text: "During a particularly touching scene, she takes your hand.",
-              },
-              {
-                speaker: "Girl",
-                text: "Do you believe in love like that?",
-                expression: "shy",
-              },
-            ],
-          },
-          effects: {
-            girlStats: { affection: 10, love: 15, mood: 12 },
-            playerStats: { mood: 18 },
-            playerMoney: -30,
-          },
-        },
-      ],
-    },
-  ],
-
-  City: [
-    {
-      id: "city_explore",
-      name: "City Adventure",
-      description: "Explore the city together",
-      icon: "🗺️",
-      outcomes: [
-        {
-          id: "city_fun_discoveries",
-          conditions: {},
+          id: "restaurant_good_enough",
           weight: 1,
           dialogue: {
-            id: "city_explore_success",
+            id: "restaurant_good_enough_dialogue",
             lines: [
+              line("Service is slow, but the conversation keeps the night intact."),
               {
-                speaker: null,
-                text: "You wander through the city, discovering hidden gems together.",
+                speaker: "Girl",
+                text: "I still had a good time.",
+                expression: "happy",
               },
             ],
           },
           effects: {
-            girlStats: { affection: 8, mood: 10 },
-            playerStats: { mood: 12 },
+            girlStats: { affection: 5, mood: 3 },
+            playerStats: { mood: 4 },
+            playerMoney: -40,
+          },
+        },
+      ],
+    },
+  ],
+  Movies: [
+    {
+      id: "movies_night",
+      name: "Movie Night",
+      description: "Pick a movie and talk after.",
+      icon: "🎬",
+      outcomes: [
+        {
+          id: "movies_good_pick",
+          conditions: { minAffection: 20 },
+          weight: 3,
+          dialogue: {
+            id: "movies_good_pick_dialogue",
+            lines: [
+              line("The movie lands, and the post-film walk is even better."),
+              {
+                speaker: "Girl",
+                text: "Okay, that was actually a great pick.",
+                expression: "happy",
+              },
+              {
+                speaker: "You",
+                text: "How do you play it?",
+                choices: [
+                  {
+                    text: "Ask what scene hit her the hardest.",
+                    affectionChange: 3,
+                    moodChange: 2,
+                  },
+                  {
+                    text: "Pull her close and joke about your review score.",
+                    affectionChange: 1,
+                    moodChange: 3,
+                    lustChange: 1,
+                  },
+                ],
+              },
+            ],
+          },
+          effects: {
+            girlStats: { affection: 7, mood: 5, love: 2 },
+            playerStats: { mood: 8 },
+            playerMoney: -25,
+          },
+        },
+        {
+          id: "movies_mid",
+          weight: 1,
+          dialogue: {
+            id: "movies_mid_dialogue",
+            lines: [
+              line("The movie is mediocre, but you both make fun of it together."),
+              {
+                speaker: "Girl",
+                text: "At least your company was better than the script.",
+                expression: "neutral",
+              },
+            ],
+          },
+          effects: {
+            girlStats: { affection: 4, mood: 3 },
+            playerStats: { mood: 4 },
             playerMoney: -20,
           },
         },
       ],
     },
   ],
-
   Park: [
     {
       id: "park_picnic",
-      name: "Romantic Picnic",
-      description: "Share a meal under the trees",
+      name: "Picnic and Bench Talk",
+      description: "Simple, calm, and personal.",
       icon: "🧺",
-      requirements: {
-        minAffection: 20,
-      },
       outcomes: [
         {
-          id: "park_picnic_perfect",
-          conditions: { minAffection: 30, minMood: 50 },
-          weight: 2,
+          id: "park_cozy",
+          conditions: { minAffection: 18, minMood: 40 },
+          weight: 3,
           dialogue: {
-            id: "park_picnic_success",
+            id: "park_cozy_dialogue",
             lines: [
-              {
-                speaker: null,
-                text: "You spread out a blanket under a shady tree.",
-                imageSlide: "/images/events/park_picnic.png",
-              },
+              line("You find a quiet patch of shade and slow the whole day down."),
               {
                 speaker: "Girl",
-                text: "This is so thoughtful! You really know how to make me feel special.",
-                expression: "love",
+                text: "I needed this kind of date.",
+                expression: "happy",
+              },
+              {
+                speaker: "You",
+                text: "How do you respond?",
+                choices: [
+                  {
+                    text: "Promise her more calm nights like this.",
+                    affectionChange: 4,
+                    moodChange: 2,
+                  },
+                  {
+                    text: "Lean into the moment and sit closer.",
+                    affectionChange: 3,
+                    lustChange: 2,
+                  },
+                ],
               },
             ],
           },
           effects: {
-            girlStats: { affection: 15, love: 12 },
-            playerStats: { mood: 20 },
-            playerMoney: -25,
+            girlStats: { affection: 9, love: 4, mood: 6 },
+            playerStats: { mood: 9 },
+            playerMoney: -10,
+          },
+        },
+        {
+          id: "park_brisk",
+          weight: 1,
+          dialogue: {
+            id: "park_brisk_dialogue",
+            lines: [
+              line("The weather pushes you into a shorter loop through the park."),
+              {
+                speaker: "Girl",
+                text: "Short date, still worth it.",
+                expression: "neutral",
+              },
+            ],
+          },
+          effects: {
+            girlStats: { affection: 4, mood: 2 },
+            playerStats: { mood: 3 },
           },
         },
       ],
     },
   ],
-  "Strip Club": [
+  Nightclub: [
     {
-      id: "strip_dance",
-      name: "Strip Dancing",
-      description: "Dance the night away",
-      icon: "🕺",
+      id: "nightclub_dance",
+      name: "Dance Floor Date",
+      description: "High energy and close contact.",
+      icon: "🪩",
       requirements: {
         minAffection: 20,
       },
       outcomes: [
         {
-          id: "strip_dance_success",
+          id: "nightclub_hot",
           conditions: { minAffection: 30, minMood: 50 },
-          weight: 2,
+          weight: 3,
           dialogue: {
-            id: "strip_dance_success",
+            id: "nightclub_hot_dialogue",
             lines: [
+              line("The bass is heavy, and the space between you disappears quickly."),
               {
-                speaker: null,
-                text: "You dance the night away, leaving the club with a smile on your face.",
+                speaker: "Girl",
+                text: "You clean up well in this setting.",
+                expression: "seductive",
+              },
+              {
+                speaker: "You",
+                text: "What do you do?",
+                choices: [
+                  {
+                    text: "Keep it playful and dance with her all night.",
+                    moodChange: 4,
+                    affectionChange: 3,
+                  },
+                  {
+                    text: "Pull her closer and hold eye contact.",
+                    lustChange: 3,
+                    affectionChange: 2,
+                  },
+                ],
               },
             ],
           },
           effects: {
-            girlStats: { affection: 15, love: 12 },
-            playerStats: { mood: 20 },
-            playerMoney: -25,
+            girlStats: { affection: 7, lust: 6, mood: 5 },
+            playerStats: { mood: 9, style: 1 },
+            playerMoney: -35,
+          },
+        },
+        {
+          id: "nightclub_messy",
+          weight: 1,
+          dialogue: {
+            id: "nightclub_messy_dialogue",
+            lines: [
+              line("The place is packed, so you spend half the date finding space to breathe."),
+              {
+                speaker: "Girl",
+                text: "Crowded, but still fun with you.",
+                expression: "happy",
+              },
+            ],
+          },
+          effects: {
+            girlStats: { affection: 4, mood: 3 },
+            playerStats: { mood: 4 },
+            playerMoney: -20,
           },
         },
       ],
     },
   ],
-  Gym: [
-    {
-      id: "gym_workout",
-      name: "Workout Together",
-      description: "Workout together",
-      icon: "💪",
-      requirements: {
-        minAffection: 20,
-      },
-      outcomes: [
-        {
-          id: "gym_workout_success",
-          conditions: { minAffection: 30, minMood: 50 },
-          weight: 2,
-          dialogue: {
-            id: "gym_workout_success",
-            lines: [
-              {
-                speaker: null,
-                text: "You work out together, leaving the gym with a smile on your face.",
-              },
-            ],
-          },
-          effects: {
-            girlStats: { affection: 15, love: 12 },
-            playerStats: { mood: 20 },
-            playerMoney: -25,
-          },
-        },
-      ],
-    },
-  ],
-  "Living Room": [
-    {
-      id: "romance_romance",
-      name: "Romance Romance",
-      description: "Romance Romance",
-      icon: "🧡",
-      requirements: {
-        minAffection: 20,
-      },
-      outcomes: [
-        {
-          id: "romance_romance_success",
-          conditions: { minAffection: 30, minMood: 50 },
-          weight: 2,
-          dialogue: {
-            id: "romance_romance_success",
-            lines: [
-              {
-                speaker: null,
-                text: "You spend the night together, leaving the room with a smile on your face.",
-              },
-            ],
-          },
-          effects: {
-            girlStats: { affection: 15, love: 12 },
-            playerStats: { mood: 20 },
-            playerMoney: -25,
-          },
-        },
-      ],
-    },
-  ] 
 };

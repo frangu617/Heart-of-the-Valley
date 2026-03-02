@@ -24,6 +24,7 @@ type Props = {
   hour: number;
   isLocationTransitioning: boolean;
   characterImageLocation?: string;
+  hideCharacters?: boolean;
 };
 
 export default function SceneView({
@@ -39,6 +40,7 @@ export default function SceneView({
   hour,
   isLocationTransitioning,
   characterImageLocation,
+  hideCharacters = false,
 }: Props) {
   const [missingTestRoomGirls, setMissingTestRoomGirls] = useState<Set<string>>(
     new Set(),
@@ -72,7 +74,7 @@ export default function SceneView({
 
   return (
     <div
-      className={`relative rounded-2xl shadow-xl overflow-hidden border-4 w-full ${
+      className={`relative z-0 isolate rounded-2xl shadow-xl overflow-hidden border-4 w-full ${
         darkMode ? "bg-gray-800 border-purple-700" : "bg-white border-purple-200"
       } transition-colors duration-300`}
     >
@@ -95,7 +97,7 @@ export default function SceneView({
         </p>
       </div>
 
-      <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-purple-100 to-white overflow-hidden">
+      <div className="relative z-0 w-full aspect-[4/3] bg-gradient-to-b from-purple-100 to-white overflow-hidden">
         {/* Background image with safe fallbacks */}
         <Image
           src={getCurrentLocationImage()}
@@ -134,8 +136,9 @@ export default function SceneView({
         </div>
 
         {/* Characters */}
-        <div className="absolute inset-0 flex items-end justify-around px-4 md:px-8 pb-8 md:pb-4">
-          {visibleGirls.map((girl, index) => {
+        {!hideCharacters && (
+          <div className="absolute inset-0 flex items-end justify-around px-4 md:px-8 pb-8 md:pb-4">
+            {visibleGirls.map((girl, index) => {
             const baseImgPath = getCharacterImage(
               girl,
               resolvedCharacterImageLocation,
@@ -224,8 +227,9 @@ export default function SceneView({
                 </div>
               </button>
             );
-          })}
-        </div>
+            })}
+          </div>
+        )}
       </div>
       <div
         className={`absolute inset-0 bg-black/60 pointer-events-none transition-opacity duration-200 z-30 ${

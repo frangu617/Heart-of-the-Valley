@@ -40,6 +40,13 @@ export const interactionMenu: Interaction[] = [
     girlEffects: { affection: +7, lust: +5 },
   },
   {
+    type: "Romance",
+    label: "Sext",
+    timeCost: 1,
+    statEffects: { mood: +2 },
+    girlEffects: { affection: +1, lust: +6 },
+  },
+  {
     type: "Gift",
     label: "Give Gift",
     timeCost: 1,

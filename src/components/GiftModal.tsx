@@ -41,7 +41,7 @@ export default function GiftModal({
   darkMode = true,
 }: Props) {
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[2300] p-4 animate-fadeIn">
       <div
         className={`max-w-3xl w-full rounded-3xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto ${
           darkMode
