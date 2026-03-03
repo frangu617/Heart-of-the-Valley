@@ -33,12 +33,28 @@ const ALWAYS_VISIBLE_INTERACTIONS = new Set([
   "Chat",
   "Flirt",
   "Give Gift",
-  "Sext",
 ]);
 const IRIS_KISS_EXPRESSION = "kissingMC";
 const KISS_AFFECTION_REQUIREMENT = 15;
 const KISS_LUST_REQUIREMENT = 25;
 const KISS_REJECTION_EFFECTS: Partial<GirlStats> = { affection: -2, lust: -2 };
+const FLIRT_FAIL_EFFECTS: Partial<GirlStats> = { affection: -1, mood: -2 };
+const SEX_FAIL_EFFECTS: Partial<GirlStats> = { affection: -2, mood: -3, lust: -1 };
+const PRIVATE_SEX_LOCATIONS = new Set([
+  "Bedroom",
+  "Bathroom",
+  "Living Room",
+  "Kitchen",
+  "Iris' Living Room",
+  "Iris' Bedroom",
+  "Iris' Bathroom",
+  "Iris' Kitchen",
+  "Dawn's bedroom",
+  "Office",
+  "Iris' Office",
+  "Men's Bathroom",
+  "Women's Bathroom",
+]);
 const KISS_UNLOCK_FLAG_BY_CHARACTER: Partial<Record<string, GameplayFlag>> = {
   Iris: "irisCh1FinaleComplete",
   Dawn: "hasMetDawn",
@@ -192,211 +208,26 @@ const getTestEmotionDialogue = (characterName: string): Dialogue => ({
 const getChapterTierLabel = (chapter: InteractionChapter) =>
   chapter <= 1 ? "early" : chapter <= 3 ? "mid" : "late";
 
-const getSextDialogue = (
-  characterName: string,
+const getRomanceSuccessChance = (
+  targetGirl: Girl,
   chapter: InteractionChapter,
-): Dialogue => {
-  const tier = getChapterTierLabel(chapter);
-  const id = `${characterName.toLowerCase()}_sext_ch${chapter}`;
-
-  if (characterName === "Iris") {
-    if (tier === "early") {
-      return {
-        id,
-        lines: [
-          { speaker: "You", text: "You test the waters with a suggestive message." },
-          {
-            speaker: "Iris",
-            text: "Careful. I am not ready to go that far yet.",
-            expression: "shy",
-          },
-        ],
-      };
-    }
-    if (tier === "mid") {
-      return {
-        id,
-        lines: [
-          { speaker: "You", text: "You send something a little less innocent." },
-          {
-            speaker: "Iris",
-            text: "You are going to make me lose focus if you keep that up.",
-            expression: "seductive",
-          },
-        ],
-      };
-    }
-    return {
-      id,
-      lines: [
-        { speaker: "You", text: "Your message is direct and deliberate." },
-        {
-          speaker: "Iris",
-          text: "Good. Keep that tone for tonight.",
-          expression: "seductive",
-        },
-      ],
-    };
-  }
-
-  if (characterName === "Yumi") {
-    if (tier === "early") {
-      return {
-        id,
-        lines: [
-          { speaker: "You", text: "You send a teasing line and wait." },
-          {
-            speaker: "Yumi",
-            text: "That is... a lot for where we are right now.",
-            expression: "shy",
-          },
-        ],
-      };
-    }
-    if (tier === "mid") {
-      return {
-        id,
-        lines: [
-          { speaker: "You", text: "You keep the message bold but controlled." },
-          {
-            speaker: "Yumi",
-            text: "You know exactly what you are doing to me.",
-            expression: "seductive",
-          },
-        ],
-      };
-    }
-    return {
-      id,
-      lines: [
-        { speaker: "You", text: "You stop pretending and send what you want." },
-        {
-          speaker: "Yumi",
-          text: "I am done playing shy. Keep going.",
-          expression: "seductive",
-        },
-      ],
-    };
-  }
-
-  if (characterName === "Gwen") {
-    if (tier === "early") {
-      return {
-        id,
-        lines: [
-          { speaker: "You", text: "You send a risky tease." },
-          {
-            speaker: "Gwen",
-            text: "Ambitious. You are not there yet.",
-            expression: "neutral",
-          },
-        ],
-      };
-    }
-    if (tier === "mid") {
-      return {
-        id,
-        lines: [
-          { speaker: "You", text: "You push the tone hotter." },
-          {
-            speaker: "Gwen",
-            text: "There we go. I knew you had a spine.",
-            expression: "seductive",
-          },
-        ],
-      };
-    }
-    return {
-      id,
-      lines: [
-        { speaker: "You", text: "You send a message that leaves no ambiguity." },
-        {
-          speaker: "Gwen",
-          text: "Good. No half-measures.",
-          expression: "seductive",
-        },
-      ],
-    };
-  }
-
-  if (characterName === "Ruby") {
-    if (tier === "early") {
-      return {
-        id,
-        lines: [
-          { speaker: "You", text: "You test a flirtier text than usual." },
-          {
-            speaker: "Ruby",
-            text: "Whoa. Slow down a little.",
-            expression: "shy",
-          },
-        ],
-      };
-    }
-    if (tier === "mid") {
-      return {
-        id,
-        lines: [
-          { speaker: "You", text: "You text something spicy." },
-          {
-            speaker: "Ruby",
-            text: "Okay... that definitely worked on me.",
-            expression: "seductive",
-          },
-        ],
-      };
-    }
-    return {
-      id,
-      lines: [
-        { speaker: "You", text: "You text with confidence and no backpedal." },
-        {
-          speaker: "Ruby",
-          text: "You are not letting me sleep early tonight, huh?",
-          expression: "seductive",
-        },
-      ],
-    };
-  }
-
-  if (tier === "early") {
-    return {
-      id,
-      lines: [
-        { speaker: "You", text: "You send a suggestive message." },
-        {
-          speaker: "Dawn",
-          text: "Not yet. Build it first.",
-          expression: "neutral",
-        },
-      ],
-    };
-  }
-  if (tier === "mid") {
-    return {
-      id,
-      lines: [
-        { speaker: "You", text: "You send something less polite." },
-        {
-          speaker: "Dawn",
-          text: "Better. Keep going.",
-          expression: "seductive",
-        },
-      ],
-    };
-  }
-  return {
-    id,
-    lines: [
-      { speaker: "You", text: "You send exactly what you are thinking." },
-      {
-        speaker: "Dawn",
-        text: "That is the honesty I wanted from you.",
-        expression: "seductive",
-      },
-    ],
-  };
+  intensity: "flirt" | "sex",
+) => {
+  const closenessScore =
+    targetGirl.stats.affection * 0.6 +
+    targetGirl.stats.love * 0.5 +
+    targetGirl.stats.lust * 0.3 +
+    (targetGirl.stats.mood - 40) * 0.4;
+  const chapterBonus = (chapter - 1) * 8;
+  const intensityPenalty = intensity === "sex" ? 18 : 0;
+  return Math.min(
+    95,
+    Math.max(8, Math.round(20 + closenessScore + chapterBonus - intensityPenalty)),
+  );
 };
+
+const rollSuccessChance = (successChance: number) =>
+  Math.random() * 100 <= successChance;
 
 const getGiftThanksLine = (characterName: string, chapter: InteractionChapter) => {
   const tier = getChapterTierLabel(chapter);
@@ -509,11 +340,23 @@ export default function CharacterOverlay({
   const kissUnlocked =
     hasKissUnlockedByFlag(girl.name, gameplayFlags) ||
     hasCompletedChapterOneByHistory(girl.name, eventState);
-  const canUseDatePlanner = !isDawnMysteryState;
+  const canUseDatePlanner = !isDawnMysteryState && interactionChapter <= 2;
+  const canUseSexAction =
+    !isDawnMysteryState &&
+    interactionChapter >= 4 &&
+    PRIVATE_SEX_LOCATIONS.has(location);
+  const datePlannerStatusLabel = canUseDatePlanner
+    ? "Plan"
+    : isDawnMysteryState
+      ? "Locked"
+      : interactionChapter > 2
+        ? "Ended"
+        : "Locked";
   const visibleInteractions = isDawnMysteryState
     ? []
     : interactionMenu.filter((action) => {
         if (action.label === "Kiss") return kissUnlocked;
+        if (action.label === "Sex") return canUseSexAction;
         return ALWAYS_VISIBLE_INTERACTIONS.has(action.label);
       });
   const giftEntries = getGiftEntriesFromInventory(player.inventory);
@@ -816,32 +659,18 @@ export default function CharacterOverlay({
     }
 
     if (action.label === "Sext") {
-      if (interactionChapter < 2) {
-        showGameNotice(
-          `${girl.name} is not comfortable with that yet. Build more closeness first.`,
-          { tone: "info" },
-        );
-        return;
-      }
-
-      if (girl.stats.affection < 20 || girl.stats.lust < 15) {
-        showGameNotice(
-          `${girl.name} isn't ready for sexting yet. Try again after deeper connection.`,
-          { tone: "info" },
-        );
-        return;
-      }
+      showGameNotice("Sexting is only available in phone messages.", {
+        tone: "info",
+      });
+      return;
     }
 
-    // Check affection requirements for intimate actions
-    if (action.label === "Flirt") {
-      if (girl.stats.affection < 10) {
-        showGameNotice(
-          `${girl.name} doesn't seem comfortable with that right now...`,
-          { tone: "info" },
-        );
-        return;
-      }
+    if (action.label === "Sex" && !canUseSexAction) {
+      showGameNotice(
+        "Sex unlocks after chapter 3 and only in private locations.",
+        { tone: "info" },
+      );
+      return;
     }
 
     if (action.label === "Kiss") {
@@ -852,17 +681,6 @@ export default function CharacterOverlay({
         );
         return;
       }
-    }
-
-    // Check mood requirements for positive interactions
-    if (
-      girl.stats.mood < 30 &&
-      action.label === "Flirt"
-    ) {
-      showGameNotice(`${girl.name} doesn't seem in the mood for that right now...`, {
-        tone: "info",
-      });
-      return;
     }
 
     const shouldQueueDawnSummon =
@@ -881,35 +699,105 @@ export default function CharacterOverlay({
       });
     }
 
+    let resolvedPlayerEffects = action.statEffects;
+    let resolvedGirlEffects = action.girlEffects;
+    let customDialogue: Dialogue | null = null;
+    let interactionExpression =
+      action.label === "Kiss" && girl.name === "Iris"
+        ? IRIS_KISS_EXPRESSION
+        : getFacialExpression();
+
+    if (action.label === "Flirt" || action.label === "Sex") {
+      const intensity = action.label === "Sex" ? "sex" : "flirt";
+      const successChance = getRomanceSuccessChance(girl, interactionChapter, intensity);
+      const success = rollSuccessChance(successChance);
+
+      if (!success) {
+        resolvedPlayerEffects =
+          action.label === "Flirt"
+            ? { mood: -1 }
+            : { mood: -2, energy: -5 };
+        resolvedGirlEffects =
+          action.label === "Flirt" ? FLIRT_FAIL_EFFECTS : SEX_FAIL_EFFECTS;
+        customDialogue = {
+          id: `${girl.name.toLowerCase()}_${action.label.toLowerCase()}_failed`,
+          lines: [
+            {
+              speaker: null,
+              text:
+                action.label === "Flirt"
+                  ? `Your flirt lands awkwardly with ${girl.name}.`
+                  : `You try to escalate with ${girl.name}, but the timing is off.`,
+            },
+            {
+              speaker: girl.name,
+              text:
+                action.label === "Flirt"
+                  ? "Not right now. Ease up a little."
+                  : "Not tonight. Slow down.",
+              expression: "neutral",
+            },
+          ],
+        };
+        interactionExpression = "sad";
+      } else if (action.label === "Sex") {
+        customDialogue = {
+          id: `${girl.name.toLowerCase()}_sex_success`,
+          lines: [
+            {
+              speaker: null,
+              text: `You and ${girl.name} close the door and spend intimate time together.`,
+            },
+            {
+              speaker: girl.name,
+              text: "Stay with me. No rush.",
+              expression: "seductive",
+            },
+          ],
+        };
+        interactionExpression = "seductive";
+      }
+    }
+
     // Apply stat effects outside sandbox chat
     if (!isSandboxChat) {
-      const updatedStats = action.statEffects
-        ? applyPlayerStatDelta(player, action.statEffects)
+      const updatedStats = resolvedPlayerEffects
+        ? applyPlayerStatDelta(player, resolvedPlayerEffects)
         : player;
       spendTime(action.timeCost, updatedStats, {
         skipHungerGain:
-          typeof action.statEffects?.hunger === "number" &&
-          action.statEffects.hunger < 0,
+          typeof resolvedPlayerEffects?.hunger === "number" &&
+          resolvedPlayerEffects.hunger < 0,
       });
     }
 
     // Get dialogue for this interaction
-    const dialogue = isSandboxChat
+    const dialogue = customDialogue ?? (isSandboxChat
       ? getTestEmotionDialogue(girl.name)
-      : action.label === "Sext"
-        ? getSextDialogue(girl.name, interactionChapter)
-      : getChapterAwareInteractionDialogue(
-          girl.name,
-          action.label,
-          gameplayFlags,
-          eventState
-        );
-    const interactionExpression =
-      action.label === "Sext"
-        ? "seductive"
-      : action.label === "Kiss" && girl.name === "Iris"
-        ? IRIS_KISS_EXPRESSION
-        : getFacialExpression();
+      : action.label === "Sex"
+        ? {
+            id: `${girl.name.toLowerCase()}_sex_generic`,
+            lines: [
+              {
+                speaker: null,
+                text: `You and ${girl.name} find a private moment together.`,
+              },
+              {
+                speaker: girl.name,
+                text: "I wanted this.",
+                expression: "seductive",
+              },
+            ],
+          }
+        : getChapterAwareInteractionDialogue(
+            girl.name,
+            action.label,
+            gameplayFlags,
+            eventState
+        ));
+    if (action.label === "Sex") {
+      interactionExpression = "seductive";
+    }
     const characterImage = getCharacterImage(
       girl,
       resolvedCharacterImageLocation,
@@ -918,8 +806,8 @@ export default function CharacterOverlay({
     );
 
     // Show what stats will change
-    if (action.girlEffects) {
-      const changes = Object.entries(action.girlEffects)
+    if (resolvedGirlEffects) {
+      const changes = Object.entries(resolvedGirlEffects)
         .filter(([, value]) => value !== 0)
         .map(([key, value]) => {
           const emoji =
@@ -940,7 +828,7 @@ export default function CharacterOverlay({
     onStartDialogue(
       dialogue,
       characterImage,
-      isSandboxChat ? undefined : action.girlEffects,
+      isSandboxChat ? undefined : resolvedGirlEffects,
     );
     if (!isSandboxChat && onInteractionLogged) {
       onInteractionLogged(girl.name, action.label);
@@ -1016,6 +904,7 @@ export default function CharacterOverlay({
           <div className="absolute inset-0 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full blur-lg group-hover:blur-xl transition-all"></div>
           <div className="relative w-50 h-60 rounded-full border-4 border-white shadow-xl overflow-hidden">
             <Image
+              key={`selected-portrait-${girl.name}`}
               src={overlayPortraitSrc}
               alt={`${girl.name} portrait`}
               layout="fill"
@@ -1079,6 +968,13 @@ export default function CharacterOverlay({
                 <button
           onClick={() => {
             if (!canUseDatePlanner) {
+              if (interactionChapter > 2) {
+                showGameNotice(
+                  "Regular date planning ends after the chapter 2 date.",
+                  { tone: "info" },
+                );
+                return;
+              }
               showGameNotice(
                 "Date planning is not available for this character yet.",
                 { tone: "info" },
@@ -1106,7 +1002,7 @@ export default function CharacterOverlay({
               <span>Ask on Date</span>
             </span>
             <span className="text-xs opacity-75">
-              {canUseDatePlanner ? "Plan" : "Locked"}
+              {datePlannerStatusLabel}
             </span>
           </div>
           {canUseDatePlanner && (

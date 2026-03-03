@@ -100,6 +100,7 @@ import { randomEvents } from "../data/events/chapter1/randomEvents";
 import {
   dateActivitiesByLocation,
   dateLocationInfo,
+  dateLocationOrder,
   type DateActivity,
   type DateLocation,
   type DateOutcome,
@@ -119,6 +120,11 @@ import {
   type PhoneMessage,
   type PhoneMessageAction,
 } from "@/lib/phoneMessages";
+import type {
+  CalendarDateEntry,
+  CalendarMilestoneEntry,
+  CalendarMilestoneType,
+} from "@/lib/calendar";
 
 type ScheduledEncounter = {
   characterName: string;
@@ -128,6 +134,7 @@ type ScheduledEncounter = {
   day?: string; // explicit string to allow serialization
   hour?: number;
   activities?: string[];
+  source?: DateScheduleSource;
 };
 
 type QuestItem = {
@@ -166,6 +173,9 @@ type SaveData = {
   messagesByCharacter: Record<string, PhoneMessage[]>;
   galleryUnlocks: GalleryUnlock[];
   messageActionHistory: Record<string, PhoneMessageAction[]>;
+  calendarMilestones: CalendarMilestoneEntry[];
+  lastPlayerDateAskDayByCharacter: Record<string, number>;
+  lastAutoDateAskDayByCharacter: Record<string, number>;
   textSpeed: "normal" | "instant";
   timestamp: string;
 };
@@ -174,6 +184,7 @@ type GameNoticeItem = {
   id: number;
   message: string;
   tone: GameNoticeTone;
+  isLeaving: boolean;
 };
 
 type PendingGameConfirm = {
@@ -198,6 +209,7 @@ type SpendTimeOptions = {
   hungerGainMultiplier?: number;
   scaleBasePlayerWithTime?: boolean;
 };
+type DateScheduleSource = "player" | "npc" | "story";
 
 type IrisSkipCheckpoint =
   | "ch1_complete"
@@ -398,6 +410,9 @@ const getAdvancedDay = (day: DayOfWeek, daysToAdvance: number): DayOfWeek => {
   return DAYS_OF_WEEK[nextIndex];
 };
 
+const getDayOfWeekFromDayCount = (absoluteDayCount: number): DayOfWeek =>
+  getAdvancedDay(START_DAY, Math.max(0, Math.floor(absoluteDayCount)));
+
 const normalizeEventStateGameTime = (
   history: EventHistory,
   currentDay: DayOfWeek,
@@ -508,6 +523,33 @@ const MESSAGE_DATE_LOCATION_BY_CHARACTER: Partial<Record<string, DateLocation>> 
   Gwen: "City",
   Ruby: "Beach",
   Yumi: "Park",
+};
+const FIRST_SEX_EVENT_ID_PATTERN = /(^|[_-])(sex|firstsex|first_time|firsttime|intimate)([_-]|$)/i;
+const getPhoneRomanceSuccessChance = (
+  girlStats: GirlStats,
+  chapter: number,
+  intensity: "flirt" | "sext",
+) => {
+  const closenessScore =
+    girlStats.affection * 0.6 +
+    girlStats.love * 0.5 +
+    girlStats.lust * 0.3 +
+    (girlStats.mood - 40) * 0.4;
+  const chapterBonus = Math.max(0, chapter - 1) * 8;
+  const intensityPenalty = intensity === "sext" ? 10 : 0;
+  return Math.min(
+    95,
+    Math.max(8, Math.round(20 + closenessScore + chapterBonus - intensityPenalty)),
+  );
+};
+const getPhoneRomanceFailureReply = (
+  characterName: string,
+  action: "flirt" | "sext",
+) => {
+  if (action === "sext") {
+    return `${characterName}: too much, too fast. Slow down.`;
+  }
+  return `${characterName}: maybe keep it light for now.`;
 };
 const NOTICE_CLASS_BY_TONE: Record<GameNoticeTone, string> = {
   info: "border-purple-400 bg-purple-900/90 text-purple-100",
@@ -782,6 +824,7 @@ export default function GamePage() {
   const irisKissOthersPromptedRef = useRef(false);
   const dawnFallbackAutoTriggeredRef = useRef(false);
   const dawnSummonAutoTriggeredRef = useRef(false);
+  const npcDateInviteProcessedDayRef = useRef<number | null>(null);
   const pendingAutoSaveRef = useRef(false);
   const imagePreloadStartedRef = useRef(false);
 
@@ -839,10 +882,25 @@ export default function GamePage() {
         id,
         message: detail.message,
         tone: detail.tone ?? "info",
+        isLeaving: false,
       };
-      const durationMs = Math.max(1200, detail.durationMs ?? 3000);
+      const durationMs = 3000;
+      const fadeDurationMs = 700;
+      const fadeStartMs = Math.max(0, durationMs - fadeDurationMs);
 
       setGameNotices((prev) => [...prev, notice]);
+      window.setTimeout(() => {
+        setGameNotices((prev) =>
+          prev.map((item) =>
+            item.id === id
+              ? {
+                  ...item,
+                  isLeaving: true,
+                }
+              : item,
+          ),
+        );
+      }, fadeStartMs);
       window.setTimeout(() => {
         setGameNotices((prev) => prev.filter((item) => item.id !== id));
       }, durationMs);
@@ -1001,6 +1059,13 @@ export default function GamePage() {
   const [messageActionHistory, setMessageActionHistory] = useState<
     Record<string, PhoneMessageAction[]>
   >({});
+  const [calendarMilestones, setCalendarMilestones] = useState<
+    CalendarMilestoneEntry[]
+  >([]);
+  const [lastPlayerDateAskDayByCharacter, setLastPlayerDateAskDayByCharacter] =
+    useState<Record<string, number>>({});
+  const [lastAutoDateAskDayByCharacter, setLastAutoDateAskDayByCharacter] =
+    useState<Record<string, number>>({});
   const [randomEventDailyCounts, setRandomEventDailyCounts] = useState<
     Record<string, number>
   >({});
@@ -1354,6 +1419,139 @@ export default function GamePage() {
     [meetsDateOutcomeConditions],
   );
 
+  const getEncounterAbsoluteDayCount = useCallback(
+    (targetDay: DayOfWeek, targetHour: number) => {
+      const currentIndex = DAYS_OF_WEEK.indexOf(dayOfWeek);
+      const targetIndex = DAYS_OF_WEEK.indexOf(targetDay);
+      if (currentIndex === -1 || targetIndex === -1) {
+        return dayCount;
+      }
+
+      let offset = (targetIndex - currentIndex + DAYS_OF_WEEK.length) % DAYS_OF_WEEK.length;
+      if (offset === 0 && targetHour < hour) {
+        offset = DAYS_OF_WEEK.length;
+      }
+      return dayCount + offset;
+    },
+    [dayCount, dayOfWeek, hour],
+  );
+
+  const recordCalendarMilestone = useCallback(
+    (characterName: string, type: CalendarMilestoneType, note: string) => {
+      setCalendarMilestones((prev) => {
+        const alreadyRecorded = prev.some(
+          (entry) =>
+            entry.characterName === characterName &&
+            entry.type === type,
+        );
+        if (alreadyRecorded) return prev;
+
+        return [
+          ...prev,
+          {
+            id: `milestone_${characterName}_${type}_${dayCount}_${hour}_${Date.now()}`,
+            characterName,
+            type,
+            dayOfWeek,
+            dayCount,
+            hour,
+            note,
+          },
+        ];
+      });
+    },
+    [dayCount, dayOfWeek, hour],
+  );
+
+  const buildRandomDatePlan = useCallback(
+    (characterName: string, girl: Girl, source: DateScheduleSource) => {
+      const shuffledLocations = [...dateLocationOrder].sort(
+        () => Math.random() - 0.5,
+      );
+      let selectedLocation: DateLocation | null = null;
+      let selectedActivities: string[] = [];
+
+      for (const location of shuffledLocations) {
+        const activities = (dateActivitiesByLocation[location] ?? []).filter(
+          (entry) => {
+            if (!entry.requirements) return true;
+            if (
+              entry.requirements.minAffection !== undefined &&
+              girl.stats.affection < entry.requirements.minAffection
+            ) {
+              return false;
+            }
+            if (
+              entry.requirements.minLove !== undefined &&
+              girl.stats.love < entry.requirements.minLove
+            ) {
+              return false;
+            }
+            if (
+              entry.requirements.minPlayerStat?.stat === "money" &&
+              player.money < entry.requirements.minPlayerStat.value
+            ) {
+              return false;
+            }
+            return true;
+          },
+        );
+        if (activities.length === 0) {
+          continue;
+        }
+
+        selectedLocation = location;
+        selectedActivities = [activities[Math.floor(Math.random() * activities.length)].id];
+        break;
+      }
+
+      if (!selectedLocation || selectedActivities.length === 0) {
+        return null;
+      }
+
+      let selectedDayCount = dayCount + (Math.floor(Math.random() * 6) + 1);
+      let selectedDay = getDayOfWeekFromDayCount(selectedDayCount);
+      let selectedHour = 12 + Math.floor(Math.random() * 10);
+
+      for (let attempts = 0; attempts < 40; attempts += 1) {
+        const slotTaken = scheduledEncounters.some((entry) => {
+          if (!entry.day || entry.hour === undefined) return false;
+          const encounterDay = entry.day as DayOfWeek;
+          return (
+            getEncounterAbsoluteDayCount(encounterDay, entry.hour) === selectedDayCount &&
+            entry.hour === selectedHour
+          );
+        });
+        if (!slotTaken) {
+          break;
+        }
+
+        selectedDayCount += 1;
+        selectedDay = getDayOfWeekFromDayCount(selectedDayCount);
+        selectedHour = 12 + Math.floor(Math.random() * 10);
+      }
+
+      return {
+        characterName,
+        location: selectedLocation,
+        day: selectedDay,
+        hour: selectedHour,
+        activities: selectedActivities,
+        eventId: `date_${source}_${characterName}_${selectedDayCount}_${selectedHour}_${Date.now()}`,
+        label:
+          source === "npc"
+            ? `${characterName} asked you out (${selectedLocation})`
+            : `${characterName} Date (${selectedLocation})`,
+      };
+    },
+    [
+      dayCount,
+      getEncounterAbsoluteDayCount,
+      player.money,
+      scheduledEncounters,
+    ],
+  );
+
   // Schedule a new encounter
   const scheduleEncounter = (encounter: ScheduledEncounter) => {
     setScheduledEncounters((prev) => {
@@ -1377,38 +1575,45 @@ export default function GamePage() {
   };
 
   // Handler specifically for dates
-  const handleScheduleDate = useCallback((date: {
-    characterName: string;
-    location: DateLocation;
-    day: DayOfWeek;
-    hour: number;
-    activities: string[];
-    eventId: string;
-    label: string;
-  }) => {
-    if (!dateLocationInfo[date.location]) {
-      showGameNotice("That date location is not available.", { tone: "warning" });
-      return;
-    }
+  const scheduleDateEncounter = useCallback(
+    (
+      date: {
+        characterName: string;
+        location: DateLocation;
+        day: DayOfWeek;
+        hour: number;
+        activities: string[];
+        eventId: string;
+        label: string;
+      },
+      source: DateScheduleSource = "player",
+    ) => {
+      if (!dateLocationInfo[date.location]) {
+        showGameNotice("That date location is not available.", { tone: "warning" });
+        return false;
+      }
 
-    setScheduledEncounters((prev) => {
-      const duplicate = prev.some(
-        (entry) =>
-          entry.characterName === date.characterName &&
-          entry.day === date.day &&
-          entry.hour === date.hour,
+      const targetDayCount = getEncounterAbsoluteDayCount(date.day, date.hour);
+      const duplicate = scheduledEncounters.some(
+        (entry) => {
+          if (!entry.day || entry.hour === undefined) return false;
+          const encounterDayCount = getEncounterAbsoluteDayCount(
+            entry.day as DayOfWeek,
+            entry.hour,
+          );
+          return (
+            encounterDayCount === targetDayCount && entry.hour === date.hour
+          );
+        },
       );
       if (duplicate) {
         showGameNotice("You already have a date scheduled in that slot.", {
           tone: "warning",
         });
-        return prev;
+        return false;
       }
 
-      console.log(
-        `💕 Date scheduled: ${date.label} with ${date.characterName} on ${date.day} at ${date.hour}:00`,
-      );
-      return [
+      setScheduledEncounters((prev) => [
         ...prev,
         {
           characterName: date.characterName,
@@ -1418,11 +1623,45 @@ export default function GamePage() {
           day: date.day,
           hour: date.hour,
           activities: date.activities,
+          source,
         },
-      ];
-    });
+      ]);
 
-  }, []);
+      if (source === "player") {
+        setLastPlayerDateAskDayByCharacter((prev) => ({
+          ...prev,
+          [date.characterName]: dayCount,
+        }));
+      }
+      if (source === "npc") {
+        setLastAutoDateAskDayByCharacter((prev) => ({
+          ...prev,
+          [date.characterName]: dayCount,
+        }));
+      }
+
+      console.log(
+        `Date scheduled: ${date.label} with ${date.characterName} on ${date.day} at ${date.hour}:00`,
+      );
+      return true;
+    },
+    [dayCount, getEncounterAbsoluteDayCount, scheduledEncounters],
+  );
+
+  const handleScheduleDate = useCallback(
+    (date: {
+      characterName: string;
+      location: DateLocation;
+      day: DayOfWeek;
+      hour: number;
+      activities: string[];
+      eventId: string;
+      label: string;
+    }) => {
+      scheduleDateEncounter(date, "player");
+    },
+    [scheduleDateEncounter],
+  );
 
   const handleSendMessageAction = useCallback(
     (characterName: string, action: PhoneMessageAction) => {
@@ -1464,14 +1703,6 @@ export default function GamePage() {
         return;
       }
 
-      if (action === "sext" && (chapter < 2 || girl.stats.affection < 20 || girl.stats.lust < 15)) {
-        showGameNotice(
-          `${characterName} is not comfortable with sexting yet. Build more closeness first.`,
-          { tone: "info" },
-        );
-        return;
-      }
-
       const playerText = getPlayerMessageText(action);
       let characterReply = getCharacterMessageReply(characterName, action, chapter);
       const now = Date.now();
@@ -1490,19 +1721,42 @@ export default function GamePage() {
 
       const playerDelta: Partial<PlayerStats> = {};
       let girlDelta: Partial<GirlStats> = {};
+      let romanceActionSucceeded = true;
 
       if (action === "chat") {
         playerDelta.mood = 1;
         girlDelta = { affection: 1, mood: 2 };
-      } else if (action === "flirt") {
-        playerDelta.mood = 1;
-        playerDelta.style = 1;
-        girlDelta = { affection: 1, lust: 2, mood: 1 };
-      } else if (action === "sext") {
-        playerDelta.mood = 2;
-        girlDelta = { affection: 1, lust: 4 };
+      } else if (action === "flirt" || action === "sext") {
+        const intensity = action === "sext" ? "sext" : "flirt";
+        const successChance = getPhoneRomanceSuccessChance(
+          girl.stats,
+          chapter,
+          intensity,
+        );
+        romanceActionSucceeded = Math.random() * 100 <= successChance;
+
+        if (romanceActionSucceeded) {
+          if (action === "flirt") {
+            playerDelta.mood = 1;
+            playerDelta.style = 1;
+            girlDelta = { affection: 1, lust: 2, mood: 1 };
+          } else {
+            playerDelta.mood = 2;
+            girlDelta = { affection: 1, lust: 4 };
+          }
+        } else {
+          characterReply = getPhoneRomanceFailureReply(characterName, action);
+          playerDelta.mood = -1;
+          girlDelta =
+            action === "flirt"
+              ? { mood: -1 }
+              : { mood: -2, affection: -1 };
+          showGameNotice(`${characterName} did not respond well to that.`, {
+            tone: "info",
+          });
+        }
       } else if (action === "date") {
-        const canAskForDate = chapter >= 2 && girl.stats.affection >= 15;
+        const canAskForDate = chapter <= 2 && girl.stats.affection >= 15;
         const acceptanceChance = Math.min(
           95,
           Math.max(
@@ -1568,7 +1822,7 @@ export default function GamePage() {
             }
           }
 
-          handleScheduleDate({
+          const didSchedule = scheduleDateEncounter({
             characterName,
             location,
             day: scheduledDay,
@@ -1577,21 +1831,26 @@ export default function GamePage() {
             eventId: `date_msg_${characterName}_${dayCount}_${hour}_${now}`,
             label: `${characterName} Date (${location})`,
           });
-
-          const displayHour =
-            scheduledHour > 12
-              ? `${scheduledHour - 12}:00 PM`
-              : `${scheduledHour}:00 ${scheduledHour === 12 ? "PM" : "AM"}`;
-          characterReply = `${characterReply} ${scheduledDay} at ${displayHour} works for me.`;
-          showGameNotice(`${characterName} accepted your date request.`, {
-            tone: "success",
-          });
-          playerDelta.mood = 2;
-          girlDelta = { affection: 2, love: 1, mood: 2 };
+          if (didSchedule) {
+            const displayHour =
+              scheduledHour > 12
+                ? `${scheduledHour - 12}:00 PM`
+                : `${scheduledHour}:00 ${scheduledHour === 12 ? "PM" : "AM"}`;
+            characterReply = `${characterReply} ${scheduledDay} at ${displayHour} works for me.`;
+            showGameNotice(`${characterName} accepted your date request.`, {
+              tone: "success",
+            });
+            playerDelta.mood = 2;
+            girlDelta = { affection: 2, love: 1, mood: 2 };
+          } else {
+            characterReply = "I am in, but we need to pick another slot.";
+            playerDelta.mood = 0;
+            girlDelta = { mood: 1 };
+          }
         } else {
           characterReply =
-            chapter < 2
-              ? characterReply
+            chapter > 2
+              ? "We've moved past date plans like that."
               : "Not tonight. Ask me again another day.";
           playerDelta.mood = -1;
           girlDelta = { mood: -1 };
@@ -1612,14 +1871,20 @@ export default function GamePage() {
         hour,
       });
 
-      const unlock = buildMessageGalleryUnlock(
-        characterName,
-        action,
-        chapter,
-        dayOfWeek,
-        dayCount,
-        hour,
-      );
+      const shouldRollForPhoto =
+        action === "sext" &&
+        romanceActionSucceeded &&
+        Math.random() < Math.min(0.65, 0.2 + chapter * 0.08);
+      const unlock = shouldRollForPhoto
+        ? buildMessageGalleryUnlock(
+            characterName,
+            action,
+            chapter,
+            dayOfWeek,
+            dayCount,
+            hour,
+          )
+        : null;
       if (unlock) {
         let didAddUnlock = false;
         setGalleryUnlocks((prev) => {
@@ -1675,10 +1940,10 @@ export default function GamePage() {
       dayOfWeek,
       gameplayFlags,
       girlStatsOverrides,
-      handleScheduleDate,
       hour,
       messageActionHistory,
       player.money,
+      scheduleDateEncounter,
       scheduledEncounters,
       setPlayerWithDebugProtection,
     ],
@@ -1827,6 +2092,7 @@ export default function GamePage() {
       );
 
       spendTime(dateTimeCost, playerAfterDate);
+      recordCalendarMilestone(girl.name, "first_date", "First date together.");
       setFlag("firstDateCompleted");
       showGameNotice(`${girl.name} date complete.`, { tone: "success" });
       startDialogue(
@@ -2044,6 +2310,168 @@ export default function GamePage() {
     characterUnlocks,
     clampGirlStatsToCaps,
     gameplayFlags,
+  ]);
+
+  const firstDateMilestoneStartDay = useMemo(() => {
+    const firstDateMilestones = calendarMilestones.filter(
+      (entry) => entry.type === "first_date",
+    );
+    if (firstDateMilestones.length === 0) {
+      return dayCount;
+    }
+    return firstDateMilestones.reduce(
+      (min, entry) => Math.min(min, entry.dayCount),
+      firstDateMilestones[0].dayCount,
+    );
+  }, [calendarMilestones, dayCount]);
+
+  const calendarPlannedDates = useMemo<CalendarDateEntry[]>(() => {
+    return scheduledEncounters
+      .filter(
+        (encounter) =>
+          Boolean(encounter.day) &&
+          encounter.hour !== undefined &&
+          Boolean(encounter.activities?.length),
+      )
+      .map((encounter) => {
+        const encounterDay = encounter.day as DayOfWeek;
+        const encounterHour = encounter.hour as number;
+        const source: DateScheduleSource =
+          encounter.source ??
+          (encounter.eventId.startsWith("date_npc_")
+            ? "npc"
+            : encounter.eventId.startsWith("date_story_")
+              ? "story"
+              : "player");
+
+        return {
+          id: `calendar_${encounter.eventId}`,
+          characterName: encounter.characterName,
+          dayOfWeek: encounterDay,
+          dayCount: getEncounterAbsoluteDayCount(encounterDay, encounterHour),
+          hour: encounterHour,
+          location: encounter.location,
+          label:
+            encounter.label ?? `${encounter.characterName} Date (${encounter.location})`,
+          source,
+        };
+      })
+      .sort((left, right) => {
+        if (left.dayCount !== right.dayCount) {
+          return left.dayCount - right.dayCount;
+        }
+        if (left.hour !== right.hour) {
+          return left.hour - right.hour;
+        }
+        return left.characterName.localeCompare(right.characterName);
+      });
+  }, [getEncounterAbsoluteDayCount, scheduledEncounters]);
+
+  useEffect(() => {
+    if (gameState !== "playing") return;
+    if (currentLocation === TESTING_LOCATION_NAME) return;
+    if (!gameplayFlags.has("firstDateCompleted")) return;
+    if (npcDateInviteProcessedDayRef.current === dayCount) return;
+    npcDateInviteProcessedDayRef.current = dayCount;
+
+    const eligibleGirls = girls.filter((girl) => {
+      if (!metCharacters.has(girl.name)) return false;
+      if (
+        girl.name === "Dawn" &&
+        !gameplayFlags.has("metDawn") &&
+        !gameplayFlags.has("hasMetDawn")
+      ) {
+        return false;
+      }
+      const eventState = characterEventStates[girl.name] ?? {
+        characterName: girl.name,
+        eventHistory: [],
+        lastInteractionTime: 0,
+      };
+      const chapter = getCharacterInteractionChapterForState(
+        girl.name,
+        gameplayFlags,
+        eventState,
+      );
+      if (chapter > 2) return false;
+      return true;
+    });
+    const overdueGirls = eligibleGirls.filter((girl) => {
+      const lastPlayerAskDay =
+        lastPlayerDateAskDayByCharacter[girl.name] ?? firstDateMilestoneStartDay;
+      const lastAutoAskDay =
+        lastAutoDateAskDayByCharacter[girl.name] ?? Number.NEGATIVE_INFINITY;
+      const mostRecentAskDay = Math.max(lastPlayerAskDay, lastAutoAskDay);
+      return dayCount - mostRecentAskDay >= 14;
+    });
+    if (overdueGirls.length === 0) return;
+
+    const selectedGirlForInvite =
+      overdueGirls[Math.floor(Math.random() * overdueGirls.length)];
+    const datePlan = buildRandomDatePlan(
+      selectedGirlForInvite.name,
+      selectedGirlForInvite,
+      "npc",
+    );
+    if (!datePlan) return;
+
+    const didSchedule = scheduleDateEncounter(datePlan, "npc");
+    if (!didSchedule) return;
+
+    const displayHour =
+      datePlan.hour > 12
+        ? `${datePlan.hour - 12}:00 PM`
+        : `${datePlan.hour}:00 ${datePlan.hour === 12 ? "PM" : "AM"}`;
+    const now = Date.now();
+    const incomingMessage: PhoneMessage = {
+      id: `msg_auto_date_${selectedGirlForInvite.name}_${now}_character`,
+      characterName: selectedGirlForInvite.name,
+      sender: "character",
+      text: `It's been a while. Let's meet at ${datePlan.location} on ${datePlan.day} at ${displayHour}.`,
+      action: "date",
+      dayOfWeek,
+      dayCount,
+      hour,
+    };
+    const playerReply: PhoneMessage = {
+      id: `msg_auto_date_${selectedGirlForInvite.name}_${now}_player`,
+      characterName: selectedGirlForInvite.name,
+      sender: "player",
+      text: "That works for me. See you there.",
+      action: "date",
+      dayOfWeek,
+      dayCount,
+      hour,
+    };
+
+    setMessagesByCharacter((prev) => ({
+      ...prev,
+      [selectedGirlForInvite.name]: [
+        ...(prev[selectedGirlForInvite.name] ?? []),
+        incomingMessage,
+        playerReply,
+      ],
+    }));
+
+    showGameNotice(
+      `${selectedGirlForInvite.name} asked you out. Date set for ${datePlan.day} at ${displayHour}.`,
+      { tone: "info" },
+    );
+  }, [
+    buildRandomDatePlan,
+    characterEventStates,
+    currentLocation,
+    dayCount,
+    dayOfWeek,
+    firstDateMilestoneStartDay,
+    gameState,
+    gameplayFlags,
+    girls,
+    hour,
+    lastAutoDateAskDayByCharacter,
+    lastPlayerDateAskDayByCharacter,
+    metCharacters,
+    scheduleDateEncounter,
   ]);
 
   useEffect(() => {
@@ -2691,6 +3119,9 @@ export default function GamePage() {
       messagesByCharacter,
       galleryUnlocks,
       messageActionHistory,
+      calendarMilestones,
+      lastPlayerDateAskDayByCharacter,
+      lastAutoDateAskDayByCharacter,
       textSpeed,
       timestamp: new Date().toISOString(),
     }),
@@ -2715,6 +3146,9 @@ export default function GamePage() {
       messagesByCharacter,
       galleryUnlocks,
       messageActionHistory,
+      calendarMilestones,
+      lastPlayerDateAskDayByCharacter,
+      lastAutoDateAskDayByCharacter,
       textSpeed,
     ],
   );
@@ -2761,6 +3195,11 @@ export default function GamePage() {
     setMessagesByCharacter(data.messagesByCharacter ?? {});
     setGalleryUnlocks(data.galleryUnlocks ?? []);
     setMessageActionHistory(data.messageActionHistory ?? {});
+    setCalendarMilestones(data.calendarMilestones ?? []);
+    setLastPlayerDateAskDayByCharacter(
+      data.lastPlayerDateAskDayByCharacter ?? {},
+    );
+    setLastAutoDateAskDayByCharacter(data.lastAutoDateAskDayByCharacter ?? {});
     setDailyNonStoryRandomEventIds(
       data.dailyNonStoryRandomEventIds ??
         rollDailyNonStoryRandomEventIds({
@@ -2788,6 +3227,7 @@ export default function GamePage() {
     if (data.textSpeed === "instant" || data.textSpeed === "normal") {
       setTextSpeed(data.textSpeed);
     }
+    npcDateInviteProcessedDayRef.current = null;
     setSelectedGirl(null);
     setGameState("playing");
   }, [setHour, setDayOfWeek]);
@@ -3255,8 +3695,19 @@ export default function GamePage() {
         ...prev,
         [name]: newState,
       }));
+
+      if (FIRST_SEX_EVENT_ID_PATTERN.test(eventId)) {
+        recordCalendarMilestone(name, "first_sex", "First intimate night together.");
+      }
     },
-    [selectedGirl, characterEventStates, dayOfWeek, dayCount, hour],
+    [
+      selectedGirl,
+      characterEventStates,
+      dayOfWeek,
+      dayCount,
+      hour,
+      recordCalendarMilestone,
+    ],
   );
 
   const triggerSpecificEvent = useCallback(
@@ -3864,6 +4315,9 @@ export default function GamePage() {
     setMessagesByCharacter({});
     setGalleryUnlocks([]);
     setMessageActionHistory({});
+    setCalendarMilestones([]);
+    setLastPlayerDateAskDayByCharacter({});
+    setLastAutoDateAskDayByCharacter({});
     setRandomEventDailyCounts({});
     setDailyNonStoryRandomEventIds(initialDailyNonStoryRandomEvents);
     setNonStoryRandomEventLastTriggeredDay({});
@@ -3877,6 +4331,7 @@ export default function GamePage() {
       withoutRuby: 0,
     });
     setRubyWorkoutTotal(0);
+    npcDateInviteProcessedDayRef.current = null;
 
     // Now start the intro
     setGameState("intro");
@@ -3982,7 +4437,6 @@ export default function GamePage() {
     hour,
     characterEventStates,
     gameplayFlags,
-    currentLocation,
   ]);
 
   // Run this periodically
@@ -4176,6 +4630,17 @@ export default function GamePage() {
         return { ...prev, [key]: current };
       });
 
+      if (actionLabel === "Kiss") {
+        recordCalendarMilestone(girlName, "first_kiss", "First kiss together.");
+      }
+      if (actionLabel === "Sex") {
+        recordCalendarMilestone(
+          girlName,
+          "first_sex",
+          "First intimate night together.",
+        );
+      }
+
       if (currentLocation === TESTING_LOCATION_NAME) {
         return;
       }
@@ -4204,6 +4669,7 @@ export default function GamePage() {
       dayCount,
       gameplayFlags,
       girls,
+      recordCalendarMilestone,
     ],
   );
 
@@ -4236,19 +4702,6 @@ export default function GamePage() {
 
   const gameFeedbackOverlays = (
     <>
-      {gameNotices.length > 0 && (
-        <div className="pointer-events-none fixed right-4 top-4 z-[1900] flex max-w-sm flex-col gap-2">
-          {gameNotices.map((notice) => (
-            <div
-              key={notice.id}
-              className={`rounded-xl border px-4 py-3 text-sm shadow-lg backdrop-blur ${NOTICE_CLASS_BY_TONE[notice.tone]}`}
-            >
-              {notice.message}
-            </div>
-          ))}
-        </div>
-      )}
-
       {activeGameConfirm && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/70 p-4">
           <div className="w-full max-w-md rounded-2xl border-2 border-purple-700 bg-gray-900 p-5 shadow-2xl">
@@ -4495,7 +4948,28 @@ export default function GamePage() {
           )}
 
           {/* Main */}
-          <div className="space-y-6 min-w-0">
+          <div className="relative min-w-0 space-y-6">
+            {gameNotices.length > 0 && (
+              <div className="pointer-events-none absolute inset-x-0 top-1/2 z-[1900] flex -translate-y-1/2 justify-center px-4">
+                <div className="flex w-full max-w-lg flex-col gap-2">
+                  {gameNotices.map((notice) => (
+                    <div
+                      key={notice.id}
+                      className={`rounded-xl border px-4 py-3 text-center text-sm shadow-lg backdrop-blur transition-[opacity,transform,filter] duration-700 ease-out ${
+                        NOTICE_CLASS_BY_TONE[notice.tone]
+                      } ${
+                        notice.isLeaving
+                          ? "-translate-y-1 opacity-0 blur-[1px]"
+                          : "translate-y-0 opacity-100 blur-0"
+                      }`}
+                    >
+                      {notice.message}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {isMobile && (
               <div className="flex items-center gap-2 overflow-visible">
                 <IconHoverButton
@@ -4703,7 +5177,10 @@ export default function GamePage() {
           onLogout={handleLogout}
           isMobile={isMobile}
           dayOfWeek={dayOfWeek}
+          dayCount={dayCount}
           quests={questItems}
+          calendarPlannedDates={calendarPlannedDates}
+          calendarMilestones={calendarMilestones}
         />
       )}
 
@@ -5050,4 +5527,5 @@ export default function GamePage() {
     </div>
   );
 }
+
 

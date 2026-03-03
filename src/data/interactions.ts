@@ -41,10 +41,10 @@ export const interactionMenu: Interaction[] = [
   },
   {
     type: "Romance",
-    label: "Sext",
-    timeCost: 1,
-    statEffects: { mood: +2 },
-    girlEffects: { affection: +1, lust: +6 },
+    label: "Sex",
+    timeCost: 2,
+    statEffects: { mood: +4, energy: -15 },
+    girlEffects: { affection: +3, lust: +8, love: +2, mood: +2 },
   },
   {
     type: "Gift",

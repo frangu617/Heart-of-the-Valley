@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { PlayerStats, type GirlStats } from "../data/characters";
 import { DayOfWeek } from "../data/gameConstants";
 import {
@@ -118,6 +118,14 @@ export default function LocationActivitiesPanel({
     location === "Gym" && workoutActivityNames.has(activity.name);
   const isSleepActivity = (activity: Activity) =>
     location === "Bedroom" && sleepActivityNames.has(activity.name);
+  const isCafeToGoActivity = (activity: Activity) =>
+    location === "Cafe" && /\(to-go\)/i.test(activity.name);
+  const getCafeToGoInventoryItemId = (activity: Activity) => {
+    const normalizedName = activity.name
+      .replace(/\s*\(to-go\)\s*/i, "")
+      .trim();
+    return `Cafe To-Go: ${normalizedName}`;
+  };
 
   const isRubyUnlockActivity = (activity: Activity) => isWorkoutActivity(activity);
 
@@ -255,7 +263,9 @@ export default function LocationActivitiesPanel({
   }
 
   const doActivity = (act: Activity) => {
-    const isEatingActivity = activityReducesHunger(act);
+    const isCafeToGoPurchase = isCafeToGoActivity(act);
+    const isEatingActivity =
+      activityReducesHunger(act) && !isCafeToGoPurchase;
 
     const selectedTestingEnvironment =
       act.id ? testingEnvironmentByActivityId[act.id] : undefined;
@@ -292,7 +302,17 @@ export default function LocationActivitiesPanel({
 
     let next: PlayerStats;
 
-    if (typeof act.perform === "function") {
+    if (isCafeToGoPurchase) {
+      const moneyCost = act.statEffects?.money ?? 0;
+      next =
+        moneyCost !== 0
+          ? applyPlayerStatDelta(player, { money: moneyCost })
+          : player;
+      next = {
+        ...next,
+        inventory: [...next.inventory, getCafeToGoInventoryItemId(act)],
+      };
+    } else if (typeof act.perform === "function") {
       next = act.perform(player, { dayOfWeek });
     } else if (act.statEffects) {
       next = applyPlayerStatDelta(player, act.statEffects);
@@ -349,7 +369,9 @@ export default function LocationActivitiesPanel({
       }
     }
 
-    spendTime(act.timeCost ?? 1, next, {
+    const activityTimeCost = isCafeToGoPurchase ? 0 : (act.timeCost ?? 1);
+
+    spendTime(activityTimeCost, next, {
       skipHungerGain: isEatingActivity,
       hungerGainMultiplier: isSleepActivity(act) ? 0.25 : 1,
       scaleBasePlayerWithTime: isSleepActivity(act),
@@ -381,6 +403,13 @@ export default function LocationActivitiesPanel({
     if (location === "Car Store" && act.name === "Buy Car") {
       onSetFlag?.("hasCar");
       showGameNotice("You bought a car.", { tone: "success" });
+    }
+
+    if (isCafeToGoPurchase) {
+      showGameNotice(
+        `${getCafeToGoInventoryItemId(act).replace("Cafe To-Go: ", "")} added to your inventory.`,
+        { tone: "success" },
+      );
     }
 
     showActivityFeedback(act);
@@ -415,6 +444,17 @@ export default function LocationActivitiesPanel({
     }
   };
 
+  const isCafeMenu = location === "Cafe";
+  const cafeForHereActivities = isCafeMenu
+    ? activities.filter((activity) => !isCafeToGoActivity(activity))
+    : [];
+  const cafeToGoActivities = isCafeMenu
+    ? activities.filter((activity) => isCafeToGoActivity(activity))
+    : [];
+  const displayedActivities = isCafeMenu
+    ? [...cafeForHereActivities, ...cafeToGoActivities]
+    : activities;
+
   return (
     <div
       className={`rounded-2xl shadow-xl p-4 border-2 ${
@@ -428,11 +468,16 @@ export default function LocationActivitiesPanel({
           darkMode ? "text-purple-300" : "text-purple-800"
         }`}
       >
-        🎯 Activities
+        {isCafeMenu ? "Menu" : "Activities"}
       </h3>
+      {isCafeMenu && (
+        <p className={`text-xs mb-2 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+          (For Here) items consume time and apply now. (To-Go) purchases are instant and go to inventory.
+        </p>
+      )}
 
       <div className="grid grid-cols-1 gap-2">
-        {activities.map((act) => {
+        {displayedActivities.map((act, index) => {
           const selectedTestingEnvironment =
             act.id ? testingEnvironmentByActivityId[act.id] : undefined;
           const isTestingEnvironmentActivity =
@@ -449,90 +494,118 @@ export default function LocationActivitiesPanel({
           const showYumiIndicator =
             isYumiUnlockActivity(act) && !gameplayFlags?.has("hasMetYumi");
           const activityLabel = getActivityLabel(act);
+          const showForHereDivider = isCafeMenu && index === 0;
+          const showToGoDivider =
+            isCafeMenu &&
+            cafeToGoActivities.length > 0 &&
+            index === cafeForHereActivities.length;
+          const displayTimeCost = isCafeToGoActivity(act) ? 0 : act.timeCost;
 
           return (
-            <button
-              key={act.id ?? act.name}
-              onClick={() => doActivity(act)}
-              disabled={isDisabled}
-              className={`w-full text-left px-3 py-2 rounded-xl border transition ${
-                isDisabled
-                  ? "opacity-50 cursor-not-allowed"
-                  : darkMode
-                  ? "bg-gray-700 hover:bg-gray-600 border-purple-700 transform hover:scale-102"
-                  : "bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 border-purple-200 transform hover:scale-102"
-              }`}
-              title={act.desc ?? ""}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-semibold flex items-center gap-2">
-                  {showRubyIndicator && (
-                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-yellow-300 text-yellow-900 text-xs font-bold border border-yellow-500">
-                      ?
-                    </span>
-                  )}
-                  {showYumiIndicator && (
-                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-yellow-300 text-yellow-900 text-xs font-bold border border-yellow-500">
-                      ?
-                    </span>
-                  )}
-                  {isActiveTestingEnvironment && (
-                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-300 text-green-900 text-xs font-bold border border-green-500">
-                      ✓
-                    </span>
-                  )}
-                  {act.icon ? <span className="mr-2">{act.icon}</span> : null}
-                  {activityLabel}
-                </span>
-                <div className="flex items-center gap-2">
-                  {act.statEffects && (
-                    <div className="flex gap-1 text-xs">
-                      {act.statEffects.intelligence &&
-                        act.statEffects.intelligence > 0 && (
-                          <span className="text-blue-500">
-                            🧠+{act.statEffects.intelligence}
-                          </span>
-                        )}
-                      {act.statEffects.fitness &&
-                        act.statEffects.fitness > 0 && (
-                          <span className="text-green-500">
-                            🏋️+{act.statEffects.fitness}
-                          </span>
-                        )}
-                      {act.statEffects.style &&
-                        act.statEffects.style > 0 && (
+            <Fragment key={`${act.id ?? act.name}_${index}`}>
+              {showForHereDivider && (
+                <div
+                  className={`px-2 py-1 rounded-md border text-xs font-semibold ${
+                    darkMode
+                      ? "bg-gray-700 border-gray-600 text-gray-200"
+                      : "bg-purple-50 border-purple-200 text-purple-700"
+                  }`}
+                >
+                  For Here
+                </div>
+              )}
+              {showToGoDivider && (
+                <div
+                  className={`mt-1 px-2 py-1 rounded-md border text-xs font-semibold ${
+                    darkMode
+                      ? "bg-gray-700 border-gray-600 text-gray-200"
+                      : "bg-purple-50 border-purple-200 text-purple-700"
+                  }`}
+                >
+                  To-Go
+                </div>
+              )}
+              <button
+                onClick={() => doActivity(act)}
+                disabled={isDisabled}
+                className={`w-full text-left px-3 py-2 rounded-xl border transition ${
+                  isDisabled
+                    ? "opacity-50 cursor-not-allowed"
+                    : darkMode
+                    ? "bg-gray-700 hover:bg-gray-600 border-purple-700 transform hover:scale-102"
+                    : "bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 border-purple-200 transform hover:scale-102"
+                }`}
+                title={act.desc ?? ""}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold flex items-center gap-2">
+                    {showRubyIndicator && (
+                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-yellow-300 text-yellow-900 text-xs font-bold border border-yellow-500">
+                        ?
+                      </span>
+                    )}
+                    {showYumiIndicator && (
+                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-yellow-300 text-yellow-900 text-xs font-bold border border-yellow-500">
+                        ?
+                      </span>
+                    )}
+                    {isActiveTestingEnvironment && (
+                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-300 text-green-900 text-xs font-bold border border-green-500">
+                        ✓
+                      </span>
+                    )}
+                    {act.icon ? <span className="mr-2">{act.icon}</span> : null}
+                    {activityLabel}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    {act.statEffects && (
+                      <div className="flex gap-1 text-xs">
+                        {act.statEffects.intelligence &&
+                          act.statEffects.intelligence > 0 && (
+                            <span className="text-blue-500">
+                              🧠+{act.statEffects.intelligence}
+                            </span>
+                          )}
+                        {act.statEffects.fitness &&
+                          act.statEffects.fitness > 0 && (
+                            <span className="text-green-500">
+                              🏋️+{act.statEffects.fitness}
+                            </span>
+                          )}
+                        {act.statEffects.style && act.statEffects.style > 0 && (
                           <span className="text-pink-500">
                             💅+{act.statEffects.style}
                           </span>
                         )}
-                      {act.statEffects.money &&
-                        act.statEffects.money > 0 && (
+                        {act.statEffects.money && act.statEffects.money > 0 && (
                           <span className="text-yellow-600">
                             💰+${act.statEffects.money}
                           </span>
                         )}
-                      {act.statEffects.money &&
-                        act.statEffects.money < 0 && (
+                        {act.statEffects.money && act.statEffects.money < 0 && (
                           <span className="text-red-500">
                             💸${Math.abs(act.statEffects.money)}
                           </span>
                         )}
-                    </div>
-                  )}
-                  {act.timeCost ? (
-                    <span className="text-xs opacity-70">{act.timeCost}h</span>
-                  ) : null}
+                      </div>
+                    )}
+                    {displayTimeCost && displayTimeCost > 0 ? (
+                      <span className="text-xs opacity-70">{displayTimeCost}h</span>
+                    ) : isCafeToGoActivity(act) ? (
+                      <span className="text-xs opacity-70">Instant</span>
+                    ) : null}
+                  </div>
                 </div>
-              </div>
-              {act.desc && (
-                <div className="text-xs opacity-70 mt-0.5">{act.desc}</div>
-              )}
-              {isDisabled && (
-                <div className="text-xs text-red-500 mt-1">
-                  {failures.map((failure) => failure.inline).join(" ")}
-                </div>
-              )}
-            </button>
+                {act.desc && (
+                  <div className="text-xs opacity-70 mt-0.5">{act.desc}</div>
+                )}
+                {isDisabled && (
+                  <div className="text-xs text-red-500 mt-1">
+                    {failures.map((failure) => failure.inline).join(" ")}
+                  </div>
+                )}
+              </button>
+            </Fragment>
           );
         })}
       </div>

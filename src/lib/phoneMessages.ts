@@ -272,9 +272,8 @@ export const shouldUnlockMessageImage = (
   action: PhoneMessageAction,
   chapter: number,
 ) => {
-  if (action === "flirt") return chapter >= 2;
-  if (action === "sext") return chapter >= 2;
-  return false;
+  void chapter;
+  return action === "sext";
 };
 
 export const buildMessageGalleryUnlock = (
@@ -316,4 +315,3 @@ export const buildMessageGalleryUnlock = (
     action,
   };
 };
-

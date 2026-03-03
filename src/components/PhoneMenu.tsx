@@ -12,6 +12,11 @@ import type {
   PhoneMessage,
   PhoneMessageAction,
 } from "@/lib/phoneMessages";
+import type {
+  CalendarDateEntry,
+  CalendarMilestoneEntry,
+} from "@/lib/calendar";
+import { getMilestoneLabel } from "@/lib/calendar";
 
 type QuestItem = {
   id: string;
@@ -39,22 +44,91 @@ interface Props {
   onLogout?: () => void;
   isMobile?: boolean;
   dayOfWeek?: DayOfWeek;
+  dayCount?: number;
   quests?: QuestItem[];
+  calendarPlannedDates?: CalendarDateEntry[];
+  calendarMilestones?: CalendarMilestoneEntry[];
 }
 
 type PhoneTab =
+  | "home"
   | "stats"
   | "inventory"
   | "contacts"
   | "gallery"
   | "messages"
-  | "todo";
+  | "todo"
+  | "calendar";
 
 const MESSAGE_ACTION_ORDER: PhoneMessageAction[] = [
   "chat",
   "flirt",
   "sext",
   "date",
+];
+type AppTab = Exclude<PhoneTab, "home">;
+
+type HomeScreenApp = {
+  tab: AppTab;
+  label: string;
+  icon: string;
+  accentClass: string;
+};
+
+const PHONE_TAB_TITLES: Record<PhoneTab, string> = {
+  home: "Home",
+  stats: "Stats",
+  todo: "To-Do",
+  calendar: "Calendar",
+  inventory: "Items",
+  contacts: "Contacts",
+  gallery: "Gallery",
+  messages: "Messages",
+};
+
+const HOME_SCREEN_APPS: HomeScreenApp[] = [
+  {
+    tab: "messages",
+    label: "Messages",
+    icon: "💬",
+    accentClass: "from-green-400 to-emerald-600",
+  },
+  {
+    tab: "contacts",
+    label: "Contacts",
+    icon: "👥",
+    accentClass: "from-blue-400 to-cyan-600",
+  },
+  {
+    tab: "gallery",
+    label: "Gallery",
+    icon: "📷",
+    accentClass: "from-pink-400 to-rose-600",
+  },
+  {
+    tab: "stats",
+    label: "Stats",
+    icon: "📊",
+    accentClass: "from-purple-400 to-indigo-600",
+  },
+  {
+    tab: "inventory",
+    label: "Items",
+    icon: "🎒",
+    accentClass: "from-amber-400 to-orange-600",
+  },
+  {
+    tab: "todo",
+    label: "To-Do",
+    icon: "💡",
+    accentClass: "from-violet-400 to-fuchsia-600",
+  },
+  {
+    tab: "calendar",
+    label: "Calendar",
+    icon: "CAL",
+    accentClass: "from-cyan-400 to-blue-600",
+  },
 ];
 
 type InventoryEntry = {
@@ -63,6 +137,38 @@ type InventoryEntry = {
   count: number;
   description: string;
   details: string;
+};
+
+type CalendarTimelineEntry = {
+  id: string;
+  dayCount: number;
+  dayOfWeek: DayOfWeek;
+  hour: number;
+  title: string;
+  detail: string;
+  kind: "date" | "milestone";
+};
+
+const formatClockHour = (value: number) => {
+  if (value === 0) return "12:00 AM";
+  if (value === 12) return "12:00 PM";
+  if (value > 12) return `${value - 12}:00 PM`;
+  return `${value}:00 AM`;
+};
+
+const getRelativeDayLabel = (currentDayCount: number, targetDayCount: number) => {
+  const offset = targetDayCount - currentDayCount;
+  if (offset === 0) return "Today";
+  if (offset === 1) return "Tomorrow";
+  if (offset > 1) return `In ${offset} days`;
+  if (offset === -1) return "Yesterday";
+  return `${Math.abs(offset)} days ago`;
+};
+
+const SOURCE_LABEL_BY_DATE_ENTRY_SOURCE: Record<CalendarDateEntry["source"], string> = {
+  player: "Player planned",
+  npc: "She asked",
+  story: "Story event",
 };
 
 type StatBarProps = {
@@ -168,9 +274,12 @@ export default function PhoneMenu({
   onLogout,
   isMobile = false,
   dayOfWeek,
+  dayCount = 0,
   quests = [],
+  calendarPlannedDates = [],
+  calendarMilestones = [],
 }: Props) {
-  const [activeTab, setActiveTab] = useState<PhoneTab>("stats");
+  const [activeTab, setActiveTab] = useState<PhoneTab>("home");
   const [activeMessageContact, setActiveMessageContact] = useState<string>("");
   const [isClosing, setIsClosing] = useState(false);
   const closeDelayMs = 200;
@@ -257,50 +366,166 @@ export default function PhoneMenu({
   const activeThread = activeMessageContact
     ? messagesByCharacter[activeMessageContact] ?? []
     : [];
+  const calendarTimelineEntries = useMemo<CalendarTimelineEntry[]>(() => {
+    const dateEntries: CalendarTimelineEntry[] = calendarPlannedDates.map((entry) => ({
+      id: `date_${entry.id}`,
+      dayCount: entry.dayCount,
+      dayOfWeek: entry.dayOfWeek,
+      hour: entry.hour,
+      title: `${entry.characterName} - ${entry.location}`,
+      detail: `${SOURCE_LABEL_BY_DATE_ENTRY_SOURCE[entry.source]} - ${entry.label}`,
+      kind: "date",
+    }));
+    const milestoneEntries: CalendarTimelineEntry[] = calendarMilestones.map(
+      (entry) => ({
+        id: `milestone_${entry.id}`,
+        dayCount: entry.dayCount,
+        dayOfWeek: entry.dayOfWeek,
+        hour: entry.hour,
+        title: `${entry.characterName} - ${getMilestoneLabel(entry.type)}`,
+        detail: entry.note,
+        kind: "milestone",
+      }),
+    );
+
+    return [...dateEntries, ...milestoneEntries].sort((left, right) => {
+      if (left.dayCount !== right.dayCount) return left.dayCount - right.dayCount;
+      if (left.hour !== right.hour) return left.hour - right.hour;
+      return left.title.localeCompare(right.title);
+    });
+  }, [calendarMilestones, calendarPlannedDates]);
+  const activeTabTitle = PHONE_TAB_TITLES[activeTab];
+
+  const openTab = (tab: AppTab) => setActiveTab(tab);
+  const goBack = () => setActiveTab("home");
+  const pressHomeButton = () => {
+    if (activeTab === "home") {
+      handleClose();
+      return;
+    }
+    setActiveTab("home");
+  };
 
   return (
     <div
-      className={`fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 ${
+      className={`fixed inset-0 z-[2100] flex ${
+        isMobile
+          ? "items-stretch justify-stretch bg-black p-0"
+          : "items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      } ${
         isClosing ? "animate-fadeOut" : "animate-fadeIn"
       }`}
     >
       {/* Phone Frame */}
       <div
         className={`
-        ${isMobile ? "w-full h-full" : "w-96 h-[700px]"}
-        ${darkMode ? "bg-gray-900" : "bg-white"}
-        rounded-3xl shadow-2xl overflow-hidden flex flex-col
-        ${!isMobile && "border-8 border-gray-800"}
+        ${isMobile ? "h-full w-full rounded-none shadow-none" : "h-[720px] w-96 rounded-[2.25rem] shadow-2xl border-8 border-black"}
+        ${darkMode ? "bg-gray-950" : "bg-gray-100"}
+        ${isMobile ? "pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]" : ""}
+        relative overflow-hidden flex flex-col
         ${isClosing ? "animate-slideDown" : "animate-slideUp"}
       `}
       >
-        {/* Phone Header */}
-        <div
-          className={`
-          ${
-            darkMode
-              ? "bg-gradient-to-r from-purple-900 to-pink-900"
-              : "bg-gradient-to-r from-purple-500 to-pink-500"
-          }
-          text-white p-4 flex items-center justify-between
-        `}
-        >
-          <div>
-            <h2 className="text-xl font-bold">My Phone</h2>
-            <p className="text-xs opacity-90">
-              {dayOfWeek || "Monday"} - {hour}:00 {timeOfDayLabel}
-            </p>
-          </div>
-          <button
-            onClick={handleClose}
-            className="bg-white/20 hover:bg-white/30 rounded-full w-10 h-10 flex items-center justify-center transition-all"
-          >
-            ✕
-          </button>
-        </div>
+        {!isMobile && (
+          <div className="pointer-events-none absolute left-1/2 top-2 z-20 h-4 w-24 -translate-x-1/2 rounded-full bg-black/90" />
+        )}
 
-        {/* Phone Content */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div
+          className={`relative flex-1 min-h-0 flex flex-col ${
+            darkMode
+              ? "bg-gradient-to-b from-slate-800 via-slate-900 to-black"
+              : "bg-gradient-to-b from-sky-200 via-indigo-100 to-rose-100"
+          }`}
+        >
+          {/* Phone Header */}
+          <div className="px-4 pt-4 pb-3 shrink-0 text-white">
+            <div className="flex items-center justify-between text-[11px] font-medium tracking-wide">
+              <span>
+                {dayOfWeek || "Monday"} {hour}:00 {timeOfDayLabel}
+              </span>
+              <div className="flex items-center gap-1">
+                <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                <span className="h-2 w-2 rounded-full bg-emerald-400/80" />
+                <span className="h-2 w-4 rounded-sm border border-white/80" />
+              </div>
+            </div>
+
+            <div className="mt-3 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={goBack}
+                disabled={activeTab === "home"}
+                className={`h-9 w-9 rounded-full text-lg font-bold transition ${
+                  activeTab === "home"
+                    ? "cursor-default opacity-0"
+                    : "bg-white/15 hover:bg-white/25"
+                }`}
+                aria-label="Back"
+              >
+                {"<"}
+              </button>
+
+              <div className="text-center">
+                <h2 className="text-lg font-bold leading-tight">My Phone</h2>
+                <p className="text-xs uppercase tracking-[0.22em] text-white/75">
+                  {activeTabTitle}
+                </p>
+              </div>
+
+              <div className="h-9 w-9" />
+            </div>
+          </div>
+
+          {/* Phone Content */}
+          <div
+            className={`mx-4 mb-3 flex-1 min-h-0 overflow-y-auto overflow-x-hidden rounded-2xl border p-4 ${
+              darkMode
+                ? "border-white/10 bg-black/35 text-gray-100"
+                : "border-white/60 bg-white/70 text-gray-900"
+            }`}
+          >
+            {activeTab === "home" && (
+              <div className="animate-slideUp space-y-5">
+                <div
+                  className={`rounded-2xl border px-4 py-3 ${
+                    darkMode
+                      ? "border-white/15 bg-white/5"
+                      : "border-indigo-200 bg-white/80"
+                  }`}
+                >
+                  <div className="text-xs uppercase tracking-[0.18em] opacity-70">
+                    Welcome
+                  </div>
+                  <div className="mt-1 text-sm font-semibold">
+                    Tap an app icon to open it.
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  {HOME_SCREEN_APPS.map((app) => (
+                    <button
+                      key={app.tab}
+                      type="button"
+                      onClick={() => openTab(app.tab)}
+                      className="flex flex-col items-center gap-2 text-center transition hover:scale-105"
+                    >
+                      <span
+                        className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br text-2xl shadow-lg ${app.accentClass}`}
+                      >
+                        {app.icon}
+                      </span>
+                      <span
+                        className={`text-xs font-medium ${
+                          darkMode ? "text-gray-200" : "text-gray-800"
+                        }`}
+                      >
+                        {app.label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           {/* Stats Tab */}
           {activeTab === "stats" && (
             <div className="space-y-4 animate-slideUp">
@@ -481,6 +706,91 @@ export default function PhoneMenu({
             </div>
           )}
 
+          {/* Calendar Tab */}
+          {activeTab === "calendar" && (
+            <div className="space-y-4 animate-slideUp">
+              <h3
+                className={`text-lg font-bold ${
+                  darkMode ? "text-gray-200" : "text-gray-800"
+                }`}
+              >
+                Calendar
+              </h3>
+              <p
+                className={`text-sm ${
+                  darkMode ? "text-gray-400" : "text-gray-600"
+                }`}
+              >
+                Planned dates and relationship milestones.
+              </p>
+
+              {calendarTimelineEntries.length === 0 ? (
+                <div
+                  className={`rounded-xl border-2 p-4 text-sm ${
+                    darkMode
+                      ? "border-gray-700 bg-gray-800 text-gray-400"
+                      : "border-gray-200 bg-gray-50 text-gray-600"
+                  }`}
+                >
+                  Nothing scheduled yet.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {calendarTimelineEntries.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className={`rounded-xl border-2 p-3 ${
+                        darkMode
+                          ? "border-purple-700 bg-gray-800"
+                          : "border-purple-200 bg-white"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div
+                            className={`text-sm font-semibold ${
+                              darkMode ? "text-gray-200" : "text-gray-800"
+                            }`}
+                          >
+                            {entry.title}
+                          </div>
+                          <div
+                            className={`text-xs ${
+                              darkMode ? "text-gray-400" : "text-gray-600"
+                            }`}
+                          >
+                            {entry.detail}
+                          </div>
+                        </div>
+                        <span
+                          className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wide ${
+                            entry.kind === "date"
+                              ? darkMode
+                                ? "bg-cyan-900 text-cyan-200"
+                                : "bg-cyan-100 text-cyan-700"
+                              : darkMode
+                                ? "bg-purple-900 text-purple-200"
+                                : "bg-purple-100 text-purple-700"
+                          }`}
+                        >
+                          {entry.kind === "date" ? "Date" : "Milestone"}
+                        </span>
+                      </div>
+                      <div
+                        className={`mt-2 text-xs ${
+                          darkMode ? "text-gray-300" : "text-gray-700"
+                        }`}
+                      >
+                        {getRelativeDayLabel(dayCount, entry.dayCount)} -{" "}
+                        {entry.dayOfWeek} {formatClockHour(entry.hour)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Inventory Tab */}
           {activeTab === "inventory" && (
             <div className="space-y-4 animate-slideUp">
@@ -568,7 +878,7 @@ export default function PhoneMenu({
 
           {/* Contacts Tab */}
           {activeTab === "contacts" && (
-            <div className="space-y-3 animate-slideUp">
+            <div className="space-y-3 animate-slideUp pb-2">
               <h3
                 className={`text-lg font-bold mb-4 ${
                   darkMode ? "text-gray-200" : "text-gray-800"
@@ -586,13 +896,14 @@ export default function PhoneMenu({
                 return (
                 <div
                   key={girl.name}
-                  className={`
+                    className={`
                     rounded-xl p-4 border-2 transition-all
                     ${
                       darkMode
                         ? "bg-gray-800 border-purple-700 hover:border-purple-500"
                         : "bg-gradient-to-r from-pink-50 to-purple-50 border-purple-200 hover:border-purple-400"
                     }
+                    overflow-hidden
                   `}
                 >
                   <div className="flex items-center gap-3 mb-3">
@@ -703,7 +1014,7 @@ export default function PhoneMenu({
 
           {/* Gallery Tab */}
                     {activeTab === "gallery" && (
-            <div className="animate-slideUp">
+            <div className="animate-slideUp pb-2">
               <h3
                 className={`text-lg font-bold mb-4 ${
                   darkMode ? "text-gray-200" : "text-gray-800"
@@ -905,131 +1216,28 @@ export default function PhoneMenu({
           )}
         </div>
 
-        {/* Phone Navigation */}
-        <div
-          className={`
-          ${
-            darkMode
-              ? "bg-gray-800 border-gray-700"
-              : "bg-gray-100 border-gray-300"
-          }
-          border-t-2 p-2 flex justify-around
-        `}
-        >
-          <button
-            onClick={() => setActiveTab("stats")}
-            className={`
-              flex-1 py-3 px-1 rounded-lg transition-all
-              ${
-                activeTab === "stats"
-                  ? darkMode
-                    ? "bg-purple-700 text-white"
-                    : "bg-purple-500 text-white"
-                  : darkMode
-                  ? "text-gray-400 hover:bg-gray-700"
-                  : "text-gray-600 hover:bg-gray-200"
-              }
-            `}
+          {/* Phone Home Button */}
+          <div
+            className={`mx-4 mb-4 shrink-0 rounded-2xl border p-3 flex items-center justify-center ${
+              darkMode
+                ? "border-white/10 bg-black/35"
+                : "border-white/60 bg-white/70"
+            }`}
           >
-            <div className="text-xl">📊</div>
-            <div className="text-[10px]">Stats</div>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("todo")}
-            className={`
-              flex-1 py-3 px-1 rounded-lg transition-all
-              ${
-                activeTab === "todo"
-                  ? darkMode
-                    ? "bg-purple-700 text-white"
-                    : "bg-purple-500 text-white"
-                  : darkMode
-                  ? "text-gray-400 hover:bg-gray-700"
-                  : "text-gray-600 hover:bg-gray-200"
-              }
-            `}
-          >
-            <div className="text-xl">💡</div>
-            <div className="text-[10px]">To-Do</div>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("inventory")}
-            className={`
-              flex-1 py-3 px-1 rounded-lg transition-all
-              ${
-                activeTab === "inventory"
-                  ? darkMode
-                    ? "bg-purple-700 text-white"
-                    : "bg-purple-500 text-white"
-                  : darkMode
-                  ? "text-gray-400 hover:bg-gray-700"
-                  : "text-gray-600 hover:bg-gray-200"
-              }
-            `}
-          >
-            <div className="text-xl">🎒</div>
-            <div className="text-[10px]">Items</div>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("contacts")}
-            className={`
-              flex-1 py-3 px-1 rounded-lg transition-all
-              ${
-                activeTab === "contacts"
-                  ? darkMode
-                    ? "bg-purple-700 text-white"
-                    : "bg-purple-500 text-white"
-                  : darkMode
-                  ? "text-gray-400 hover:bg-gray-700"
-                  : "text-gray-600 hover:bg-gray-200"
-              }
-            `}
-          >
-            <div className="text-xl">👥</div>
-            <div className="text-[10px]">Contacts</div>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("gallery")}
-            className={`
-              flex-1 py-3 px-1 rounded-lg transition-all
-              ${
-                activeTab === "gallery"
-                  ? darkMode
-                    ? "bg-purple-700 text-white"
-                    : "bg-purple-500 text-white"
-                  : darkMode
-                  ? "text-gray-400 hover:bg-gray-700"
-                  : "text-gray-600 hover:bg-gray-200"
-              }
-            `}
-          >
-            <div className="text-xl">📷</div>
-            <div className="text-[10px]">Gallery</div>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("messages")}
-            className={`
-              flex-1 py-3 px-1 rounded-lg transition-all
-              ${
-                activeTab === "messages"
-                  ? darkMode
-                    ? "bg-purple-700 text-white"
-                    : "bg-purple-500 text-white"
-                  : darkMode
-                  ? "text-gray-400 hover:bg-gray-700"
-                  : "text-gray-600 hover:bg-gray-200"
-              }
-            `}
-          >
-            <div className="text-xl">💬</div>
-            <div className="text-[10px]">Messages</div>
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={pressHomeButton}
+              className={`flex h-10 w-24 items-center justify-center rounded-full border transition ${
+                darkMode
+                  ? "border-white/40 bg-white/10 hover:bg-white/20"
+                  : "border-gray-400 bg-gray-100 hover:bg-gray-200"
+              }`}
+              aria-label={activeTab === "home" ? "Close phone" : "Return to phone home"}
+            >
+              <span className="h-1.5 w-12 rounded-full bg-current opacity-70" />
+            </button>
+          </div>
+      </div>
       </div>
     </div>
   );
