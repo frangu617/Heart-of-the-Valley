@@ -1,5 +1,6 @@
 import { Girl } from "@/data/characters";
 import { getTimeOfDay, type TimeOfDay } from "./time";
+import imageManifest from "../../public/image-manifest.json";
 
 // Character image helpers
 
@@ -20,6 +21,78 @@ const EXPRESSION_ASSET_ALIASES: Record<string, string> = {
   intimate: "seductive",
   confident: "flirty",
   kissingmc: "kissingMC",
+};
+
+type ImageManifest = {
+  images?: string[];
+};
+
+const CHARACTER_IMAGE_EXTENSIONS = ["webp", "png", "jpg", "jpeg"] as const;
+const CHARACTER_CATEGORY_FALLBACK_ORDER: LocationCategory[] = [
+  "casual",
+  "home",
+  "university",
+  "gym",
+  "date",
+  "work",
+  "nun",
+  "beach",
+  "city",
+];
+const EXPRESSION_FALLBACKS: Record<string, string[]> = {
+  flirty: ["flirty", "cuteFlirt", "happy", "shy", "neutral", "excited"],
+  seductive: ["seductive", "flirty", "cuteFlirt", "happy", "neutral"],
+  shy: ["shy", "neutral", "happy", "flirty"],
+  angry: ["angry", "annoyed", "neutral"],
+  annoyed: ["annoyed", "angry", "neutral"],
+  sad: ["sad", "neutral", "happy"],
+  excited: ["excited", "happy", "neutral"],
+  kissingmc: ["kissingMC", "kissMC", "seductive", "happy", "neutral"],
+};
+const AVAILABLE_CHARACTER_IMAGE_PATHS = new Set(
+  (((imageManifest as ImageManifest).images ?? []) as string[]).filter(
+    (path): path is string =>
+      typeof path === "string" && path.startsWith("/images/characters/"),
+  ),
+);
+
+const unique = <T>(values: T[]) => Array.from(new Set(values));
+
+const getExpressionCandidates = (expression: string): string[] => {
+  const normalized = expression.toLowerCase();
+  const preferred = EXPRESSION_FALLBACKS[normalized];
+  if (!preferred) {
+    return unique([expression, "neutral", "happy"]);
+  }
+  return unique([expression, ...preferred, "neutral", "happy"]);
+};
+
+const getCategoryCandidates = (primaryCategory: LocationCategory): LocationCategory[] => {
+  const categories = [primaryCategory];
+  if (primaryCategory !== "casual") {
+    categories.push("casual");
+  }
+  CHARACTER_CATEGORY_FALLBACK_ORDER.forEach((category) => {
+    if (!categories.includes(category)) {
+      categories.push(category);
+    }
+  });
+  return categories;
+};
+
+const resolveCharacterImagePath = (
+  girlName: string,
+  category: LocationCategory,
+  expression: string,
+): string | null => {
+  const basePath = `/images/characters/${girlName}/${category}/${expression}`;
+  for (const extension of CHARACTER_IMAGE_EXTENSIONS) {
+    const candidatePath = `${basePath}.${extension}`;
+    if (AVAILABLE_CHARACTER_IMAGE_PATHS.has(candidatePath)) {
+      return candidatePath;
+    }
+  }
+  return null;
 };
 
 export const resolveExpressionAssetName = (expression: string) =>
@@ -102,8 +175,23 @@ export function getCharacterImage(
     }
   }
 
-  const specificImage = `/images/characters/${girlName}/${category}/${stanceAsset}.webp`;
-  return specificImage;
+  const expressionCandidates = getExpressionCandidates(stanceAsset);
+  const categoryCandidates = getCategoryCandidates(category);
+
+  for (const categoryCandidate of categoryCandidates) {
+    for (const expressionCandidate of expressionCandidates) {
+      const resolvedImagePath = resolveCharacterImagePath(
+        girlName,
+        categoryCandidate,
+        expressionCandidate,
+      );
+      if (resolvedImagePath) {
+        return resolvedImagePath;
+      }
+    }
+  }
+
+  return `/images/characters/${girlName}/${category}/${stanceAsset}.webp`;
 }
 
 // Get outfit description for image naming reference
