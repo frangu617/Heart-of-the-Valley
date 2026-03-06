@@ -471,6 +471,8 @@ export default function DialogueBox({
       setDisplayedText(currentLine.text ?? "");
       setIsTyping(false);
       setShowContinue(!currentLine.choices);
+    } else if (currentLine.nextDialogueId && onNextDialogueId) {
+      onNextDialogueId(currentLine.nextDialogueId);
     } else if (isLastLine) {
       console.log("🎬 DialogueBox: Completing dialogue");
       console.log("📦 Chosen option from ref:", chosenOptionRef.current);
@@ -478,7 +480,7 @@ export default function DialogueBox({
     } else {
       setCurrentLineIndex((i) => i + 1);
     }
-  }, [isTyping, isLastLine, currentLine, onComplete, accumulatedStatChanges, isClosing]);
+  }, [isTyping, isLastLine, currentLine, onComplete, accumulatedStatChanges, isClosing, onNextDialogueId]);
 
   // Reset chosen option when dialogue changes
   useEffect(() => {
@@ -934,7 +936,7 @@ export default function DialogueBox({
                   className={`absolute bottom-0 left-0 right-0 bg-gradient-to-r ${activeTheme.portraitLabel} py-3 px-4`}
                 >
                   <h3 className="text-white text-xl font-bold text-center drop-shadow-lg">
-                    {characterName}
+                    {speakerLabel}
                   </h3>
                 </div>
               )}

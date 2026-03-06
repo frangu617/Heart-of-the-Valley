@@ -3643,12 +3643,16 @@ export default function GamePage() {
     }
 
     // Start the dialogue
-    const randomSpeaker = randomEvents.find((e) => e.id === id)?.characterName;
+    let dialogueSpeakerName = randomEvents.find((e) => e.id === id)?.characterName;
+    if (id === "iris_c3_ev2_dawn_callout_reveal") {
+      characterImage = "/images/characters/dawn/date/neutral.webp";
+      dialogueSpeakerName = "Dawn";
+    }
     startDialogue(
-      foundDialogue,
+      injectDawnIntelLines(foundDialogue, gameplayFlags),
       characterImage,
       null,
-      randomSpeaker,
+      dialogueSpeakerName,
       dialogueImageLocationOverride,
     );
   };

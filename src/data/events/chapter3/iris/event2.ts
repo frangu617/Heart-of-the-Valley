@@ -22,10 +22,17 @@ const iris_c3_ev2_dawn_callout: Dialogue = {
     },
     {
       speaker: null,
-      text: "Iris squeezes your wrist once and disappears into the classroom corridor.",
+      text: "Iris squeezes your wrist once and disappears into the classroom corridor. Before you can move, a calm voice behind you says one word.",
+      nextDialogueId: "iris_c3_ev2_dawn_callout_reveal",
     },
+  ],
+};
+
+const iris_c3_ev2_dawn_callout_reveal: Dialogue = {
+  id: "iris_c3_ev2_dawn_callout_reveal",
+  lines: [
     {
-      speaker: "???",
+      speaker: "????",
       text: "Professor.",
       expression: "neutral",
     },
@@ -35,12 +42,12 @@ const iris_c3_ev2_dawn_callout: Dialogue = {
       imageSlide: "/images/characters/dawn/date/neutral.webp",
     },
     {
-      speaker: "???",
+      speaker: "????",
       text: "You have been busy.",
       expression: "smug",
     },
     {
-      speaker: "???",
+      speaker: "????",
       text: "__DAWN_INTEL_LINES__",
     },
     {
@@ -48,7 +55,7 @@ const iris_c3_ev2_dawn_callout: Dialogue = {
       text: "Who are you?",
     },
     {
-      speaker: "???",
+      speaker: "????",
       text: "You will have my number when you earn it.",
       expression: "smug",
     },
@@ -64,21 +71,21 @@ const iris_c3_ev2_dawn_callout_fallback: Dialogue = {
   id: "iris_c3_ev2_dawn_callout_fallback",
   lines: [
     {
-      speaker: "???",
+      speaker: "????",
       text: "Three days. No movement. No decision. Impressive avoidance, Professor.",
       expression: "annoyed",
     },
     {
-      speaker: "???",
+      speaker: "????",
       text: "__DAWN_INTEL_LINES__",
     },
     {
-      speaker: "???",
+      speaker: "????",
       text: "You stalled long enough. Tonight. 23:00. Velvet.",
       expression: "angry",
     },
     {
-      speaker: "???",
+      speaker: "????",
       text: "Do not make me repeat myself.",
       expression: "neutral",
     },
@@ -125,6 +132,7 @@ export const iris_c3_ev2_dawn_summon_call: Dialogue = {
 
 export const irisEvent2Dialogues: Record<string, Dialogue> = {
   iris_c3_ev2_dawn_callout,
+  iris_c3_ev2_dawn_callout_reveal,
   iris_c3_ev2_dawn_callout_fallback,
   iris_c3_ev2_dawn_summon_call,
 };
