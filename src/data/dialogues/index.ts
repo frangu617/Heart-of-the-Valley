@@ -70,6 +70,7 @@ import { irisStoryDialogues as irisStoryDialoguesCh1 } from "../events/chapter1/
 import { irisStoryDialogues as irisStoryDialoguesCh2 } from "../events/chapter2/iris";
 import { irisStoryDialogues as irisStoryDialoguesCh3 } from "../events/chapter3/iris";
 import { dawnDialogues } from "./dawn";
+import { dawnStoryDialogues as dawnStoryDialoguesCh1 } from "../events/chapter1/dawn";
 import { gwenDialogues } from "./gwen";
 import { gwenStoryDialogues } from "../events/chapter1/gwen";
 import { yumiDialogues } from "./yumi";
@@ -101,7 +102,7 @@ export const characterDialogues: Record<string, Record<string, Dialogue>> = {
     ...irisStoryDialoguesCh2,
     ...irisStoryDialoguesCh3,
   },
-  Dawn: dawnDialogues,
+  Dawn: { ...dawnDialogues, ...dawnStoryDialoguesCh1 },
   Gwen: { ...gwenDialogues, ...gwenStoryDialogues },
   Yumi: { ...yumiDialogues, ...yumiStoryDialogues, ...yumiStoryDialoguesCh2 },
   Ruby: { ...rubyDialogues, ...rubyStoryDialogues },

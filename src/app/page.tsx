@@ -61,6 +61,7 @@ import {
 import { startImageManifestPreload } from "@/lib/imagePreload";
 import { injectDawnIntelLines } from "@/lib/dawnMystery";
 import { iris_c3_ev2_dawn_summon_call } from "@/data/events/chapter3/iris/event2";
+import { dawn_ch1_ev1_text_dialogue } from "@/data/events/chapter1/dawn/event1";
 
 // Data / Types
 
@@ -201,6 +202,11 @@ type EventDebugReport = {
   targetLocation: string;
   reasons: string[];
   isReady: boolean;
+};
+
+type ManualEventTriggerOptions = {
+  ignoreConditions?: boolean;
+  showNotice?: boolean;
 };
 
 type GameState = "mainMenu" | "nameInput" | "intro" | "playing" | "paused" | "dialogue";
@@ -824,6 +830,7 @@ export default function GamePage() {
   const irisKissOthersPromptedRef = useRef(false);
   const dawnFallbackAutoTriggeredRef = useRef(false);
   const dawnSummonAutoTriggeredRef = useRef(false);
+  const dawnCh1Ev1AutoTriggeredRef = useRef(false);
   const npcDateInviteProcessedDayRef = useRef<number | null>(null);
   const pendingAutoSaveRef = useRef(false);
   const imagePreloadStartedRef = useRef(false);
@@ -1139,6 +1146,41 @@ export default function GamePage() {
     [dayCount, dayOfWeek, getDawnSummonTargetGameTime, hour],
   );
 
+  const getDawnCh1Ev1TargetGameTime = useCallback((): number | null => {
+    if (
+      !gameplayFlags.has("dawnSummonTriggered") ||
+      gameplayFlags.has("dawnCh1Ev1_Done")
+    ) {
+      return null;
+    }
+
+    const calloutTime = getIrisEventGameTime("iris_c3_ev2_dawn_callout");
+    if (calloutTime === null) return null;
+
+    const calloutDay = Math.floor(calloutTime / 24);
+    const targetDay = calloutDay + 2;
+    return targetDay * 24 + 23;
+  }, [gameplayFlags, getIrisEventGameTime]);
+
+  const getHoursUntilDawnCh1Ev1 = useCallback(
+    (requestedHours: number): number | null => {
+      if (requestedHours <= 0) return null;
+
+      const targetGameTime = getDawnCh1Ev1TargetGameTime();
+      if (targetGameTime === null) return null;
+
+      const currentGameTime = calculateGameTime(dayOfWeek, hour, dayCount);
+      if (targetGameTime <= currentGameTime) return null;
+
+      const deltaHours = targetGameTime - currentGameTime;
+      if (deltaHours <= requestedHours) {
+        return deltaHours;
+      }
+      return null;
+    },
+    [dayCount, dayOfWeek, getDawnCh1Ev1TargetGameTime, hour],
+  );
+
   // time
   const spendTime = (
     amount: number,
@@ -1146,9 +1188,14 @@ export default function GamePage() {
     options?: SpendTimeOptions,
   ) => {
     const summonInterruptHours = getHoursUntilDawnSummon(amount);
+    const ch1Ev1InterruptHours = getHoursUntilDawnCh1Ev1(amount);
+    const interruptHours =
+      summonInterruptHours !== null && ch1Ev1InterruptHours !== null
+        ? Math.min(summonInterruptHours, ch1Ev1InterruptHours)
+        : summonInterruptHours ?? ch1Ev1InterruptHours;
     const effectiveAmount =
-      summonInterruptHours !== null && summonInterruptHours > 0
-        ? summonInterruptHours
+      interruptHours !== null && interruptHours > 0
+        ? interruptHours
         : amount;
     const newHour = hour + effectiveAmount;
     const wrappedHour = ((newHour % MAX_HOUR) + MAX_HOUR) % MAX_HOUR;
@@ -2485,9 +2532,52 @@ export default function GamePage() {
     }
   }, [girls, selectedGirl, currentLocation]);
 
+  const getDebugCharacterDefinition = useCallback(
+    (characterName: string) =>
+      baseGirls.find((candidate) => candidate.name === characterName) ??
+      testingOnlyGirls.find((candidate) => candidate.name === characterName) ??
+      null,
+    [],
+  );
+
+  const getResolvedGirlForDebug = useCallback(
+    (characterName: string) => {
+      const baseGirl = getDebugCharacterDefinition(characterName);
+      if (!baseGirl) return null;
+
+      const scheduledLocation = getScheduledLocation(
+        characterName,
+        dayOfWeek,
+        hour,
+      );
+      const override = girlStatsOverrides[characterName];
+      const mergedStats = override
+        ? { ...baseGirl.stats, ...override }
+        : baseGirl.stats;
+
+      return {
+        ...baseGirl,
+        location: scheduledLocation || baseGirl.location,
+        stats: clampGirlStatsToCaps(characterName, mergedStats),
+      };
+    },
+    [
+      clampGirlStatsToCaps,
+      dayOfWeek,
+      getDebugCharacterDefinition,
+      girlStatsOverrides,
+      hour,
+    ],
+  );
+
   const debugCharacterOptions = useMemo(
-    () => girls.map((girl) => girl.name),
-    [girls],
+    () =>
+      Array.from(
+        new Set(
+          [...baseGirls, ...testingOnlyGirls].map((girl) => girl.name),
+        ),
+      ),
+    [],
   );
 
   const debugCharacterEvents = useMemo(
@@ -2863,9 +2953,7 @@ export default function GamePage() {
     );
     if (!event) return null;
 
-    const girl =
-      girls.find((candidate) => candidate.name === debugCharacterName) ??
-      baseGirls.find((candidate) => candidate.name === debugCharacterName);
+    const girl = getResolvedGirlForDebug(debugCharacterName);
     if (!girl) return null;
 
     const eventState = characterEventStates[debugCharacterName] ?? {
@@ -3072,7 +3160,7 @@ export default function GamePage() {
     debugCharacterName,
     debugEventId,
     gameplayFlags,
-    girls,
+    getResolvedGirlForDebug,
     hour,
     player,
   ]);
@@ -3715,34 +3803,32 @@ export default function GamePage() {
   );
 
   const triggerSpecificEvent = useCallback(
-    (characterName: string, eventId: string, locationOverride?: string) => {
+    (
+      characterName: string,
+      eventId: string,
+      locationOverride?: string,
+      options?: ManualEventTriggerOptions,
+    ) => {
       const events = getCharacterEvents(characterName);
       const triggerable = events.find((event) => event.id === eventId);
       if (!triggerable) {
         console.error(`❌ Event not found: ${eventId}`);
-        return;
+        if (options?.showNotice) {
+          showGameNotice(`Event not found: ${eventId}`, { tone: "error" });
+        }
+        return false;
       }
 
-      const baseGirl = baseGirls.find((g) => g.name === characterName);
-      if (!baseGirl) {
+      const girl = getResolvedGirlForDebug(characterName);
+      if (!girl) {
         console.error(`❌ Character not found: ${characterName}`);
-        return;
+        if (options?.showNotice) {
+          showGameNotice(`Could not find character: ${characterName}`, {
+            tone: "error",
+          });
+        }
+        return false;
       }
-
-      const scheduledLocation = getScheduledLocation(
-        characterName,
-        dayOfWeek,
-        hour,
-      );
-      const override = girlStatsOverrides[characterName];
-      const mergedStats = override
-        ? { ...baseGirl.stats, ...override }
-        : baseGirl.stats;
-      const girl = {
-        ...baseGirl,
-        location: scheduledLocation || baseGirl.location,
-        stats: clampGirlStatsToCaps(characterName, mergedStats),
-      };
 
       const eventState = characterEventStates[characterName] ?? {
         characterName,
@@ -3757,6 +3843,7 @@ export default function GamePage() {
       const locationToCheck = locationOverride ?? currentLocation;
 
       if (
+        !options?.ignoreConditions &&
         !checkEventConditions(
           triggerable.conditions,
           girl,
@@ -3769,7 +3856,13 @@ export default function GamePage() {
           triggerable.id,
         )
       ) {
-        return;
+        if (options?.showNotice) {
+          showGameNotice(
+            `${triggerable.name} is blocked by the current requirements.`,
+            { tone: "warning" },
+          );
+        }
+        return false;
       }
 
       setCurrentRandomEvent(null);
@@ -3800,14 +3893,24 @@ export default function GamePage() {
           },
         }),
       );
+
+      if (options?.showNotice) {
+        showGameNotice(
+          `${
+            options.ignoreConditions ? "Force-triggered" : "Triggered"
+          } ${triggerable.name} for ${characterName}.`,
+          { tone: "success" },
+        );
+      }
+
+      return true;
     },
     [
       characterEventStates,
-      clampGirlStatsToCaps,
       currentLocation,
       dayOfWeek,
       gameplayFlags,
-      girlStatsOverrides,
+      getResolvedGirlForDebug,
       hour,
       onEventTriggered,
       player,
@@ -3818,6 +3921,25 @@ export default function GamePage() {
       startDialogue,
     ],
   );
+
+  const forceTriggerSelectedDebugEvent = useCallback(() => {
+    if (!debugCharacterName || !debugEventId) return;
+
+    triggerSpecificEvent(
+      debugCharacterName,
+      debugEventId,
+      debugEventReport?.targetLocation,
+      {
+        ignoreConditions: true,
+        showNotice: true,
+      },
+    );
+  }, [
+    debugCharacterName,
+    debugEventId,
+    debugEventReport,
+    triggerSpecificEvent,
+  ]);
 
   useEffect(() => {
     if (
@@ -3933,6 +4055,90 @@ export default function GamePage() {
     gameState,
     gameplayFlags,
     getDawnSummonTargetGameTime,
+    girlStatsOverrides.Dawn,
+    hour,
+    onEventTriggered,
+    setFlag,
+    startDialogue,
+  ]);
+
+  // Dawn Chapter 1 Event 1 — auto-trigger at 23:00 two days after the callout
+  useEffect(() => {
+    const ch1Ev1TargetGameTime = getDawnCh1Ev1TargetGameTime();
+    const shouldCheckCh1Ev1 =
+      gameState === "playing" &&
+      ch1Ev1TargetGameTime !== null &&
+      !gameplayFlags.has("dawnCh1Ev1_Done");
+
+    if (!shouldCheckCh1Ev1) {
+      dawnCh1Ev1AutoTriggeredRef.current = false;
+      return;
+    }
+
+    if (currentDialogue) return;
+
+    const currentGameTime = calculateGameTime(dayOfWeek, hour, dayCount);
+    if (currentGameTime < ch1Ev1TargetGameTime) return;
+    if (dawnCh1Ev1AutoTriggeredRef.current) return;
+    dawnCh1Ev1AutoTriggeredRef.current = true;
+
+    const dawnBase = baseGirls.find((girl) => girl.name === "Dawn");
+    const dawnStats = clampGirlStatsToCaps("Dawn", {
+      ...(dawnBase?.stats ?? {
+        affection: 0,
+        lust: 0,
+        mood: 50,
+        love: 0,
+        dominance: 0,
+      }),
+      ...(girlStatsOverrides.Dawn ?? {}),
+    });
+    const dawnImageGirl: Girl = {
+      name: "Dawn",
+      location: "Nightclub",
+      relationship: "Single",
+      personality: "Confident",
+      stats: dawnStats,
+    };
+
+    setCurrentLocation("Nightclub");
+    setSelectedGirl(null);
+    setFlag("dawnCh1Ev1_Done");
+    onEventTriggered("dawn_ch1_ev1", "Dawn");
+
+    setMessagesByCharacter((prev) => ({
+      ...prev,
+      Dawn: [
+        ...(prev.Dawn ?? []),
+        {
+          id: `dawn_ch1_ev1_invite_${Date.now()}`,
+          characterName: "Dawn",
+          sender: "character" as const,
+          text: "Velvet. Tonight. You already know you're coming.",
+          action: "chat" as const,
+          dayOfWeek,
+          dayCount,
+          hour,
+        },
+      ],
+    }));
+
+    const dawnCharacterImage = getCharacterImage(dawnImageGirl, "Nightclub", hour);
+    startDialogue(
+      dawn_ch1_ev1_text_dialogue,
+      dawnCharacterImage,
+      null,
+      "Dawn",
+      "Nightclub",
+    );
+  }, [
+    clampGirlStatsToCaps,
+    currentDialogue,
+    dayCount,
+    dayOfWeek,
+    gameState,
+    gameplayFlags,
+    getDawnCh1Ev1TargetGameTime,
     girlStatsOverrides.Dawn,
     hour,
     onEventTriggered,
@@ -5211,11 +5417,11 @@ export default function GamePage() {
 
       {showDebugPanel &&
         !isMobile && (
-          <div className="fixed bottom-16 left-4 z-[1800] w-[380px] max-h-[70vh] overflow-hidden rounded-xl border border-cyan-500 bg-gray-900/95 shadow-2xl backdrop-blur">
+          <div className="fixed bottom-16 left-4 z-[1800] flex max-h-[70vh] w-[380px] flex-col overflow-hidden rounded-xl border border-cyan-500 bg-gray-900/95 shadow-2xl backdrop-blur">
             <div className="border-b border-cyan-700 px-3 py-2 text-sm font-bold text-cyan-200">
               Event Debugger
             </div>
-            <div className="space-y-3 overflow-y-auto p-3 text-xs text-gray-200">
+            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain p-3 text-xs text-gray-200">
               <div className="space-y-1 rounded border border-cyan-700/60 bg-cyan-900/20 p-2">
                 <div className="font-semibold text-cyan-200">Fast Travel</div>
                 <div className="flex gap-2">
@@ -5467,11 +5673,15 @@ export default function GamePage() {
                   onChange={(event) => setDebugEventId(event.target.value)}
                   className="w-full rounded border border-gray-700 bg-gray-800 px-2 py-1 text-xs"
                 >
-                  {debugCharacterEvents.map((event) => (
-                    <option key={event.id} value={event.id}>
-                      {event.name} ({event.id})
-                    </option>
-                  ))}
+                  {debugCharacterEvents.length > 0 ? (
+                    debugCharacterEvents.map((event) => (
+                      <option key={event.id} value={event.id}>
+                        {event.name} ({event.id})
+                      </option>
+                    ))
+                  ) : (
+                    <option value="">No events available</option>
+                  )}
                 </select>
               </div>
 
@@ -5506,6 +5716,27 @@ export default function GamePage() {
                   No event selected.
                 </div>
               )}
+
+              <div className="space-y-2 rounded border border-cyan-700/60 bg-cyan-900/20 p-2">
+                <div className="font-semibold text-cyan-200">Manual Event Trigger</div>
+                <button
+                  type="button"
+                  onClick={forceTriggerSelectedDebugEvent}
+                  disabled={!debugCharacterName || !debugEventId}
+                  className={`w-full rounded border px-2 py-1 text-left text-xs font-semibold transition ${
+                    !debugCharacterName || !debugEventId
+                      ? "cursor-not-allowed border-gray-700 bg-gray-800 text-gray-500"
+                      : "border-cyan-400 bg-cyan-900/80 text-cyan-100 hover:bg-cyan-800/90"
+                  }`}
+                >
+                  Force Trigger Selected Event
+                </button>
+                <div className="text-[11px] text-cyan-300/90">
+                  Ignores location, stat, prerequisite, flag, cooldown, and daily/story
+                  limits. It still records history and applies rewards so you can replay
+                  events repeatedly for testing.
+                </div>
+              </div>
 
               <div className="rounded border border-gray-700 bg-gray-800 p-2">
                 <div className="mb-1 font-semibold text-cyan-200">

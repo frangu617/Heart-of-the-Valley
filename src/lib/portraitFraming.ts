@@ -4,7 +4,7 @@ const DEFAULT_SPRITE_HORIZONTAL_PERCENT = 50;
 // Tune per character because source poses/crops vary.
 const VERTICAL_OFFSET_BY_CHARACTER: Record<string, number> = {
   iris: 24,
-  dawn: -60,
+  dawn: 85,
   gwen: 49,
   ruby: 30,
   yumi: 28,

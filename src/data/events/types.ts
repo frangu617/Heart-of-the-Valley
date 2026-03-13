@@ -104,7 +104,8 @@ export type GameplayFlag =
   | "yumi_c2_event_4_completed"
   | "yumi_chapter_2_date"
   | "yumi_chapter_2_completed"
-  | "metDawn";
+  | "metDawn"
+  | "dawnCh1Ev1_Done";
 
 export type EventConditions = {
   // Minimum stat requirements

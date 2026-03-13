@@ -56,8 +56,8 @@ const iris_c3_ev2_dawn_callout_reveal: Dialogue = {
     },
     {
       speaker: "????",
-      text: "You will have my number when you earn it.",
-      expression: "smug",
+      text: "You'll find out when I think you deserve it.",
+      expression: "smile",
     },
     {
       speaker: null,
