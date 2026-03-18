@@ -39,6 +39,8 @@ type Props = {
   dailyWorkoutState: DailyWorkoutState;
   onLogWorkout: (withRuby: boolean) => void;
   onAdjustGirlStats: (girlName: string, delta: Partial<GirlStats>) => void;
+  hasInteractedToday: (girlName: string, actionLabel: string) => boolean;
+  onInteractionLogged: (girlName: string, actionLabel: string) => void;
   player: PlayerStats;
   setPlayer: Dispatch<SetStateAction<PlayerStats>>;
   spendTime: (
@@ -77,6 +79,8 @@ export default function LocationPanels({
   dailyWorkoutState,
   onLogWorkout,
   onAdjustGirlStats,
+  hasInteractedToday,
+  onInteractionLogged,
   player,
   setPlayer,
   spendTime,
@@ -92,6 +96,8 @@ export default function LocationPanels({
   onSetTestingEnvironment,
   onPassOut,
 }: Props) {
+  const presentGirls = girls.filter((girl) => girl.location === currentLocation);
+
   return (
     <>
       {isMobile && (
@@ -141,6 +147,7 @@ export default function LocationPanels({
           {showActivitiesMenu && (
             <LocationActivities
               location={currentLocation}
+              presentGirls={presentGirls}
               player={player}
               setPlayer={setPlayer}
               spendTime={spendTime}
@@ -153,6 +160,8 @@ export default function LocationPanels({
               dailyWorkoutState={dailyWorkoutState}
               onLogWorkout={onLogWorkout}
               onAdjustGirlStats={onAdjustGirlStats}
+              hasInteractedToday={hasInteractedToday}
+              onInteractionLogged={onInteractionLogged}
               testingEnvironment={testingEnvironment}
               onSetTestingEnvironment={onSetTestingEnvironment}
               onPassOut={onPassOut}

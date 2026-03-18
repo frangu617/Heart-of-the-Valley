@@ -4811,6 +4811,9 @@ export default function GamePage() {
           "First intimate night together.",
         );
       }
+      if (actionLabel === "Location Activity") {
+        return;
+      }
 
       if (currentLocation === TESTING_LOCATION_NAME) {
         return;
@@ -5233,6 +5236,8 @@ export default function GamePage() {
               dailyWorkoutState={dailyWorkoutState}
               onLogWorkout={logWorkout}
               onAdjustGirlStats={applyGirlStatDelta}
+              hasInteractedToday={hasInteractedToday}
+              onInteractionLogged={recordInteraction}
               player={player}
               setPlayer={setPlayerWithDebugProtection}
               spendTime={spendTime}
@@ -5252,6 +5257,7 @@ export default function GamePage() {
 
           <RightSidebar
             selectedGirl={selectedGirl}
+            presentGirls={presentGirls}
             currentLocation={currentLocation}
             characterImageLocation={currentCharacterImageLocation}
             player={player}

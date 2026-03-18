@@ -1,5 +1,5 @@
 import { Fragment, useState } from "react";
-import { PlayerStats, type GirlStats } from "../data/characters";
+import { PlayerStats, type Girl, type GirlStats } from "../data/characters";
 import { DayOfWeek } from "../data/gameConstants";
 import {
   locationActivities as activitiesMap,
@@ -16,11 +16,15 @@ import { showGameNotice } from "@/lib/gameUi";
 import GiftModal from "./GiftModal";
 import { Gift, gifts } from "@/data/gifts";
 import { getScheduledLocation } from "@/lib/schedule";
+import { getGirlDisplayName, isDawnIdentityHidden } from "@/lib/dawnMystery";
 
 type Activity = LocationActivity & {
   id?: string;
   desc?: string;
   perform?: (player: PlayerStats, ctx: { dayOfWeek: DayOfWeek }) => PlayerStats;
+  girlName?: string;
+  girlEffects?: Partial<GirlStats>;
+  interactionLogLabel?: string;
 };
 
 type RequirementFailure = {
@@ -35,8 +39,182 @@ export type DailyWorkoutState = {
   withoutRuby: number;
 };
 
+const LOCATION_COMPANION_ACTIVITY_LABEL = "Location Activity";
+
+const buildCompanionActivity = (
+  girl: Girl,
+  location: string,
+  gameplayFlags: Set<GameplayFlag>,
+): Activity | null => {
+  if (isDawnIdentityHidden(girl.name, gameplayFlags)) {
+    return null;
+  }
+
+  if (location === "Classroom" && girl.name === "Iris") {
+    return null;
+  }
+
+  if (/Bathroom/i.test(location)) {
+    return null;
+  }
+
+  const displayName = getGirlDisplayName(girl.name, gameplayFlags);
+  const baseActivity: Pick<Activity, "girlName" | "interactionLogLabel"> = {
+    girlName: girl.name,
+    interactionLogLabel: LOCATION_COMPANION_ACTIVITY_LABEL,
+  };
+
+  if (/Kitchen/i.test(location)) {
+    return {
+      ...baseActivity,
+      id: `companion_${girl.name.toLowerCase()}_kitchen`,
+      name: `Cook with ${displayName}`,
+      icon: "Cook",
+      description: `Share the kitchen with ${displayName} and make something together.`,
+      timeCost: 1,
+      statEffects: { hunger: -35, mood: 8, money: -8 },
+      girlEffects: { affection: 3, mood: 2 },
+      requirements: { minMoney: 8 },
+    };
+  }
+
+  if (location === "Cafe") {
+    return {
+      ...baseActivity,
+      id: `companion_${girl.name.toLowerCase()}_cafe`,
+      name: `Grab Coffee with ${displayName}`,
+      icon: "Cafe",
+      description: `Sit down with ${displayName} and turn the stop into real time together.`,
+      timeCost: 1,
+      statEffects: { energy: 8, mood: 6, money: -8 },
+      girlEffects: { affection: 2, mood: 2 },
+      requirements: { minMoney: 8 },
+    };
+  }
+
+  if (location === "Gym") {
+    return {
+      ...baseActivity,
+      id: `companion_${girl.name.toLowerCase()}_gym`,
+      name: `Train with ${displayName}`,
+      icon: "Gym",
+      description: `Keep pace with ${displayName} through a short shared workout.`,
+      timeCost: 1,
+      statEffects: { fitness: 2, energy: -15, mood: 4 },
+      girlEffects: { affection: 1, lust: 1, mood: 1 },
+      requirements: { minEnergy: 20 },
+    };
+  }
+
+  if (location === "Mall") {
+    return {
+      ...baseActivity,
+      id: `companion_${girl.name.toLowerCase()}_mall`,
+      name: `Browse Shops with ${displayName}`,
+      icon: "Shop",
+      description: `Wander the stores with ${displayName} and trade opinions.`,
+      timeCost: 1,
+      statEffects: { style: 1, mood: 6, money: -10 },
+      girlEffects: { affection: 2, mood: 2 },
+      requirements: { minMoney: 10 },
+    };
+  }
+
+  if (location === "Beach") {
+    return {
+      ...baseActivity,
+      id: `companion_${girl.name.toLowerCase()}_beach`,
+      name: `Walk the Shore with ${displayName}`,
+      icon: "Walk",
+      description: `Take a quieter stretch of the beach with ${displayName}.`,
+      timeCost: 1,
+      statEffects: { mood: 8, energy: -5 },
+      girlEffects: { affection: 2, mood: 3 },
+    };
+  }
+
+  if (location === "Nightclub") {
+    return {
+      ...baseActivity,
+      id: `companion_${girl.name.toLowerCase()}_nightclub`,
+      name: `Dance with ${displayName}`,
+      icon: "Dance",
+      description: `Let the music do some of the work for you and ${displayName}.`,
+      timeCost: 1,
+      statEffects: { mood: 10, energy: -10 },
+      girlEffects: { lust: 2, mood: 2 },
+    };
+  }
+
+  if (location === "Bar") {
+    return {
+      ...baseActivity,
+      id: `companion_${girl.name.toLowerCase()}_bar`,
+      name: `Talk in a Quiet Corner with ${displayName}`,
+      icon: "Talk",
+      description: `Find a little space away from the crowd and focus on ${displayName}.`,
+      timeCost: 1,
+      statEffects: { mood: 7, energy: -4 },
+      girlEffects: { affection: 2, mood: 2 },
+    };
+  }
+
+  if (
+    /University|Hallway|Office|Parking Lot|Classroom/i.test(location)
+  ) {
+    return {
+      ...baseActivity,
+      id: `companion_${girl.name.toLowerCase()}_school`,
+      name: `Compare Notes with ${displayName}`,
+      icon: "Notes",
+      description: `Use the shared downtime to talk through classes, work, and whatever else follows.`,
+      timeCost: 1,
+      statEffects: { intelligence: 2, mood: 3 },
+      girlEffects: { affection: 1, mood: 2 },
+    };
+  }
+
+  if (/Bedroom|Living Room/i.test(location)) {
+    return {
+      ...baseActivity,
+      id: `companion_${girl.name.toLowerCase()}_home`,
+      name: `Relax with ${displayName}`,
+      icon: "Rest",
+      description: `Slow down and enjoy an easy stretch of time together.`,
+      timeCost: 1,
+      statEffects: { mood: 8, energy: 4 },
+      girlEffects: { affection: 2, mood: 3 },
+    };
+  }
+
+  if (/City|Street/i.test(location)) {
+    return {
+      ...baseActivity,
+      id: `companion_${girl.name.toLowerCase()}_walk`,
+      name: `Take a Walk with ${displayName}`,
+      icon: "Walk",
+      description: `Keep ${displayName} company while the city moves around you.`,
+      timeCost: 1,
+      statEffects: { mood: 6, energy: -5 },
+      girlEffects: { affection: 2, mood: 2 },
+    };
+  }
+
+  return {
+    ...baseActivity,
+    id: `companion_${girl.name.toLowerCase()}_generic`,
+    name: `Spend Time with ${displayName}`,
+    icon: "Talk",
+    description: `Take advantage of the moment and spend a little focused time with ${displayName}.`,
+    timeCost: 1,
+    statEffects: { mood: 5 },
+    girlEffects: { affection: 1, mood: 2 },
+  };
+};
+
 type Props = {
   location: string;
+  presentGirls?: Girl[];
   player: PlayerStats;
   setPlayer: (next: PlayerStats) => void;
   spendTime: (
@@ -57,6 +235,8 @@ type Props = {
   dailyWorkoutState?: DailyWorkoutState;
   onLogWorkout?: (withRuby: boolean) => void;
   onAdjustGirlStats?: (girlName: string, delta: Partial<GirlStats>) => void;
+  hasInteractedToday?: (girlName: string, actionLabel: string) => boolean;
+  onInteractionLogged?: (girlName: string, actionLabel: string) => void;
   testingEnvironment?: TestingEnvironment;
   onSetTestingEnvironment?: (environment: TestingEnvironment) => void;
   onPassOut?: (playerAtBlackout: PlayerStats) => void;
@@ -64,8 +244,8 @@ type Props = {
 
 export default function LocationActivitiesPanel({
   location,
+  presentGirls = [],
   player,
-  setPlayer,
   spendTime,
   darkMode,
   dayOfWeek,
@@ -76,11 +256,14 @@ export default function LocationActivitiesPanel({
   dailyWorkoutState,
   onLogWorkout,
   onAdjustGirlStats,
+  hasInteractedToday,
+  onInteractionLogged,
   testingEnvironment,
   onSetTestingEnvironment,
   onPassOut,
 }: Props) {
   const baseActivities: Activity[] = activitiesMap[location] ?? [];
+  const resolvedGameplayFlags = gameplayFlags ?? new Set<GameplayFlag>();
   const waitActivity: Activity = {
     id: "universal_wait",
     name: "Wait",
@@ -97,6 +280,9 @@ export default function LocationActivitiesPanel({
   const activities = baseActivities.some((activity) => activity.name === "Wait")
     ? [...baseActivities]
     : [...baseActivities, waitActivity];
+  const companionActivities = presentGirls
+    .map((girl) => buildCompanionActivity(girl, location, resolvedGameplayFlags))
+    .filter((activity): activity is Activity => activity !== null);
   const testingEnvironmentByActivityId: Record<string, TestingEnvironment> = {
     test_env_casual: "casual",
     test_env_university: "university",
@@ -108,8 +294,8 @@ export default function LocationActivitiesPanel({
 
   const rubyAtGym =
     getScheduledLocation("Ruby", dayOfWeek, hour) === "Gym" &&
-    !gameplayFlags?.has("rubyIsHiding");
-  const rubyUnlocked = gameplayFlags?.has("hasMetRuby") ?? false;
+    !resolvedGameplayFlags.has("rubyIsHiding");
+  const rubyUnlocked = resolvedGameplayFlags.has("hasMetRuby");
   const rubyAvailableForWorkout = rubyUnlocked && rubyAtGym;
   const workoutActivityNames = new Set(["Workout", "Light Exercise"]);
   const sleepActivityNames = new Set(["Sleep", "Take a Nap"]);
@@ -202,6 +388,22 @@ export default function LocationActivitiesPanel({
       failures.push(workoutFailure);
     }
 
+    if (
+      activity.girlName &&
+      hasInteractedToday?.(
+        activity.girlName,
+        activity.interactionLogLabel ?? LOCATION_COMPANION_ACTIVITY_LABEL,
+      )
+    ) {
+      failures.push({
+        alert: `You've already spent focused time with ${getGirlDisplayName(
+          activity.girlName,
+          resolvedGameplayFlags,
+        )} today.`,
+        inline: "Already did this today",
+      });
+    }
+
     if (!requirements) return failures;
 
     const { minEnergy, minMoney, requiredItem } = requirements;
@@ -230,7 +432,7 @@ export default function LocationActivitiesPanel({
     if (
       location === "Car Store" &&
       activity.name === "Buy Car" &&
-      gameplayFlags?.has("hasCar")
+      resolvedGameplayFlags.has("hasCar")
     ) {
       failures.push({
         alert: "You already own a car.",
@@ -241,7 +443,7 @@ export default function LocationActivitiesPanel({
     return failures;
   };
 
-  if (activities.length === 0) {
+  if (activities.length === 0 && companionActivities.length === 0) {
     return (
       <div
         className={`rounded-2xl shadow-xl p-4 border-2 ${
@@ -338,6 +540,22 @@ export default function LocationActivitiesPanel({
       return;
     }
 
+    const isCompanionActivity = Boolean(act.girlName);
+    if (isCompanionActivity && act.girlName && act.girlEffects) {
+      onAdjustGirlStats?.(act.girlName, act.girlEffects);
+      onInteractionLogged?.(
+        act.girlName,
+        act.interactionLogLabel ?? LOCATION_COMPANION_ACTIVITY_LABEL,
+      );
+      showGameNotice(
+        `${act.name}. ${getGirlDisplayName(
+          act.girlName,
+          resolvedGameplayFlags,
+        )} seems more at ease with you.`,
+        { tone: "success" },
+      );
+    }
+
     const workoutActivity = isWorkoutActivity(act);
     const rubyWorkout = workoutActivity && rubyAvailableForWorkout;
     if (workoutActivity) {
@@ -345,12 +563,12 @@ export default function LocationActivitiesPanel({
     }
     if (rubyWorkout) {
       onAdjustGirlStats?.("Ruby", { affection: 1, lust: 1 });
-      if (gameplayFlags?.has("rubyTrainerAccepted")) {
-        if (!gameplayFlags?.has("rubyWorkoutCount1")) {
+      if (resolvedGameplayFlags.has("rubyTrainerAccepted")) {
+        if (!resolvedGameplayFlags.has("rubyWorkoutCount1")) {
           onSetFlag?.("rubyWorkoutCount1");
-        } else if (!gameplayFlags?.has("rubyWorkoutCount2")) {
+        } else if (!resolvedGameplayFlags.has("rubyWorkoutCount2")) {
           onSetFlag?.("rubyWorkoutCount2");
-        } else if (!gameplayFlags?.has("rubyWorkoutCount3")) {
+        } else if (!resolvedGameplayFlags.has("rubyWorkoutCount3")) {
           onSetFlag?.("rubyWorkoutCount3");
         }
       }
@@ -358,13 +576,13 @@ export default function LocationActivitiesPanel({
     if (
       workoutActivity &&
       !rubyWorkout &&
-      gameplayFlags?.has("rubyTrainerAccepted")
+      resolvedGameplayFlags.has("rubyTrainerAccepted")
     ) {
-      if (!gameplayFlags?.has("rubySoloWorkout1")) {
+      if (!resolvedGameplayFlags.has("rubySoloWorkout1")) {
         onSetFlag?.("rubySoloWorkout1");
-      } else if (!gameplayFlags?.has("rubySoloWorkout2")) {
+      } else if (!resolvedGameplayFlags.has("rubySoloWorkout2")) {
         onSetFlag?.("rubySoloWorkout2");
-      } else if (!gameplayFlags?.has("rubySoloWorkout3")) {
+      } else if (!resolvedGameplayFlags.has("rubySoloWorkout3")) {
         onSetFlag?.("rubySoloWorkout3");
       }
     }
@@ -380,7 +598,7 @@ export default function LocationActivitiesPanel({
     //Unlock Ruby when working out at Gym
     if (isRubyUnlockActivity(act)) {
       onSetFlag?.("firstWorkout");
-      const rubyAlreadyMet = gameplayFlags?.has("hasMetRuby");
+      const rubyAlreadyMet = resolvedGameplayFlags.has("hasMetRuby");
       if (!rubyAlreadyMet) {
         onTriggerEvent?.("Ruby", "ruby_trainer_offer_event");
       }
@@ -389,7 +607,7 @@ export default function LocationActivitiesPanel({
     //Unlock Yumi after teaching class
     if (isYumiUnlockActivity(act)) {
       onSetFlag?.("firstTimeWorked");
-      const yumiAlreadyMet = gameplayFlags?.has("hasMetYumi");
+      const yumiAlreadyMet = resolvedGameplayFlags.has("hasMetYumi");
       if (!yumiAlreadyMet) {
         onTriggerEvent?.("Yumi", "yumi_tutor_request_event");
       }
@@ -452,8 +670,10 @@ export default function LocationActivitiesPanel({
     ? activities.filter((activity) => isCafeToGoActivity(activity))
     : [];
   const displayedActivities = isCafeMenu
-    ? [...cafeForHereActivities, ...cafeToGoActivities]
-    : activities;
+    ? [...cafeForHereActivities, ...cafeToGoActivities, ...companionActivities]
+    : [...activities, ...companionActivities];
+  const companionSectionStartIndex =
+    displayedActivities.length - companionActivities.length;
 
   return (
     <div
@@ -490,15 +710,18 @@ export default function LocationActivitiesPanel({
             ? false
             : failures.length > 0;
           const showRubyIndicator =
-            isRubyUnlockActivity(act) && !gameplayFlags?.has("hasMetRuby");
+            isRubyUnlockActivity(act) && !resolvedGameplayFlags.has("hasMetRuby");
           const showYumiIndicator =
-            isYumiUnlockActivity(act) && !gameplayFlags?.has("hasMetYumi");
+            isYumiUnlockActivity(act) && !resolvedGameplayFlags.has("hasMetYumi");
           const activityLabel = getActivityLabel(act);
           const showForHereDivider = isCafeMenu && index === 0;
           const showToGoDivider =
             isCafeMenu &&
             cafeToGoActivities.length > 0 &&
             index === cafeForHereActivities.length;
+          const showCompanionDivider =
+            companionActivities.length > 0 &&
+            index === companionSectionStartIndex;
           const displayTimeCost = isCafeToGoActivity(act) ? 0 : act.timeCost;
 
           return (
@@ -523,6 +746,17 @@ export default function LocationActivitiesPanel({
                   }`}
                 >
                   To-Go
+                </div>
+              )}
+              {showCompanionDivider && (
+                <div
+                  className={`mt-1 px-2 py-1 rounded-md border text-xs font-semibold ${
+                    darkMode
+                      ? "bg-gray-700 border-gray-600 text-gray-200"
+                      : "bg-purple-50 border-purple-200 text-purple-700"
+                  }`}
+                >
+                  With Someone Here
                 </div>
               )}
               <button

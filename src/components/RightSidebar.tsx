@@ -12,6 +12,7 @@ import type { DateLocation } from "@/data/dates";
 
 type Props = {
   selectedGirl: Girl | null;
+  presentGirls: Girl[];
   currentLocation: string;
   player: PlayerStats;
   gameplayFlags: Set<GameplayFlag>;
@@ -63,6 +64,7 @@ type Props = {
 
 export default function RightSidebar({
   selectedGirl,
+  presentGirls,
   currentLocation,
   player,
   gameplayFlags,
@@ -125,6 +127,7 @@ export default function RightSidebar({
     <div className={`${isMobile ? "hidden" : "block"}`}>
       <LocationActivities
         location={currentLocation}
+        presentGirls={presentGirls}
         player={player}
         setPlayer={setPlayer}
         spendTime={spendTime}
@@ -137,6 +140,8 @@ export default function RightSidebar({
         dailyWorkoutState={dailyWorkoutState}
         onLogWorkout={onLogWorkout}
         onAdjustGirlStats={onAdjustGirlStats}
+        hasInteractedToday={hasInteractedToday}
+        onInteractionLogged={onInteractionLogged}
         testingEnvironment={testingEnvironment}
         onSetTestingEnvironment={onSetTestingEnvironment}
         onPassOut={onPassOut}
