@@ -9,57 +9,72 @@ const irisIntroStayStill: Dialogue = {
   lines: [
     {
       speaker: null,
-      text: "She drops to one knee to scoop up your papers. Her pink blouse pulls tight across her chest as she leans forward, buttons straining, black lace bra briefly visible. The short white skirt rides up her thighs, fishnets stretching as she reaches.",
+      text: "She drops straight to one knee and starts gathering his papers without asking. He gets a look before she glances up. He does not look away quickly enough.",
     },
     {
       speaker: null,
-      text: "She tilts her head back to look up at you, amber eyes locking onto yours through her glasses, lips parted slightly.",
+      text: "She tilts her head back and finds him already watching. Amber eyes through her glasses. A beat.",
+    },
+    {
+      speaker: "You",
+      text: "Nah, I'm okay. Just... really fucking hot coffee.",
+      isThought: false,
     },
     {
       speaker: null,
-      text: "Jesus Christ. Coffee's burning my skin and all I can think about is how those tits look like they'd overflow my hands. Focus, idiot.",
-    },
-    { speaker: "You", text: "Nah, I'm okay. Just... really fucking hot coffee." },
-    {
-      speaker: null,
-      text: "First day and I'm drenched, hard as a rock already, and staring at the hottest woman I've seen since I moved here. Great job, me.",
+      text: "The coffee is still burning through his shirt and that is genuinely the least of what he is currently thinking about.",
+      isThought: false,
     },
     {
       speaker: "Iris",
-      text: "I'm Iris, by the way--I teach Advanced Bio here. I was nose-deep in my book and didn't see you coming. I feel terrible about this shirt.",
+      text: "I'm Iris. I teach Bio here. I had my nose in a book and I just -- I'm really sorry about your shirt.",
       expression: "neutral",
     },
     {
       speaker: null,
-      text: "She reaches out, fingers splaying across the wet patch on your chest, checking the damage.",
+      text: "She stands and reaches out, fingers pressing gently against the wet patch on his chest, checking the damage.",
     },
     {
       speaker: "Iris",
-      text: "This one's toast now. It did fit you well.",
+      text: "Yeah, that's not coming out.",
       expression: "neutral",
     },
     {
       speaker: null,
-      text: "She pulls her hand away quickly, expression apologetic.",
+      text: "She catches herself touching a stranger's chest and pulls her hand back.",
     },
-    { speaker: "You", text: "It'll wash. Probably. Maybe." },
     {
       speaker: "Iris",
-      text: "Still, I owe you. What's your name? I should at least know who I just marked with my coffee.",
+      text: "Sorry. I just -- it did fit you well.",
+      expression: "neutral",
+    },
+    { speaker: "You", text: "It'll wash. Probably." },
+    {
+      speaker: "Iris",
+      text: "Still. What's your name? I should at least know who I just ruined.",
       expression: "happy",
     },
     {
       speaker: "You",
-      text: "I'm {playerName}. New instructor. Apparently christened with caffeine on day one.",
+      text: "I'm {playerName}. New instructor. Baptized in caffeine on day one, apparently.",
     },
     {
       speaker: "Iris",
-      text: "First day? That's brutal. I basically ruined your big debut.",
+      text: "First day?",
       expression: "surprised",
     },
     {
+      speaker: null,
+      text: "She tilts her head, something shifting in her expression.",
+    },
+    {
       speaker: "Iris",
-      text: "Let me fix it. There's a great little cafe off campus--I'll buy you a fresh one, no more wardrobe casualties. Deal?",
+      text: "Interesting people always seem to find their way to me eventually. I just didn't expect it to happen quite this fast.",
+      expression: "happy",
+    },
+    {
+      speaker: "Iris",
+      text: "Let me fix it. There's a coffee shop I like off campus -- I'll buy you a fresh one. No more wardrobe disasters.",
       expression: "happy",
     },
     {
@@ -85,35 +100,63 @@ const irisIntroStayAccept: Dialogue = {
   id: "iris_intro_stay_accept",
   lines: [
     {
+      speaker: "You",
+      text: "Yeah, sounds good. I could use something that stays where it's put.",
+    },
+    {
+      speaker: "Iris",
+      text: "Excellent. And achievable.",
+      expression: "happy",
+    },
+    {
       speaker: null,
-      text: "She's offering coffee and bending over backward--literally. I'd be an idiot to say no to more time staring at that body.",
+      text: "She laughs -- low and brief, like she surprised herself with it.",
+    },
+    {
+      speaker: "Iris",
+      text: "Give me your number so I can send you the address. I have a class in ten minutes and I'm already pushing it.",
+      expression: "happy",
+    },
+    {
+      speaker: null,
+      text: "She pulls out her phone, screen already open.",
+    },
+    { speaker: "You", text: "Tomorrow work? I should be dry by then." },
+    {
+      speaker: "Iris",
+      text: "Tomorrow's perfect.",
+      expression: "happy",
+    },
+    {
+      speaker: null,
+      text: "You type in your number and hand the phone back. She glances at it, types something, and your phone buzzes almost immediately.",
+    },
+    {
+      speaker: null,
+      text: "You check. It's her: Iris -- tomorrow, coffee shop off campus. And I'm sorry about the shirt.",
+    },
+    {
+      speaker: "Iris",
+      text: "There. Now you have mine too.",
+      expression: "happy",
+    },
+    {
+      speaker: null,
+      text: "She pockets her phone, gathers her book from the floor, and looks at him once more before she goes.",
+    },
+    {
+      speaker: "Iris",
+      text: "Try not to get ruined by anyone else today.",
+      expression: "happy",
+    },
+    {
+      speaker: null,
+      text: "She moves off through the crowd. He watches her go longer than he strictly needed to.",
     },
     {
       speaker: "You",
-      text: "You know what? Yeah. I could use something hot that isn't currently glued to my nipples.",
-    },
-    {
-      speaker: "Iris",
-      text: "Perfect! Give me your number so we don't lose each other.",
-      expression: "happy",
-    },
-    {
-      speaker: null,
-      text: "She pulls out her phone, smile warm and a little embarrassed.",
-    },
-    { speaker: "You", text: "Tomorrow? I should be dry by then." },
-    {
-      speaker: "Iris",
-      text: "Tomorrow works great. I'll text you the spot.",
-      expression: "happy",
-    },
-    {
-      speaker: null,
-      text: "You swap numbers and head off to class, still smelling like coffee.",
-    },
-    {
-      speaker: null,
-      text: "Shirt's fucked, dick's half-hard, and I just met the hottest disaster in my life. I should head to the mall for a new shirt.",
+      text: "Shirt's ruined, I'm late, and somehow that's already the best thing that's happened today. I should find a mall at some point.",
+      isThought: true,
       choices: [
         {
           text: "Head to class",
@@ -130,22 +173,39 @@ const irisIntroStayDecline: Dialogue = {
   lines: [
     {
       speaker: "You",
-      text: "Appreciate it, but I'm still trying to figure out where the hell everything is.",
+      text: "Appreciate it. I'm still figuring out where everything is.",
     },
     {
       speaker: "Iris",
-      text: "Totally get it. No rush.",
+      text: "Fair enough. No pressure.",
       expression: "neutral",
     },
-    {
-      speaker: "Iris",
-      text: "But the offer's always open. Bio wing, room 304--if you need a map, a book, or just... company.",
-      expression: "neutral",
-    },
-    { speaker: "You", text: "Thanks. I'll remember." },
     {
       speaker: null,
-      text: "Shirt's fucked, dick's half-hard, and I just met the hottest disaster in my life. I should head to the mall for a new shirt.",
+      text: "She gathers her book from the floor. Composed. She's not embarrassed by the no.",
+    },
+    {
+      speaker: "Iris",
+      text: "My office is in the bio wing if you change your mind, need anything, or just want somewhere to be that isn't a flooded hallway.",
+      expression: "neutral",
+    },
+    {
+      speaker: "You",
+      text: "I'll keep that in mind.",
+    },
+    {
+      speaker: "Iris",
+      text: "Good luck with the first day.",
+      expression: "neutral",
+    },
+    {
+      speaker: null,
+      text: "She moves off, already pulling out her phone.",
+    },
+    {
+      speaker: "You",
+      text: "Turned her down, shirt's still wrecked, and I'm going to be late. Could have been worse. Could have been better. I should find a mall.",
+      isThought: true,
       choices: [
         {
           text: "Head to class",
@@ -160,29 +220,46 @@ const irisIntroStayDecline: Dialogue = {
 const irisIntroStepBack: Dialogue = {
   id: "iris_intro_step_back",
   lines: [
-    { speaker: null, text: "You pull your arm away. Her hand drops without fuss." },
     {
       speaker: null,
-      text: "She bends to grab the papers, skirt riding high on thick thighs, fishnets digging into soft flesh.",
+      text: "You pull your arm away. Her hand drops without fuss.",
     },
     {
       speaker: null,
-      text: "Coffee all over me and now this view. Fuck my life.",
+      text: "She crouches to gather the papers and he watches her do it. He looks away.",
     },
     { speaker: "You", text: "It's fine. Just coffee." },
     {
       speaker: "Iris",
-      text: "I'm Iris--I teach Advanced Bio here. Still, I hate that I soaked you on your first day. That shirt fit you well.",
+      text: "It's really not fine. I soaked you.",
+      expression: "neutral",
+    },
+    {
+      speaker: "Iris",
+      text: "I'm Iris. I teach Bio here. And I'm sorry about the shirt.",
       expression: "neutral",
     },
     {
       speaker: null,
-      text: "Her eyes flick to the wet stain, then back to your face.",
+      text: "She stands and hands back his papers, her eyes going to the stain and then back up.",
     },
     { speaker: "You", text: "{playerName}. New here." },
     {
+      speaker: null,
+      text: "She looks at him. Takes a moment she doesn't try to hide.",
+    },
+    {
       speaker: "Iris",
-      text: "Well, welcome to the circus, {playerName}. If you ever want a coffee that stays where it belongs, cafe's close. I'd love to make this right.",
+      text: "You're new. People worth knowing always end up in front of me sooner or later.",
+      expression: "happy",
+    },
+    {
+      speaker: null,
+      text: "She says it like it's just how things work. Like she's stating weather.",
+    },
+    {
+      speaker: "Iris",
+      text: "Coffee off campus, if you want to let me make up for this. There's a place I like.",
       expression: "happy",
     },
     {
@@ -213,70 +290,70 @@ const irisIntroStepAccept: Dialogue = {
   id: "iris_intro_step_accept",
   lines: [
     {
+      speaker: "You",
+      text: "Yeah. Sure.",
+    },
+    {
       speaker: null,
-      text: "She's offering coffee and looking at me like that. Brain says run, dick says stay. Fuck it.",
+      text: "He said that faster than he meant to.",
     },
     {
       speaker: "You",
-      text: "You know what? Yeah... yeah, that actually sounds really good right now.",
+      text: "I mean -- yeah. Coffee sounds like a reasonable trade.",
+    },
+    {
+      speaker: "Iris",
+      text: "Gracious of you.",
+      expression: "happy",
+    },
+    {
+      speaker: null,
+      text: "She tilts her head with a small smile, studying him.",
+    },
+    {
+      speaker: "Iris",
+      text: "You still look a little stunned. Coffee shock?",
+      expression: "happy",
     },
     {
       speaker: "You",
-      text: "I mean, after this mess, I could use something warm that isn't burning holes in my shirt.",
+      text: "Definitely the coffee.",
     },
     {
       speaker: "Iris",
-      text: "See? I knew you'd come around.",
+      text: "Uh-huh.",
       expression: "happy",
     },
     {
       speaker: null,
-      text: "She laughs softly, the sound low and warm, then tilts her head, studying you with those amber eyes.",
+      text: "She doesn't push it. She just pulls out her phone.",
     },
     {
       speaker: "Iris",
-      text: "You still look a little dazed. Coffee shock, maybe?",
+      text: "Here -- put your number in. I'm not letting you forget this before I've actually fixed it.",
       expression: "happy",
     },
     {
       speaker: null,
-      text: "She lets the question hang with a small smile, waiting for your answer.",
+      text: "She holds the phone out, screen already open to contacts. He types in the number and hands it back.",
     },
-    { speaker: null, text: "Busted. Great." },
-    { speaker: "You", text: "Definitely the coffee. Mostly." },
-    { speaker: "Iris", text: "Uh-huh. Sure it is.", expression: "happy" },
     {
       speaker: null,
-      text: "She gives a quick, playful smile, then pulls her phone from her pocket.",
+      text: "She types something and his phone buzzes: Iris -- don't stand me up. Sorry again about the shirt.",
     },
     {
       speaker: "Iris",
-      text: "Here--put your number in so we don't lose each other. I don't want you escaping before I can buy you that replacement coffee.",
+      text: "There. Now you're stuck with me.",
       expression: "happy",
     },
     {
       speaker: null,
-      text: "She holds the phone out to you, screen already open to contacts.",
-    },
-    { speaker: null, text: "You type it in and hand the phone back." },
-    { speaker: "Iris", text: "Perfect.", expression: "happy" },
-    {
-      speaker: null,
-      text: "She taps a few times, and your phone buzzes almost instantly with a text: Iris - don't forget tomorrow. And sorry again about the shirt.",
+      text: "She pockets her phone, picks up her book, and goes. The crowd swallows her quickly.",
     },
     {
-      speaker: "Iris",
-      text: "There. Now you've got mine too. I'll text you the cafe details tonight.",
-      expression: "happy",
-    },
-    {
-      speaker: null,
-      text: "She pockets her phone, smile lingering like she knows exactly how much she's thrown you off balance.",
-    },
-    { speaker: "You", text: "Got it. Tomorrow then." },
-    {
-      speaker: null,
-      text: "Shirt's fucked, dick's half-hard, and I just met the hottest disaster in my life. I should head to the mall for a new shirt.",
+      speaker: "You",
+      text: "First day. Shirt's wrecked, I'm late, and I just gave my number to the most disarming person I've met in a long time. Not how I expected this to go. I should find a mall.",
+      isThought: true,
       choices: [
         {
           text: "Head to class",
@@ -293,22 +370,31 @@ const irisIntroStepDecline: Dialogue = {
   lines: [
     {
       speaker: "You",
-      text: "Appreciate it, but I'm still trying to figure out where the hell everything is.",
+      text: "Appreciate it, but I'm still finding my feet here.",
     },
     {
       speaker: "Iris",
-      text: "Totally get it. No rush.",
+      text: "Of course. First day.",
       expression: "neutral",
     },
-    {
-      speaker: "Iris",
-      text: "But the offer's always open. Bio wing, room 304--if you need a map, a book, or just... company.",
-      expression: "neutral",
-    },
-    { speaker: "You", text: "Thanks. I'll remember." },
     {
       speaker: null,
-      text: "Shirt's fucked, dick's half-hard, and I just met the hottest disaster in my life. I should head to the mall for a new shirt.",
+      text: "She says it without any disappointment in it. She straightens her book, shifts her bag.",
+    },
+    {
+      speaker: "Iris",
+      text: "My office is in the bio wing if you change your mind. Or just need a familiar face.",
+      expression: "neutral",
+    },
+    { speaker: "You", text: "Thanks. I'll keep that in mind." },
+    {
+      speaker: null,
+      text: "She nods and moves off into the crowd, already somewhere else in her head.",
+    },
+    {
+      speaker: "You",
+      text: "Clean no. She took it without a flinch. Shirt's still ruined. I should find a mall.",
+      isThought: true,
       choices: [
         {
           text: "Head to class",
@@ -323,17 +409,36 @@ const irisIntroStepDecline: Dialogue = {
 const irisIntroStepNotNow: Dialogue = {
   id: "iris_intro_step_not_now",
   lines: [
-    { speaker: "You", text: "Thanks, but I'm swamped getting my shit together." },
-    { speaker: "Iris", text: "No problem at all.", expression: "neutral" },
     {
-      speaker: "Iris",
-      text: "But if you change your mind, Bio wing, room 304. Door's open.",
-      expression: "neutral",
+      speaker: "You",
+      text: "Not today. I'm already losing a fight with my own syllabi.",
     },
-    { speaker: "You", text: "Got it." },
     {
       speaker: null,
-      text: "Shirt's fucked, dick's half-hard, and I just met the hottest disaster in my life. I should head to the mall for a new shirt.",
+      text: "She laughs. Not politely — actually laughs, like he caught her off guard.",
+    },
+    {
+      speaker: "Iris",
+      text: "That's fair. The syllabi win a lot.",
+      expression: "happy",
+    },
+    {
+      speaker: null,
+      text: "She picks up her book and adjusts her bag, still smiling.",
+    },
+    {
+      speaker: "Iris",
+      text: "The offer doesn't expire. Bio wing, when you're ready.",
+      expression: "neutral",
+    },
+    {
+      speaker: null,
+      text: "She heads off into the crowd. He watches her go. She doesn't look back.",
+    },
+    {
+      speaker: "You",
+      text: "She laughed. Genuinely. Shirt's still wrecked and I'm going to be late, but that was a better start than expected. I should find a mall.",
+      isThought: true,
       choices: [
         {
           text: "Head to class",
@@ -377,31 +482,34 @@ export const irisEvent1Events: CharacterEvent[] = [
       lines: [
         {
           speaker: null,
-          text: "The hallway throbs with morning chaos--students shoving past, lockers banging, the whole place smelling like cheap body spray and desperation.",
+          text: "The hallway is a mess of morning -- students shoulder-checking each other, lockers slamming, the whole place smelling like cheap body spray and barely-managed stress.",
         },
         {
           speaker: "You",
-          text: "Late on the first damn day. Perfect. This campus hates me already.",
+          text: "Late on the first damn day. Perfect.",
           isThought: true,
         },
         {
           speaker: null,
-          text: "You wrestle a wrinkled map and a stack of syllabi that's one bump from disaster, trying to carve a path through the crowd.",
+          text: "He's got a map in one hand and a stack of syllabi that's one nudge from airborne, trying to carve a line through the crowd.",
         },
-        { speaker: null, text: "You whip around the corner--" },
-        { speaker: "You", text: "Oh, for fuck's sake!" },
         {
           speaker: null,
-          text: "Scalding coffee explodes across your chest, soaking through the fabric in seconds. Papers flutter everywhere like they're trying to escape you.",
+          text: "He rounds the corner --",
+        },
+        { speaker: "You", text: "Oh, for fuck's sake--" },
+        {
+          speaker: null,
+          text: "Scalding coffee detonates across his chest. Papers scatter like they've been waiting for an excuse. For one moment neither of them moves.",
         },
         {
           speaker: "Iris",
-          text: "Oh my god, I am so sorry! Are you alright? Did it burn you?",
+          text: "Oh my god. Are you alright? Did it burn you?",
           expression: "surprised",
         },
         {
           speaker: null,
-          text: "Her hand clamps onto your forearm--warm, firm, fingers curling like she owns the contact.",
+          text: "Her hand closes around his forearm -- warm, immediate, checking.",
         },
         {
           speaker: "You",
