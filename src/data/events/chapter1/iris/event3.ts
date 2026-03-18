@@ -3,6 +3,14 @@ import { CharacterEvent } from "../../types";
 
 // Event 3: Unexpected Cafe Run-In
 // Description: Run into Iris at the cafe after turning her down.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: iris_coffee_forced_meet_event  (Cafe, any time, hasMetIris + irisCoffeeDeclined)
+//   ├─ [Join her]        → (continues inline, no fork)   END [irisCoffeeMet]
+//   └─ [Keep it brief]   → (continues inline, no fork)   END [irisCoffeeMet]
+// No sub-dialogues — single event with inline choice, both merge immediately.
+// Rewards: irisCoffeeMet
+// ─────────────────────────────────────────────────────────────────────────────
 
 export const irisEvent3Dialogues: Record<string, Dialogue> = {
 };

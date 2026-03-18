@@ -3,6 +3,22 @@ import { CharacterEvent } from "../../types";
 
 // Event 1: The Morning After
 // Description: You see Yumi for the first time since the kiss.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// Three separate CharacterEvents fire based on path flag; each uses its own
+// fully inline dialogue const — no player choices, no sub-dialogues.
+//
+// EVENT START: yumi_c2_event_1_sub  (University Hallway, yumiSubPath)
+//   └─ [auto]  → yumi_c2_ev1_sub    END [yumi_chapter_2_started]
+//
+// EVENT START: yumi_c2_event_1_dom  (University Hallway, yumiDomPath)
+//   └─ [auto]  → yumi_c2_ev1_dom    END [yumi_chapter_2_started]
+//
+// EVENT START: yumi_c2_event_1_neutral  (University Hallway, no path flag)
+//   └─ [auto]  → yumi_c2_ev1_neutral   END [yumi_chapter_2_started]
+//
+// Rewards: yumi_chapter_2_started
+// ─────────────────────────────────────────────────────────────────────────────
 
 const yumiC2Ev1Sub: Dialogue = {
   id: "yumi_c2_ev1_sub",

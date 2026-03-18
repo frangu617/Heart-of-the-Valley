@@ -3,7 +3,20 @@ import { CharacterEvent } from "../../types";
 
 // Event 1: Coffee Collision
 // Description: Iris spills coffee on you in the university hallway.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: iris_university_intro  (University Hallway, any time, day 1)
+//   ├─ [Let it linger]           → iris_intro_stay_still
+//   │    ├─ [Accept coffee]      → iris_intro_stay_accept     END [irisCoffeeAccepted]
+//   │    └─ [Maybe another time] → iris_intro_stay_decline    END [irisCoffeeDeclined]
+//   └─ [Step back]               → iris_intro_step_back
+//        ├─ [Yeah, I'd like that]→ iris_intro_step_accept     END [irisCoffeeAccepted]
+//        ├─ [Maybe another time] → iris_intro_step_decline    END [irisCoffeeDeclined]
+//        └─ [Not right now]      → iris_intro_step_not_now    END [irisCoffeeDeclined]
+// Rewards on all paths: hasMetIris, irisNeedsNewShirt
+// ─────────────────────────────────────────────────────────────────────────────
 
+// FROM: iris_university_intro → [Let it linger]
 const irisIntroStayStill: Dialogue = {
   id: "iris_intro_stay_still",
   lines: [
@@ -96,6 +109,7 @@ const irisIntroStayStill: Dialogue = {
   ],
 };
 
+// FROM: iris_intro_stay_still → [Yeah, that sounds good]
 const irisIntroStayAccept: Dialogue = {
   id: "iris_intro_stay_accept",
   lines: [
@@ -121,19 +135,13 @@ const irisIntroStayAccept: Dialogue = {
       speaker: null,
       text: "She pulls out her phone, screen already open.",
     },
-    { speaker: "You", text: "Tomorrow work? I should be dry by then." },
-    {
-      speaker: "Iris",
-      text: "Tomorrow's perfect.",
-      expression: "happy",
-    },
     {
       speaker: null,
       text: "You type in your number and hand the phone back. She glances at it, types something, and your phone buzzes almost immediately.",
     },
     {
       speaker: null,
-      text: "You check. It's her: Iris -- tomorrow, coffee shop off campus. And I'm sorry about the shirt.",
+      text: "You check. It's her: Iris -- coffee, whenever you're ready. And I'm sorry about the shirt.",
     },
     {
       speaker: "Iris",
@@ -168,6 +176,7 @@ const irisIntroStayAccept: Dialogue = {
   ],
 };
 
+// FROM: iris_intro_stay_still → [Maybe another time]
 const irisIntroStayDecline: Dialogue = {
   id: "iris_intro_stay_decline",
   lines: [
@@ -217,6 +226,7 @@ const irisIntroStayDecline: Dialogue = {
   ],
 };
 
+// FROM: iris_university_intro → [Step back]
 const irisIntroStepBack: Dialogue = {
   id: "iris_intro_step_back",
   lines: [
@@ -286,6 +296,7 @@ const irisIntroStepBack: Dialogue = {
   ],
 };
 
+// FROM: iris_intro_step_back → [Yeah, I'd like that]
 const irisIntroStepAccept: Dialogue = {
   id: "iris_intro_step_accept",
   lines: [
@@ -365,6 +376,7 @@ const irisIntroStepAccept: Dialogue = {
   ],
 };
 
+// FROM: iris_intro_step_back → [Maybe another time]
 const irisIntroStepDecline: Dialogue = {
   id: "iris_intro_step_decline",
   lines: [
@@ -406,6 +418,7 @@ const irisIntroStepDecline: Dialogue = {
   ],
 };
 
+// FROM: iris_intro_step_back → [Not right now]
 const irisIntroStepNotNow: Dialogue = {
   id: "iris_intro_step_not_now",
   lines: [
@@ -482,7 +495,7 @@ export const irisEvent1Events: CharacterEvent[] = [
       lines: [
         {
           speaker: null,
-          text: "The hallway is a mess of morning -- students shoulder-checking each other, lockers slamming, the whole place smelling like cheap body spray and barely-managed stress.",
+          text: "The hallway is a mess of morning -- students shoulder-checking each other, classroom doors swinging open and shut, the whole place smelling like cheap coffee and barely-managed stress.",
         },
         {
           speaker: "You",

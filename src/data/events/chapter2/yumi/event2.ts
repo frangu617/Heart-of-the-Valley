@@ -3,6 +3,25 @@ import { CharacterEvent } from "../../types";
 
 // Event 2: The Talk
 // Description: Yumi wants to talk about what happened.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: yumi_c2_event_2_sub  (Classroom, yumiSubPath)
+//   └─ yumi_c2_ev2_sub_start
+//        ├─ [I want more of what happened.]   → yumi_c2_ev2_sub_push     END [yumi_relationship_secret]
+//        └─ [Are you okay? I'm worried...]    → yumi_c2_ev2_sub_caring   END [yumi_relationship_secret]
+//
+// EVENT START: yumi_c2_event_2_dom  (Classroom, yumiDomPath)
+//   └─ yumi_c2_ev2_dom_start
+//        ├─ [Is that a threat, or are you enjoying the power?]  → yumi_c2_ev2_dom_challenge   END [yumi_relationship_secret_dom]
+//        └─ [You're right. I'm sorry.]                         → yumi_c2_ev2_dom_apology      END [yumi_relationship_stalled]
+//
+// EVENT START: yumi_c2_event_2_neutral  (Classroom, no path flag)
+//   └─ yumi_c2_ev2_neutral_start
+//        ├─ [I don't want to forget it.]   → yumi_c2_ev2_neutral_continue   END [yumi_relationship_secret_neutral]
+//        └─ [Maybe we should just forget it happened.]  → yumi_c2_ev2_neutral_end  END [yumi_romance_ended]
+//
+// Rewards: yumi_c2_event_2_completed
+// ─────────────────────────────────────────────────────────────────────────────
 
 const yumiC2Ev2SubStart: Dialogue = {
   id: "yumi_c2_ev2_sub_start",
@@ -39,6 +58,7 @@ const yumiC2Ev2SubStart: Dialogue = {
   ],
 };
 
+// FROM: yumi_c2_ev2_sub_start → [I want more of what happened.]
 const yumiC2Ev2SubPush: Dialogue = {
   id: "yumi_c2_ev2_sub_push",
   lines: [
@@ -54,6 +74,7 @@ const yumiC2Ev2SubPush: Dialogue = {
   ],
 };
 
+// FROM: yumi_c2_ev2_sub_start → [Are you okay? I'm worried about you.]
 const yumiC2Ev2SubCaring: Dialogue = {
   id: "yumi_c2_ev2_sub_caring",
   lines: [
@@ -109,6 +130,7 @@ const yumiC2Ev2DomStart: Dialogue = {
   ],
 };
 
+// FROM: yumi_c2_ev2_dom_start → [Is that a threat, or are you enjoying the power?]
 const yumiC2Ev2DomChallenge: Dialogue = {
   id: "yumi_c2_ev2_dom_challenge",
   lines: [
@@ -126,6 +148,7 @@ const yumiC2Ev2DomChallenge: Dialogue = {
   ],
 };
 
+// FROM: yumi_c2_ev2_dom_start → [You're right. I'm sorry.]
 const yumiC2Ev2DomApology: Dialogue = {
   id: "yumi_c2_ev2_dom_apology",
   lines: [
@@ -175,6 +198,7 @@ const yumiC2Ev2NeutralStart: Dialogue = {
   ],
 };
 
+// FROM: yumi_c2_ev2_neutral_start → [I don't want to forget it. I want to see where this goes.]
 const yumiC2Ev2NeutralContinue: Dialogue = {
   id: "yumi_c2_ev2_neutral_continue",
   lines: [
@@ -187,6 +211,7 @@ const yumiC2Ev2NeutralContinue: Dialogue = {
   ],
 };
 
+// FROM: yumi_c2_ev2_neutral_start → [Maybe we should just forget it happened.]
 const yumiC2Ev2NeutralEnd: Dialogue = {
   id: "yumi_c2_ev2_neutral_end",
   lines: [

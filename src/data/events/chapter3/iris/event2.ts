@@ -3,6 +3,31 @@ import type { CharacterEvent } from "../../types";
 
 // Event 2: The Callout
 // Description: Dawn reveals herself after class and proves she knows the MC's ledger.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// Two CharacterEvents; no player choices in any dialogue — all chains are
+// automatic (nextDialogueId on a narrator line = Continue to advance).
+//
+// EVENT START: iris_c3_ev2_dawn_callout
+//   (University Hallway 8-19h, irisCh3Ev1_Done + metMysteryGirl, !dawnSummonTriggered)
+//   └─ iris_c3_ev2_dawn_callout
+//        └─ (auto, nextDialogueId) → iris_c3_ev2_dawn_callout_reveal    END [irisCh3Ev2_Done, hasSeenDawn]
+//                                                                             unlockCharacters: Dawn
+//   Note: iris_c3_ev2_dawn_summon_call is NOT used by this event — it is
+//         exported for use by the Dawn character's own summon trigger once
+//         dawnSummonQueued / dawnSummonQueuedTonight are set.
+//
+// EVENT START: iris_c3_ev2_dawn_callout_fallback  (priority 146, fires after dawnFallbackReady)
+//   (irisCh3Ev2_Done + dawnFallbackReady, !dawnSummonQueued / !dawnSummonTriggered)
+//   └─ iris_c3_ev2_dawn_callout_fallback    END [dawnIrritatedFallbackSeen, dawnSummonQueued,
+//                                                dawnSummonQueuedTonight, hasSeenDawn]
+//                                               unlockCharacters: Dawn
+//   Note: fallback sets dawnSummonQueued + dawnSummonQueuedTonight to trigger
+//         iris_c3_ev2_dawn_summon_call at Velvet that same night.
+//
+// Rewards (callout): irisCh3Ev2_Done, hasSeenDawn
+// Rewards (fallback): dawnIrritatedFallbackSeen, dawnSummonQueued, dawnSummonQueuedTonight, hasSeenDawn
+// ─────────────────────────────────────────────────────────────────────────────
 
 const iris_c3_ev2_dawn_callout: Dialogue = {
   id: "iris_c3_ev2_dawn_callout",
@@ -28,6 +53,7 @@ const iris_c3_ev2_dawn_callout: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev2_dawn_callout → (auto nextDialogueId on narrator line)
 const iris_c3_ev2_dawn_callout_reveal: Dialogue = {
   id: "iris_c3_ev2_dawn_callout_reveal",
   lines: [
@@ -92,6 +118,8 @@ const iris_c3_ev2_dawn_callout_fallback: Dialogue = {
   ],
 };
 
+// FROM: external Dawn summon trigger (dawnSummonQueued / dawnSummonQueuedTonight flags)
+//       — not attached to any CharacterEvent in this file; exported for Dawn's summon system
 export const iris_c3_ev2_dawn_summon_call: Dialogue = {
   id: "iris_c3_ev2_dawn_summon_call",
   lines: [
@@ -158,7 +186,7 @@ export const irisEvent2Events: CharacterEvent[] = [
     },
     dialogue: iris_c3_ev2_dawn_callout,
     rewards: {
-      setFlags: ["irisCh3Ev2_Done", "hasSeenDawn"],
+      setFlags: ["irisCh3Ev2_Done", "hasSeenDawn", "dawnSummonQueued", "dawnSummonQueuedTonight"],
       unlockCharacters: ["Dawn"],
     },
   },

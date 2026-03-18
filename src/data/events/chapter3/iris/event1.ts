@@ -3,6 +3,63 @@ import type { CharacterEvent } from "../../types";
 
 // Event 1: After Velvet
 // Description: You and Iris bump into each other and define Chapter 3's relationship lane.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// Six CharacterEvents (3 origin lanes × 2 kissed-other variants); each fires
+// one start dialogue. Quizzes are generated at runtime by buildArgumentQuiz.
+//
+// EVENT START: iris_c3_ev1_dom / iris_c3_ev1_dom_kissed_other
+//   (irisCh2Complete, minDominance 10, minAffection 20)
+//   └─ iris_c3_ev1_dom_start / iris_c3_ev1_dom_start_kissed_other
+//        ├─ [Accept her frame and stay open.]
+//        │    → iris_c3_ev1_dom_keep_end                 END [irisC3PathCurrentDom, irisC3PathLocked]
+//        ├─ [Accept, but argue for structured middle.]
+//        │    → iris_c3_ev1_dom_to_middle_intro
+//        │         └─ (auto) → iris_c3_ev1_dom_to_middle_q1..q5  (hardShift quiz, 5 Qs)
+//        │              ├─ all pass  → iris_c3_ev1_dom_to_middle_success  END [irisC3PathCurrentMiddle, ...]
+//        │              └─ any fail  → iris_c3_ev1_dom_to_middle_fail     END [irisC3PathCurrentDom, ...]
+//        └─ [Refuse and argue for focused exclusivity/sub.]
+//             → iris_c3_ev1_dom_to_sub_intro
+//                  └─ (auto) → iris_c3_ev1_dom_to_sub_q1..q5  (veryHardShift quiz, 5 Qs)
+//                       ├─ all pass  → iris_c3_ev1_dom_to_sub_success  END [irisC3PathCurrentSub, ...]
+//                       └─ any fail  → iris_c3_ev1_dom_to_sub_fail     END [irisC3PathCurrentDom, ...]
+//
+// EVENT START: iris_c3_ev1_sub / iris_c3_ev1_sub_kissed_other
+//   (irisCh2Complete, maxDominance -10, minAffection 20)
+//   └─ iris_c3_ev1_sub_start / iris_c3_ev1_sub_start_kissed_other
+//        ├─ [Keep the current sub dynamic.]
+//        │    → iris_c3_ev1_sub_keep_end                 END [irisC3PathCurrentSub, irisC3PathLocked]
+//        ├─ [Argue for a middle lane.]
+//        │    → iris_c3_ev1_sub_to_middle_intro
+//        │         └─ (auto) → iris_c3_ev1_sub_to_middle_q1..q5  (mildShift quiz, 5 Qs)
+//        │              ├─ all pass  → iris_c3_ev1_sub_to_middle_success  END [irisC3PathCurrentMiddle, ...]
+//        │              └─ any fail  → iris_c3_ev1_sub_to_middle_fail     END [irisC3PathCurrentSub, ...]
+//        └─ [Push her toward dom.]
+//             → iris_c3_ev1_sub_to_dom_intro
+//                  └─ (auto) → iris_c3_ev1_sub_to_dom_q1..q5  (hardShift quiz, 5 Qs)
+//                       ├─ all pass  → iris_c3_ev1_sub_to_dom_success  END [irisC3PathCurrentDom, ...]
+//                       └─ any fail  → iris_c3_ev1_sub_to_dom_fail     END [irisC3PathCurrentSub, ...]
+//
+// EVENT START: iris_c3_ev1_middle / iris_c3_ev1_middle_kissed_other
+//   (irisCh2Complete, dominance -9 to 9, minAffection 20)
+//   └─ iris_c3_ev1_middle_start / iris_c3_ev1_middle_start_kissed_other
+//        ├─ [Keep the middle lane.]
+//        │    → iris_c3_ev1_middle_keep_end              END [irisC3PathCurrentMiddle, irisC3PathLocked]
+//        ├─ [Pull toward sub/monogamy focus.]
+//        │    → iris_c3_ev1_middle_to_sub_intro
+//        │         └─ (auto) → iris_c3_ev1_middle_to_sub_q1..q5  (mildShift quiz, 5 Qs)
+//        │              ├─ all pass  → iris_c3_ev1_middle_to_sub_success  END [irisC3PathCurrentSub, ...]
+//        │              └─ any fail  → iris_c3_ev1_middle_to_sub_fail     END [irisC3PathCurrentMiddle, ...]
+//        └─ [Pull toward dom/open exploration.]
+//             → iris_c3_ev1_middle_to_dom_intro
+//                  └─ (auto) → iris_c3_ev1_middle_to_dom_q1..q5  (mildShift quiz, 5 Qs)
+//                       ├─ all pass  → iris_c3_ev1_middle_to_dom_success  END [irisC3PathCurrentDom, ...]
+//                       └─ any fail  → iris_c3_ev1_middle_to_dom_fail     END [irisC3PathCurrentMiddle, ...]
+//
+// Rewards: irisCh3Ev1_Done + irisC3PathOrigin{Dom|Sub|Middle} (event-level)
+//          irisC3PathCurrent{Dom|Sub|Middle} + optional irisC3PathLocked /
+//          irisC3PathShiftAttempted / irisC3PathShiftSucceeded (dialogue-level)
+// ─────────────────────────────────────────────────────────────────────────────
 
 type QuizChoice = {
   text: string;
@@ -413,6 +470,7 @@ const iris_c3_ev1_dom_start: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_dom_kissed_other (CharacterEvent) → [kissed other girl variant]
 const iris_c3_ev1_dom_start_kissed_other: Dialogue = {
   id: "iris_c3_ev1_dom_start_kissed_other",
   lines: [
@@ -506,6 +564,7 @@ const iris_c3_ev1_sub_start: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_sub_kissed_other (CharacterEvent) → [kissed other girl variant]
 const iris_c3_ev1_sub_start_kissed_other: Dialogue = {
   id: "iris_c3_ev1_sub_start_kissed_other",
   lines: [
@@ -604,6 +663,7 @@ const iris_c3_ev1_middle_start: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_middle_kissed_other (CharacterEvent) → [kissed other girl variant]
 const iris_c3_ev1_middle_start_kissed_other: Dialogue = {
   id: "iris_c3_ev1_middle_start_kissed_other",
   lines: [
@@ -659,6 +719,7 @@ const iris_c3_ev1_middle_start_kissed_other: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_dom_start / iris_c3_ev1_dom_start_kissed_other → [Accept her frame and stay open.]
 const iris_c3_ev1_dom_keep_end: Dialogue = {
   id: "iris_c3_ev1_dom_keep_end",
   lines: [
@@ -671,6 +732,7 @@ const iris_c3_ev1_dom_keep_end: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_sub_start / iris_c3_ev1_sub_start_kissed_other → [Keep the current sub dynamic.]
 const iris_c3_ev1_sub_keep_end: Dialogue = {
   id: "iris_c3_ev1_sub_keep_end",
   lines: [
@@ -683,6 +745,7 @@ const iris_c3_ev1_sub_keep_end: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_middle_start / iris_c3_ev1_middle_start_kissed_other → [Keep the middle lane.]
 const iris_c3_ev1_middle_keep_end: Dialogue = {
   id: "iris_c3_ev1_middle_keep_end",
   lines: [
@@ -695,6 +758,7 @@ const iris_c3_ev1_middle_keep_end: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_dom_start / iris_c3_ev1_dom_start_kissed_other → [Accept, but argue for structured middle.]
 const iris_c3_ev1_dom_to_middle_intro: Dialogue = {
   id: "iris_c3_ev1_dom_to_middle_intro",
   lines: [
@@ -703,6 +767,7 @@ const iris_c3_ev1_dom_to_middle_intro: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_dom_start / iris_c3_ev1_dom_start_kissed_other → [Refuse and argue for focused exclusivity/sub.]
 const iris_c3_ev1_dom_to_sub_intro: Dialogue = {
   id: "iris_c3_ev1_dom_to_sub_intro",
   lines: [
@@ -711,6 +776,7 @@ const iris_c3_ev1_dom_to_sub_intro: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_sub_start / iris_c3_ev1_sub_start_kissed_other → [Argue for a middle lane.]
 const iris_c3_ev1_sub_to_middle_intro: Dialogue = {
   id: "iris_c3_ev1_sub_to_middle_intro",
   lines: [
@@ -719,6 +785,7 @@ const iris_c3_ev1_sub_to_middle_intro: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_sub_start / iris_c3_ev1_sub_start_kissed_other → [Push her toward dom.]
 const iris_c3_ev1_sub_to_dom_intro: Dialogue = {
   id: "iris_c3_ev1_sub_to_dom_intro",
   lines: [
@@ -727,6 +794,7 @@ const iris_c3_ev1_sub_to_dom_intro: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_middle_start / iris_c3_ev1_middle_start_kissed_other → [Pull toward sub/monogamy focus.]
 const iris_c3_ev1_middle_to_sub_intro: Dialogue = {
   id: "iris_c3_ev1_middle_to_sub_intro",
   lines: [
@@ -735,6 +803,7 @@ const iris_c3_ev1_middle_to_sub_intro: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_middle_start / iris_c3_ev1_middle_start_kissed_other → [Pull toward dom/open exploration.]
 const iris_c3_ev1_middle_to_dom_intro: Dialogue = {
   id: "iris_c3_ev1_middle_to_dom_intro",
   lines: [
@@ -743,6 +812,7 @@ const iris_c3_ev1_middle_to_dom_intro: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_dom_to_middle_q5 → [all-pass result of hardShift quiz]
 const iris_c3_ev1_dom_to_middle_success: Dialogue = {
   id: "iris_c3_ev1_dom_to_middle_success",
   lines: [
@@ -755,6 +825,7 @@ const iris_c3_ev1_dom_to_middle_success: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_dom_to_middle_q1..q5 → [any wrong answer in hardShift quiz]
 const iris_c3_ev1_dom_to_middle_fail: Dialogue = {
   id: "iris_c3_ev1_dom_to_middle_fail",
   lines: [
@@ -767,6 +838,7 @@ const iris_c3_ev1_dom_to_middle_fail: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_dom_to_sub_q5 → [all-pass result of veryHardShift quiz]
 const iris_c3_ev1_dom_to_sub_success: Dialogue = {
   id: "iris_c3_ev1_dom_to_sub_success",
   lines: [
@@ -779,6 +851,7 @@ const iris_c3_ev1_dom_to_sub_success: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_dom_to_sub_q1..q5 → [any wrong answer in veryHardShift quiz]
 const iris_c3_ev1_dom_to_sub_fail: Dialogue = {
   id: "iris_c3_ev1_dom_to_sub_fail",
   lines: [
@@ -791,6 +864,7 @@ const iris_c3_ev1_dom_to_sub_fail: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_sub_to_middle_q5 → [all-pass result of mildShift quiz]
 const iris_c3_ev1_sub_to_middle_success: Dialogue = {
   id: "iris_c3_ev1_sub_to_middle_success",
   lines: [
@@ -803,6 +877,7 @@ const iris_c3_ev1_sub_to_middle_success: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_sub_to_middle_q1..q5 → [any wrong answer in mildShift quiz]
 const iris_c3_ev1_sub_to_middle_fail: Dialogue = {
   id: "iris_c3_ev1_sub_to_middle_fail",
   lines: [
@@ -815,6 +890,7 @@ const iris_c3_ev1_sub_to_middle_fail: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_sub_to_dom_q5 → [all-pass result of hardShift quiz]
 const iris_c3_ev1_sub_to_dom_success: Dialogue = {
   id: "iris_c3_ev1_sub_to_dom_success",
   lines: [
@@ -827,6 +903,7 @@ const iris_c3_ev1_sub_to_dom_success: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_sub_to_dom_q1..q5 → [any wrong answer in hardShift quiz]
 const iris_c3_ev1_sub_to_dom_fail: Dialogue = {
   id: "iris_c3_ev1_sub_to_dom_fail",
   lines: [
@@ -839,6 +916,7 @@ const iris_c3_ev1_sub_to_dom_fail: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_middle_to_sub_q5 → [all-pass result of mildShift quiz]
 const iris_c3_ev1_middle_to_sub_success: Dialogue = {
   id: "iris_c3_ev1_middle_to_sub_success",
   lines: [
@@ -851,6 +929,7 @@ const iris_c3_ev1_middle_to_sub_success: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_middle_to_sub_q1..q5 → [any wrong answer in mildShift quiz]
 const iris_c3_ev1_middle_to_sub_fail: Dialogue = {
   id: "iris_c3_ev1_middle_to_sub_fail",
   lines: [
@@ -863,6 +942,7 @@ const iris_c3_ev1_middle_to_sub_fail: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_middle_to_dom_q5 → [all-pass result of mildShift quiz]
 const iris_c3_ev1_middle_to_dom_success: Dialogue = {
   id: "iris_c3_ev1_middle_to_dom_success",
   lines: [
@@ -875,6 +955,7 @@ const iris_c3_ev1_middle_to_dom_success: Dialogue = {
   ],
 };
 
+// FROM: iris_c3_ev1_middle_to_dom_q1..q5 → [any wrong answer in mildShift quiz]
 const iris_c3_ev1_middle_to_dom_fail: Dialogue = {
   id: "iris_c3_ev1_middle_to_dom_fail",
   lines: [

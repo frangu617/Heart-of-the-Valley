@@ -4,6 +4,8 @@ import { getCharacterImage } from "../lib/images";
 import type { Girl } from "../data/characters";
 import { getSceneCharacterObjectPosition } from "@/lib/portraitFraming";
 import { TESTING_LOCATION_NAME } from "@/data/locations";
+import type { GameplayFlag } from "@/data/events/types";
+import { getGirlDisplayName } from "@/lib/dawnMystery";
 
 const toCasualFallbackImage = (imagePath: string) =>
   imagePath.replace(
@@ -25,6 +27,7 @@ type Props = {
   isLocationTransitioning: boolean;
   characterImageLocation?: string;
   hideCharacters?: boolean;
+  gameplayFlags?: Set<GameplayFlag>;
 };
 
 export default function SceneView({
@@ -41,6 +44,7 @@ export default function SceneView({
   isLocationTransitioning,
   characterImageLocation,
   hideCharacters = false,
+  gameplayFlags = new Set<GameplayFlag>(),
 }: Props) {
   const [missingTestRoomGirls, setMissingTestRoomGirls] = useState<Set<string>>(
     new Set(),
@@ -147,6 +151,7 @@ export default function SceneView({
             const fallbackImgPath = toCasualFallbackImage(baseImgPath);
             const isUsingFallback = girlsUsingCasualFallback.has(girl.name);
             const imgPath = isUsingFallback ? fallbackImgPath : baseImgPath;
+            const displayName = getGirlDisplayName(girl.name, gameplayFlags);
             return (
               <button
                 key={girl.name}
@@ -177,7 +182,7 @@ export default function SceneView({
                 <div className="relative">
                   <Image
                     src={imgPath}
-                    alt={girl.name}
+                    alt={displayName}
                     width={192}
                     height={288}
                     className={`w-32 h-48 sm:w-40 sm:h-60 md:w-48 md:h-72 object-cover rounded-3xl border-4 ${
@@ -221,7 +226,7 @@ export default function SceneView({
                   {/* Name tag */}
                   <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-pink-500 to-purple-500 px-3 sm:px-5 py-1 sm:py-2 rounded-full shadow-xl border-2 border-white">
                     <span className="text-white font-bold text-xs sm:text-sm whitespace-nowrap drop-shadow-lg">
-                      {girl.name}
+                      {displayName}
                     </span>
                   </div>
                 </div>

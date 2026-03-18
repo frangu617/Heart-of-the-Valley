@@ -3,7 +3,15 @@ import { CharacterEvent } from "../../types";
 
 // Event 1: Tutor Request
 // Description: Yumi asks for extra tutoring after class.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: yumi_tutor_request_event  (Classroom, minAffection: 0)
+//   ├─ [Tell her to stick to regular office hours.]  → yumi_tutor_request_office_hours    END [hasMetYumi]
+//   └─ [Offer her private tutoring.]                 → yumi_tutor_request_private          END [hasMetYumi]
+// Rewards: hasMetYumi, unlockCharacters: Yumi
+// ─────────────────────────────────────────────────────────────────────────────
 
+// FROM: yumi_tutor_request_event → [Tell her to stick to regular office hours.]
 const yumiTutorRequestOfficeHours: Dialogue = {
   id: "yumi_tutor_request_office_hours",
   lines: [
@@ -40,6 +48,7 @@ const yumiTutorRequestOfficeHours: Dialogue = {
   ],
 };
 
+// FROM: yumi_tutor_request_event → [Offer her private tutoring.]
 const yumiTutorRequestPrivate: Dialogue = {
   id: "yumi_tutor_request_private",
   lines: [

@@ -252,6 +252,11 @@ export const randomEvents: RandomEvent[] = [
           text: "Iris catches your eye across the room, closes the gap, and pauses just long enough to make sure you do not pull away.",
         },
         {
+          speaker: null,
+          text: "Then she kisses you, quick and heated, before stepping back and leaving you to process it.",
+          expression: "kissingMC",
+        },
+        {
           speaker: "Iris",
           text: "I was trying to be normal for five minutes. I failed.",
           expression: "shy",

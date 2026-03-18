@@ -60,7 +60,6 @@ import {
 } from "@/lib/gameUi";
 import { startImageManifestPreload } from "@/lib/imagePreload";
 import { injectDawnIntelLines } from "@/lib/dawnMystery";
-import { iris_c3_ev2_dawn_summon_call } from "@/data/events/chapter3/iris/event2";
 import { dawn_ch1_ev1_text_dialogue } from "@/data/events/chapter1/dawn/event1";
 
 // Data / Types
@@ -1110,10 +1109,11 @@ export default function GamePage() {
 
     if (gameplayFlags.has("dawnSummonQueuedTonight")) {
       const fallbackTime = getIrisEventGameTime("iris_c3_ev2_dawn_callout_fallback");
-      if (fallbackTime === null) return null;
-      const fallbackDay = Math.floor(fallbackTime / 24);
-      const fallbackHour = fallbackTime % 24;
-      const targetDay = fallbackHour < 23 ? fallbackDay : fallbackDay + 1;
+      const referenceTime = fallbackTime ?? getIrisEventGameTime("iris_c3_ev2_dawn_callout");
+      if (referenceTime === null) return null;
+      const referenceDay = Math.floor(referenceTime / 24);
+      const referenceHour = referenceTime % 24;
+      const targetDay = referenceHour < 23 ? referenceDay : referenceDay + 1;
       return targetDay * 24 + 23;
     }
 
@@ -1158,7 +1158,7 @@ export default function GamePage() {
     if (calloutTime === null) return null;
 
     const calloutDay = Math.floor(calloutTime / 24);
-    const targetDay = calloutDay + 2;
+    const targetDay = calloutDay + 1;
     return targetDay * 24 + 23;
   }, [gameplayFlags, getIrisEventGameTime]);
 
@@ -4000,66 +4000,21 @@ export default function GamePage() {
       return;
     }
 
-    if (currentDialogue) return;
-
     const currentGameTime = calculateGameTime(dayOfWeek, hour, dayCount);
     if (currentGameTime < summonTargetGameTime) return;
     if (hour !== 23 && currentGameTime === summonTargetGameTime) return;
     if (dawnSummonAutoTriggeredRef.current) return;
     dawnSummonAutoTriggeredRef.current = true;
 
-    const dawnBase = baseGirls.find((girl) => girl.name === "Dawn");
-    const dawnStats = clampGirlStatsToCaps("Dawn", {
-      ...(dawnBase?.stats ?? {
-        affection: 0,
-        lust: 0,
-        mood: 50,
-        love: 0,
-        dominance: 0,
-      }),
-      ...(girlStatsOverrides.Dawn ?? {}),
-    });
-    const dawnImageGirl: Girl = {
-      name: "Dawn",
-      location: "Nightclub",
-      relationship: "Single",
-      personality: "Confident",
-      stats: dawnStats,
-    };
-
-    setCurrentLocation("Nightclub");
-    setSelectedGirl(null);
     setFlag("dawnSummonTriggered");
-    setFlag("hasSeenDawn");
-    setFlag("hasMetDawn");
-    setFlag("metDawn");
-    setCharacterUnlocks((prev) =>
-      prev.Dawn ? prev : { ...prev, Dawn: true },
-    );
-    setMetCharacters((prev) => new Set([...prev, "Dawn"]));
-    onEventTriggered("iris_c3_ev2_dawn_summon_call", "Iris");
-
-    const dawnCharacterImage = getCharacterImage(dawnImageGirl, "Nightclub", hour);
-    startDialogue(
-      iris_c3_ev2_dawn_summon_call,
-      dawnCharacterImage,
-      null,
-      "Dawn",
-      "Nightclub",
-    );
   }, [
-    clampGirlStatsToCaps,
-    currentDialogue,
     dayCount,
     dayOfWeek,
     gameState,
     gameplayFlags,
     getDawnSummonTargetGameTime,
-    girlStatsOverrides.Dawn,
     hour,
-    onEventTriggered,
     setFlag,
-    startDialogue,
   ]);
 
   // Dawn Chapter 1 Event 1 — auto-trigger at 23:00 two days after the callout
@@ -4104,6 +4059,12 @@ export default function GamePage() {
     setCurrentLocation("Nightclub");
     setSelectedGirl(null);
     setFlag("dawnCh1Ev1_Done");
+    setFlag("hasMetDawn");
+    setFlag("metDawn");
+    setCharacterUnlocks((prev) =>
+      prev.Dawn ? prev : { ...prev, Dawn: true },
+    );
+    setMetCharacters((prev) => new Set([...prev, "Dawn"]));
     onEventTriggered("dawn_ch1_ev1", "Dawn");
 
     setMessagesByCharacter((prev) => ({
@@ -5253,6 +5214,7 @@ export default function GamePage() {
               hour={hour}
               isLocationTransitioning={isLocationTransitioning}
               hideCharacters={isMobile && selectedGirl !== null}
+              gameplayFlags={gameplayFlags}
             />
 
             <LocationPanels

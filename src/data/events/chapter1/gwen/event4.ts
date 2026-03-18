@@ -3,7 +3,18 @@ import { CharacterEvent } from "../../types";
 
 // Event 4: The Rumor
 // Description: You hear about a dancer at the strip club.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: gwen_event_4_rumor  (Bar, 18-24h, minAffection 6, gwenApologyDone)
+//   [inline choices — no nextDialogueId, stat changes only]
+//   └─ second choice set:
+//        ├─ ["Respect her privacy and wait."]        → gwen_event_4_rumor_respect   END [gwenRumorHeard]
+//        ├─ ["Follow the lead and check it yourself"] → gwen_event_4_rumor_curious   END [gwenRumorHeard]
+//        └─ ["Go, but keep it detached and casual"]  → gwen_event_4_rumor_detached  END [gwenRumorHeard]
+// Rewards: gwenRumorHeard
+// ─────────────────────────────────────────────────────────────────────────────
 
+// FROM: gwen_event_4_rumor → ["Respect her privacy and wait."]
 const gwenEvent4RumorRespect: Dialogue = {
   id: "gwen_event_4_rumor_respect",
   lines: [
@@ -40,6 +51,7 @@ const gwenEvent4RumorRespect: Dialogue = {
   ],
 };
 
+// FROM: gwen_event_4_rumor → ["Follow the lead and check it yourself."]
 const gwenEvent4RumorCurious: Dialogue = {
   id: "gwen_event_4_rumor_curious",
   lines: [
@@ -81,6 +93,7 @@ const gwenEvent4RumorCurious: Dialogue = {
   ],
 };
 
+// FROM: gwen_event_4_rumor → ["Go, but keep it detached and casual."]
 const gwenEvent4RumorDetached: Dialogue = {
   id: "gwen_event_4_rumor_detached",
   lines: [

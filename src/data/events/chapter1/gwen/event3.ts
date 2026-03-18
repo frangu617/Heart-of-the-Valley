@@ -3,7 +3,18 @@ import { CharacterEvent } from "../../types";
 
 // Event 3: Quick Apology
 // Description: Gwen stops by after the door mixup.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: gwen_event_3_apology  (Hallway, 8-20h, gwenDoorMixupDone)
+//   [inline choices — no nextDialogueId, stat changes only]
+//   └─ second choice set:
+//        ├─ ["Be warm. You are good."]     → gwen_event_3_apology_warm     END [gwenApologyDone]
+//        ├─ ["Be curious. Rough shift?"]   → gwen_event_3_apology_curious  END [gwenApologyDone]
+//        └─ ["Set a boundary. Not again."] → gwen_event_3_apology_firm     END [gwenApologyDone]
+// Rewards: gwenApologyDone
+// ─────────────────────────────────────────────────────────────────────────────
 
+// FROM: gwen_event_3_apology → ["Be warm. You are good."]
 const gwenEvent3ApologyWarm: Dialogue = {
   id: "gwen_event_3_apology_warm",
   lines: [
@@ -53,6 +64,7 @@ const gwenEvent3ApologyWarm: Dialogue = {
   ],
 };
 
+// FROM: gwen_event_3_apology → ["Be curious. Rough shift?"]
 const gwenEvent3ApologyCurious: Dialogue = {
   id: "gwen_event_3_apology_curious",
   lines: [
@@ -101,6 +113,7 @@ const gwenEvent3ApologyCurious: Dialogue = {
   ],
 };
 
+// FROM: gwen_event_3_apology → ["Set a boundary. Not again."]
 const gwenEvent3ApologyFirm: Dialogue = {
   id: "gwen_event_3_apology_firm",
   lines: [

@@ -3,7 +3,35 @@ import { CharacterEvent } from "../../types";
 
 // Event 5: Chapter 1 Finale (Teasing Yumi)
 // Descriptions: A rainy office confession turns into a kiss. | A rainy office night turns tender.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: yumi_chapter_1_finale_dom  (Office, minAffection: 20, flag: yumiDomPath)
+//   ├─ [Scold her. "Get off the desk..."]   → yumi_finale_dom_round2_scold
+//   │    ├─ [Pull away. "Don't touch me."]  → yumi_finale_dom_fail          END
+//   │    └─ [Lean in. "Are you going to fix it..."]  → yumi_finale_dom_round3
+//   │         ├─ [Stay silent. (Stonewall)] → yumi_finale_dom_fail          END
+//   │         └─ [Admit defeat. "You're trouble, Yumi."]  → yumi_finale_dom_success  END
+//   └─ [Tease her. "Comfortable up there?"] → yumi_finale_dom_round2_tease
+//        ├─ [Pull away. "Don't touch me."]  → yumi_finale_dom_fail          END
+//        └─ [Lean in. "Are you going to fix it..."]  → yumi_finale_dom_round3
+//             ├─ [Stay silent. (Stonewall)] → yumi_finale_dom_fail          END
+//             └─ [Admit defeat. "You're trouble, Yumi."]  → yumi_finale_dom_success  END
+//
+// EVENT START: yumi_chapter_1_finale_sub  (Office, minAffection: 20, flag: yumiSubPath)
+//   ├─ [You have beautiful eyes. (Romantic)]  → yumi_finale_sub_round2_gentle
+//   │    ├─ [Grab her waist. (Too aggressive)] → yumi_finale_sub_fail       END
+//   │    └─ [Gently tuck her hair back. (Gentle)]  → yumi_finale_sub_round3
+//   │         ├─ [Lean in slowly.]            → yumi_finale_sub_success     END
+//   │         └─ [Grab her and kiss her deeply.]  → yumi_finale_sub_fail    END
+//   └─ [You look sexy in this light. (Too fast)]  → yumi_finale_sub_round2_fast
+//        ├─ [Grab her waist. (Too aggressive)] → yumi_finale_sub_fail       END
+//        └─ [Gently tuck her hair back. (Gentle)]  → yumi_finale_sub_round3
+//             ├─ [Lean in slowly.]            → yumi_finale_sub_success     END
+//             └─ [Grab her and kiss her deeply.]  → yumi_finale_sub_fail    END
+// Rewards: setFlags: yumi_chapter_1_completed (both events)
+// ─────────────────────────────────────────────────────────────────────────────
 
+// FROM: yumi_chapter_1_finale_dom → [Scold her. "Get off the desk, that's unprofessional."]
 const yumiFinaleDomRound2Scold: Dialogue = {
   id: "yumi_finale_dom_round2_scold",
   lines: [
@@ -41,6 +69,7 @@ const yumiFinaleDomRound2Scold: Dialogue = {
   ],
 };
 
+// FROM: yumi_chapter_1_finale_dom → [Tease her. "Comfortable up there?"]
 const yumiFinaleDomRound2Tease: Dialogue = {
   id: "yumi_finale_dom_round2_tease",
   lines: [
@@ -82,6 +111,7 @@ const yumiFinaleDomRound2Tease: Dialogue = {
   ],
 };
 
+// FROM: yumi_finale_dom_round2_scold / yumi_finale_dom_round2_tease → [Lean in. "Are you going to fix it, or just pull on it?"]
 const yumiFinaleDomRound3: Dialogue = {
   id: "yumi_finale_dom_round3",
   lines: [
@@ -122,6 +152,7 @@ const yumiFinaleDomRound3: Dialogue = {
   ],
 };
 
+// FROM: yumi_finale_dom_round3 → [Admit defeat. "You're trouble, Yumi."]
 const yumiFinaleDomSuccess: Dialogue = {
   id: "yumi_finale_dom_success",
   lines: [
@@ -186,6 +217,8 @@ const yumiFinaleDomSuccess: Dialogue = {
   ],
 };
 
+// FROM: yumi_finale_dom_round2_scold / yumi_finale_dom_round2_tease → [Pull away. "Don't touch me."]
+//       yumi_finale_dom_round3 → [Stay silent. (Stonewall)]
 const yumiFinaleDomFail: Dialogue = {
   id: "yumi_finale_dom_fail",
   lines: [
@@ -205,6 +238,7 @@ const yumiFinaleDomFail: Dialogue = {
   ],
 };
 
+// FROM: yumi_chapter_1_finale_sub → [You have beautiful eyes. (Romantic)]
 const yumiFinaleSubRound2Gentle: Dialogue = {
   id: "yumi_finale_sub_round2_gentle",
   lines: [
@@ -233,6 +267,7 @@ const yumiFinaleSubRound2Gentle: Dialogue = {
   ],
 };
 
+// FROM: yumi_chapter_1_finale_sub → [You look sexy in this light. (Too fast)]
 const yumiFinaleSubRound2Fast: Dialogue = {
   id: "yumi_finale_sub_round2_fast",
   lines: [
@@ -261,6 +296,7 @@ const yumiFinaleSubRound2Fast: Dialogue = {
   ],
 };
 
+// FROM: yumi_finale_sub_round2_gentle / yumi_finale_sub_round2_fast → [Gently tuck her hair back. (Gentle)]
 const yumiFinaleSubRound3: Dialogue = {
   id: "yumi_finale_sub_round3",
   lines: [
@@ -288,6 +324,7 @@ const yumiFinaleSubRound3: Dialogue = {
   ],
 };
 
+// FROM: yumi_finale_sub_round3 → [Lean in slowly.]
 const yumiFinaleSubSuccess: Dialogue = {
   id: "yumi_finale_sub_success",
   lines: [
@@ -335,6 +372,8 @@ const yumiFinaleSubSuccess: Dialogue = {
   ],
 };
 
+// FROM: yumi_finale_sub_round2_gentle / yumi_finale_sub_round2_fast → [Grab her waist. (Too aggressive)]
+//       yumi_finale_sub_round3 → [Grab her and kiss her deeply.]
 const yumiFinaleSubFail: Dialogue = {
   id: "yumi_finale_sub_fail",
   lines: [

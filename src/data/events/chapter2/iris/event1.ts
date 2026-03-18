@@ -3,7 +3,53 @@ import { CharacterEvent } from "../../types";
 
 // Event 1: The Morning After
 // Description: You see Iris for the first time since the kiss.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: iris_ch2_ev1  (University, irisCh1FinaleComplete, aff≥10, lust≥10)
+//   Entry: iris_ch2_ev1_intro
+//   ├─ [Take the lead]       → iris_ch2_ev1_sub_intro        (SUB PATH)
+//   │    ├─ [Be warm]        → iris_ch2_ev1_sub_reassure
+//   │    │    ├─ [Be kind]   → iris_ch2_ev1_sub_final_nice   END [irisCh2Ev1_Done]
+//   │    │    ├─ [Be sharp]  → iris_ch2_ev1_sub_final_mean   END [irisCh2Ev1_Done]
+//   │    │    └─ [Laugh off] → iris_ch2_ev1_sub_final_laugh  END [irisCh2Ev1_Done]
+//   │    ├─ [Neg her]        → iris_ch2_ev1_sub_give_space
+//   │    │    ├─ [Be kind]   → iris_ch2_ev1_sub_final_nice   END [irisCh2Ev1_Done]
+//   │    │    ├─ [Be harsh]  → iris_ch2_ev1_sub_final_mean   END [irisCh2Ev1_Done]
+//   │    │    └─ [Laugh off] → iris_ch2_ev1_sub_final_laugh  END [irisCh2Ev1_Done]
+//   │    └─ [Stay neutral]   → iris_ch2_ev1_sub_react_neutral
+//   │         ├─ [Be kind]   → iris_ch2_ev1_sub_final_nice   END [irisCh2Ev1_Done]
+//   │         ├─ [Be sharp]  → iris_ch2_ev1_sub_final_mean   END [irisCh2Ev1_Done]
+//   │         └─ [Laugh off] → iris_ch2_ev1_sub_final_laugh  END [irisCh2Ev1_Done]
+//   ├─ [Offer her control]   → iris_ch2_ev1_dom_intro        (DOM PATH)
+//   │    ├─ [Encourage her]  → iris_ch2_ev1_dom_playful
+//   │    │    ├─ [Be kind]   → iris_ch2_ev1_dom_final_nice   END [irisCh2Ev1_Done]
+//   │    │    ├─ [Be sharp]  → iris_ch2_ev1_dom_final_mean   END [irisCh2Ev1_Done]
+//   │    │    └─ [Laugh off] → iris_ch2_ev1_dom_final_laugh  END [irisCh2Ev1_Done]
+//   │    ├─ [Push back]      → iris_ch2_ev1_dom_direct
+//   │    │    ├─ [Be kind]   → iris_ch2_ev1_dom_final_nice   END [irisCh2Ev1_Done]
+//   │    │    ├─ [Be sharp]  → iris_ch2_ev1_dom_final_mean   END [irisCh2Ev1_Done]
+//   │    │    └─ [Laugh off] → iris_ch2_ev1_dom_final_laugh  END [irisCh2Ev1_Done]
+//   │    └─ [Stay neutral]   → iris_ch2_ev1_dom_react_neutral
+//   │         ├─ [Be kind]   → iris_ch2_ev1_dom_final_nice   END [irisCh2Ev1_Done]
+//   │         ├─ [Be sharp]  → iris_ch2_ev1_dom_final_mean   END [irisCh2Ev1_Done]
+//   │         └─ [Laugh off] → iris_ch2_ev1_dom_final_laugh  END [irisCh2Ev1_Done]
+//   └─ [Be calm and adult]   → iris_ch2_ev1_neutral_dialogue (NEUTRAL PATH)
+//        ├─ [Be warm]        → iris_ch2_ev1_neutral_react_nice
+//        │    ├─ [Be kind]   → iris_ch2_ev1_neutral_final_nice   END [irisCh2Ev1_Done]
+//        │    ├─ [Be sharp]  → iris_ch2_ev1_neutral_final_mean   END [irisCh2Ev1_Done]
+//        │    └─ [Laugh off] → iris_ch2_ev1_neutral_final_laugh  END [irisCh2Ev1_Done]
+//        ├─ [Be mean]        → iris_ch2_ev1_neutral_react_mean
+//        │    ├─ [Be kind]   → iris_ch2_ev1_neutral_final_nice   END [irisCh2Ev1_Done]
+//        │    ├─ [Be sharp]  → iris_ch2_ev1_neutral_final_mean   END [irisCh2Ev1_Done]
+//        │    └─ [Laugh off] → iris_ch2_ev1_neutral_final_laugh  END [irisCh2Ev1_Done]
+//        └─ [Be neutral]     → iris_ch2_ev1_neutral_react_neutral
+//             ├─ [Be kind]   → iris_ch2_ev1_neutral_final_nice   END [irisCh2Ev1_Done]
+//             ├─ [Be sharp]  → iris_ch2_ev1_neutral_final_mean   END [irisCh2Ev1_Done]
+//             └─ [Laugh off] → iris_ch2_ev1_neutral_final_laugh  END [irisCh2Ev1_Done]
+// Rewards: irisCh2Ev1_Done
+// ─────────────────────────────────────────────────────────────────────────────
 
+// EVENT ENTRY POINT
 const iris_ch2_ev1_intro: Dialogue = {
   id: "iris_ch2_ev1_intro",
   lines: [
@@ -63,6 +109,8 @@ const iris_ch2_ev1_intro: Dialogue = {
   ],
 };
 
+// ─── SUB PATH ────────────────────────────────────────────────────────────────
+// FROM: iris_ch2_ev1_intro → [Take the lead. "It felt right, and I want more."]
 const iris_ch2_ev1_sub_intro: Dialogue = {
   id: "iris_ch2_ev1_sub_intro",
   lines: [
@@ -110,6 +158,7 @@ const iris_ch2_ev1_sub_intro: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_ev1_sub_intro → [Be warm. "It felt right, and I want it again."]
 const iris_ch2_ev1_sub_reassure: Dialogue = {
   id: "iris_ch2_ev1_sub_reassure",
   lines: [
@@ -152,6 +201,7 @@ const iris_ch2_ev1_sub_reassure: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_ev1_sub_intro → [Neg her. "You were a mess, but I could work with it."]
 const iris_ch2_ev1_sub_give_space: Dialogue = {
   id: "iris_ch2_ev1_sub_give_space",
   lines: [
@@ -194,6 +244,7 @@ const iris_ch2_ev1_sub_give_space: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_ev1_sub_intro → [Stay neutral. "It happened. We can keep control."]
 const iris_ch2_ev1_sub_react_neutral: Dialogue = {
   id: "iris_ch2_ev1_sub_react_neutral",
   lines: [
@@ -235,6 +286,7 @@ const iris_ch2_ev1_sub_react_neutral: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_ev1_sub_reassure / _give_space / _react_neutral → [Be kind]
 const iris_ch2_ev1_sub_final_nice: Dialogue = {
   id: "iris_ch2_ev1_sub_final_nice",
   lines: [
@@ -251,6 +303,7 @@ const iris_ch2_ev1_sub_final_nice: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_ev1_sub_reassure / _give_space / _react_neutral → [Be sharp / Be harsh]
 const iris_ch2_ev1_sub_final_mean: Dialogue = {
   id: "iris_ch2_ev1_sub_final_mean",
   lines: [
@@ -267,6 +320,7 @@ const iris_ch2_ev1_sub_final_mean: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_ev1_sub_reassure / _give_space / _react_neutral → [Laugh it off]
 const iris_ch2_ev1_sub_final_laugh: Dialogue = {
   id: "iris_ch2_ev1_sub_final_laugh",
   lines: [
@@ -283,6 +337,8 @@ const iris_ch2_ev1_sub_final_laugh: Dialogue = {
   ],
 };
 
+// ─── DOM PATH ────────────────────────────────────────────────────────────────
+// FROM: iris_ch2_ev1_intro → [Offer her control. "If you want to lead, I am listening."]
 const iris_ch2_ev1_dom_intro: Dialogue = {
   id: "iris_ch2_ev1_dom_intro",
   lines: [
@@ -322,6 +378,7 @@ const iris_ch2_ev1_dom_intro: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_ev1_dom_intro → [Encourage her. "I liked you taking control."]
 const iris_ch2_ev1_dom_playful: Dialogue = {
   id: "iris_ch2_ev1_dom_playful",
   lines: [
@@ -363,6 +420,7 @@ const iris_ch2_ev1_dom_playful: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_ev1_dom_intro → [Push back. "You were too much."]
 const iris_ch2_ev1_dom_direct: Dialogue = {
   id: "iris_ch2_ev1_dom_direct",
   lines: [
@@ -403,6 +461,7 @@ const iris_ch2_ev1_dom_direct: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_ev1_dom_intro → [Stay neutral. "I want clarity, not a power trip."]
 const iris_ch2_ev1_dom_react_neutral: Dialogue = {
   id: "iris_ch2_ev1_dom_react_neutral",
   lines: [
@@ -443,6 +502,7 @@ const iris_ch2_ev1_dom_react_neutral: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_ev1_dom_playful / _direct / _react_neutral → [Be kind]
 const iris_ch2_ev1_dom_final_nice: Dialogue = {
   id: "iris_ch2_ev1_dom_final_nice",
   lines: [
@@ -459,6 +519,7 @@ const iris_ch2_ev1_dom_final_nice: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_ev1_dom_playful / _direct / _react_neutral → [Be sharp]
 const iris_ch2_ev1_dom_final_mean: Dialogue = {
   id: "iris_ch2_ev1_dom_final_mean",
   lines: [
@@ -475,6 +536,7 @@ const iris_ch2_ev1_dom_final_mean: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_ev1_dom_playful / _direct / _react_neutral → [Laugh it off]
 const iris_ch2_ev1_dom_final_laugh: Dialogue = {
   id: "iris_ch2_ev1_dom_final_laugh",
   lines: [
@@ -491,6 +553,8 @@ const iris_ch2_ev1_dom_final_laugh: Dialogue = {
   ],
 };
 
+// ─── NEUTRAL PATH ────────────────────────────────────────────────────────────
+// FROM: iris_ch2_ev1_intro → [Be calm and adult. "I do not regret it, but we should be smart."]
 const iris_ch2_ev1_neutral_dialogue: Dialogue = {
   id: "iris_ch2_ev1_neutral_dialogue",
   lines: [
@@ -530,6 +594,7 @@ const iris_ch2_ev1_neutral_dialogue: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_ev1_neutral_dialogue → [Be warm. "I liked it. I want more."]
 const iris_ch2_ev1_neutral_react_nice: Dialogue = {
   id: "iris_ch2_ev1_neutral_react_nice",
   lines: [
@@ -571,6 +636,7 @@ const iris_ch2_ev1_neutral_react_nice: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_ev1_neutral_dialogue → [Be mean. "Do not make a big deal of it."]
 const iris_ch2_ev1_neutral_react_mean: Dialogue = {
   id: "iris_ch2_ev1_neutral_react_mean",
   lines: [
@@ -610,6 +676,7 @@ const iris_ch2_ev1_neutral_react_mean: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_ev1_neutral_dialogue → [Be neutral. "I want us to be careful."]
 const iris_ch2_ev1_neutral_react_neutral: Dialogue = {
   id: "iris_ch2_ev1_neutral_react_neutral",
   lines: [
@@ -650,6 +717,7 @@ const iris_ch2_ev1_neutral_react_neutral: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_ev1_neutral_react_nice / _mean / _neutral → [Be kind]
 const iris_ch2_ev1_neutral_final_nice: Dialogue = {
   id: "iris_ch2_ev1_neutral_final_nice",
   lines: [
@@ -666,6 +734,7 @@ const iris_ch2_ev1_neutral_final_nice: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_ev1_neutral_react_nice / _mean / _neutral → [Be sharp]
 const iris_ch2_ev1_neutral_final_mean: Dialogue = {
   id: "iris_ch2_ev1_neutral_final_mean",
   lines: [
@@ -682,6 +751,7 @@ const iris_ch2_ev1_neutral_final_mean: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_ev1_neutral_react_nice / _mean / _neutral → [Laugh it off]
 const iris_ch2_ev1_neutral_final_laugh: Dialogue = {
   id: "iris_ch2_ev1_neutral_final_laugh",
   lines: [

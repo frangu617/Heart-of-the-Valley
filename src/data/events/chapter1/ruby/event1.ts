@@ -3,7 +3,16 @@ import { CharacterEvent } from "../../types";
 
 // Event 1: Trainer Offer
 // Description: Ruby offers to train you after spotting your form.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: ruby_trainer_offer_event  (Gym, any hour)
+//   ├─ [Let's do it. You lead.]        → ruby_ch1_ev1_accept    END [rubyTrainerAccepted]
+//   ├─ [Fine, coach me. But I get a say.] → ruby_ch1_ev1_accept END [rubyTrainerAccepted]
+//   └─ [Not today. Maybe later.]        → ruby_ch1_ev1_decline   END [rubyTrainerDeclined]
+// Rewards: hasMetRuby, unlocks Ruby
+// ─────────────────────────────────────────────────────────────────────────────
 
+// FROM: ruby_ch1_ev1_intro → [Let's do it. You lead.] / [Fine, coach me. But I get a say.]
 const rubyCh1Ev1Accept: Dialogue = {
   id: "ruby_ch1_ev1_accept",
   lines: [
@@ -22,6 +31,7 @@ const rubyCh1Ev1Accept: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev1_intro → [Not today. Maybe later.]
 const rubyCh1Ev1Decline: Dialogue = {
   id: "ruby_ch1_ev1_decline",
   lines: [

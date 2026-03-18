@@ -3,6 +3,22 @@ import { CharacterEvent } from "../../types";
 
 // Event 3: Rules of Engagement
 // Description: Yumi sends you a plan to keep things quiet.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// Three separate CharacterEvents fire based on relationship flag; each uses
+// its own fully inline dialogue const — narrator-only, no player choices.
+//
+// EVENT START: yumi_c2_event_3_sub  (no location, yumi_relationship_secret)
+//   └─ [auto]  → yumi_c2_ev3_sub    END [yumi_c2_event_3_completed]
+//
+// EVENT START: yumi_c2_event_3_dom  (no location, yumi_relationship_secret_dom)
+//   └─ [auto]  → yumi_c2_ev3_dom    END [yumi_c2_event_3_completed]
+//
+// EVENT START: yumi_c2_event_3_neutral  (no location, yumi_relationship_secret_neutral)
+//   └─ [auto]  → yumi_c2_ev3_neutral   END [yumi_c2_event_3_completed]
+//
+// Rewards: yumi_c2_event_3_completed
+// ─────────────────────────────────────────────────────────────────────────────
 
 const yumiC2Ev3Sub: Dialogue = {
   id: "yumi_c2_ev3_sub",

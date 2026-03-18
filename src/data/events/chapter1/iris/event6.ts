@@ -1,9 +1,29 @@
 import type { Dialogue } from "../../../dialogues";
 import { CharacterEvent } from "../../types";
 
-// Event 6: Chapter 1 Finale (Confident Iris)
+// Event 6: Chapter 1 Finale
 // Descriptions: Iris confronts you in the hallway late at night. | Iris hesitates in the hallway late at night.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: iris_chapter_1_finale_dom  (Hallway, 20–24h, irisDomPath)
+//   ├─ [Challenge her]    → iris_finale_dom_challenge
+//   │    ├─ [Lean into her touch] → iris_finale_dom_success    END [irisCh1FinaleComplete]
+//   │    └─ [Step back]           → iris_finale_dom_fail_back  END [irisCh1FinaleComplete]
+//   └─ [Deflect]          → iris_finale_dom_deflect
+//        ├─ [Lean into her touch] → iris_finale_dom_fail_lean  END [irisCh1FinaleComplete]
+//        └─ [Step back]           → iris_finale_dom_fail_back  END [irisCh1FinaleComplete]
+//
+// EVENT START: iris_chapter_1_finale_sub  (Hallway, 20–24h, irisSubPath)
+//   ├─ [Step closer]      → iris_finale_sub_step_closer
+//   │    ├─ [Take charge] → iris_finale_sub_success            END [irisCh1FinaleComplete]
+//   │    └─ [Ask her]     → iris_finale_sub_fail_ask           END [irisCh1FinaleComplete]
+//   └─ [Stay back]        → iris_finale_sub_stay_back
+//        ├─ [Take charge] → iris_finale_sub_fail_take_charge   END [irisCh1FinaleComplete]
+//        └─ [Ask her]     → iris_finale_sub_fail_ask           END [irisCh1FinaleComplete]
+// Rewards on all paths: irisCh1FinaleComplete
+// ─────────────────────────────────────────────────────────────────────────────
 
+// FROM: iris_chapter_1_finale_dom → [Challenge her]
 const irisFinaleDomChallenge: Dialogue = {
   id: "iris_finale_dom_challenge",
   lines: [
@@ -44,6 +64,7 @@ const irisFinaleDomChallenge: Dialogue = {
   ],
 };
 
+// FROM: iris_chapter_1_finale_dom → [Deflect]
 const irisFinaleDomDeflect: Dialogue = {
   id: "iris_finale_dom_deflect",
   lines: [
@@ -80,6 +101,7 @@ const irisFinaleDomDeflect: Dialogue = {
   ],
 };
 
+// FROM: iris_finale_dom_challenge → [Lean into her touch]
 const irisFinaleDomSuccess: Dialogue = {
   id: "iris_finale_dom_success",
   lines: [
@@ -154,6 +176,7 @@ const irisFinaleDomSuccess: Dialogue = {
   ],
 };
 
+// FROM: iris_finale_dom_challenge → [Step back]  /  iris_finale_dom_deflect → [Step back]
 const irisFinaleDomFailBack: Dialogue = {
   id: "iris_finale_dom_fail_back",
   lines: [
@@ -190,6 +213,7 @@ const irisFinaleDomFailBack: Dialogue = {
   ],
 };
 
+// FROM: iris_finale_dom_deflect → [Lean into her touch]
 const irisFinaleDomFailLean: Dialogue = {
   id: "iris_finale_dom_fail_lean",
   lines: [
@@ -226,6 +250,7 @@ const irisFinaleDomFailLean: Dialogue = {
   ],
 };
 
+// FROM: iris_chapter_1_finale_sub → [Step closer]
 const irisFinaleSubStepCloser: Dialogue = {
   id: "iris_finale_sub_step_closer",
   lines: [
@@ -262,6 +287,7 @@ const irisFinaleSubStepCloser: Dialogue = {
   ],
 };
 
+// FROM: iris_chapter_1_finale_sub → [Stay back]
 const irisFinaleSubStayBack: Dialogue = {
   id: "iris_finale_sub_stay_back",
   lines: [
@@ -294,6 +320,7 @@ const irisFinaleSubStayBack: Dialogue = {
   ],
 };
 
+// FROM: iris_finale_sub_step_closer → [Take charge]
 const irisFinaleSubSuccess: Dialogue = {
   id: "iris_finale_sub_success",
   lines: [
@@ -351,6 +378,7 @@ const irisFinaleSubSuccess: Dialogue = {
   ],
 };
 
+// FROM: iris_finale_sub_stay_back → [Take charge]
 const irisFinaleSubFailTakeCharge: Dialogue = {
   id: "iris_finale_sub_fail_take_charge",
   lines: [
@@ -370,6 +398,7 @@ const irisFinaleSubFailTakeCharge: Dialogue = {
   ],
 };
 
+// FROM: iris_finale_sub_step_closer → [Ask her]  /  iris_finale_sub_stay_back → [Ask her]
 const irisFinaleSubFailAsk: Dialogue = {
   id: "iris_finale_sub_fail_ask",
   lines: [

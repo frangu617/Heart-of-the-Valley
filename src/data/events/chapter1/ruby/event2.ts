@@ -3,7 +3,16 @@ import { CharacterEvent } from "../../types";
 
 // Event 2: First Session
 // Description: Ruby runs your first full training session.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: ruby_ch1_ev2_first_session  (Gym, any hour, rubyTrainerAccepted)
+//   ├─ [You lead. I keep up.]               → ruby_ch1_ev2_lead      → ruby_ch1_ev2_after  END
+//   ├─ [Only if you can keep up with me.]   → ruby_ch1_ev2_challenge  → ruby_ch1_ev2_after  END
+//   └─ [Take it slow. I'm here to learn.]   → ruby_ch1_ev2_gentle     → ruby_ch1_ev2_after  END
+// Rewards: affection +2, rubyCh1Ev2Done
+// ─────────────────────────────────────────────────────────────────────────────
 
+// FROM: ruby_ch1_ev2_first_session → [You lead. I keep up.]
 const rubyCh1Ev2Lead: Dialogue = {
   id: "ruby_ch1_ev2_lead",
   lines: [
@@ -23,6 +32,7 @@ const rubyCh1Ev2Lead: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev2_first_session → [Only if you can keep up with me.]
 const rubyCh1Ev2Challenge: Dialogue = {
   id: "ruby_ch1_ev2_challenge",
   lines: [
@@ -41,6 +51,7 @@ const rubyCh1Ev2Challenge: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev2_first_session → [Take it slow. I'm here to learn.]
 const rubyCh1Ev2Gentle: Dialogue = {
   id: "ruby_ch1_ev2_gentle",
   lines: [
@@ -60,6 +71,7 @@ const rubyCh1Ev2Gentle: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev2_lead / ruby_ch1_ev2_challenge / ruby_ch1_ev2_gentle → [auto-chain on Continue]
 const rubyCh1Ev2After: Dialogue = {
   id: "ruby_ch1_ev2_after",
   lines: [

@@ -3,7 +3,21 @@ import { CharacterEvent } from "../../types";
 
 // Event 3: Switch Flip
 // Description: Ruby's mood shifts mid-session.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: ruby_ch1_ev3_switch_sub  (Gym, affection≥3, dominance≤3, rubyCh1Ev2Done)
+//   ├─ [Okay. Call it. I'll follow.]   → ruby_ch1_ev3_sub_follow  → ruby_ch1_ev3_sub_after  END
+//   ├─ [Yes, coach.]                   → ruby_ch1_ev3_sub_tease   → ruby_ch1_ev3_sub_after  END
+//   └─ [Time out. Breathe.]            → ruby_ch1_ev3_sub_timeout → ruby_ch1_ev3_sub_after  END
+//
+// EVENT START: ruby_ch1_ev3_switch_dom  (Gym, affection≥3, dominance≥4, rubyCh1Ev2Done)
+//   ├─ [Lead it. I'll keep up.]        → ruby_ch1_ev3_dom_follow  → ruby_ch1_ev3_dom_after  END
+//   ├─ [Make me earn it.]              → ruby_ch1_ev3_dom_challenge → ruby_ch1_ev3_dom_after END
+//   └─ [You're off. Breathe.]          → ruby_ch1_ev3_dom_reset   → ruby_ch1_ev3_dom_after  END
+// Rewards: affection +1, rubyCh1Ev3Done
+// ─────────────────────────────────────────────────────────────────────────────
 
+// FROM: ruby_ch1_ev3_switch_sub → [Okay. Call it. I'll follow.]
 const rubyCh1Ev3SubFollow: Dialogue = {
   id: "ruby_ch1_ev3_sub_follow",
   lines: [
@@ -23,6 +37,7 @@ const rubyCh1Ev3SubFollow: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev3_switch_sub → [Yes, coach.]
 const rubyCh1Ev3SubTease: Dialogue = {
   id: "ruby_ch1_ev3_sub_tease",
   lines: [
@@ -42,6 +57,7 @@ const rubyCh1Ev3SubTease: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev3_switch_sub → [Time out. Breathe.]
 const rubyCh1Ev3SubTimeout: Dialogue = {
   id: "ruby_ch1_ev3_sub_timeout",
   lines: [
@@ -62,6 +78,7 @@ const rubyCh1Ev3SubTimeout: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev3_sub_follow / ruby_ch1_ev3_sub_tease / ruby_ch1_ev3_sub_timeout → [auto-chain on Continue]
 const rubyCh1Ev3SubAfter: Dialogue = {
   id: "ruby_ch1_ev3_sub_after",
   lines: [
@@ -78,6 +95,7 @@ const rubyCh1Ev3SubAfter: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev3_switch_dom → [Lead it. I'll keep up.]
 const rubyCh1Ev3DomFollow: Dialogue = {
   id: "ruby_ch1_ev3_dom_follow",
   lines: [
@@ -97,6 +115,7 @@ const rubyCh1Ev3DomFollow: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev3_switch_dom → [Make me earn it.]
 const rubyCh1Ev3DomChallenge: Dialogue = {
   id: "ruby_ch1_ev3_dom_challenge",
   lines: [
@@ -116,6 +135,7 @@ const rubyCh1Ev3DomChallenge: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev3_switch_dom → [You're off. Breathe.]
 const rubyCh1Ev3DomReset: Dialogue = {
   id: "ruby_ch1_ev3_dom_reset",
   lines: [
@@ -134,6 +154,7 @@ const rubyCh1Ev3DomReset: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev3_dom_follow / ruby_ch1_ev3_dom_challenge / ruby_ch1_ev3_dom_reset → [auto-chain on Continue]
 const rubyCh1Ev3DomAfter: Dialogue = {
   id: "ruby_ch1_ev3_dom_after",
   lines: [

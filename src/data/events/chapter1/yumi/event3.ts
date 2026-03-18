@@ -3,7 +3,19 @@ import { CharacterEvent } from "../../types";
 
 // Event 3: Tutoring, Round Two (Teasing)
 // Descriptions: Yumi pushes your boundaries during a late session. | Yumi looks for approval during a late session.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: yumi_tutoring_event_2_dom  (Office, minAffection: 10, flag: yumiDomPath)
+//   ├─ [Play along (Flirt back).]        → yumi_tutor2_dom_play         END
+//   └─ [Establish boundaries (Professional).]  → yumi_tutor2_dom_boundaries  END
+//
+// EVENT START: yumi_tutoring_event_2_sub  (Office, minAffection: 10, flag: yumiSubPath)
+//   ├─ [Praise her (You take the lead).]       → yumi_tutor2_sub_praise    END
+//   └─ [Correct her posture (Stern/Professional).]  → yumi_tutor2_sub_correct  END
+// Rewards: playerMoney: 15, intelligence +1 (both events)
+// ─────────────────────────────────────────────────────────────────────────────
 
+// FROM: yumi_tutoring_event_2_dom → [Play along (Flirt back).]
 const yumiTutor2DomPlay: Dialogue = {
   id: "yumi_tutor2_dom_play",
   lines: [
@@ -62,6 +74,7 @@ const yumiTutor2DomPlay: Dialogue = {
   ],
 };
 
+// FROM: yumi_tutoring_event_2_dom → [Establish boundaries (Professional).]
 const yumiTutor2DomBoundaries: Dialogue = {
   id: "yumi_tutor2_dom_boundaries",
   lines: [
@@ -115,6 +128,7 @@ const yumiTutor2DomBoundaries: Dialogue = {
   ],
 };
 
+// FROM: yumi_tutoring_event_2_sub → [Praise her (You take the lead).]
 const yumiTutor2SubPraise: Dialogue = {
   id: "yumi_tutor2_sub_praise",
   lines: [
@@ -176,6 +190,7 @@ const yumiTutor2SubPraise: Dialogue = {
   ],
 };
 
+// FROM: yumi_tutoring_event_2_sub → [Correct her posture (Stern/Professional).]
 const yumiTutor2SubCorrect: Dialogue = {
   id: "yumi_tutor2_sub_correct",
   lines: [

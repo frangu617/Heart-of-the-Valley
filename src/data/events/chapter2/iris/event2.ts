@@ -3,7 +3,21 @@ import { CharacterEvent } from "../../types";
 
 // Event 2: Public Encounter
 // Description: You run into Iris outside of work.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: iris_ch2_ev2_sub     (Mall, dominance ≤ -10, irisCh2Ev1_Done)
+//   → iris_ch2_ev2_sub_dialogue     (fully inline, no sub-dialogues)   END [irisCh2Ev2_Done]
+//
+// EVENT START: iris_ch2_ev2_dom     (Cafe, dominance ≥ 10, irisCh2Ev1_Done)
+//   → iris_ch2_ev2_dom_dialogue     (fully inline, no sub-dialogues)   END [irisCh2Ev2_Done]
+//
+// EVENT START: iris_ch2_ev2_neutral (Mall, dominance -9 to 9, irisCh2Ev1_Done)
+//   → iris_ch2_ev2_neutral_dialogue (fully inline, no sub-dialogues)   END [irisCh2Ev2_Done]
+//
+// Each route is entirely self-contained; choices affect stats but don't fork narrative.
+// ─────────────────────────────────────────────────────────────────────────────
 
+// EVENT ENTRY: iris_ch2_ev2_sub (SUB PATH — Mall)
 const iris_ch2_ev2_sub_dialogue: Dialogue = {
     id: "iris_ch2_ev2_sub_dialogue",
     lines: [
@@ -70,6 +84,7 @@ const iris_ch2_ev2_sub_dialogue: Dialogue = {
     ]
 };
 
+// EVENT ENTRY: iris_ch2_ev2_dom (DOM PATH — Cafe)
 const iris_ch2_ev2_dom_dialogue: Dialogue = {
     id: "iris_ch2_ev2_dom_dialogue",
     lines: [
@@ -135,6 +150,7 @@ const iris_ch2_ev2_dom_dialogue: Dialogue = {
     ]
 };
 
+// EVENT ENTRY: iris_ch2_ev2_neutral (NEUTRAL PATH — Mall/Bookstore)
 const iris_ch2_ev2_neutral_dialogue: Dialogue = {
     id: "iris_ch2_ev2_neutral_dialogue",
     lines: [

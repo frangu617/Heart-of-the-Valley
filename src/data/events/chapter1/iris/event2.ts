@@ -3,13 +3,22 @@ import { CharacterEvent } from "../../types";
 
 // Event 2: Coffee Meetup
 // Description: First intentional meeting with Iris at the cafe.
-// Three branches at the biology geek-out moment:
-//   - Flirt: player leans in → she's flustered-pleased, gets personal, inner split on depth
-//   - Friendly: player engages genuinely → she relaxes and opens up, inner split
-//   - Reserved: player stays measured → she recalibrates to professional common ground
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: iris_coffee_meetup_event  (Cafe, 8–20h, hasMetIris + irisCoffeeAccepted)
+//   ├─ ["I'd stay for the lecture."]          → iris_coffee_ev2_flirt
+//   │    ├─ ["I wanted to build something..."] → iris_coffee_ev2_flirt_depth   END [irisCoffeeMet]
+//   │    └─ ["The 8 AM lectures..."]           → iris_coffee_ev2_flirt_light   END [irisCoffeeMet]
+//   ├─ ["You clearly love it..."]             → iris_coffee_ev2_friendly
+//   │    ├─ ["Prestige wasn't the point..."]  → iris_coffee_ev2_friendly_build END [irisCoffeeMet]
+//   │    └─ ["Right fit, right time..."]      → iris_coffee_ev2_friendly_timing END [irisCoffeeMet]
+//   └─ ["Do your students actually..."]       → iris_coffee_ev2_reserved       END [irisCoffeeMet]
+// Rewards on all paths: irisCoffeeMet
+// ─────────────────────────────────────────────────────────────────────────────
 
 // ─── FLIRT PATH ──────────────────────────────────────────────────────────────
 
+// FROM: iris_coffee_meetup_event → ["I'd stay for the lecture."]
 const iris_coffee_ev2_flirt: Dialogue = {
   id: "iris_coffee_ev2_flirt",
   lines: [
@@ -77,6 +86,7 @@ const iris_coffee_ev2_flirt: Dialogue = {
   ],
 };
 
+// FROM: iris_coffee_ev2_flirt → ["I wanted to build something that lasts..."]
 const iris_coffee_ev2_flirt_depth: Dialogue = {
   id: "iris_coffee_ev2_flirt_depth",
   lines: [
@@ -193,6 +203,7 @@ const iris_coffee_ev2_flirt_depth: Dialogue = {
   ],
 };
 
+// FROM: iris_coffee_ev2_flirt → ["The 8 AM lectures are the only thing..."]
 const iris_coffee_ev2_flirt_light: Dialogue = {
   id: "iris_coffee_ev2_flirt_light",
   lines: [
@@ -279,6 +290,7 @@ const iris_coffee_ev2_flirt_light: Dialogue = {
 
 // ─── FRIENDLY PATH ───────────────────────────────────────────────────────────
 
+// FROM: iris_coffee_meetup_event → ["You clearly love it. That's rarer than people think."]
 const iris_coffee_ev2_friendly: Dialogue = {
   id: "iris_coffee_ev2_friendly",
   lines: [
@@ -350,6 +362,7 @@ const iris_coffee_ev2_friendly: Dialogue = {
   ],
 };
 
+// FROM: iris_coffee_ev2_friendly → ["Prestige wasn't the point..."]
 const iris_coffee_ev2_friendly_build: Dialogue = {
   id: "iris_coffee_ev2_friendly_build",
   lines: [
@@ -421,6 +434,7 @@ const iris_coffee_ev2_friendly_build: Dialogue = {
   ],
 };
 
+// FROM: iris_coffee_ev2_friendly → ["Right fit, right time. I wasn't overthinking it."]
 const iris_coffee_ev2_friendly_timing: Dialogue = {
   id: "iris_coffee_ev2_friendly_timing",
   lines: [
@@ -493,6 +507,7 @@ const iris_coffee_ev2_friendly_timing: Dialogue = {
 
 // ─── RESERVED PATH ───────────────────────────────────────────────────────────
 
+// FROM: iris_coffee_meetup_event → ["Do your students actually check out that fast?"]
 const iris_coffee_ev2_reserved: Dialogue = {
   id: "iris_coffee_ev2_reserved",
   lines: [

@@ -3,7 +3,38 @@ import { CharacterEvent } from "../../types";
 
 // Event 6: Chapter 1 Finale (Gwen Boundaries)
 // Descriptions: Gwen sets terms for a real connection. | Gwen proposes a clear casual arrangement.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: gwen_chapter_1_finale  (Hallway, 20-24h, minAffection 8, minLust 6, gwenDomPath+gwenRevealDone)
+//   ├─ ["I hear you. No games, no pressure."]        → gwen_finale_dom_respect
+//   ├─ ["Set the pace. I can keep up."]              → gwen_finale_dom_assertive
+//   └─ ["Come in and spell it out. I am listening."] → gwen_finale_dom_assertive
+//        └─ gwen_finale_dom_respect:
+//             ├─ ["Honesty first, even when inconvenient."] → gwen_finale_dom_close_warm → gwen_finale_dom_epilogue  END
+//             ├─ ["One rule each, starting tonight."]       → gwen_finale_dom_close_warm → gwen_finale_dom_epilogue  END
+//             └─ ["Start with a kiss. Then we talk."]       → gwen_finale_dom_close_burn → gwen_finale_dom_epilogue  END
+//        └─ gwen_finale_dom_assertive:
+//             ├─ ["You. Not the fantasy."]      → gwen_finale_dom_close_warm → gwen_finale_dom_epilogue  END
+//             ├─ ["Both, if we are being honest."] → gwen_finale_dom_close_burn → gwen_finale_dom_epilogue  END
+//             └─ ["Tonight I want the heat first."] → gwen_finale_dom_close_burn → gwen_finale_dom_epilogue  END
+//
+// EVENT START: gwen_chapter_1_finale_sub  (Hallway, 20-24h, minAffection 8, minLust 6, gwenSubPath+gwenRevealDone)
+//   ├─ ["Simple and honest works for me."]        → gwen_finale_casual_steady
+//   ├─ ["Fun first, feelings if they happen."]    → gwen_finale_casual_tease
+//   └─ ["I can do casual with strict boundaries"] → gwen_finale_casual_boundaries
+//        └─ gwen_finale_casual_steady:
+//             ├─ ["If feelings change, we say it immediately."]           → gwen_finale_casual_close_slow  → gwen_finale_casual_epilogue  END
+//             ├─ ["One planned night a week. No ghosting."]               → gwen_finale_casual_close_slow  → gwen_finale_casual_epilogue  END
+//             └─ ["No crossing into each other's work without an invite"] → gwen_finale_casual_close_space → gwen_finale_casual_epilogue  END
+//        └─ gwen_finale_casual_tease:
+//             ├─ ["Keep the flirt. Drop the drama."]  → gwen_finale_casual_close_slow  → gwen_finale_casual_epilogue  END
+//             ├─ ["Public distance, private honesty."] → gwen_finale_casual_close_space → gwen_finale_casual_epilogue  END
+//             └─ ["No promises tonight. Just chemistry."] → gwen_finale_casual_close_space → gwen_finale_casual_epilogue  END
+//        └─ gwen_finale_casual_boundaries (all choices) → gwen_finale_casual_close_space → gwen_finale_casual_epilogue  END
+// Rewards: gwen_chapter_1_completed
+// ─────────────────────────────────────────────────────────────────────────────
 
+// FROM: gwen_chapter_1_finale → ["I hear you. No games, no pressure."]
 const gwenFinaleDomRespect: Dialogue = {
   id: "gwen_finale_dom_respect",
   lines: [
@@ -71,6 +102,7 @@ const gwenFinaleDomRespect: Dialogue = {
   ],
 };
 
+// FROM: gwen_chapter_1_finale → ["Set the pace. I can keep up."] / ["Come in and spell it out. I am listening."]
 const gwenFinaleDomAssertive: Dialogue = {
   id: "gwen_finale_dom_assertive",
   lines: [
@@ -124,6 +156,7 @@ const gwenFinaleDomAssertive: Dialogue = {
   ],
 };
 
+// FROM: gwen_finale_dom_respect → ["Honesty first..."] / ["One rule each..."] / gwen_finale_dom_assertive → ["You. Not the fantasy."]
 const gwenFinaleDomCloseWarm: Dialogue = {
   id: "gwen_finale_dom_close_warm",
   lines: [
@@ -181,6 +214,7 @@ const gwenFinaleDomCloseWarm: Dialogue = {
   ],
 };
 
+// FROM: gwen_finale_dom_respect → ["Start with a kiss..."] / gwen_finale_dom_assertive → ["Both, if we are being honest."] / ["Tonight I want the heat first."]
 const gwenFinaleDomCloseBurn: Dialogue = {
   id: "gwen_finale_dom_close_burn",
   lines: [
@@ -234,6 +268,7 @@ const gwenFinaleDomCloseBurn: Dialogue = {
   ],
 };
 
+// FROM: gwen_finale_dom_close_warm → (all choices) / gwen_finale_dom_close_burn → (all choices)
 const gwenFinaleDomEpilogue: Dialogue = {
   id: "gwen_finale_dom_epilogue",
   lines: [
@@ -271,6 +306,7 @@ const gwenFinaleDomEpilogue: Dialogue = {
   ],
 };
 
+// FROM: gwen_chapter_1_finale_sub → ["Simple and honest works for me."]
 const gwenFinaleCasualSteady: Dialogue = {
   id: "gwen_finale_casual_steady",
   lines: [
@@ -326,6 +362,7 @@ const gwenFinaleCasualSteady: Dialogue = {
   ],
 };
 
+// FROM: gwen_chapter_1_finale_sub → ["Fun first, feelings if they happen."]
 const gwenFinaleCasualTease: Dialogue = {
   id: "gwen_finale_casual_tease",
   lines: [
@@ -377,6 +414,7 @@ const gwenFinaleCasualTease: Dialogue = {
   ],
 };
 
+// FROM: gwen_chapter_1_finale_sub → ["I can do casual with strict boundaries."]
 const gwenFinaleCasualBoundaries: Dialogue = {
   id: "gwen_finale_casual_boundaries",
   lines: [
@@ -429,6 +467,7 @@ const gwenFinaleCasualBoundaries: Dialogue = {
   ],
 };
 
+// FROM: gwen_finale_casual_steady → ["If feelings change..."] / ["One planned night a week..."] / gwen_finale_casual_tease → ["Keep the flirt. Drop the drama."]
 const gwenFinaleCasualCloseSlow: Dialogue = {
   id: "gwen_finale_casual_close_slow",
   lines: [
@@ -477,6 +516,7 @@ const gwenFinaleCasualCloseSlow: Dialogue = {
   ],
 };
 
+// FROM: gwen_finale_casual_steady → ["No crossing into each other's work..."] / gwen_finale_casual_tease → ["Public distance..."] / ["No promises tonight..."] / gwen_finale_casual_boundaries → (all choices)
 const gwenFinaleCasualCloseSpace: Dialogue = {
   id: "gwen_finale_casual_close_space",
   lines: [
@@ -524,6 +564,7 @@ const gwenFinaleCasualCloseSpace: Dialogue = {
   ],
 };
 
+// FROM: gwen_finale_casual_close_slow → (all choices) / gwen_finale_casual_close_space → (all choices)
 const gwenFinaleCasualEpilogue: Dialogue = {
   id: "gwen_finale_casual_epilogue",
   lines: [

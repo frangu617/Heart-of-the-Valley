@@ -3,6 +3,25 @@ import { CharacterEvent } from "../../types";
 
 // Event 5: The First Date
 // Description: You meet Yumi for a real date.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// Six CharacterEvents share two fully inline dialogue consts (no player choices
+// inside either). Variant selection is driven by path flag + metDawn flag.
+//
+// Without metDawn flag:
+//   EVENT START: yumi_c2_event_5_sub      (Bar 20-24h, yumiSubPath, !metDawn)
+//   EVENT START: yumi_c2_event_5_dom      (Bar 20-24h, yumiDomPath, !metDawn)
+//   EVENT START: yumi_c2_event_5_neutral  (Bar 20-24h, no path flag, !metDawn)
+//     └─ [auto]  → yumi_c2_ev5    END [yumi_chapter_2_date, yumi_chapter_2_completed]
+//
+// With metDawn flag:
+//   EVENT START: yumi_c2_event_5_sub_met_dawn      (Bar 20-24h, yumiSubPath, metDawn)
+//   EVENT START: yumi_c2_event_5_dom_met_dawn      (Bar 20-24h, yumiDomPath, metDawn)
+//   EVENT START: yumi_c2_event_5_neutral_met_dawn  (Bar 20-24h, no path flag, metDawn)
+//     └─ [auto]  → yumi_c2_ev5_met_dawn    END [yumi_chapter_2_date, yumi_chapter_2_completed]
+//
+// Rewards: yumi_chapter_2_date, yumi_chapter_2_completed
+// ─────────────────────────────────────────────────────────────────────────────
 
 const yumiC2Ev5: Dialogue = {
   id: "yumi_c2_ev5",
@@ -23,6 +42,7 @@ const yumiC2Ev5: Dialogue = {
   ],
 };
 
+// FROM: yumi_c2_event_5_sub_met_dawn / yumi_c2_event_5_dom_met_dawn / yumi_c2_event_5_neutral_met_dawn → [metDawn flag set]
 const yumiC2Ev5MetDawn: Dialogue = {
   id: "yumi_c2_ev5_met_dawn",
   lines: [

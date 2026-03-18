@@ -3,7 +3,21 @@ import { CharacterEvent } from "../../types";
 
 // Event 5: Breakup Celebration
 // Description: Ruby ends her relationship right before your date.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: ruby_ch1_ev5_mall_sub  (Bar, 18:00–24:00, affection≥6, dominance≤3, rubyCh1Ev4Done)
+//   ├─ [I'm proud of you. Tonight is yours.]            → ruby_ch1_ev5_sub_proud → ruby_ch1_ev5_sub_after  END
+//   ├─ [Let's set rules so you do not slide back.]      → ruby_ch1_ev5_sub_rules → ruby_ch1_ev5_sub_after  END
+//   └─ [Come dance with me before you overthink.]       → ruby_ch1_ev5_sub_dance → ruby_ch1_ev5_sub_after  END
+//
+// EVENT START: ruby_ch1_ev5_mall_dom  (Bar, 18:00–24:00, affection≥6, dominance≥4, rubyCh1Ev4Done)
+//   ├─ [Say it. You are not going back.]                → ruby_ch1_ev5_dom_claim → ruby_ch1_ev5_dom_after  END
+//   ├─ [Good. Burn it off with me on the dance floor.]  → ruby_ch1_ev5_dom_heat  → ruby_ch1_ev5_dom_after  END
+//   └─ [Tell me what you want tonight.]                 → ruby_ch1_ev5_dom_tempt → ruby_ch1_ev5_dom_after  END
+// Rewards: rubyExConflictStarted, ruby_chapter_1_completed
+// ─────────────────────────────────────────────────────────────────────────────
 
+// EVENT DIALOGUE for ruby_ch1_ev5_mall_sub (sub variant intro + choice hub)
 const rubyCh1Ev5MallSub: Dialogue = {
   id: "ruby_ch1_ev5_mall_sub",
   lines: [
@@ -48,6 +62,7 @@ const rubyCh1Ev5MallSub: Dialogue = {
   ],
 };
 
+// EVENT DIALOGUE for ruby_ch1_ev5_mall_dom (dom variant intro + choice hub)
 const rubyCh1Ev5MallDom: Dialogue = {
   id: "ruby_ch1_ev5_mall_dom",
   lines: [
@@ -91,6 +106,7 @@ const rubyCh1Ev5MallDom: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev5_mall_sub → [I'm proud of you. Tonight is yours.]
 const rubyCh1Ev5SubProud: Dialogue = {
   id: "ruby_ch1_ev5_sub_proud",
   lines: [
@@ -107,6 +123,7 @@ const rubyCh1Ev5SubProud: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev5_mall_sub → [Let's set rules so you do not slide back.]
 const rubyCh1Ev5SubRules: Dialogue = {
   id: "ruby_ch1_ev5_sub_rules",
   lines: [
@@ -124,6 +141,7 @@ const rubyCh1Ev5SubRules: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev5_mall_sub → [Come dance with me before you overthink.]
 const rubyCh1Ev5SubDance: Dialogue = {
   id: "ruby_ch1_ev5_sub_dance",
   lines: [
@@ -141,6 +159,7 @@ const rubyCh1Ev5SubDance: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev5_sub_proud / ruby_ch1_ev5_sub_rules / ruby_ch1_ev5_sub_dance → [auto-chain on Continue]
 const rubyCh1Ev5SubAfter: Dialogue = {
   id: "ruby_ch1_ev5_sub_after",
   lines: [
@@ -158,6 +177,7 @@ const rubyCh1Ev5SubAfter: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev5_mall_dom → [Say it. You are not going back.]
 const rubyCh1Ev5DomClaim: Dialogue = {
   id: "ruby_ch1_ev5_dom_claim",
   lines: [
@@ -174,6 +194,7 @@ const rubyCh1Ev5DomClaim: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev5_mall_dom → [Good. Burn it off with me on the dance floor.]
 const rubyCh1Ev5DomHeat: Dialogue = {
   id: "ruby_ch1_ev5_dom_heat",
   lines: [
@@ -190,6 +211,7 @@ const rubyCh1Ev5DomHeat: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev5_mall_dom → [Tell me what you want tonight.]
 const rubyCh1Ev5DomTempt: Dialogue = {
   id: "ruby_ch1_ev5_dom_tempt",
   lines: [
@@ -206,6 +228,7 @@ const rubyCh1Ev5DomTempt: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev5_dom_claim / ruby_ch1_ev5_dom_heat / ruby_ch1_ev5_dom_tempt → [auto-chain on Continue]
 const rubyCh1Ev5DomAfter: Dialogue = {
   id: "ruby_ch1_ev5_dom_after",
   lines: [

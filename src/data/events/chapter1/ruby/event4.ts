@@ -3,7 +3,21 @@ import { CharacterEvent } from "../../types";
 
 // Event 4: Extra Shift
 // Description: You find Ruby bartending at night.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: ruby_ch1_ev4_bar_sub  (Bar, 22:00–24:00, affection≥5, dominance≤3, rubyCh1Ev3Done)
+//   ├─ [Sit down and breathe with me for two minutes.]  → ruby_ch1_ev4_sub_care    → ruby_ch1_ev4_sub_after  END
+//   ├─ [You deserve a night that is not damage control.] → ruby_ch1_ev4_sub_tease   → ruby_ch1_ev4_sub_after  END
+//   └─ [If he keeps cutting you down, you can walk.]    → ruby_ch1_ev4_sub_respect → ruby_ch1_ev4_sub_after  END
+//
+// EVENT START: ruby_ch1_ev4_bar_dom  (Bar, 22:00–24:00, affection≥5, dominance≥4, rubyCh1Ev3Done)
+//   ├─ [You're done auditioning for him.]               → ruby_ch1_ev4_dom_care    → ruby_ch1_ev4_dom_after  END
+//   ├─ [Clock out after this round. We take the night back.] → ruby_ch1_ev4_dom_tease → ruby_ch1_ev4_dom_after END
+//   └─ [Ask me out right now. No maybes.]               → ruby_ch1_ev4_dom_respect → ruby_ch1_ev4_dom_after  END
+// Rewards: rubyCh1Ev4Done
+// ─────────────────────────────────────────────────────────────────────────────
 
+// FROM: ruby_ch1_ev4_bar_sub → [Sit down and breathe with me for two minutes.]
 const rubyCh1Ev4SubCare: Dialogue = {
   id: "ruby_ch1_ev4_sub_care",
   lines: [
@@ -25,6 +39,7 @@ const rubyCh1Ev4SubCare: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev4_bar_sub → [You deserve a night that is not damage control.]
 const rubyCh1Ev4SubTease: Dialogue = {
   id: "ruby_ch1_ev4_sub_tease",
   lines: [
@@ -46,6 +61,7 @@ const rubyCh1Ev4SubTease: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev4_bar_sub → [If he keeps cutting you down, you can walk.]
 const rubyCh1Ev4SubRespect: Dialogue = {
   id: "ruby_ch1_ev4_sub_respect",
   lines: [
@@ -66,6 +82,7 @@ const rubyCh1Ev4SubRespect: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev4_sub_care / ruby_ch1_ev4_sub_tease / ruby_ch1_ev4_sub_respect → [auto-chain on Continue]
 const rubyCh1Ev4SubAfter: Dialogue = {
   id: "ruby_ch1_ev4_sub_after",
   lines: [
@@ -78,6 +95,7 @@ const rubyCh1Ev4SubAfter: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev4_bar_dom → [You're done auditioning for him.]
 const rubyCh1Ev4DomCare: Dialogue = {
   id: "ruby_ch1_ev4_dom_care",
   lines: [
@@ -98,6 +116,7 @@ const rubyCh1Ev4DomCare: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev4_bar_dom → [Clock out after this round. We take the night back.]
 const rubyCh1Ev4DomTease: Dialogue = {
   id: "ruby_ch1_ev4_dom_tease",
   lines: [
@@ -118,6 +137,7 @@ const rubyCh1Ev4DomTease: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev4_bar_dom → [Ask me out right now. No maybes.]
 const rubyCh1Ev4DomRespect: Dialogue = {
   id: "ruby_ch1_ev4_dom_respect",
   lines: [
@@ -137,6 +157,7 @@ const rubyCh1Ev4DomRespect: Dialogue = {
   ],
 };
 
+// FROM: ruby_ch1_ev4_dom_care / ruby_ch1_ev4_dom_tease / ruby_ch1_ev4_dom_respect → [auto-chain on Continue]
 const rubyCh1Ev4DomAfter: Dialogue = {
   id: "ruby_ch1_ev4_dom_after",
   lines: [

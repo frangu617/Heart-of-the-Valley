@@ -3,7 +3,18 @@ import { CharacterEvent } from "../../types";
 
 // Event 4: Classroom Flirt (Bold)
 // Descriptions: Yumi flirts openly after class. | You tease a shy Yumi after class.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: yumi_classroom_flirt_dom  (Classroom, minAffection: 15, flag: yumiDomPath)
+//   ├─ [Let her continue (Enjoy it).]        → yumi_classroom_flirt_dom_enjoy   END
+//   └─ [Check her behavior (Tease back).]    → yumi_classroom_flirt_dom_tease   END
+//
+// EVENT START: yumi_classroom_flirt_sub  (Classroom, minAffection: 15, flag: yumiSubPath)
+//   ├─ [Push it a little further.]           → yumi_classroom_flirt_sub_push    END
+//   └─ [Keep it sweet.]                      → yumi_classroom_flirt_sub_sweet   END
+// ─────────────────────────────────────────────────────────────────────────────
 
+// FROM: yumi_classroom_flirt_dom → [Let her continue (Enjoy it).]
 const yumiClassroomFlirtDomEnjoy: Dialogue = {
   id: "yumi_classroom_flirt_dom_enjoy",
   lines: [
@@ -49,6 +60,7 @@ const yumiClassroomFlirtDomEnjoy: Dialogue = {
   ],
 };
 
+// FROM: yumi_classroom_flirt_dom → [Check her behavior (Tease back).]
 const yumiClassroomFlirtDomTease: Dialogue = {
   id: "yumi_classroom_flirt_dom_tease",
   lines: [
@@ -92,6 +104,7 @@ const yumiClassroomFlirtDomTease: Dialogue = {
   ],
 };
 
+// FROM: yumi_classroom_flirt_sub → [Push it a little further.]
 const yumiClassroomFlirtSubPush: Dialogue = {
   id: "yumi_classroom_flirt_sub_push",
   lines: [
@@ -141,6 +154,7 @@ const yumiClassroomFlirtSubPush: Dialogue = {
   ],
 };
 
+// FROM: yumi_classroom_flirt_sub → [Keep it sweet.]
 const yumiClassroomFlirtSubSweet: Dialogue = {
   id: "yumi_classroom_flirt_sub_sweet",
   lines: [

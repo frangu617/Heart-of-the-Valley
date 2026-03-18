@@ -3,7 +3,18 @@ import { CharacterEvent } from "../../types";
 
 // Event 5: The Reveal
 // Description: The dancer turns out to be Gwen.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: gwen_event_5_reveal  (Strip Club, 20-24h, minAffection 7, gwenRumorHeard)
+//   [inline choices — no nextDialogueId, stat changes only]
+//   └─ second choice set:
+//        ├─ ["Yes. Your work stays yours."]         → gwen_event_5_discreet → gwen_event_5_after        END [gwenRevealDone]
+//        ├─ ["Give me the rules. I can follow them"] → gwen_event_5_lead     → gwen_event_5_after        END [gwenRevealDone]
+//        └─ ["Keep this casual. No labels..."]      → gwen_event_5_casual   → gwen_event_5_after_casual END [gwenRevealDone]
+// Rewards: gwenRevealDone  (also sets gwenDomPath or gwenSubPath per choice)
+// ─────────────────────────────────────────────────────────────────────────────
 
+// FROM: gwen_event_5_reveal → ["Yes. Your work stays yours."]
 const gwenEvent5Discreet: Dialogue = {
   id: "gwen_event_5_discreet",
   lines: [
@@ -57,6 +68,7 @@ const gwenEvent5Discreet: Dialogue = {
   ],
 };
 
+// FROM: gwen_event_5_reveal → ["Give me the rules. I can follow them."]
 const gwenEvent5Lead: Dialogue = {
   id: "gwen_event_5_lead",
   lines: [
@@ -110,6 +122,7 @@ const gwenEvent5Lead: Dialogue = {
   ],
 };
 
+// FROM: gwen_event_5_reveal → ["Keep this casual. No labels, no pressure."]
 const gwenEvent5Casual: Dialogue = {
   id: "gwen_event_5_casual",
   lines: [
@@ -163,6 +176,7 @@ const gwenEvent5Casual: Dialogue = {
   ],
 };
 
+// FROM: gwen_event_5_discreet → (auto Continue) / gwen_event_5_lead → (auto Continue)
 const gwenEvent5After: Dialogue = {
   id: "gwen_event_5_after",
   lines: [
@@ -208,6 +222,7 @@ const gwenEvent5After: Dialogue = {
   ],
 };
 
+// FROM: gwen_event_5_casual → (auto Continue)
 const gwenEvent5AfterCasual: Dialogue = {
   id: "gwen_event_5_after_casual",
   lines: [

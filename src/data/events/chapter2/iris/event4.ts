@@ -3,7 +3,32 @@ import type { CharacterEvent } from "../../types";
 
 // Event 4: The Turning Point
 // Description: Route-specific fallout after "No More Hiding", before the nightclub date.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// All events require: irisCh2Ev3_Done, University Hallway, 9–18h
+// All dialogues are fully inline (no nextDialogueId sub-dialogues).
+//
+// EVENT START: iris_ch2_ev4_sub_accepted     (dominance ≤ -10, irisSchoolKissUnlocked)
+//   → iris_ch2_ev4_sub_accepted_dialogue          END [irisCh2Ev4_Done, irisDatePlanned]
+//
+// EVENT START: iris_ch2_ev4_sub_denied       (dominance ≤ -10, irisPublicRefused)
+//   → iris_ch2_ev4_sub_denied_dialogue            END [irisCh2Ev4_Done, irisDatePlanned]
+//
+// EVENT START: iris_ch2_ev4_dom_accepted     (dominance ≥ 10, irisSchoolKissUnlocked)
+//   → iris_ch2_ev4_dom_accepted_dialogue          END [irisCh2Ev4_Done, irisDatePlanned, irisDomAcceptedKissLoopActive]
+//
+// EVENT START: iris_ch2_ev4_dom_denied_start (dominance ≥ 10, irisPublicRefused)
+//   → iris_ch2_ev4_dom_denied_start_dialogue      END [irisCh2Ev4_Done, irisDomDeniedKissLoopActive]
+//   NOTE: No irisDatePlanned here — feeds into the dom-denied random kiss loop chain instead.
+//
+// EVENT START: iris_ch2_ev4_balanced_accepted (dominance -9 to 9, irisSchoolKissUnlocked)
+//   → iris_ch2_ev4_balanced_accepted_dialogue     END [irisCh2Ev4_Done, irisDatePlanned]
+//
+// EVENT START: iris_ch2_ev4_balanced_denied  (dominance -9 to 9, irisPublicRefused)
+//   → iris_ch2_ev4_balanced_denied_dialogue       END [irisCh2Ev4_Done, irisDatePlanned]
+// ─────────────────────────────────────────────────────────────────────────────
 
+// EVENT ENTRY: iris_ch2_ev4_sub_accepted (SUB PATH + SchoolKissUnlocked)
 const iris_ch2_ev4_sub_accepted_dialogue: Dialogue = {
   id: "iris_ch2_ev4_sub_accepted_dialogue",
   lines: [
@@ -240,6 +265,7 @@ const iris_ch2_ev4_sub_accepted_dialogue: Dialogue = {
   ],
 };
 
+// EVENT ENTRY: iris_ch2_ev4_sub_denied (SUB PATH + PublicRefused)
 const iris_ch2_ev4_sub_denied_dialogue: Dialogue = {
   id: "iris_ch2_ev4_sub_denied_dialogue",
   lines: [
@@ -468,6 +494,7 @@ const iris_ch2_ev4_sub_denied_dialogue: Dialogue = {
   ],
 };
 
+// EVENT ENTRY: iris_ch2_ev4_dom_accepted (DOM PATH + SchoolKissUnlocked)
 const iris_ch2_ev4_dom_accepted_dialogue: Dialogue = {
   id: "iris_ch2_ev4_dom_accepted_dialogue",
   lines: [
@@ -691,6 +718,7 @@ const iris_ch2_ev4_dom_accepted_dialogue: Dialogue = {
   ],
 };
 
+// EVENT ENTRY: iris_ch2_ev4_dom_denied_start (DOM PATH + PublicRefused — seeds kiss loop, no date)
 const iris_ch2_ev4_dom_denied_start_dialogue: Dialogue = {
   id: "iris_ch2_ev4_dom_denied_start_dialogue",
   lines: [
@@ -924,6 +952,7 @@ const iris_ch2_ev4_dom_denied_start_dialogue: Dialogue = {
   ],
 };
 
+// EVENT ENTRY: iris_ch2_ev4_balanced_accepted (BALANCED PATH + SchoolKissUnlocked)
 const iris_ch2_ev4_balanced_accepted_dialogue: Dialogue = {
   id: "iris_ch2_ev4_balanced_accepted_dialogue",
   lines: [
@@ -1147,6 +1176,7 @@ const iris_ch2_ev4_balanced_accepted_dialogue: Dialogue = {
   ],
 };
 
+// EVENT ENTRY: iris_ch2_ev4_balanced_denied (BALANCED PATH + PublicRefused)
 const iris_ch2_ev4_balanced_denied_dialogue: Dialogue = {
   id: "iris_ch2_ev4_balanced_denied_dialogue",
   lines: [

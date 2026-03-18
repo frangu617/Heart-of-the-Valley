@@ -1,8 +1,20 @@
 import type { Dialogue } from "../../../dialogues";
 import { CharacterEvent } from "../../types";
 
-// Event 5: Mall Bump (Confident Iris)
+// Event 5: Mall Bump
 // Descriptions: Run into Iris at the mall when she's feeling bold. | Run into Iris at the mall when she's flustered.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: iris_mall_bump_dom  (Mall, any time, irisDomPath + irisNeedsNewShirt)
+//   ├─ [Tease her back (Flirty)]   → (continues inline)   END
+//   └─ [Just help her (Friendly)]  → (continues inline)   END
+// No sub-dialogues — single event, both choices merge into the same closing lines.
+//
+// EVENT START: iris_mall_bump_sub  (Mall, any time, irisSubPath + irisNeedsNewShirt)
+//   ├─ [Take charge and help (Dominant/Flirty)] → (continues inline)   END
+//   └─ [Be gentle (Friendly)]                   → (continues inline)   END
+// No sub-dialogues — single event, both choices merge into the same closing lines.
+// ─────────────────────────────────────────────────────────────────────────────
 
 export const irisEvent5Dialogues: Record<string, Dialogue> = {
 };

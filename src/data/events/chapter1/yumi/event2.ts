@@ -3,7 +3,15 @@ import { CharacterEvent } from "../../types";
 
 // Event 2: First Tutoring Session
 // Description: Yumi arrives for one-on-one tutoring in your office.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: yumi_private_tutoring_event  (Office, minAffection: 5, after yumi_tutor_request_event)
+//   ├─ [Be gentle and encouraging (Nice Teacher)]  → yumi_tutor1_gentle    END [yumiDomPath]
+//   └─ [Be stern and critical (Mean Teacher)]      → yumi_tutor1_stern     END [yumiSubPath]
+// Rewards: playerMoney: 15, intelligence +1
+// ─────────────────────────────────────────────────────────────────────────────
 
+// FROM: yumi_private_tutoring_event → [Be gentle and encouraging (Nice Teacher)]
 const yumiTutor1Gentle: Dialogue = {
   id: "yumi_tutor1_gentle",
   lines: [
@@ -103,6 +111,7 @@ const yumiTutor1Gentle: Dialogue = {
   ],
 };
 
+// FROM: yumi_private_tutoring_event → [Be stern and critical (Mean Teacher)]
 const yumiTutor1Stern: Dialogue = {
   id: "yumi_tutor1_stern",
   lines: [

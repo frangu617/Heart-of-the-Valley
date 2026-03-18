@@ -4,6 +4,29 @@ import type { Dialogue } from "../../../dialogues";
 // Description: Two days after the university callout, Dawn texts the player at 23:00
 // and summons him to Velvet for a proper introduction.
 // Trigger: handled programmatically in page.tsx (time-based, not location-based)
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT ENTRY: dawn_ch1_ev1_text  (programmatic, 23:00)
+//   └─ (auto) → dawn_ch1_ev1_arrive
+//        ├─ ["I want a name this time."]           → dawn_ch1_ev1_who
+//        │    └─ (auto) → dawn_ch1_ev1_name_land
+//        └─ ["Why a text?"]                        → dawn_ch1_ev1_why
+//             └─ (auto) → dawn_ch1_ev1_name_give
+//                  └─ (auto) → dawn_ch1_ev1_name_land
+//                       ├─ ["Was the mystery routine necessary?"] → dawn_ch1_ev1_theatrics → dawn_ch1_ev1_continue
+//                       ├─ ["Should I be impressed?"]            → dawn_ch1_ev1_impressed  → dawn_ch1_ev1_continue
+//                       └─ ["Just Dawn?"]                        → dawn_ch1_ev1_just_dawn  → dawn_ch1_ev1_continue
+//                            └─ all three → dawn_ch1_ev1_continue
+//                                 ├─ ["I don't love being observed"] → dawn_ch1_ev1_watched → dawn_ch1_ev1_offer
+//                                 └─ ["What do you want from me?"]   → dawn_ch1_ev1_want   → dawn_ch1_ev1_offer
+//                                      └─ both → dawn_ch1_ev1_offer
+//                                           ├─ ["Fine. Talk."]               → dawn_ch1_ev1_talk    → dawn_ch1_ev1_reveal
+//                                           └─ ["Villain aesthetic comment"] → dawn_ch1_ev1_villain → dawn_ch1_ev1_reveal
+//                                                └─ both → dawn_ch1_ev1_reveal
+//                                                     ├─ ["Alright. I'm in."]    → dawn_ch1_ev1_accept → dawn_ch1_ev1_end  END
+//                                                     ├─ ["Why should I trust?"] → dawn_ch1_ev1_trust  → dawn_ch1_ev1_end  END
+//                                                     └─ ["This is insane..."]   → dawn_ch1_ev1_insane → dawn_ch1_ev1_end  END
+// ─────────────────────────────────────────────────────────────────────────────
 
 const dawn_ch1_ev1_text: Dialogue = {
   id: "dawn_ch1_ev1_text",
@@ -30,6 +53,7 @@ const dawn_ch1_ev1_text: Dialogue = {
   ],
 };
 
+// FROM: dawn_ch1_ev1_text → (auto Continue)
 const dawn_ch1_ev1_arrive: Dialogue = {
   id: "dawn_ch1_ev1_arrive",
   lines: [
@@ -71,6 +95,7 @@ const dawn_ch1_ev1_arrive: Dialogue = {
   ],
 };
 
+// FROM: dawn_ch1_ev1_arrive → ["I want a name this time."]
 const dawn_ch1_ev1_who: Dialogue = {
   id: "dawn_ch1_ev1_who",
   lines: [
@@ -96,6 +121,7 @@ const dawn_ch1_ev1_who: Dialogue = {
   ],
 };
 
+// FROM: dawn_ch1_ev1_arrive → ["Why a text?"]
 const dawn_ch1_ev1_why: Dialogue = {
   id: "dawn_ch1_ev1_why",
   lines: [
@@ -121,6 +147,7 @@ const dawn_ch1_ev1_why: Dialogue = {
   ],
 };
 
+// FROM: dawn_ch1_ev1_why → (auto Continue)
 const dawn_ch1_ev1_name_give: Dialogue = {
   id: "dawn_ch1_ev1_name_give",
   lines: [
@@ -137,6 +164,7 @@ const dawn_ch1_ev1_name_give: Dialogue = {
   ],
 };
 
+// FROM: dawn_ch1_ev1_who → (auto Continue) / dawn_ch1_ev1_name_give → (auto Continue)
 const dawn_ch1_ev1_name_land: Dialogue = {
   id: "dawn_ch1_ev1_name_land",
   lines: [
@@ -178,6 +206,7 @@ const dawn_ch1_ev1_name_land: Dialogue = {
   ],
 };
 
+// FROM: dawn_ch1_ev1_name_land → ["Was the whole mystery routine strictly necessary?"]
 const dawn_ch1_ev1_theatrics: Dialogue = {
   id: "dawn_ch1_ev1_theatrics",
   lines: [
@@ -217,6 +246,7 @@ const dawn_ch1_ev1_theatrics: Dialogue = {
   ],
 };
 
+// FROM: dawn_ch1_ev1_name_land → ["Should I be impressed it took you this long?"]
 const dawn_ch1_ev1_impressed: Dialogue = {
   id: "dawn_ch1_ev1_impressed",
   lines: [
@@ -238,6 +268,7 @@ const dawn_ch1_ev1_impressed: Dialogue = {
   ],
 };
 
+// FROM: dawn_ch1_ev1_name_land → ["Just Dawn?"]
 const dawn_ch1_ev1_just_dawn: Dialogue = {
   id: "dawn_ch1_ev1_just_dawn",
   lines: [
@@ -263,6 +294,7 @@ const dawn_ch1_ev1_just_dawn: Dialogue = {
   ],
 };
 
+// FROM: dawn_ch1_ev1_theatrics → (auto Continue) / dawn_ch1_ev1_impressed → (auto Continue) / dawn_ch1_ev1_just_dawn → (auto Continue)
 const dawn_ch1_ev1_continue: Dialogue = {
   id: "dawn_ch1_ev1_continue",
   lines: [
@@ -304,6 +336,7 @@ const dawn_ch1_ev1_continue: Dialogue = {
   ],
 };
 
+// FROM: dawn_ch1_ev1_continue → ["I don't love being observed without being asked."]
 const dawn_ch1_ev1_watched: Dialogue = {
   id: "dawn_ch1_ev1_watched",
   lines: [
@@ -334,6 +367,7 @@ const dawn_ch1_ev1_watched: Dialogue = {
   ],
 };
 
+// FROM: dawn_ch1_ev1_continue → ["What exactly do you want from me?"]
 const dawn_ch1_ev1_want: Dialogue = {
   id: "dawn_ch1_ev1_want",
   lines: [
@@ -359,6 +393,7 @@ const dawn_ch1_ev1_want: Dialogue = {
   ],
 };
 
+// FROM: dawn_ch1_ev1_watched → (auto Continue) / dawn_ch1_ev1_want → (auto Continue)
 const dawn_ch1_ev1_offer: Dialogue = {
   id: "dawn_ch1_ev1_offer",
   lines: [
@@ -399,6 +434,7 @@ const dawn_ch1_ev1_offer: Dialogue = {
   ],
 };
 
+// FROM: dawn_ch1_ev1_offer → ["Fine. Talk."]
 const dawn_ch1_ev1_talk: Dialogue = {
   id: "dawn_ch1_ev1_talk",
   lines: [
@@ -415,6 +451,7 @@ const dawn_ch1_ev1_talk: Dialogue = {
   ],
 };
 
+// FROM: dawn_ch1_ev1_offer → ["You're very committed to this villain aesthetic."]
 const dawn_ch1_ev1_villain: Dialogue = {
   id: "dawn_ch1_ev1_villain",
   lines: [
@@ -455,6 +492,7 @@ const dawn_ch1_ev1_villain: Dialogue = {
   ],
 };
 
+// FROM: dawn_ch1_ev1_talk → (auto Continue) / dawn_ch1_ev1_villain → (auto Continue)
 const dawn_ch1_ev1_reveal: Dialogue = {
   id: "dawn_ch1_ev1_reveal",
   lines: [
@@ -512,6 +550,7 @@ const dawn_ch1_ev1_reveal: Dialogue = {
   ],
 };
 
+// FROM: dawn_ch1_ev1_reveal → ["Alright. I'm in."]
 const dawn_ch1_ev1_accept: Dialogue = {
   id: "dawn_ch1_ev1_accept",
   lines: [
@@ -532,6 +571,7 @@ const dawn_ch1_ev1_accept: Dialogue = {
   ],
 };
 
+// FROM: dawn_ch1_ev1_reveal → ["Why should I trust you?"]
 const dawn_ch1_ev1_trust: Dialogue = {
   id: "dawn_ch1_ev1_trust",
   lines: [
@@ -561,6 +601,7 @@ const dawn_ch1_ev1_trust: Dialogue = {
   ],
 };
 
+// FROM: dawn_ch1_ev1_reveal → ["This is objectively insane. But okay."]
 const dawn_ch1_ev1_insane: Dialogue = {
   id: "dawn_ch1_ev1_insane",
   lines: [
@@ -587,6 +628,7 @@ const dawn_ch1_ev1_insane: Dialogue = {
   ],
 };
 
+// FROM: dawn_ch1_ev1_accept → (auto Continue) / dawn_ch1_ev1_trust → (auto Continue) / dawn_ch1_ev1_insane → (auto Continue)
 const dawn_ch1_ev1_end: Dialogue = {
   id: "dawn_ch1_ev1_end",
   lines: [

@@ -3,7 +3,17 @@ import { CharacterEvent } from "../../types";
 
 // Event 4: Hallway Invite
 // Description: Iris invites you inside to meet Dawn.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: iris_hallway_invite_event  (Hallway, 18–24h, irisCoffeeMet)
+//   ├─ [I'd love to meet her.]              → iris_hallway_invite_dom            END [irisDomPath, irisApartmentUnlocked]
+//   └─ [Sure, if you promise no spills.]    → iris_hallway_invite_sub
+//        ├─ [It's not weird. You look great.] → iris_hallway_invite_sub_flirt   END [irisSubPath, irisApartmentUnlocked]
+//        └─ [It's fine. Nice place.]          → iris_hallway_invite_sub_friendly END [irisSubPath, irisApartmentUnlocked]
+// Rewards: irisDomPath OR irisSubPath + irisApartmentUnlocked (both paths)
+// ─────────────────────────────────────────────────────────────────────────────
 
+// FROM: iris_hallway_invite_event → [I'd love to meet her.]
 const irisHallwayInviteDom: Dialogue = {
   id: "iris_hallway_invite_dom",
   lines: [
@@ -81,6 +91,7 @@ const irisHallwayInviteDom: Dialogue = {
   ],
 };
 
+// FROM: iris_hallway_invite_event → [Sure, if you promise no coffee spills.]
 const irisHallwayInviteSub: Dialogue = {
   id: "iris_hallway_invite_sub",
   lines: [
@@ -145,6 +156,7 @@ const irisHallwayInviteSub: Dialogue = {
   ],
 };
 
+// FROM: iris_hallway_invite_sub → [It's not weird. You look great. (Flirt)]
 const irisHallwayInviteSubFlirt: Dialogue = {
   id: "iris_hallway_invite_sub_flirt",
   lines: [
@@ -190,6 +202,7 @@ const irisHallwayInviteSubFlirt: Dialogue = {
   ],
 };
 
+// FROM: iris_hallway_invite_sub → [It's fine. Nice place. (Friendly)]
 const irisHallwayInviteSubFriendly: Dialogue = {
   id: "iris_hallway_invite_sub_friendly",
   lines: [

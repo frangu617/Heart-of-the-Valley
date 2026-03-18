@@ -3,6 +3,19 @@ import type { GameplayFlag } from "@/data/events/types";
 
 const DAWN_INTEL_MARKER = "__DAWN_INTEL_LINES__";
 
+export const isDawnIdentityHidden = (
+  girlName: string,
+  gameplayFlags: Set<GameplayFlag>,
+) =>
+  girlName === "Dawn" &&
+  !gameplayFlags.has("metDawn") &&
+  !gameplayFlags.has("hasMetDawn");
+
+export const getGirlDisplayName = (
+  girlName: string,
+  gameplayFlags: Set<GameplayFlag>,
+) => (isDawnIdentityHidden(girlName, gameplayFlags) ? "???" : girlName);
+
 type IntelStage = 0 | 1 | 2 | 3 | 4 | 5;
 
 const hasAny = (flags: Set<string>, candidates: readonly string[]) =>

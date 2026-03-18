@@ -3,6 +3,15 @@ import { CharacterEvent } from "../../types";
 
 // Event 4: A Secret Meeting
 // Description: You meet Yumi off campus.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// Fully inline, no sub-dialogues. Single CharacterEvent for all paths.
+//
+// EVENT START: yumi_c2_event_4  (Cafe, yumi_c2_event_3_completed)
+//   └─ [auto]  → yumi_c2_ev4    END [yumi_c2_event_4_completed]
+//
+// Rewards: yumi_c2_event_4_completed
+// ─────────────────────────────────────────────────────────────────────────────
 
 const yumiC2Ev4: Dialogue = {
   id: "yumi_c2_ev4",

@@ -3,10 +3,36 @@ import type { CharacterEvent } from "../../types";
 
 // Event 5: The Nightclub Date
 // Description: You take Iris on a date at Velvet.
-// Chain: main inline → encounter → after_encounter → bar → floor → glimpse → booth → end
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// All three routes follow the same 6-beat chain via nextDialogueId:
+//   main inline → encounter_* → after_encounter_* → bar_* → floor_* → booth_* → end_*
+//
+// EVENT START: iris_ch2_ev5_sub_date     (Nightclub, dominance ≤ -10, irisDatePlanned)
+//   iris_ch2_ev5_sub_date (inline, 2 lines) → iris_ch2_date_encounter_sub
+//   → iris_ch2_date_after_encounter_sub  → iris_ch2_date_bar_sub
+//   → iris_ch2_date_floor_sub            → iris_ch2_date_booth_sub
+//   → iris_ch2_date_end_sub              END [irisCh2Complete, metMysteryGirl]
+//
+// EVENT START: iris_ch2_ev5_dom_date     (Nightclub, dominance ≥ 10, irisDatePlanned)
+//   iris_ch2_ev5_dom_date (inline, 2 lines) → iris_ch2_date_encounter_dom
+//   → iris_ch2_date_after_encounter_dom  → iris_ch2_date_bar_dom
+//   → iris_ch2_date_floor_dom            → iris_ch2_date_booth_dom
+//   → iris_ch2_date_end_dom              END [irisCh2Complete, metMysteryGirl]
+//
+// EVENT START: iris_ch2_ev5_neutral_date (Nightclub, dominance -9 to 9, irisDatePlanned)
+//   iris_ch2_ev5_neutral_date (inline, 2 lines) → iris_ch2_date_encounter_neutral
+//   → iris_ch2_date_after_encounter_neutral  → iris_ch2_date_bar_neutral
+//   → iris_ch2_date_floor_neutral            → iris_ch2_date_booth_neutral
+//   → iris_ch2_date_end_neutral              END [irisCh2Complete, metMysteryGirl]
+//
+// All choices within each dialogue are inline stat-changers — no nextDialogueId on choices.
+// nextDialogueId appears on the LAST narrator line of each scene to advance the chain.
+// ─────────────────────────────────────────────────────────────────────────────
 
 // ─── DAWN ENCOUNTER (first sighting, by the bar) ────────────────────────────
 
+// FROM: iris_ch2_ev5_sub_date (inline) → nextDialogueId
 const iris_ch2_date_encounter_sub: Dialogue = {
   id: "iris_ch2_date_encounter_sub",
   lines: [
@@ -34,6 +60,7 @@ const iris_ch2_date_encounter_sub: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_ev5_dom_date (inline) → nextDialogueId
 const iris_ch2_date_encounter_dom: Dialogue = {
   id: "iris_ch2_date_encounter_dom",
   lines: [
@@ -61,6 +88,7 @@ const iris_ch2_date_encounter_dom: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_ev5_neutral_date (inline) → nextDialogueId
 const iris_ch2_date_encounter_neutral: Dialogue = {
   id: "iris_ch2_date_encounter_neutral",
   lines: [
@@ -90,6 +118,7 @@ const iris_ch2_date_encounter_neutral: Dialogue = {
 
 // ─── IRIS ARRIVES (after Dawn encounter) ────────────────────────────────────
 
+// FROM: iris_ch2_date_encounter_sub → nextDialogueId (last narrator line)
 const iris_ch2_date_after_encounter_sub: Dialogue = {
   id: "iris_ch2_date_after_encounter_sub",
   lines: [
@@ -152,6 +181,7 @@ const iris_ch2_date_after_encounter_sub: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_date_encounter_dom → nextDialogueId (last narrator line)
 const iris_ch2_date_after_encounter_dom: Dialogue = {
   id: "iris_ch2_date_after_encounter_dom",
   lines: [
@@ -214,6 +244,7 @@ const iris_ch2_date_after_encounter_dom: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_date_encounter_neutral → nextDialogueId (last narrator line)
 const iris_ch2_date_after_encounter_neutral: Dialogue = {
   id: "iris_ch2_date_after_encounter_neutral",
   lines: [
@@ -278,6 +309,7 @@ const iris_ch2_date_after_encounter_neutral: Dialogue = {
 
 // ─── BAR SCENE (first real conversation) ────────────────────────────────────
 
+// FROM: iris_ch2_date_after_encounter_sub → nextDialogueId (Iris last line)
 const iris_ch2_date_bar_sub: Dialogue = {
   id: "iris_ch2_date_bar_sub",
   lines: [
@@ -382,6 +414,7 @@ const iris_ch2_date_bar_sub: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_date_after_encounter_dom → nextDialogueId (Iris last line)
 const iris_ch2_date_bar_dom: Dialogue = {
   id: "iris_ch2_date_bar_dom",
   lines: [
@@ -475,6 +508,7 @@ const iris_ch2_date_bar_dom: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_date_after_encounter_neutral → nextDialogueId (Iris last line)
 const iris_ch2_date_bar_neutral: Dialogue = {
   id: "iris_ch2_date_bar_neutral",
   lines: [
@@ -558,6 +592,7 @@ const iris_ch2_date_bar_neutral: Dialogue = {
 
 // ─── DANCE FLOOR ────────────────────────────────────────────────────────────
 
+// FROM: iris_ch2_date_bar_sub → nextDialogueId (last narrator line)
 const iris_ch2_date_floor_sub: Dialogue = {
   id: "iris_ch2_date_floor_sub",
   lines: [
@@ -628,6 +663,7 @@ const iris_ch2_date_floor_sub: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_date_bar_dom → nextDialogueId (last narrator line)
 const iris_ch2_date_floor_dom: Dialogue = {
   id: "iris_ch2_date_floor_dom",
   lines: [
@@ -677,6 +713,7 @@ const iris_ch2_date_floor_dom: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_date_bar_neutral → nextDialogueId (last narrator line)
 const iris_ch2_date_floor_neutral: Dialogue = {
   id: "iris_ch2_date_floor_neutral",
   lines: [
@@ -737,6 +774,7 @@ const iris_ch2_date_floor_neutral: Dialogue = {
 
 // ─── QUIET CORNER (booth) ────────────────────────────────────────────────────
 
+// FROM: iris_ch2_date_floor_sub → nextDialogueId (Iris line)
 const iris_ch2_date_booth_sub: Dialogue = {
   id: "iris_ch2_date_booth_sub",
   lines: [
@@ -805,6 +843,7 @@ const iris_ch2_date_booth_sub: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_date_floor_dom → nextDialogueId (Iris line)
 const iris_ch2_date_booth_dom: Dialogue = {
   id: "iris_ch2_date_booth_dom",
   lines: [
@@ -865,6 +904,7 @@ const iris_ch2_date_booth_dom: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_date_floor_neutral → nextDialogueId (Iris line)
 const iris_ch2_date_booth_neutral: Dialogue = {
   id: "iris_ch2_date_booth_neutral",
   lines: [
@@ -920,6 +960,7 @@ const iris_ch2_date_booth_neutral: Dialogue = {
 
 // ─── THE GOODBYE (her door) ──────────────────────────────────────────────────
 
+// FROM: iris_ch2_date_booth_sub → nextDialogueId (last narrator line)
 const iris_ch2_date_end_sub: Dialogue = {
   id: "iris_ch2_date_end_sub",
   lines: [
@@ -971,6 +1012,7 @@ const iris_ch2_date_end_sub: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_date_booth_dom → nextDialogueId (Iris line)
 const iris_ch2_date_end_dom: Dialogue = {
   id: "iris_ch2_date_end_dom",
   lines: [
@@ -1018,6 +1060,7 @@ const iris_ch2_date_end_dom: Dialogue = {
   ],
 };
 
+// FROM: iris_ch2_date_booth_neutral → nextDialogueId (last narrator line)
 const iris_ch2_date_end_neutral: Dialogue = {
   id: "iris_ch2_date_end_neutral",
   lines: [

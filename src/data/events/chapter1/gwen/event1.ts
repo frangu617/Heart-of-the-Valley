@@ -3,7 +3,20 @@ import { CharacterEvent } from "../../types";
 
 // Event 1: Hallway Intro
 // Description: Meet Gwen for the first time in the hallway.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: gwen_hallway_intro_event  (Hallway, any time, hasMetIris+hasMetYumi+hasMetRuby)
+//   ├─ ["Step in and help her gather the mess"]  → gwen_intro_help_first    → gwen_intro_after_first
+//   ├─ ["Hand her the heel with a grin"]         → gwen_intro_playful_first → gwen_intro_after_first
+//   └─ ["Give her space and let her reset"]      → gwen_intro_watchful_first → gwen_intro_after_first
+//        └─ all three → gwen_intro_after_first
+//             ├─ ["No judgment. Your hours are your business."] → gwen_intro_respectful  END [hasMetGwen, gwenIntroDone]
+//             ├─ ["I am curious, but I can mind my lane."]      → gwen_intro_curious     END [hasMetGwen, gwenIntroDone]
+//             └─ ["Just keep it quiet after midnight..."]       → gwen_intro_boundary    END [hasMetGwen, gwenIntroDone]
+// Rewards: hasMetGwen, gwenIntroDone
+// ─────────────────────────────────────────────────────────────────────────────
 
+// FROM: gwen_hallway_intro_event → ["Step in and help her gather the mess"]
 const gwenIntroHelpFirst: Dialogue = {
   id: "gwen_intro_help_first",
   lines: [
@@ -22,6 +35,7 @@ const gwenIntroHelpFirst: Dialogue = {
   ],
 };
 
+// FROM: gwen_hallway_intro_event → ["Hand her the heel with a grin. Rough shift?"]
 const gwenIntroPlayfulFirst: Dialogue = {
   id: "gwen_intro_playful_first",
   lines: [
@@ -40,6 +54,7 @@ const gwenIntroPlayfulFirst: Dialogue = {
   ],
 };
 
+// FROM: gwen_hallway_intro_event → ["Give her space and let her reset"]
 const gwenIntroWatchfulFirst: Dialogue = {
   id: "gwen_intro_watchful_first",
   lines: [
@@ -58,6 +73,7 @@ const gwenIntroWatchfulFirst: Dialogue = {
   ],
 };
 
+// FROM: gwen_intro_help_first → (auto Continue) / gwen_intro_playful_first → (auto Continue) / gwen_intro_watchful_first → (auto Continue)
 const gwenIntroAfterFirst: Dialogue = {
   id: "gwen_intro_after_first",
   lines: [
@@ -103,6 +119,7 @@ const gwenIntroAfterFirst: Dialogue = {
   ],
 };
 
+// FROM: gwen_intro_after_first → ["No judgment. Your hours are your business."]
 const gwenIntroRespectful: Dialogue = {
   id: "gwen_intro_respectful",
   lines: [
@@ -125,6 +142,7 @@ const gwenIntroRespectful: Dialogue = {
   ],
 };
 
+// FROM: gwen_intro_after_first → ["I am curious, but I can mind my lane."]
 const gwenIntroCurious: Dialogue = {
   id: "gwen_intro_curious",
   lines: [
@@ -147,6 +165,7 @@ const gwenIntroCurious: Dialogue = {
   ],
 };
 
+// FROM: gwen_intro_after_first → ["Just keep it quiet after midnight and we are good."]
 const gwenIntroBoundary: Dialogue = {
   id: "gwen_intro_boundary",
   lines: [

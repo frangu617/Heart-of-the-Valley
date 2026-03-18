@@ -3,7 +3,18 @@ import { CharacterEvent } from "../../types";
 
 // Event 2: Door Mixup
 // Description: Gwen mistakes your door for hers after a late night.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: gwen_event_2_door_mixup  (Hallway, 22-24h, gwenIntroDone)
+//   [inline choices — no nextDialogueId, stat changes only]
+//   └─ second choice set:
+//        ├─ ["Keep it private and walk her to her door"] → gwen_event_2_door_private_help  END [gwenDoorMixupDone]
+//        ├─ ["Steady her, but tease her through it"]     → gwen_event_2_door_teasing_help  END [gwenDoorMixupDone]
+//        └─ ["Set a hard boundary about the noise"]      → gwen_event_2_door_hard_line     END [gwenDoorMixupDone]
+// Rewards: gwenDoorMixupDone
+// ─────────────────────────────────────────────────────────────────────────────
 
+// FROM: gwen_event_2_door_mixup → ["Keep it private and walk her to her door"]
 const gwenEvent2DoorPrivateHelp: Dialogue = {
   id: "gwen_event_2_door_private_help",
   lines: [
@@ -55,6 +66,7 @@ const gwenEvent2DoorPrivateHelp: Dialogue = {
   ],
 };
 
+// FROM: gwen_event_2_door_mixup → ["Steady her, but tease her through it"]
 const gwenEvent2DoorTeasingHelp: Dialogue = {
   id: "gwen_event_2_door_teasing_help",
   lines: [
@@ -105,6 +117,7 @@ const gwenEvent2DoorTeasingHelp: Dialogue = {
   ],
 };
 
+// FROM: gwen_event_2_door_mixup → ["Set a hard boundary about the noise"]
 const gwenEvent2DoorHardLine: Dialogue = {
   id: "gwen_event_2_door_hard_line",
   lines: [

@@ -3,7 +3,25 @@ import { CharacterEvent } from "../../types";
 
 // Event 3: No More Hiding
 // Description: Iris forces a decision about keeping things secret at school.
+//
+// ─── FLOW MAP ────────────────────────────────────────────────────────────────
+// EVENT START: iris_ch2_ev3_sub     (University Hallway, 9–17h, dominance ≤ -10, irisCh2Ev2_Done)
+//   → iris_ch2_ev3_sub_dialogue     (fully inline — two choice forks, no nextDialogueId)
+//        Final choice sets: irisSchoolKissUnlocked  OR  irisPublicRefused
+//        END [irisCh2Ev3_Done]
+//
+// EVENT START: iris_ch2_ev3_dom     (University Hallway, 9–17h, dominance ≥ 10, irisCh2Ev2_Done)
+//   → iris_ch2_ev3_dom_dialogue     (fully inline — two choice forks, no nextDialogueId)
+//        Final choice sets: irisSchoolKissUnlocked  OR  irisPublicRefused
+//        END [irisCh2Ev3_Done]
+//
+// EVENT START: iris_ch2_ev3_neutral (University Hallway, 9–17h, dominance -9 to 9, irisCh2Ev2_Done)
+//   → iris_ch2_ev3_neutral_dialogue (fully inline — two choice forks, no nextDialogueId)
+//        Final choice sets: irisSchoolKissUnlocked  OR  irisPublicRefused
+//        END [irisCh2Ev3_Done]
+// ─────────────────────────────────────────────────────────────────────────────
 
+// EVENT ENTRY: iris_ch2_ev3_sub (SUB PATH — University Hallway)
 const iris_ch2_ev3_sub_dialogue: Dialogue = {
   id: "iris_ch2_ev3_sub_dialogue",
   lines: [
@@ -82,6 +100,7 @@ const iris_ch2_ev3_sub_dialogue: Dialogue = {
   ],
 };
 
+// EVENT ENTRY: iris_ch2_ev3_dom (DOM PATH — University Hallway)
 const iris_ch2_ev3_dom_dialogue: Dialogue = {
   id: "iris_ch2_ev3_dom_dialogue",
   lines: [
@@ -152,6 +171,7 @@ const iris_ch2_ev3_dom_dialogue: Dialogue = {
   ],
 };
 
+// EVENT ENTRY: iris_ch2_ev3_neutral (NEUTRAL PATH — Quiet Office)
 const iris_ch2_ev3_neutral_dialogue: Dialogue = {
   id: "iris_ch2_ev3_neutral_dialogue",
   lines: [
