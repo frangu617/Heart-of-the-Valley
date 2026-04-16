@@ -1,4 +1,4 @@
-# Gwen
+﻿# Gwen
 
 **Core Identity**
 - Role: Neighbor with a night-shift life, strip club dancer who goes by G.
@@ -42,9 +42,9 @@
 - She becomes more alive than anyone else and also the least anchored.
 - She laughs louder, wants more, and burns through things faster.
 - She is not broken. She is accelerating.
-**Salvation Path: Fun With Choice**
+**Evolution Path: Fun With Choice**
 - You cannot shame her, slow her, or moralize her fun.
-- Salvation helps her discover that fun does not require constant escalation, and that choosing less can increase intensity.
+- Evolution helps her discover that fun does not require constant escalation, and that choosing less can increase intensity.
 - This path is subtle, hard, and easy to miss.
 
 **Fear Profile**
@@ -67,7 +67,7 @@
 - Greed should feel infectious, not ugly.
 - Early sex scenes should feel transactional and confident.
 - Later corrupted scenes should feel hungry.
-- Salvation scenes should feel earned and rare.
+- Evolution scenes should feel earned and rare.
 
 **Summary Sentence (For Codex Tagging)**
 - Gwen is a party girl whose greed is for experience itself; corruption comes easily because indulgence already feels like truth, and saving her means proving that fun does not have to escalate endlessly to stay alive.
@@ -83,3 +83,4 @@
 **Stable Diffusion**
 - Prompt: 1 woman, blonde, mature, blue eyes, tiny skirt, pleated skirt, purple skirt, purple leather corset, big breasts, platform heels, ((slender body)), short hair, cropped jacket, green highlights on clothes, green highlights on hair
 - Prompt: 1 woman, blonde hair, a-cut haircut, green eyes, big breasts, tiny waist, hips, purple corset, purple jacket, cleavage, ((low-rise skirt)), purple leather pleated skirt, platform heels, looking at the viewer, lips, no belly, (toned body: 0.6), solid green background, studio lighting, slight smile, lime green hair tips
+

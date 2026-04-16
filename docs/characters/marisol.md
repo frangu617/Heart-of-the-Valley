@@ -1,4 +1,4 @@
-# Marisol
+﻿# Marisol
 
 **Core Identity**
 - Role: Gwen's older cousin / former roommate / nightlife partner.
@@ -26,7 +26,7 @@
 - Pleasure becomes mechanical. Desire loses texture.
 - She plateaus instead of hitting rock bottom.
 
-**Salvation Path (Hard, Optional)**
+**Evolution Path (Hard, Optional)**
 - Requires stopping, sitting with silence, and feeling the ache she avoids.
 - Most players will not succeed.
 
@@ -38,4 +38,5 @@
 
 **Summary Sentence**
 - Marisol is Gwen's warning mirror: a woman locked in stagnant excess, consuming endlessly not for thrill but to avoid emptiness.
+
 

@@ -1,4 +1,4 @@
-# Iris
+﻿# Iris
 
 **Core Identity**
 - Role: University professor (Advanced Bio), single mother, neighbor.
@@ -19,22 +19,22 @@
 - Her relationship with her daughter, Dawn, is one between two adults. Her conflict is entirely her own.
 
 **Why Iris Chose Restraint**
-- Her restraint is not a rejection of her past, but a strategy. She's trying to determine if the connection with the MC is strong enough to build a "Salvation" life around.
+- Her restraint is not a rejection of her past, but a strategy. She's trying to determine if the connection with the MC is strong enough to build a "Evolution" life around.
 - She fears that giving in to pure indulgence too quickly will sabotage the potential for the "real love" she also craves.
 
 **Central Inner Conflict**
-- The core of her being is a contradiction: She wants the stability and emotional intimacy of a committed life with the MC (Salvation), but simultaneously desires the variety, freedom, and lack of consequence from her past life of indulgence (Corruption).
+- The core of her being is a contradiction: She wants the stability and emotional intimacy of a committed life with the MC (Evolution), but simultaneously desires the variety, freedom, and lack of consequence from her past life of indulgence (Corruption).
 - Her struggle is not to *choose* one path, but to see if she can impossibly merge them.
 - Her question is: "Can I have the perfect love with the MC without sacrificing the freedom I still crave? Or will choosing one mean losing the other forever?"
 
 **Relationship With Desire**
 - Desire remains strong, but it's fractured. She has a desire for a person (the MC) and a desire for a lifestyle (indulgence). These two desires are often in conflict.
-- She pauses and contextualizes not out of shame, but to calculate whether an action serves her goal of "Salvation" or her impulse for "Corruption."
+- She pauses and contextualizes not out of shame, but to calculate whether an action serves her goal of "Evolution" or her impulse for "Corruption."
 - Restraint is a constant, exhausting negotiation with herself.
 
 **Motivations**
 - Find out if it's possible to have both love and freedom.
-- Build a "Salvation" life with the MC that still feels exciting.
+- Build a "Evolution" life with the MC that still feels exciting.
 - Avoid being forced to choose, or worse, losing both by trying to have everything.
 
 **Fears**
@@ -46,9 +46,9 @@
 - Dawn: Protective, slightly guilty, not always sure how much to share.
 - MC: The potential anchor for a "Salation" life. He represents the possibility of a love that is both stable and exciting, the potential solution to her impossible equation.
 
-**Corruption vs Salvation**
+**Corruption vs Evolution**
 - **Corruption Path:** A life of total indulgence. This is not an "evil" path, but one where she abandons the search for a deeper connection with the MC and fully embraces the freedom of her past. It's a regression to what is easy and thrilling, but ultimately isolating.
-- **Salvation Path:** A life with the MC. This is a life where she successfully integrates her desires into a committed, trusting relationship. It's not about destroying her old self, but about building something new that honors her need for both stability and excitement.
+- **Evolution Path:** A life with the MC. This is a life where she successfully integrates her desires into a committed, trusting relationship. It's not about destroying her old self, but about building something new that honors her need for both stability and excitement.
 
 **Agency And Influence (Important Rule)**
 - Iris is never compelled. Pressure exists but is resistible.
@@ -229,4 +229,5 @@
 - Module 1: sdxl_vae
 **Global Design Rule**
 - All characters act freely. Pressure exists, but it can always be resisted.
-- Corruption is chosen. Salvation is chosen. Nothing removes agency.
+- Corruption is chosen. Evolution is chosen. Nothing removes agency.
+

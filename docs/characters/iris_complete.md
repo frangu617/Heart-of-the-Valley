@@ -1,4 +1,4 @@
-# Iris Complete Bible + Story So Far
+﻿# Iris Complete Bible + Story So Far
 
 ## Core Identity
 - Role: University professor (Advanced Bio), single mother, neighbor.
@@ -47,9 +47,9 @@
 - Dawn: Protective, slightly guilty, not always sure how much to share.
 - MC: Does not awaken anything new; he reminds her of what she already is. With him she feels like a woman again, not a signal.
 
-## Corruption vs Salvation
+## Corruption vs Evolution
 - Corruption Path: The MC validates her nostalgia and frames her past as truer. She chooses indulgence freely, becoming more visible, more secretive, more alive. The cost comes later through influence rather than collapse.
-- Salvation Path: The MC validates her desire without pushing regression. She learns she can be visible without becoming a template. Restraint becomes conscious rather than burdensome.
+- Evolution Path: The MC validates her desire without pushing regression. She learns she can be visible without becoming a template. Restraint becomes conscious rather than burdensome.
 
 ## Agency Rule
 - Iris is never compelled. Pressure exists but is resistible.
@@ -152,7 +152,7 @@ Outcome logic:
 
 ## Global Design Rule
 - All characters act freely. Pressure exists, but it can always be resisted.
-- Corruption is chosen. Salvation is chosen. Nothing removes agency.
+- Corruption is chosen. Evolution is chosen. Nothing removes agency.
 
 ## Full Story Script (Verbatim From Implemented Events)
 This section contains the full implemented Iris story scripts exactly as written in event files, including route branches, choices, and dialogue lines.
@@ -5734,3 +5734,4 @@ These are Iris-specific random events currently implemented in src/data/events/c
   },
 
 ```
+

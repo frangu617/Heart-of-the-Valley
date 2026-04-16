@@ -1,4 +1,4 @@
-# MC (Player Character)
+﻿# MC (Player Character)
 
 **Core Identity**
 - Role: University professor (Advanced Programming), new to campus.
@@ -9,7 +9,7 @@
 **Public Persona**
 - Professional, respected, controlled.
 - Protects reputation and career; avoids obvious scandals.
-- Frames choices as “responsible,” even when desire runs deeper.
+- Frames choices as â€œresponsible,â€ even when desire runs deeper.
 
 **Private Self**
 - More impulsive, curious, and emotionally hungry than he admits.
@@ -18,24 +18,24 @@
 
 **Core Flaw (Reframed)**
 - Ambiguity about what he wants.
-- Slow to name his desire, which makes him vulnerable to other people’s framing.
-- Can mistake “doing the right thing” for avoiding risk.
+- Slow to name his desire, which makes him vulnerable to other peopleâ€™s framing.
+- Can mistake â€œdoing the right thingâ€ for avoiding risk.
 
 **Sin Lens (Subtle)**
-- Choice‑dependent.
+- Choiceâ€‘dependent.
 - He does not embody a single sin; he becomes a mirror that amplifies others.
-- His “sin” is often influence without accountability unless the player chooses otherwise.
+- His â€œsinâ€ is often influence without accountability unless the player chooses otherwise.
 
 **Agency and Responsibility**
 - He is never compelled.
 - He always has alternatives.
-- Corruption is a choice; salvation is a choice.
+- Corruption is a choice; evolution is a choice.
 - He is responsible for the consequences of what he normalizes.
 
 **Dominance / Submission Axis**
 - Dom: Asserts boundaries, takes initiative, frames rules.
-- Sub: Adapts to others’ pace, accepts guidance, yields control.
-- Neither is “good” or “bad,” but each shifts how characters interpret his intent.
+- Sub: Adapts to othersâ€™ pace, accepts guidance, yields control.
+- Neither is â€œgoodâ€ or â€œbad,â€ but each shifts how characters interpret his intent.
 
 **Relationship with Desire**
 - Desire is strong but often delayed or managed.
@@ -49,22 +49,22 @@
 - Acknowledges tension without begging for it.
 - Inner monologue can be dirty even when his outward speech stays composed.
 
-**Player‑Facing Pillars**
+**Playerâ€‘Facing Pillars**
 - Clarity: Be honest about what he wants.
 - Responsibility: Own impact, not just intent.
 - Choice: Every relationship is a decision, not a drift.
 
 **Narrative Function**
-- He is the pressure point for each character’s internal conflict.
-- He doesn’t “fix” people; he aligns with a direction already inside them.
+- He is the pressure point for each characterâ€™s internal conflict.
+- He doesnâ€™t â€œfixâ€ people; he aligns with a direction already inside them.
 - His choices make him either a stabilizing anchor or a catalyst for collapse.
 
-**Story Outline (High‑Level)**
+**Story Outline (Highâ€‘Level)**
 **Chapter 1**
 1. Establishes professional identity and meets core cast.
 2. Begins private tutoring and boundary testing.
 3. First taste of secrecy and desire.
-4. Rainy‑night climax that defines early alignment (dom/sub + corruption/salvation lean).
+4. Rainyâ€‘night climax that defines early alignment (dom/sub + corruption/evolution lean).
 **Chapter 2**
 1. Consequences of Chapter 1 begin to surface.
 2. Relationships become coordinated and risky.
@@ -75,3 +75,4 @@
 - Never infantilize the MC.
 - Keep player agency intact with meaningful options.
 - Consequences should feel like alignment, not punishment.
+

@@ -1,4 +1,4 @@
-# Lucía
+ï»¿# LucÃ­a
 
 **Core Identity**
 - Role: Nun / religious worker / community outreach.
@@ -21,13 +21,13 @@
 - That makes her feel seen in a way prayer never did.
 
 **Corruption Path (Only Path)**
-- Salvation does not exist for her.
+- Evolution does not exist for her.
 - Corruption reframes anger as truth and resentment as justification for desire.
 - Moral superiority becomes entitlement.
 - Sex validates her anger; it does not calm her.
 - Intimacy is intense, punitive, possessive, almost judicial.
 
-**Why No Salvation Path Works**
+**Why No Evolution Path Works**
 - It would require letting go of righteous anger, accepting ambiguity, and forgiving herself and others.
 - She cannot do this without dismantling her identity, so she refuses.
 
@@ -37,4 +37,5 @@
 - Corrupted scenes should feel cold-hot, not playful.
 
 **Summary Sentence**
-- Lucía is a Latina nun whose wrath was forged through repression and moral certainty; corruption gives her permission to turn righteous anger into desire, and she cannot be saved because she does not want peace—she wants to be right.
+- LucÃ­a is a Latina nun whose wrath was forged through repression and moral certainty; corruption gives her permission to turn righteous anger into desire, and she cannot be saved because she does not want peaceâ€”she wants to be right.
+

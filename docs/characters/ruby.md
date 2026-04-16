@@ -1,4 +1,4 @@
-# Ruby
+﻿# Ruby
 
 **Core Identity**
 - Role: Gym trainer who radiates confidence, energy, and discipline.
@@ -63,7 +63,7 @@
 - This path should feel heavy, uneasy, and borderline depressing.
 - Ruby becomes efficient, obedient, and hollowed.
 
-**Salvation Path (Bright And Earned)**
+**Evolution Path (Bright And Earned)**
 - She must learn that love does not improve when you suffer more.
 - The MC must encourage boundaries, reject control dynamics, offer reassurance without conditions, and allow failure without withdrawal.
 - Slow path, but stabilizes her.
@@ -80,10 +80,10 @@
 - Aggression should feel defensive, not malicious.
 - Affection should feel intense and earnest.
 - Corruption scenes should feel uncomfortable, not sexy.
-- Salvation scenes should feel warm, calm, and grounding.
+- Evolution scenes should feel warm, calm, and grounding.
 
 **Summary Sentence (For Codex Tagging)**
-- Ruby is physically strong but emotionally naive, trapped in an abusive relationship that teaches her to equate approval with love; once freed, she redirects that hunger toward the MC, making her corruption path deeply unsettling and her salvation path deeply joyful.
+- Ruby is physically strong but emotionally naive, trapped in an abusive relationship that teaches her to equate approval with love; once freed, she redirects that hunger toward the MC, making her corruption path deeply unsettling and her evolution path deeply joyful.
 
 **Story Outline**
 **Chapter 1**
@@ -95,4 +95,5 @@
 
 **Stable Diffusion**
 - Prompt: red hair, woman, big breasts, wide hips, tiny waist, abs, athletic wear, sneakers, athletic body, happy, energetic, amber eyes, cleavage, shorts, blue jacket, green eyes, looking at viewer
+
 

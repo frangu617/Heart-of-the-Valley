@@ -1,4 +1,4 @@
-# Dawn
+﻿# Dawn
 
 **Core Identity**
 - Role: Iris's daughter, student, primary ideological antagonist.
@@ -102,4 +102,5 @@
 - Module 1: sdxl_vae
 **Global Design Rule**
 - All characters act freely. Pressure exists, but it can always be resisted.
-- Corruption is chosen. Salvation is chosen. Nothing removes agency.
+- Corruption is chosen. Evolution is chosen. Nothing removes agency.
+
